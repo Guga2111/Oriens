@@ -1,5 +1,6 @@
 package com.oriens.oriens_api.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.oriens.oriens_api.entity.enums.Priority;
 import com.oriens.oriens_api.entity.enums.Status;
 import jakarta.persistence.*;
@@ -51,5 +52,6 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 }
