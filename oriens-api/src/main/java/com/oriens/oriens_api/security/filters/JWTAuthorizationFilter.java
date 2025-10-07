@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
@@ -36,7 +37,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
             String userPrincipal = decodedJWT.getSubject();
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(userPrincipal, null);
+            Authentication authentication = new UsernamePasswordAuthenticationToken(userPrincipal, null, Arrays.asList());
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (JWTVerificationException e) {
