@@ -7,6 +7,7 @@ import SignLoginPage from "./pages/SignLoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LandingPage } from "./pages/LandingPage";
+import { ProtectedRoute } from "./router/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -16,19 +17,23 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
+        <>
+          <Routes>
 
-          {/* Protected Route / Tasks */}
-          <Route path='/tasks' element={<DashboardPage />} />
+            {/* Public routes */}
+            <Route path="/auth" element={<SignLoginPage />} />
+            <Route path="/" element={<LandingPage />} />
 
-          {/* Public routes */}
-          <Route path="/auth" element={<SignLoginPage />} />
-          <Route path="/" element={<LandingPage />} />
+            {/* Protected Route / Tasks */}
+            <Route element={<ProtectedRoute/>}>
+              <Route path="/tasks" element={<DashboardPage/>} />
+            </Route>
 
-          {/* Catch-All "*" Route */}
-          <Route path="*" element={<NotFoundPage />} />
+            {/* Catch-All "*" Route */}
+            <Route path="*" element={<NotFoundPage />} />
 
-        </Routes>
+          </Routes>
+        </>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
