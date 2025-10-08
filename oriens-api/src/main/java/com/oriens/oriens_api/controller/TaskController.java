@@ -31,6 +31,16 @@ public class TaskController {
         return new ResponseEntity<>(taskService.getTasksForUserByDueDate(userId, date), HttpStatus.OK);
     }
 
+    @GetMapping("/user/{userId}/range")
+    public ResponseEntity<List<Task>> getTasksForUserByDateRange(
+            @PathVariable Long userId,
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        List<Task> tasks = taskService.getTasksForUserByDateRange(userId, startDate, endDate);
+        return new ResponseEntity<>(tasks, HttpStatus.OK);
+    }
+
     @PostMapping("/user/{userId}")
     public ResponseEntity<Task> createTask (@PathVariable Long userId, @RequestBody Task task) {
         return new ResponseEntity<>(taskService.createTask(task, userId), HttpStatus.CREATED);

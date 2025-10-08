@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface TaskRepository extends CrudRepository<Task, Long> {
     List<Task> findByUserAndDueDate(User user, LocalDate dueDate);
+    List<Task> findByUserAndDueDateBetweenOrderByDueDateAscStartTimeAsc(User user, LocalDate startDate, LocalDate endDate);
 }

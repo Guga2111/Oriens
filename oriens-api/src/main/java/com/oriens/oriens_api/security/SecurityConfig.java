@@ -4,6 +4,7 @@ import com.oriens.oriens_api.security.filters.AuthenticationFilter;
 import com.oriens.oriens_api.security.filters.ExceptionHandlerFilter;
 import com.oriens.oriens_api.security.filters.JWTAuthorizationFilter;
 import com.oriens.oriens_api.security.manager.CustomAuthManager;
+import com.oriens.oriens_api.service.UserServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,10 +23,11 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomAuthManager customAuthManager;
+    private UserServiceImpl userService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        AuthenticationFilter authenticationFilter = new AuthenticationFilter(customAuthManager);
+        AuthenticationFilter authenticationFilter = new AuthenticationFilter(customAuthManager, userService);
         authenticationFilter.setFilterProcessesUrl("/authenticate");
 
         http
