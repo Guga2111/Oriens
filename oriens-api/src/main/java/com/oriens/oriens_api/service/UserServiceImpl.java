@@ -1,6 +1,7 @@
 package com.oriens.oriens_api.service;
 
 import com.oriens.oriens_api.entity.User;
+import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,12 +19,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(Long id) {
-        return unwrapUser(userRepository.findById(id));
+        return unwrapUser(userRepository.findById(id), id);
     }
 
     @Override
     public User getUser(String email) {
-        return unwrapUser(userRepository.findByEmail(email));
+        return unwrapUser(userRepository.findByEmail(email), userRepository.findByEmail(email).get().getId());
     }
 
     @Override
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(Long id) {
-        User user = unwrapUser(userRepository.findById(id));
+        User user = unwrapUser(userRepository.findById(id), id);
 
         // updating logic here
 
@@ -54,13 +55,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updateProfileImageUrl(Long userId, String imageUrl) {
+        User user = unwrapUser(userRepository.findById(userId), userId);
+        user.setProfileImageUrl(imageUrl);
+        userRepository.save(user);
+    }
+
+    @Override
     public void deleteUser(Long id) {
-        User user = unwrapUser(userRepository.findById(id));
+        User user = unwrapUser(userRepository.findById(id), id);
         userRepository.delete(user);
     }
 
-    static User unwrapUser (Optional<User> userOptional) {
-        if (userOptional.isEmpty()) throw new RuntimeException(); //custom exception UserNotFound
+    static User unwrapUser (Optional<User> userOptional, Long id) {
+        if (userOptional.isEmpty()) throw new UserNotFoundException(id); //custom exception UserNotFound
         return userOptional.get();
     }
 }

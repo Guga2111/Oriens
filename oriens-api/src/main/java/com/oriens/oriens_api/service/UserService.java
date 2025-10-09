@@ -14,5 +14,7 @@ public interface UserService {
 
     User updateUser (Long id ); //add the info i wanna update
 
+    void updateProfileImageUrl (Long userId, String imageUrl);
+
     void deleteUser (Long id);
 }
