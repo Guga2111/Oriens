@@ -1,6 +1,7 @@
 package com.oriens.oriens_api.controller;
 
 import com.oriens.oriens_api.entity.Task;
+import com.oriens.oriens_api.entity.dto.WeeklySummaryDTO;
 import com.oriens.oriens_api.service.TaskServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -41,13 +42,18 @@ public class TaskController {
         return new ResponseEntity<>(tasks, HttpStatus.OK);
     }
 
+    @GetMapping("/user/{userId}/summary/weekly-counts")
+    public ResponseEntity<WeeklySummaryDTO> getCountTasksWeeklySummary (@PathVariable Long userId) {
+        return new ResponseEntity<>(taskService.retrieveDoneTasksAndTasksNumbersByDateRange(userId), HttpStatus.OK);
+    }
+
     @PostMapping("/user/{userId}")
     public ResponseEntity<Task> createTask (@PathVariable Long userId, @RequestBody Task task) {
         return new ResponseEntity<>(taskService.createTask(task, userId), HttpStatus.CREATED);
     }
 
     @PutMapping("/{taskId}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long taskId, @RequestBody Task taskDetails) {
+    public ResponseEntity<Task> updateTask (@PathVariable Long taskId, @RequestBody Task taskDetails) {
         return new ResponseEntity<>(taskService.updateTask(taskId, taskDetails), HttpStatus.OK);
     }
 

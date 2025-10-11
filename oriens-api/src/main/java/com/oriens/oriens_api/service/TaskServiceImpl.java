@@ -2,6 +2,7 @@ package com.oriens.oriens_api.service;
 
 import com.oriens.oriens_api.entity.Task;
 import com.oriens.oriens_api.entity.User;
+import com.oriens.oriens_api.entity.dto.WeeklySummaryDTO;
 import com.oriens.oriens_api.entity.enums.Status;
 import com.oriens.oriens_api.exception.TaskNotFoundException;
 import com.oriens.oriens_api.exception.UserNotFoundException;
@@ -11,7 +12,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +48,22 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         return taskRepository.findByUserAndDueDateBetweenOrderByDueDateAscStartTimeAsc(user, startDate, endDate);
+    }
+
+    @Override
+    public WeeklySummaryDTO retrieveDoneTasksAndTasksNumbersByDateRange(Long userId) {
+
+        LocalDate today = LocalDate.now();
+        LocalDate weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate weekEnd = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        long completedCount = taskRepository.countCompletedTasksInDateRange(userId, weekStart, weekEnd);
+        long totalCount = taskRepository.countTotalTasksInDateRange(userId, weekStart, weekEnd);
+
+        int completedCountNumber = Math.toIntExact(completedCount);
+        int totalCountNumber = Math.toIntExact(totalCount);
+
+        return new WeeklySummaryDTO(completedCountNumber, totalCountNumber);
     }
 
     @Override

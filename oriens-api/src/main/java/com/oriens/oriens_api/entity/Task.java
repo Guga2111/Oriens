@@ -46,6 +46,12 @@ public class Task {
     @Column(name = "status")
     private Status status;
 
+    @Column(name = "reminder_sent", nullable = false)
+    private boolean reminderSent = false;
+
+    @Column(name = "overdue_notification_sent", nullable = false)
+    private boolean overdueNotificationSent = false;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
