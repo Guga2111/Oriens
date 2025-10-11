@@ -49,7 +49,7 @@ const SignLoginPage = () => {
 
       if (token) {
         toast({ title: "Login bem-sucedido!", description: "Redirecionando..." });
-        login(token);
+        await login(token);
         navigate('/tasks')
       } else {
         throw new Error("Token não encontrado na resposta");
@@ -92,10 +92,11 @@ const SignLoginPage = () => {
         password: registerPassword,
       });
 
-      const token = loginResponse.data.token;
+      const authHeader = loginResponse.headers.authorization;
+      const token = authHeader && authHeader.split(' ')[1];
 
       if (token) {
-        login(token);
+        await login(token);
         navigate('/tasks'); 
       }
 

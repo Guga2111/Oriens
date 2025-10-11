@@ -7,16 +7,20 @@ interface DecodedToken {
   sub: string; 
   exp: number;
   userId: number;
+  username: string;
 }
 
 interface AuthContextType {
   isAuthenticated: boolean;
   userEmail: string | null;
+  username: string | null;
   userId: number | null;
+  profileImageUrl: string | null;
   token: string | null;
   isLoading: boolean;
   login: (token: string) => void;
   logout: () => void;
+  updateProfileImage: (newUrl: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,19 +32,27 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'));
   const [isLoading, setIsLoading] = useState(true);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('authToken');
     if (token) {
       try {
         const decodedToken: DecodedToken = jwtDecode(token);
 
         if (decodedToken.exp * 1000 > Date.now()) {
+          const userResponse = await apiClient.get(`/user/${decodedToken.userId}`);
+            const user = userResponse.data;
+
         setUserEmail(decodedToken.sub);
         setUserId(decodedToken.userId);
+        setUsername(decodedToken.username);
+        setProfileImageUrl(user.profileImageUrl);
         setIsAuthenticated(true);
         } else {
           localStorage.removeItem('authToken'); 
@@ -51,13 +63,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
     setIsLoading(false);
+    };
+    initializeAuth();
   }, [token]);
 
-  const login = (token: string) => {
+  const login = async (token: string) => {
     localStorage.setItem('authToken', token);
     const decodedToken: DecodedToken = jwtDecode(token);
+
+    const userResponse = await apiClient.get(`/user/${decodedToken.userId}`);
+    const user = userResponse.data;
+
     setUserEmail(decodedToken.sub);
+    setUsername(decodedToken.username);
     setUserId(decodedToken.userId);
+    setProfileImageUrl(user.profileImageUrl);
     setIsAuthenticated(true);
     setToken(token);
   };
@@ -65,20 +85,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     localStorage.removeItem('authToken');
     setUserEmail(null);
+    setUsername(null);
     setUserId(null);
     setIsAuthenticated(false);
     setToken(null);
     window.location.href = '/auth';
   };
 
+  const updateProfileImage = (newUrl: string) => {
+    setProfileImageUrl(newUrl);
+  };
+
   const value = {
     isAuthenticated,
     userEmail,
+    username,
     userId,
     token,
     isLoading,
+    profileImageUrl,
     login,
     logout,
+    updateProfileImage,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
