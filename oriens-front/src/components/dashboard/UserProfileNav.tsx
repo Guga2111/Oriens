@@ -13,19 +13,46 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
 import { User, Settings, LogOut } from "lucide-react";
+import { useState } from "react";
+import { EditableAvatar } from "../common/EditableAvatar";
+import apiClient from "@/services/api";
+import { toast } from "@/hooks/use-toast";
 
 export function UserProfileNav() {
-  const { userEmail, logout } = useAuth();
+  const { userEmail, username, logout, userId, profileImageUrl, updateProfileImage } = useAuth();
   
-  const userName = "Luis Gustavo";
-  const userFallback = userName.split(' ').map(n => n[0]).join('');
+  const userFallback = username.split(' ').map(n => n[0]).join('');
+
+  const handleImageUpload = async (file: File) => {
+    console.log("Arquivo de imagem selecionado:", file.name);
+    
+    const formData = new FormData();
+    formData.append('profileImage', file);
+
+    try {
+      const response = await apiClient.put(`/user/${userId}/avatar`, formData, {
+        headers: {
+          'Content-Type' : 'multipart/form-data',
+        },
+      });
+
+      const newImageUrl = response.data.profileImageUrl;
+      updateProfileImage(newImageUrl);
+
+      toast({ title:"Sucesso!", description:"Sua imagem de perfil foi atualizada."});
+
+    } catch (error) {
+      console.error("Erro ao fazer upload da imagem: ", error);
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possivel atualizar sua imagem."})
+    }
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage src="https://github.com/shadcn.png" alt="User Avatar" />
+            <AvatarImage src={profileImageUrl} alt="User Avatar" />
             <AvatarFallback>{userFallback}</AvatarFallback>
           </Avatar>
         </Button>
@@ -33,7 +60,13 @@ export function UserProfileNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{userName}</p>
+            <EditableAvatar
+              src={profileImageUrl || username} 
+              fallback={userFallback}
+              alt="User Avatar"
+              onImageChange={handleImageUpload}
+            />
+            <p className="text-sm font-medium leading-none">{username}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {userEmail}
             </p>
