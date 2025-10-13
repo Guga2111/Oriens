@@ -1,6 +1,7 @@
 package com.oriens.oriens_api.controller;
 
 import com.oriens.oriens_api.entity.Notification;
+import com.oriens.oriens_api.entity.dto.NotificationDTO;
 import com.oriens.oriens_api.service.NotificationServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,11 @@ public class NotificationController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Notification>> getNotifications (@PathVariable Long userId) {
         return new ResponseEntity<>(notificationService.getNotificationsByUser(userId), HttpStatus.OK);
+    }
+
+    @GetMapping("/user/{userId}/last-notifications")
+    public ResponseEntity<List<NotificationDTO>> getLast5Notifications (@PathVariable Long userId) {
+        return new ResponseEntity<>(notificationService.getLastNotificationsByUser(userId), HttpStatus.OK);
     }
 
     @PostMapping("/{notificationId}/read")

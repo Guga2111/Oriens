@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface NotificationRepository extends CrudRepository<Notification, Long> {
     List<Notification> findByUserOrderByCreatedAtDesc (User user);
+
+    List<Notification> findTop5ByUserIdOrderByCreatedAtDesc (Long userId);
 }
