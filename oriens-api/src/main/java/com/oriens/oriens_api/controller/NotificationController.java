@@ -2,6 +2,8 @@ package com.oriens.oriens_api.controller;
 
 import com.oriens.oriens_api.entity.Notification;
 import com.oriens.oriens_api.entity.dto.NotificationDTO;
+import com.oriens.oriens_api.entity.dto.NotificationDeleteCountDTO;
+import com.oriens.oriens_api.entity.dto.NotificationUpdateCountDTO;
 import com.oriens.oriens_api.service.NotificationServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,4 +34,14 @@ public class NotificationController {
         notificationService.markAsRead(notificationId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PatchMapping("/user/{userId}/read-all")
+    public ResponseEntity<NotificationUpdateCountDTO> markAllNotificationAsRead (@PathVariable Long userId) {
+        return new ResponseEntity<>(notificationService.markAllAsRead(userId), HttpStatus.OK);
+   }
+
+   @DeleteMapping("/user/{userId}")
+    public ResponseEntity<NotificationDeleteCountDTO> clearAll (@PathVariable Long userId) {
+        return new ResponseEntity<>(notificationService.clearAll(userId), HttpStatus.NO_CONTENT);
+   }
 }

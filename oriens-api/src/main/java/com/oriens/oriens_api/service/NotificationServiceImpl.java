@@ -3,6 +3,8 @@ package com.oriens.oriens_api.service;
 import com.oriens.oriens_api.entity.Notification;
 import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.entity.dto.NotificationDTO;
+import com.oriens.oriens_api.entity.dto.NotificationDeleteCountDTO;
+import com.oriens.oriens_api.entity.dto.NotificationUpdateCountDTO;
 import com.oriens.oriens_api.exception.NotificationNotFoundException;
 import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.NotificationRepository;
@@ -12,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,15 +53,6 @@ public class NotificationServiceImpl implements NotificationService {
                 .collect(Collectors.toList());
     }
 
-    private NotificationDTO convertToDto(Notification notification) {
-        NotificationDTO dto = new NotificationDTO();
-        dto.setId(notification.getId());
-        dto.setMessage(notification.getMessage());
-        dto.setRead(notification.isRead());
-        dto.setCreatedAt(notification.getCreatedAt());
-        return dto;
-    }
-
     @Override
     @Transactional
     public void markAsRead(Long notificationId) {
@@ -71,5 +63,28 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setRead(true);
 
         notificationRepository.save(notification);
+    }
+
+    @Override
+    @Transactional
+    public NotificationUpdateCountDTO markAllAsRead(Long userId) {
+        int updatedCount = notificationRepository.markAllAsReadByUserId(userId);
+        return new NotificationUpdateCountDTO(updatedCount);
+    }
+
+    @Override
+    @Transactional
+    public NotificationDeleteCountDTO clearAll(Long userId) {
+        int deletedCount = notificationRepository.deleteByUserId(userId);
+        return new NotificationDeleteCountDTO(deletedCount);
+    }
+
+    private NotificationDTO convertToDto(Notification notification) {
+        NotificationDTO dto = new NotificationDTO();
+        dto.setId(notification.getId());
+        dto.setMessage(notification.getMessage());
+        dto.setRead(notification.isRead());
+        dto.setCreatedAt(notification.getCreatedAt());
+        return dto;
     }
 }
