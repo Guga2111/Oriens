@@ -1,6 +1,7 @@
 package com.oriens.oriens_api.controller;
 
 import com.oriens.oriens_api.entity.Task;
+import com.oriens.oriens_api.entity.dto.TaskDTO;
 import com.oriens.oriens_api.entity.dto.WeeklySummaryDTO;
 import com.oriens.oriens_api.service.TaskServiceImpl;
 import lombok.AllArgsConstructor;
@@ -48,8 +49,8 @@ public class TaskController {
     }
 
     @PostMapping("/user/{userId}")
-    public ResponseEntity<Task> createTask (@PathVariable Long userId, @RequestBody Task task) {
-        return new ResponseEntity<>(taskService.createTask(task, userId), HttpStatus.CREATED);
+    public ResponseEntity<Task> createTask (@PathVariable Long userId, @RequestBody TaskDTO taskDTO) {
+        return new ResponseEntity<>(taskService.createTask(taskDTO, userId), HttpStatus.CREATED);
     }
 
     @PutMapping("/{taskId}")

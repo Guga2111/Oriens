@@ -1,13 +1,11 @@
 package com.oriens.oriens_api.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.oriens.oriens_api.entity.embeddable.Location;
 import com.oriens.oriens_api.entity.enums.Priority;
 import com.oriens.oriens_api.entity.enums.Status;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
@@ -19,6 +17,7 @@ import java.time.LocalTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "tasks")
 public class Task {
 
@@ -55,6 +54,9 @@ public class Task {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Embedded
+    private Location location;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

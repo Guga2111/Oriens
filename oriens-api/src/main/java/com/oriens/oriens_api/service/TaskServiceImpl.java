@@ -2,7 +2,10 @@ package com.oriens.oriens_api.service;
 
 import com.oriens.oriens_api.entity.Task;
 import com.oriens.oriens_api.entity.User;
+import com.oriens.oriens_api.entity.dto.LocationDTO;
+import com.oriens.oriens_api.entity.dto.TaskDTO;
 import com.oriens.oriens_api.entity.dto.WeeklySummaryDTO;
+import com.oriens.oriens_api.entity.embeddable.Location;
 import com.oriens.oriens_api.entity.enums.Status;
 import com.oriens.oriens_api.exception.TaskNotFoundException;
 import com.oriens.oriens_api.exception.UserNotFoundException;
@@ -68,13 +71,32 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
-    public Task createTask(Task task, Long userId) {
+    public Task createTask(TaskDTO taskDTO, Long userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        task.setUser(user);
-        task.setStatus(Status.PENDING);
+        Task task = Task.builder()
+                        .title(taskDTO.getTitle())
+                        .description(taskDTO.getDescription())
+                        .dueDate(taskDTO.getDueDate())
+                        .startTime(taskDTO.getStartTime())
+                        .priority(taskDTO.getPriority())
+                        .user(user)
+                        .status(Status.PENDING)
+                .build();
+
+        LocationDTO locationDTO = taskDTO.getLocation();
+
+        if (locationDTO != null && locationDTO.getAddress() != null) {
+            Location location = Location.builder()
+                    .address(locationDTO.getAddress())
+                    .latitude(locationDTO.getLatitude())
+                    .longitude(locationDTO.getLongitude())
+                    .build();
+
+            task.setLocation(location);
+        }
 
         return taskRepository.save(task);
     }
