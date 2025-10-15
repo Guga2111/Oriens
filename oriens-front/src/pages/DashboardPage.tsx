@@ -47,6 +47,11 @@ interface Task {
   dueDate: string;
   priority: "LOW" | "MEDIUM" | "HIGH";
   status: "PENDING" | "ON_DOING" | "CONCLUDED";
+  location?: { // Location with '?' for being optional
+    latitude: number;
+    longitude: number;
+    address?: string;
+  };
 }
 
 export function DashboardPage() {
