@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Bell, Loader2 } from "lucide-react";
+import { Bell, Loader2, CheckCheck, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/services/api";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export interface Notification {
   id: number;
@@ -20,11 +21,13 @@ export function NotificationBell() {
   const { userId } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]); 
   const [isLoading, setIsLoading] = useState(true);
+  const [isMarkingAll, setIsMarkingAll] = useState(false);
+  const [isClearingAll, setIsClearingAll] = useState(false);
 
   const fetchNotifications = async () => {
     if (!userId) return;
     try {
-      const response = await apiClient.get(`/notifications/user/${userId}`);
+      const response = await apiClient.get(`/notifications/user/${userId}/last-notifications`);
       setNotifications(response.data);
     } catch (error) {
       console.error("Falha ao buscar notificações:", error);
@@ -48,6 +51,63 @@ export function NotificationBell() {
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, read: false } : n)
       );
+    }
+  };
+
+const handleMarkAllAsRead = async () => {
+    if (!userId) return;
+
+    const originalNotifications = [...notifications]; 
+    setIsMarkingAll(true);
+
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+
+    try {
+      const response = await apiClient.patch(`/notifications/user/${userId}/read-all`);
+      const { updatedCount } = response.data;
+      
+      if (updatedCount > 0) {
+        toast.success(`${updatedCount} notificações marcadas como lidas.`);
+      } else {
+        toast.info("Nenhuma notificação nova para marcar.");
+      }
+      fetchNotifications();
+    } catch (error) {
+      console.error("Falha ao marcar as notificações como lidas: ", error);
+      toast.error("Ocorreu um erro. Tente novamente.");
+      setNotifications(originalNotifications); 
+    } finally {
+      setIsMarkingAll(false);
+    }
+  }
+
+  const handleClearAll = async () => {
+    if (!userId) return;
+
+    if (!window.confirm("Tem certeza que deseja remover todas as notificações? Esta ação não pode ser desfeita.")) {
+      return;
+    }
+
+    const originalNotifications = [...notifications];
+    setIsClearingAll(true);
+
+    setNotifications([]);
+
+    try {
+      const response = await apiClient.delete(`/notifications/user/${userId}`);
+      const { deletedCount } = response.data;
+      
+      if (deletedCount > 0) {
+        toast.success(`${deletedCount} notificações foram removidas.`);
+      } else {
+        toast.info("Não havia notificações para remover.");
+      }
+    } catch (error) {
+      console.error("Falha ao remover as notificações:", error);
+      toast.error("Ocorreu um erro ao remover as notificações.");
+      setNotifications(originalNotifications); 
+    } finally {
+      setIsClearingAll(false);
     }
   };
 
@@ -90,6 +150,41 @@ export function NotificationBell() {
           ))
         ) : (
           <p className="p-4 text-sm text-muted-foreground text-center">Nenhuma notificação nova.</p>
+        )}
+
+         {notifications.length > 0 && !isLoading && (
+          <>
+            <DropdownMenuSeparator />
+            <div className="p-2 flex flex-col gap-2">
+              <Button 
+                className="w-full" 
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                disabled={!hasUnread || isMarkingAll || isClearingAll}
+              >
+                {isMarkingAll ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCheck className="mr-2 h-4 w-4" />
+                )}
+                Marcar todas como lidas
+              </Button>
+              <Button 
+                variant="destructive"
+                className="w-full" 
+                size="sm"
+                onClick={handleClearAll}
+                disabled={isClearingAll || isMarkingAll}
+              >
+                {isClearingAll ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
+                Limpar todas
+              </Button>
+            </div>
+          </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
