@@ -15,11 +15,14 @@ import {
   Trash2,
   Pencil,
   Loader2,
+  MapPin,
 } from "lucide-react";
 import apiClient from "@/services/api";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { LocationMap } from "./LocationMap";
 
 export interface Task {
   id: number;
@@ -29,6 +32,11 @@ export interface Task {
   dueDate: string;
   priority: "LOW" | "MEDIUM" | "HIGH";
   status: "PENDING" | "ON_DOING" | "CONCLUDED";
+  location?: {
+    latitude: number;
+    longitude: number;
+    address?: string;
+  };
 }
 
 interface TaskCardProps {
@@ -42,6 +50,8 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
   const isConcluded = task.status === "CONCLUDED";
 
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const [isMapOpen, setIsMapOpen] = useState(false);
 
   const priorityVariants: {
     [key in Task["priority"]]: "default" | "secondary" | "destructive";
@@ -81,25 +91,27 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
   };
 
   const DayViewLayout = () => (
-    <div className="flex items-start justify-between">
-      <div className="flex items-start gap-4 min-w-0">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 rounded-full mt-1 flex-shrink-0"
-          onClick={handleToggleStatus}
-          disabled={isUpdating}
-        >
-          {isUpdating ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : isConcluded ? (
-            <Check className="h-5 w-5 text-primary" />
-          ) : (
-            <Circle className="h-5 w-5 text-muted-foreground" />
-          )}
-        </Button>
-        <div className="flex flex-col gap-2 min-w-0">
-          <div>
+    <div className="flex items-start justify-between gap-4">
+
+      <div className="flex flex-1 flex-col gap-2 min-w-0">
+        
+        <div className="flex items-start gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 rounded-full mt-1 flex-shrink-0"
+            onClick={handleToggleStatus}
+            disabled={isUpdating}
+          >
+            {isUpdating ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : isConcluded ? (
+              <Check className="h-5 w-5 text-primary" />
+            ) : (
+              <Circle className="h-5 w-5 text-muted-foreground" />
+            )}
+          </Button>
+          <div className="min-w-0">
             <p
               className={`font-medium break-words ${
                 isConcluded ? "line-through" : ""
@@ -113,7 +125,11 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
               </p>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        </div>
+
+        <div className="flex w-full items-center justify-between text-xs text-muted-foreground pl-10">
+
+          <div className="flex flex-shrink-0 items-center gap-x-4">
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               <span>{task.startTime.substring(0, 5)}</span>
@@ -122,33 +138,77 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
               {task.priority}
             </Badge>
           </div>
+
+          <div className="min-w-0">
+            {task.location?.address && (
+              <div className="flex items-center gap-1">
+                <MapPin className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate" title={task.location.address}>
+                  {task.location.address}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
 
-        <DropdownMenuContent>
-          <DropdownMenuItem
-            onClick={() => onEdit(task)}
-            className="flex cursor-pointer items-center gap-2"
-          >
-            <Pencil className="h-4 w-4" />
-            Editar
-          </DropdownMenuItem>
+      <Dialog open={isMapOpen} onOpenChange={setIsMapOpen}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
 
-          <DropdownMenuItem
-            onClick={handleDelete}
-            className="flex cursor-pointer items-center gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-            Deletar
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <DropdownMenuContent>
+            {task.location && (
+              <DropdownMenuItem
+                onClick={() => setIsMapOpen(true)}
+                className="flex cursor-pointer items-center gap-2"
+              >
+                <MapPin className="h-4 w-4" />
+                Ver no Mapa
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
+              onClick={() => onEdit(task)}
+              className="flex cursor-pointer items-center gap-2"
+            >
+              <Pencil className="h-4 w-4" />
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleDelete}
+              className="flex cursor-pointer items-center gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+              Deletar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {task.location && (
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>{task.location.address || task.title}</DialogTitle>
+            </DialogHeader>
+            <div className="mt-4 overflow-hidden rounded-lg">
+              <LocationMap
+                lat={task.location.latitude}
+                lng={task.location.longitude}
+                taskTitle={task.title}
+                taskSubtitle={task.description}
+                priorityVariant={priorityVariants[task.priority]}
+                taskPriority={task.priority}
+              />
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 
@@ -171,8 +231,6 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
           )}
         </Button>
 
-        {/* A classe 'flex-1' força o título a ocupar o espaço que sobra,
-            e 'min-w-0' permite que ele encolha e quebre a linha. */}
         <p
           className={`font-medium text-sm leading-snug break-words flex-1 min-w-0 ${
             isConcluded ? "line-through" : ""
@@ -211,7 +269,7 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
       </div>
 
       {(task.startTime || task.priority) && (
-        <div className="flex items-center gap-4 text-xs text-muted-foreground pl-7">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground pl-7">
           {task.startTime && (
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
@@ -221,7 +279,7 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
           {task.priority && (
             <Badge
               variant={priorityVariants[task.priority]}
-              className="h-5 text-xs"
+              className="h-5 text-[10px]"
             >
               {task.priority}
             </Badge>
