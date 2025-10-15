@@ -2,6 +2,7 @@ package com.oriens.oriens_api.service;
 
 import com.oriens.oriens_api.entity.Task;
 import com.oriens.oriens_api.entity.User;
+import com.oriens.oriens_api.entity.dto.TaskDTO;
 import com.oriens.oriens_api.repository.TaskRepository;
 import com.oriens.oriens_api.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -40,14 +41,19 @@ class TaskServiceImplTest {
         User user = new User();
         user.setId(userId);
 
-        Task task = new Task();
-        task.setTitle("Testar a aplicação");
-        task.setDueDate(LocalDate.of(2025, 10, 6));
+        TaskDTO taskDTO = new TaskDTO();
+        taskDTO.setTitle("Testar a aplicação");
+        taskDTO.setDueDate(LocalDate.of(2025, 10, 6));
+
+        Task task = Task.builder()
+                .title(taskDTO.getTitle())
+                .dueDate(taskDTO.getDueDate())
+                .build();
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(taskRepository.save(any(Task.class))).thenReturn(task);
 
-        Task savedTask = taskService.createTask(task, userId);
+        Task savedTask = taskService.createTask(taskDTO, userId);
 
         assertThat(savedTask).isNotNull();
         assertThat(savedTask.getUser()).isEqualTo(user);
@@ -57,7 +63,7 @@ class TaskServiceImplTest {
     @Test
     void createTask_ThrowsException_WhenUserNotFound() {
         Long userId = 99L;
-        Task task = new Task();
+        TaskDTO task = new TaskDTO();
         task.setTitle("Testar com usuário inválido");
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
