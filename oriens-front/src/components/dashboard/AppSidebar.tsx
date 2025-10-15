@@ -24,7 +24,7 @@ import {
     Loader2
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import apiClient from "@/services/api";
 import { toast } from "sonner";
 
@@ -60,8 +60,18 @@ export function AppSidebar() {
   const { setOpen } = useSidebar(); 
   const [isHovered, setIsHovered] = useState(false);
 
+  const isInitialMount = useRef(true);
+
   const [weeklySummary, setWeeklySummary] = useState<WeeklySummaryData>({ completedTasks: 0, totalTasks: 0 });
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
+
+  useEffect(() => {
+
+    if (isInitialMount.current) {
+      setOpen(false);
+      isInitialMount.current = false;
+    }
+  }, [setOpen]);
 
   const handleMouseEnter = () => {
     setIsHovered(true);
