@@ -24,7 +24,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(String email) {
-        return unwrapUser(userRepository.findByEmail(email), userRepository.findByEmail(email).get().getId());
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(email));
     }
 
     @Override
@@ -36,7 +37,7 @@ public class UserServiceImpl implements UserService {
     public User saveUser(User user) {
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new IllegalStateException(); // custom exception
+            throw new IllegalStateException();
         }
 
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
