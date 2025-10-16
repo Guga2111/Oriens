@@ -2,11 +2,17 @@ package com.oriens.oriens_api.service;
 
 import com.oriens.oriens_api.entity.Task;
 import com.oriens.oriens_api.entity.User;
+import com.oriens.oriens_api.entity.dto.LocationDTO;
 import com.oriens.oriens_api.entity.dto.TaskDTO;
+import com.oriens.oriens_api.entity.dto.WeeklySummaryDTO;
+import com.oriens.oriens_api.entity.enums.Status;
+import com.oriens.oriens_api.exception.TaskNotFoundException;
+import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.TaskRepository;
 import com.oriens.oriens_api.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,31 +39,58 @@ class TaskServiceImplTest {
     @InjectMocks
     private TaskServiceImpl taskService;
 
-    // === Tests for createTask(Task task, Long userId) ===
+    // === Tests for createTask(TaskDTO task, Long userId) ===
 
     @Test
-    void createTask_Success_ShouldReturnSavedTask() {
+    void whenCreateTask_withUserValidAndLocation_shouldSaveWithCorrectData() {
         Long userId = 1L;
-        User user = new User();
-        user.setId(userId);
+        User mockUser = new User();
+        mockUser.setId(userId);
 
-        TaskDTO taskDTO = new TaskDTO();
-        taskDTO.setTitle("Testar a aplicação");
-        taskDTO.setDueDate(LocalDate.of(2025, 10, 6));
+        LocationDTO locationDTO = new LocationDTO("Test Address", -8.05, -34.95);
+        TaskDTO taskDTO = new TaskDTO(
+                "Test application",
+                "Detailed description",
+                LocalDate.of(2025, 10, 16),
+                null,
+                null,
+                locationDTO
+        );
 
-        Task task = Task.builder()
-                .title(taskDTO.getTitle())
-                .dueDate(taskDTO.getDueDate())
-                .build();
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(taskRepository.save(any(Task.class))).thenReturn(task);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Task savedTask = taskService.createTask(taskDTO, userId);
 
-        assertThat(savedTask).isNotNull();
-        assertThat(savedTask.getUser()).isEqualTo(user);
-        assertThat(savedTask.getStatus()).isEqualTo(com.oriens.oriens_api.entity.enums.Status.PENDING);
+        ArgumentCaptor<Task> taskCaptor = ArgumentCaptor.forClass(Task.class);
+        verify(taskRepository).save(taskCaptor.capture());
+
+        Task pastTaskToSave = taskCaptor.getValue();
+
+        assertThat(pastTaskToSave.getTitle()).isEqualTo("Test application");
+        assertThat(pastTaskToSave.getUser()).isEqualTo(mockUser);
+        assertThat(pastTaskToSave.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(pastTaskToSave.getLocation()).isNotNull();
+        assertThat(pastTaskToSave.getLocation().getAddress()).isEqualTo("Test Address");
+
+        assertThat(savedTask.getTitle()).isEqualTo("Test application");
+    }
+
+    @Test
+    void whenCreateTask_withoutLocation_shouldSaveTaskWithNullLocation() {
+        Long userId = 1L;
+        User mockUser = new User();
+        mockUser.setId(userId);
+
+        TaskDTO taskDTO = new TaskDTO("Simple title", null, LocalDate.now(), null, null, null);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Task savedTask = taskService.createTask(taskDTO, userId);
+
+        assertThat(savedTask.getLocation()).isNull();
+        verify(taskRepository, times(1)).save(any(Task.class));
     }
 
     @Test
@@ -68,7 +101,7 @@ class TaskServiceImplTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(UserNotFoundException.class, () -> {
             taskService.createTask(task, userId);
         });
     }
@@ -93,7 +126,7 @@ class TaskServiceImplTest {
         Long taskId = 99L;
         when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> { // TaskNotFoundException here
+        assertThrows(TaskNotFoundException.class, () -> { // TaskNotFoundException here
             taskService.getTask(taskId);
         });
     }
@@ -127,10 +160,33 @@ class TaskServiceImplTest {
         LocalDate date = LocalDate.of(2025, 10, 6);
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> { // Custom exception
+        assertThrows(UserNotFoundException.class, () -> { // Custom exception
             taskService.getTasksForUserByDueDate(userId, date);
         });
     }
+
+    // =================================================================
+    // Tests for retrieveDoneTasksAndTasksNumbersByDateRange()
+    // =================================================================
+
+    @Test
+    void whenRetrieveWeeklySummary_thenShouldReturnDTOWithCorrectCounts() {
+        Long userId = 1L;
+        long completedCount = 5L;
+        long totalCount = 8L;
+
+        when(taskRepository.countCompletedTasksInDateRange(eq(userId), any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(completedCount);
+        when(taskRepository.countTotalTasksInDateRange(eq(userId), any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(totalCount);
+
+        WeeklySummaryDTO summary = taskService.retrieveDoneTasksAndTasksNumbersByDateRange(userId);
+
+        assertThat(summary).isNotNull();
+        assertThat(summary.getCompletedTasks()).isEqualTo(5);
+        assertThat(summary.getTotalTasks()).isEqualTo(8);
+    }
+
 
     // === Tests for updateTask() ===
     @Test

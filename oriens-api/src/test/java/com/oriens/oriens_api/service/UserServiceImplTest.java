@@ -1,9 +1,11 @@
 package com.oriens.oriens_api.service;
 
 import com.oriens.oriens_api.entity.User;
+import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,34 +36,37 @@ class UserServiceImplTest {
     // === Tests for saveUser(User user) ===
 
     @Test
-    void saveUser_Success_ShouldReturnSavedUser () {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("password123");
+    void whenSaveUser_withNewEmail_thenShouldReturnSavedUser() {
+        // Arrange
+        User userToSave = new User();
+        userToSave.setEmail("test@example.com");
+        userToSave.setPassword("password123");
 
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-        when(bCryptPasswordEncoder.encode(anyString())).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(bCryptPasswordEncoder.encode("password123")).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenReturn(userToSave);
 
-        User savedUser = userService.saveUser(user);
+        // Act
+        User savedUser = userService.saveUser(userToSave);
 
+        // Assert
         assertThat(savedUser).isNotNull();
         assertThat(savedUser.getPassword()).isEqualTo("encodedPassword");
-        assertThat(savedUser.getEmail()).isEqualTo("test@example.com");
+        assertThat(savedUser.getEmail()).isEqualTo("test@example.com"); // Email is lowercased
 
         verify(userRepository, times(1)).findByEmail("test@example.com");
         verify(bCryptPasswordEncoder, times(1)).encode("password123");
-        verify(userRepository, times(1)).save(user);
+        verify(userRepository, times(1)).save(userToSave);
     }
 
     @Test
-    void saveUser_ThrowsException_WhenEmailAlreadyExists() {
+    void whenSaveUser_withExistingEmail_thenShouldThrowIllegalStateException() {
+        // Arrange
         User existingUser = new User();
         existingUser.setEmail("test@example.com");
-        existingUser.setPassword("password123");
-
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(existingUser));
 
+        // Act & Assert
         assertThrows(IllegalStateException.class, () -> {
             userService.saveUser(existingUser);
         });
@@ -71,93 +76,114 @@ class UserServiceImplTest {
 
     // === Tests for getUser(Long id) ===
     @Test
-    void getUserById_Success_ShouldReturnUser() {
+    void whenGetUserById_withValidId_thenShouldReturnUser() {
+        // Arrange
         Long userId = 1L;
-        User user = new User();
-        user.setId(userId);
-        user.setEmail("found@example.com");
+        User mockUser = new User();
+        mockUser.setId(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
+        // Act
         User foundUser = userService.getUser(userId);
 
+        // Assert
         assertThat(foundUser).isNotNull();
         assertThat(foundUser.getId()).isEqualTo(userId);
     }
 
     @Test
-    void getUserById_ThrowsException_WhenUserNotFound() {
-        Long userId = 99L;
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+    void whenGetUserById_withInvalidId_thenShouldThrowUserNotFoundException() {
+        // Arrange
+        Long invalidId = 99L;
+        when(userRepository.findById(invalidId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> { // change for custom Exception
-            userService.getUser(userId);
+        // Act & Assert
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.getUser(invalidId);
         });
     }
 
     // === Testes para getUser(String email) ===
     @Test
-    void getUserByEmail_Success_ShouldReturnUser() {
+    void whenGetUserByEmail_withValidEmail_thenShouldReturnUser() {
+        // Arrange
         String email = "found@example.com";
-        User user = new User();
-        user.setId(1L);
-        user.setEmail(email);
+        User mockUser = new User();
+        mockUser.setEmail(email);
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(mockUser));
 
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
-
+        // Act
         User foundUser = userService.getUser(email);
 
+        // Assert
         assertThat(foundUser).isNotNull();
         assertThat(foundUser.getEmail()).isEqualTo(email);
+        verify(userRepository, times(1)).findByEmail(email); // Verifies the optimized method is called only once
     }
 
-    // === Testes para getUsers() ===
     @Test
-    void getUsers_ShouldReturnListOfUsers() {
-        User user1 = new User();
-        user1.setId(1L);
-        User user2 = new User();
-        user2.setId(2L);
-        when(userRepository.findAll()).thenReturn(Arrays.asList(user1, user2));
+    void whenGetUserByEmail_withInvalidEmail_thenShouldThrowUserNotFoundException() {
+        // Arrange
+        String invalidEmail = "notfound@example.com";
+        when(userRepository.findByEmail(invalidEmail)).thenReturn(Optional.empty());
 
+        // Act & Assert
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.getUser(invalidEmail);
+        });
+    }
+
+
+    // === Tests for getUsers() ===
+    @Test
+    void whenGetUsers_thenShouldReturnListOfUsers() {
+        // Arrange
+        when(userRepository.findAll()).thenReturn(Arrays.asList(new User(), new User()));
+
+        // Act
         List<User> users = userService.getUsers();
 
-        assertThat(users).isNotNull();
-        assertThat(users.size()).isEqualTo(2);
+        // Assert
+        assertThat(users).isNotNull().hasSize(2);
     }
 
     // === Tests for updateUser() ===
     @Test
-    void updateUser_Success_ShouldReturnUpdatedUser() { // NOTE: NOT FINISHED THIS ONE HEREEE!!!!!!!!
+    void whenUpdateProfileImageUrl_withValidId_thenShouldUpdateUrl() {
+        // Arrange
         Long userId = 1L;
-        User existingUser = new User();
-        existingUser.setId(userId);
-        existingUser.setName("Old Name");
+        User user = new User();
+        user.setId(userId);
+        String newImageUrl = "http://example.com/new-image.png";
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
-        when(userRepository.save(any(User.class))).thenReturn(existingUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        existingUser.setName("New Name");
-        User updatedUser = userService.updateUser(userId);
+        // Act
+        userService.updateProfileImageUrl(userId, newImageUrl);
 
-        assertThat(updatedUser).isNotNull();
-        assertThat(updatedUser.getName()).isEqualTo("New Name");
-        verify(userRepository, times(1)).save(existingUser);
+        // Assert
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+
+        User savedUser = userCaptor.getValue();
+        assertThat(savedUser.getProfileImageUrl()).isEqualTo(newImageUrl);
     }
+
 
     // === Tests for deleteUser() ===
     @Test
-    void deleteUser_Success_ShouldCallDelete() {
-        // Given
+    void whenDeleteUser_withValidId_thenShouldCallDelete() {
+        // Arrange
         Long userId = 1L;
         User user = new User();
         user.setId(userId);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        doNothing().when(userRepository).delete(user);
 
-        doNothing().when(userRepository).delete(any(User.class));
-
+        // Act
         userService.deleteUser(userId);
 
+        // Assert
         verify(userRepository, times(1)).delete(user);
     }
 }
