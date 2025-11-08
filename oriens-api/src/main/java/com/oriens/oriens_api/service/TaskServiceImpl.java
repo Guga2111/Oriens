@@ -11,11 +11,12 @@ import com.oriens.oriens_api.exception.TaskNotFoundException;
 import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.TaskRepository;
 import com.oriens.oriens_api.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
@@ -34,7 +35,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Task> getTasksForUserByDueDate(Long userId, LocalDate dueDate) {
 
         User user = userRepository.findById(userId)
@@ -44,7 +45,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Task> getTasksForUserByDateRange(Long userId, LocalDate startDate, LocalDate endDate) {
 
         User user = userRepository.findById(userId)
@@ -54,6 +55,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public WeeklySummaryDTO retrieveDoneTasksAndTasksNumbersByDateRange(Long userId) {
 
         LocalDate today = LocalDate.now();
@@ -113,7 +115,17 @@ public class TaskServiceImpl implements TaskService {
         existingTask.setDueDate(taskDetails.getDueDate());
         existingTask.setStartTime(taskDetails.getStartTime());
         existingTask.setPriority(taskDetails.getPriority());
-        existingTask.setStatus(taskDetails.getStatus());
+
+        Status oldStatus = existingTask.getStatus();
+        Status newStatus = taskDetails.getStatus();
+
+        if (!oldStatus.equals(newStatus) && newStatus.equals(Status.CONCLUDED)) {
+            existingTask.setCompletedAt(LocalDate.now());
+        } else if (newStatus.equals(Status.PENDING) && oldStatus.equals(Status.CONCLUDED)) {
+            existingTask.setCompletedAt(null);
+        }
+
+        existingTask.setStatus(newStatus);
 
         return taskRepository.save(existingTask);
     }
