@@ -9,7 +9,7 @@ import com.oriens.oriens_api.exception.NotificationNotFoundException;
 import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.NotificationRepository;
 import com.oriens.oriens_api.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
