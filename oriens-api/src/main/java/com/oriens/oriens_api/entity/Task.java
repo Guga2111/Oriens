@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -36,6 +37,9 @@ public class Task {
 
     @Column(name = "due_date")
     private LocalDate dueDate;
+
+    @Column(name = "completed_at")
+    private LocalDate completedAt; // atribuir completedAt a regra de negocio de task
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority")
