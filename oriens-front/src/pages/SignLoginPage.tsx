@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/services/api";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const SignLoginPage = () => {
   const [loginEmail, setLoginEmail] = useState("");
@@ -17,6 +19,11 @@ const SignLoginPage = () => {
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
+
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false); 
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState(""); 
+  const [forgotEmailSent, setForgotEmailSent] = useState(false); 
 
   const [loginError, setLoginError] = useState('');
   const [registerError, setRegisterError] = useState('');
@@ -34,7 +41,6 @@ const SignLoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     console.log("Login:", { loginEmail, loginPassword });
-    // Aqui você implementará a lógica de autenticação
     setLoginError('');
 
     try {
@@ -48,7 +54,6 @@ const SignLoginPage = () => {
       const token = authHeader && authHeader.split(' ')[1];
 
       if (token) {
-        toast({ title: "Login bem-sucedido!", description: "Redirecionando..." });
         await login(token);
         navigate('/tasks')
       } else {
@@ -113,6 +118,34 @@ const SignLoginPage = () => {
     }
 };
 
+const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotPasswordEmail) return;
+
+    setIsLoading(true);
+    try {
+      await apiClient.post('/api/auth/forgot-password', {
+        email: forgotPasswordEmail,
+      });
+      
+      setForgotEmailSent(true);
+
+    } catch (error) {
+      console.error("Erro ao solicitar recuperação:", error);
+      setForgotEmailSent(true); 
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleModalOpenChange = (open: boolean) => {
+    setIsForgotModalOpen(open);
+    if (!open) {
+      setForgotPasswordEmail("");
+      setForgotEmailSent(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-accent/20 to-background">
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -131,7 +164,7 @@ const SignLoginPage = () => {
           </p>
         </div>
 
-        {/* Card de Autenticação */}
+        {/* Auth Card */}
         <Card className="border-border/50 shadow-[var(--shadow-medium)]">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl text-center">Bem-vindo</CardTitle>
@@ -146,7 +179,7 @@ const SignLoginPage = () => {
                 <TabsTrigger value="register">Registrar</TabsTrigger>
               </TabsList>
 
-              {/* Tab de Login */}
+              {/* Login Tab */}
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
@@ -191,14 +224,66 @@ const SignLoginPage = () => {
                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Entrar"}
                   </Button>
                   <div className="text-center text-sm">
-                    <a href="#" className="text-primary hover:underline">
-                      Esqueceu sua senha?
-                    </a>
+                    <Dialog open={isForgotModalOpen} onOpenChange={handleModalOpenChange}>
+                      <DialogTrigger asChild>
+                        <button type="button" className="text-primary hover:underline focus:outline-none">
+                          Esqueceu sua senha?
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        {!forgotEmailSent ? (
+                          <>
+                            <DialogHeader>
+                              <DialogTitle>Recuperar Senha</DialogTitle>
+                              <DialogDescription>
+                                Digite seu e-mail para enviarmos um link de recuperação.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleForgotPassword} className="space-y-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="forgot-email" className="sr-only">E-mail</Label>
+                                <Input
+                                  id="forgot-email"
+                                  type="email"
+                                  placeholder="seu@email.com"
+                                  value={forgotPasswordEmail}
+                                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                                  required
+                                />
+                              </div>
+                              <DialogFooter>
+                                <Button
+                                  type="submit"
+                                  className="w-full text-primary-foreground transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-soft)] bg-gradient-primary hover:opacity-80"
+                                  disabled={isLoading}
+                                >
+                                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enviar link"}
+                                </Button>
+                              </DialogFooter>
+                            </form>
+                          </>
+                        ) : (
+                          <>
+                            <DialogHeader>
+                              <DialogTitle>Verifique seu E-mail</DialogTitle>
+                              <DialogDescription>
+                                Se uma conta com este e-mail existir, enviamos um link para você redefinir sua senha.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                              <Button variant="outline" onClick={() => setIsForgotModalOpen(false)}>
+                                Fechar
+                              </Button>
+                            </DialogFooter>
+                          </>
+                        )}
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </form>
               </TabsContent>
 
-              {/* Tab de Registro */}
+              {/* Register Tab */}
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4">
                   <div className="space-y-2">
@@ -268,19 +353,28 @@ const SignLoginPage = () => {
                     </Button>
                     </div>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="terms" 
+                      checked={termsAccepted}
+                      onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                    />
+                    <Label htmlFor="terms" className="text-xs text-muted-foreground">
+                      Eu li e concordo com os{" "}
+                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        Termos de Serviço
+                      </a>
+                      .
+                    </Label>
+                  </div>
+                  
                   <Button 
                     type="submit" 
                     className="w-full text-primary-foreground transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-soft)] bg-gradient-primary hover:opacity-80"
-                    disabled={isLoading}
+                    disabled={isLoading || !termsAccepted}
                   >
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Criar conta"}
                   </Button>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Ao criar uma conta, você concorda com nossos{" "}
-                    <a href="#" className="text-primary hover:underline">
-                      Termos de Serviço
-                    </a>
-                  </p>
                 </form>
               </TabsContent>
             </Tabs>

@@ -34,7 +34,6 @@ export function LandingPage() {
 
       {/* Main Content */}
       <main className="flex-1">
-        {/* Secção Hero - Padding ajustado */}
         <section className="w-full py-20 md:py-24 lg:py-26 text-center">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center space-y-6">
@@ -53,7 +52,6 @@ export function LandingPage() {
                     Começar agora →
                   </Button>
                 </Link>
-                {/* Link "Ver demonstração" agora aponta para a secção de features */}
                 <a href="/#features-detail">
                   <Button size="lg" variant="outline">
                     Ver demonstração
@@ -75,12 +73,11 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* --- NOVA SECÇÃO DE DEMONSTRAÇÃO (Imagem de fundo) --- */}
         <section id="demo" className="w-full pb-20 md:pb-24 lg:pb-32">
           <div className="container px-4 md:px-6">
             <div className="relative mx-auto max-w-5xl">
               <img
-                src="/oriens-tasks-screen.png" // Aponta para a imagem na sua pasta 'public/images'
+                src="/oriens-tasks-screen.png" 
                 alt="Dashboard do Oriens em funcionamento"
                 className="rounded-xl border border-border/50 shadow-2xl shadow-primary/10"
               />
@@ -88,7 +85,6 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* Secção de Features - Padding ajustado e animações adicionadas */}
         <section id="features-detail" className="w-full py-20 md:py-24 lg:py-32 bg-muted">
           <div className="container px-4 md:px-6 text-center">
             <div className="max-w-[800px] mx-auto space-y-4">
@@ -101,7 +97,6 @@ export function LandingPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
               
-              {/* Card 1: Planeamento Diário */}
               <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <LayoutList className="h-5 w-5 text-primary" />
@@ -112,7 +107,6 @@ export function LandingPage() {
                 </p>
               </div>
 
-              {/* Card 2: Visão Semanal */}
               <div className="bg-card p-6 rounded-lg text-left border border-primary/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <CalendarDays className="h-5 w-5 text-primary" />
@@ -123,7 +117,6 @@ export function LandingPage() {
                 </p>
               </div>
 
-              {/* Card 3: Lembretes Automáticos */}
               <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Bell className="h-5 w-5 text-primary" />
@@ -134,7 +127,6 @@ export function LandingPage() {
                 </p>
               </div>
 
-              {/* Card 4: Integração com WhatsApp */}
               <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <MessageCircle className="h-5 w-5 text-primary" />
@@ -145,7 +137,6 @@ export function LandingPage() {
                 </p>
               </div>
 
-              {/* Card 5: Dashboard de Produtividade */}
               <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <BarChart className="h-5 w-5 text-primary" />
@@ -156,7 +147,6 @@ export function LandingPage() {
                 </p>
               </div>
 
-              {/* Card 6: Acesso Multiplataforma */}
               <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Cloud className="h-5 w-5 text-primary" />
@@ -171,8 +161,7 @@ export function LandingPage() {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
+      
       <footer className="bg-muted/20 border-t border-border/50 py-12">
         <div className="container grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
           <div className="flex flex-col items-center md:items-start gap-2">

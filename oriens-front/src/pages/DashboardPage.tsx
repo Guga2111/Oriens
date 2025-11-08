@@ -1,9 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
-  Bell,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -12,14 +8,8 @@ import {
   Sun,
   Sunset,
   Moon,
-  Loader2,
-  CheckSquare,
-  MessageCircle,
-  Pencil,
-  Menu,
+  Loader2
 } from "lucide-react";
-import { TaskCard } from "@/components/dashboard/TaskCard";
-import { Progress } from "@/components/ui/progress";
 import { CreateTaskDialog } from "@/components/dashboard/CreateTaskDialog";
 
 import { useEffect, useState } from "react";
@@ -33,11 +23,10 @@ import { EditTaskDialog } from "@/components/dashboard/EditTaskDialog";
 import { toast } from "@/hooks/use-toast";
 import { WeekView } from "@/components/dashboard/WeekView";
 import { TaskSection } from "@/components/dashboard/TaskSection";
-import { UserProfileNav } from "@/components/dashboard/UserProfileNav";
-import { NotificationBell } from "@/components/dashboard/NotificationBell";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { SummaryAside } from "@/components/dashboard/SummaryAside";
+import { AppHeader } from "@/components/common/AppHeader";
 
 interface Task {
   id: number;
@@ -55,7 +44,7 @@ interface Task {
 }
 
 export function DashboardPage() {
-  const { logout, userId } = useAuth();
+  const { userId } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -63,6 +52,8 @@ export function DashboardPage() {
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  console.log("Rendirizou!");
 
   const fetchTasks = async (isInitialLoad = false) => {
     if (!userId) return;
@@ -132,8 +123,10 @@ export function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
@@ -144,24 +137,7 @@ export function DashboardPage() {
             <AppSidebar />
             
             <main className="flex-1 flex flex-col">
-              <header className="sticky top-0 z-10 flex h-20 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-8">
-                <div className="flex items-center gap-3">
-                  <div>
-                    
-                    <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                      Oriens
-                    </h1>
-                    <p className="text-xs text-muted-foreground">Organize seu dia</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <NotificationBell />
-                  <UserProfileNav />
-                  <Button variant="ghost" onClick={logout}>
-                    Sair
-                  </Button>
-                </div>
-              </header>
+              <AppHeader />
 
           <div className="flex-1 overflow-y-auto p-6 md:p-8">
             <div className="flex items-center justify-between mb-8">

@@ -8,35 +8,62 @@ import NotFoundPage from "./pages/NotFoundPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LandingPage } from "./pages/LandingPage";
 import { ProtectedRoute } from "./router/ProtectedRoute";
+import ProjectsPage from "./pages/ProjectsPage";
+import ConfigurationPage from "./pages/ConfigurationPage";
+import HelpSupportPage from "./pages/HelpSupportPage";
+import AdminSupportPage from "./pages/AdminSupportPage";
+import AdminManagementPage from "./pages/AdminManagementPage";
+import { StatisticsPage } from "./pages/StatisticsPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <>
-          <Routes>
+const App = () => {
 
-            {/* Public routes */}
-            <Route path="/auth" element={<SignLoginPage />} />
-            <Route path="/" element={<LandingPage />} />
+  useEffect(() => {
+    document.body.style.backgroundColor = "";
+  }, []);
 
-            {/* Protected Route / Tasks */}
-            <Route element={<ProtectedRoute/>}>
-              <Route path="/tasks" element={<DashboardPage/>} />
-            </Route>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/auth" element={<SignLoginPage />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/terms" element={<TermsOfServicePage />} />
 
-            {/* Catch-All "*" Route */}
-            <Route path="*" element={<NotFoundPage />} />
+              {/* Protected Route / Tasks */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/tasks" element={<DashboardPage />} />
+                <Route path="/projects" element={<ProjectsPage />} />
+                <Route path="/stats" element={<StatisticsPage />} />
+                <Route path="/config" element={<ConfigurationPage />} />
+                <Route
+                  path="/tasks/project/:id"
+                  element={<ProjectDetailPage />}
+                />
+                <Route path="/support" element={<HelpSupportPage />} />
+                <Route path="/admin/support" element={<AdminSupportPage />} />
+                <Route path="/admin/management" element={<AdminManagementPage />} />
+              </Route>
 
-          </Routes>
-        </>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+              {/* Catch-All "*" Route */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
