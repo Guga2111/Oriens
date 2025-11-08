@@ -4,10 +4,11 @@ import { jwtDecode } from 'jwt-decode';
 
 
 interface DecodedToken {
-  sub: string; 
+  sub: string;
   exp: number;
   userId: number;
   username: string;
+  role: string;
 }
 
 interface AuthContextType {
@@ -17,6 +18,7 @@ interface AuthContextType {
   userId: number | null;
   profileImageUrl: string | null;
   token: string | null;
+  role: string | null;
   isLoading: boolean;
   login: (token: string) => void;
   logout: () => void;
@@ -35,6 +37,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [username, setUsername] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'));
+  const [role, setRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
@@ -52,6 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUserEmail(decodedToken.sub);
         setUserId(decodedToken.userId);
         setUsername(decodedToken.username);
+        setRole(decodedToken.role);
         setProfileImageUrl(user.profileImageUrl);
         setIsAuthenticated(true);
         } else {
@@ -77,6 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUserEmail(decodedToken.sub);
     setUsername(decodedToken.username);
     setUserId(decodedToken.userId);
+    setRole(decodedToken.role);
     setProfileImageUrl(user.profileImageUrl);
     setIsAuthenticated(true);
     setToken(token);
@@ -84,9 +89,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('oriens-user-preferences');
+    localStorage.setItem('oriens-theme', 'light');
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+
     setUserEmail(null);
     setUsername(null);
     setUserId(null);
+    setRole(null);
     setIsAuthenticated(false);
     setToken(null);
     window.location.href = '/auth';
@@ -102,6 +113,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     username,
     userId,
     token,
+    role,
     isLoading,
     profileImageUrl,
     login,
