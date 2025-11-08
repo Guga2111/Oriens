@@ -31,7 +31,7 @@ export function EditableAvatar({ src, fallback, alt, onImageChange, isLoading }:
         });
         return;
       }
-      if (file.size > 2 * 1024 * 1024) { // 2MB
+      if (file.size > 2 * 1024 * 1024) { 
         toast({
           variant: "destructive",
           title: "Erro",
@@ -40,14 +40,12 @@ export function EditableAvatar({ src, fallback, alt, onImageChange, isLoading }:
         return;
       }
 
-      // Cria um URL de pré-visualização para a imagem selecionada
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewSrc(reader.result as string);
       };
       reader.readAsDataURL(file);
 
-      // Chama a função de callback se fornecida
       if (onImageChange) {
         onImageChange(file);
         toast({
