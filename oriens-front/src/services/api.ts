@@ -1,3 +1,4 @@
+import { DashboardData } from '@/types/statistics';
 import axios from 'axios';
 
 const apiClient = axios.create({
@@ -20,5 +21,17 @@ apiClient.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+
+export const getDashboardData = async (userId: string | number): Promise<DashboardData> => {
+    try {
+        const response = await apiClient.get<DashboardData>(
+            `/statistics/user/${userId}/dashboard`
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao buscar dados do dashboard:", error);
+        throw error;
+    }
+};
 
 export default apiClient;
