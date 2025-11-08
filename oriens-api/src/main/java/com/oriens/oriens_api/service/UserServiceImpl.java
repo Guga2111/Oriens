@@ -1,6 +1,9 @@
 package com.oriens.oriens_api.service;
 
 import com.oriens.oriens_api.entity.User;
+import com.oriens.oriens_api.entity.dto.UserPreferencesDTO;
+import com.oriens.oriens_api.entity.embeddable.UserPreferences;
+import com.oriens.oriens_api.entity.enums.UserRole;
 import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +37,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserPreferencesDTO getUserPreferences(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        UserPreferences userPreferences = user.getUserPreferences();
+        if (userPreferences == null) {
+            userPreferences = new UserPreferences(true, true, "light");
+        }
+
+        return UserPreferencesDTO.builder()
+                .notifications(userPreferences.getNotifications())
+                .sound(userPreferences.getSound())
+                .theme(userPreferences.getTheme())
+                .build();
+    }
+
+    @Override
     public User saveUser(User user) {
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("This email already exists!");
         }
 
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
@@ -56,6 +76,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserPreferencesDTO updateUserPreferences(Long id, UserPreferencesDTO userPreferencesDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+
+        UserPreferences userPreferences = user.getUserPreferences();
+        if (userPreferences == null) {
+            userPreferences = new UserPreferences();
+        }
+
+        String theme = userPreferencesDTO.getTheme();
+        if (theme != null && (theme.equals("light") || theme.equals("dark"))) {
+            userPreferences.setTheme(theme);
+        }
+
+        if (userPreferencesDTO.getNotifications() != null) {
+            userPreferences.setNotifications(userPreferencesDTO.getNotifications());
+        }
+
+        if (userPreferencesDTO.getSound() != null) {
+            userPreferences.setSound(userPreferencesDTO.getSound());
+        }
+
+        user.setUserPreferences(userPreferences);
+        userRepository.save(user);
+
+        return UserPreferencesDTO.builder()
+                .notifications(userPreferences.getNotifications())
+                .sound(userPreferences.getSound())
+                .theme(userPreferences.getTheme())
+                .build();
+    }
+
+    @Override
     public void updateProfileImageUrl(Long userId, String imageUrl) {
         User user = unwrapUser(userRepository.findById(userId), userId);
         user.setProfileImageUrl(imageUrl);
@@ -68,8 +121,15 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(user);
     }
 
+    @Override
+    public User updateUserRole(Long userId, UserRole role) {
+        User user = unwrapUser(userRepository.findById(userId), userId);
+        user.setRole(role);
+        return userRepository.save(user);
+    }
+
     static User unwrapUser (Optional<User> userOptional, Long id) {
-        if (userOptional.isEmpty()) throw new UserNotFoundException(id); //custom exception UserNotFound
+        if (userOptional.isEmpty()) throw new UserNotFoundException(id);
         return userOptional.get();
     }
 }
