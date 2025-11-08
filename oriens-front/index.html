@@ -15,6 +15,62 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <script>
+      (function () {
+
+        const oldTheme = localStorage.getItem("theme");
+        const orienTheme = localStorage.getItem("oriens-theme");
+
+        if (oldTheme && !orienTheme) {
+          localStorage.setItem("oriens-theme", oldTheme);
+          localStorage.removeItem("theme");
+        }
+
+        let theme = null;
+        const userPreferencesStr = localStorage.getItem("oriens-user-preferences");
+        if (userPreferencesStr) {
+          try {
+            const userPreferences = JSON.parse(userPreferencesStr);
+            theme = userPreferences.theme;
+          } catch (e) {
+            console.error("Failed to parse user preferences:", e);
+          }
+        }
+
+        if (!theme) {
+          theme = localStorage.getItem("oriens-theme");
+        }
+
+        if (theme === "dark") {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+          document.documentElement.classList.add("light");
+        }
+
+        if (theme && !localStorage.getItem("oriens-theme")) {
+          localStorage.setItem("oriens-theme", theme);
+        }
+      })();
+    </script>
+    <style>
+      :root {
+        background-color: hsl(35, 20%, 98%);
+      }
+
+      .dark {
+        background-color: hsl(240, 5%, 14%);
+      }
+
+      body {
+        background-color: hsl(35, 20%, 98%);
+      }
+
+      .dark body {
+        background-color: hsl(240, 5%, 14%);
+      }
+    </style>
   </head>
 
   <body>

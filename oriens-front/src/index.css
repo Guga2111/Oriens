@@ -4,14 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
 
   html {
-    @apply scroll-smooth; /* Adicione esta linha */
+    @apply scroll-smooth;
   }
 
   :root {
@@ -56,22 +52,22 @@ All colors MUST be HSL.
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar: 240 10% 3.9%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar: 35 20% 98%;
+    --sidebar-foreground: 30 15% 12%;
+    --sidebar-background: 35 20% 98%;
+    --sidebar-primary: 36 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 36 35% 95%;
+    --sidebar-accent-foreground: 30 15% 12%;
+    --sidebar-border: 30 10% 90%;
+    --sidebar-ring: 36 100% 50%;
   }
 
   .dark {
-    --background: 30 15% 8%;
+    --background: 240 5% 14%;
     --foreground: 0 0% 98%;
 
-    --card: 30 10% 12%;
+    --card: 240 5% 16%;
     --card-foreground: 0 0% 98%;
 
     --popover: 30 10% 12%;
@@ -95,14 +91,14 @@ All colors MUST be HSL.
     --border: 30 10% 20%;
     --input: 30 10% 20%;
     --ring: 36 100% 50%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-background: 240 5% 14%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 36 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 240 5% 18%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 5% 22%;
+    --sidebar-ring: 36 100% 50%;
   }
   .gmp-ac-container {
   z-index: 9999 !important;
