@@ -1,5 +1,3 @@
-// src/components/dashboard/UserProfileNav.tsx
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +21,10 @@ export function UserProfileNav() {
   
   const userFallback = username.split(' ').map(n => n[0]).join('');
 
+  const handleRedirectToConfigurations = () => {
+    window.location.href = '/config';
+  }
+
   const handleImageUpload = async (file: File) => {
     console.log("Arquivo de imagem selecionado:", file.name);
     
@@ -38,8 +40,6 @@ export function UserProfileNav() {
 
       const newImageUrl = response.data.profileImageUrl;
       updateProfileImage(newImageUrl);
-
-      toast({ title:"Sucesso!", description:"Sua imagem de perfil foi atualizada."});
 
     } catch (error) {
       console.error("Erro ao fazer upload da imagem: ", error);
@@ -80,7 +80,7 @@ export function UserProfileNav() {
           </DropdownMenuItem>
           <DropdownMenuItem className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
-            <span>Configurações</span>
+            <span onClick={handleRedirectToConfigurations}>Configurações</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

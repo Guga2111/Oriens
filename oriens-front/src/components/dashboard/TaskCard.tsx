@@ -23,6 +23,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { LocationMap } from "./LocationMap";
+import { useSound } from "@/hooks/useSound";
 
 export interface Task {
   id: number;
@@ -49,6 +50,8 @@ interface TaskCardProps {
 export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
   const isConcluded = task.status === "CONCLUDED";
 
+  const playConcludedSound = useSound("/concluding-sound.wav");
+
   const [isUpdating, setIsUpdating] = useState(false);
 
   const [isMapOpen, setIsMapOpen] = useState(false);
@@ -63,23 +66,31 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
 
   const handleToggleStatus = async () => {
     const newStatus = isConcluded ? "PENDING" : "CONCLUDED";
+
+    setIsUpdating(true);
+
     try {
       await apiClient.put(`/task/${task.id}`, { ...task, status: newStatus });
-      toast({ title: "Status da tarefa atualizado!" });
       onUpdate();
+
+      if (newStatus === "CONCLUDED") {
+        playConcludedSound();
+      }
+
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Erro",
         description: "Não foi possível atualizar a tarefa.",
       });
+    } finally {
+      setIsUpdating(false); 
     }
   };
 
   const handleDelete = async () => {
     try {
       await apiClient.delete(`/task/${task.id}`);
-      toast({ title: "Tarefa deletada com sucesso." });
       onUpdate();
     } catch (error) {
       toast({

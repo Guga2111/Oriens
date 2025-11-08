@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -65,7 +65,6 @@ export function CreateTaskDialog({ open, onOpenChange, onTaskCreated }: CreateTa
         startTime: `${startTime}:00`, priority, status: 'PENDING', location,
       };
       await apiClient.post(`/task/user/${userId}`, newTask);
-      toast({ title: "Sucesso!", description: "Sua nova tarefa foi criada." });
       onTaskCreated(); onOpenChange(false);
     } catch (error) {
       toast({ variant: "destructive", title: "Erro", description: "Não foi possível criar a tarefa." });

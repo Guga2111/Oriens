@@ -1,8 +1,5 @@
-// src/components/dashboard/TaskSection.tsx
-
 import type { ReactNode } from 'react';
 import { Task } from './TaskCard';
-import { Card } from '@/components/ui/card';
 import { TaskCard } from './TaskCard';
 
 interface TaskSectionProps {

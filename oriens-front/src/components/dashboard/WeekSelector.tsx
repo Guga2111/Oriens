@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";

@@ -66,7 +66,6 @@ export function EditTaskDialog({ task, open, onOpenChange, onTaskUpdated }: Edit
       };
 
       await apiClient.put(`/task/${task.id}`, updatedTask);
-      toast({ title: "Sucesso!", description: "Sua tarefa foi atualizada." });
       onTaskUpdated();
       onOpenChange(false); 
     } catch (error) {
