@@ -2,6 +2,7 @@ package com.oriens.oriens_api.repository;
 
 import com.oriens.oriens_api.entity.Task;
 import com.oriens.oriens_api.entity.User;
+import com.oriens.oriens_api.entity.dto.statistics.TasksCompletedByTimeRangeDTO;
 import com.oriens.oriens_api.entity.enums.Status;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -40,5 +41,26 @@ public interface TaskRepository extends CrudRepository<Task, Long> {
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
+    );
+
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.user.id = :userId AND t.status = 'PENDING' AND t.dueDate BETWEEN :startDate AND :endDate")
+    long countOverdueTasksInDateRange(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query(
+            "SELECT t.completedAt, COUNT(t) " +
+                    "FROM Task t " +
+                    "WHERE t.user.id = :userId " +
+                    "  AND t.status = 'CONCLUDED' " +
+                    "  AND t.completedAt >= :startDate " +
+                    "GROUP BY t.completedAt " +
+                    "ORDER BY t.completedAt ASC"
+    )
+    List<Object[]> findTasksCompletedByDay(
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDate startDate
     );
 }
