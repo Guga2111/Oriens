@@ -23,12 +23,14 @@ import {
   FolderOpenDot,
   Star,
   Shield,
-  Headset
+  Headset,
+  PiggyBank
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState, useRef } from "react";
 import apiClient from "@/services/api";
 import { toast } from "sonner";
+import { title } from "process";
 
 interface ProjectSidebarDTO {
   id: number;
@@ -46,6 +48,7 @@ const navItems = [
   { title: "Home", icon: Home, url: "/tasks" },
   { title: "Estatisticas", icon: ChartLine, url: "/stats" },
   { title: "Projetos", icon: FolderOpenDot, url: "/projects" },
+  { title: "Financeiro", icon: PiggyBank, url: "/financial"},
 
 ];
 
@@ -301,7 +304,7 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        <SidebarGroup>
+        <SidebarGroup className={role !== "ADMIN" ? "mt-auto" : ""}>
           <SidebarGroupLabel>Ajuda</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

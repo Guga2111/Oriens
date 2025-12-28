@@ -4,9 +4,11 @@ import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.entity.dto.UserPreferencesDTO;
 import com.oriens.oriens_api.entity.embeddable.UserPreferences;
 import com.oriens.oriens_api.entity.enums.UserRole;
+import com.oriens.oriens_api.events.UserCreatedEvent;
 import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ public class UserServiceImpl implements UserService {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public User getUser(Long id) {
@@ -63,7 +66,11 @@ public class UserServiceImpl implements UserService {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setEmail(user.getEmail().toLowerCase());
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+
+        eventPublisher.publishEvent(new UserCreatedEvent(this, saved.getId()));
+
+        return saved;
     }
 
     @Override

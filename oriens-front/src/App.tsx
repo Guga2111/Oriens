@@ -18,6 +18,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import { useEffect } from "react";
+import FinancialPage from "./pages/FinancialPage";
 
 const queryClient = new QueryClient();
 
@@ -47,10 +48,8 @@ const App = () => {
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/stats" element={<StatisticsPage />} />
                 <Route path="/config" element={<ConfigurationPage />} />
-                <Route
-                  path="/tasks/project/:id"
-                  element={<ProjectDetailPage />}
-                />
+                <Route path="/tasks/project/:id" element={<ProjectDetailPage />} />
+                <Route path="/financial" element={<FinancialPage />} />
                 <Route path="/support" element={<HelpSupportPage />} />
                 <Route path="/admin/support" element={<AdminSupportPage />} />
                 <Route path="/admin/management" element={<AdminManagementPage />} />
