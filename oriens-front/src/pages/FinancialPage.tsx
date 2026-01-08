@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { startOfMonth, endOfMonth, format, subMonths, addMonths, parseISO } from 'date-fns';
+import { startOfMonth, endOfMonth, format, subMonths, addMonths, parseISO, subDays } from 'date-fns';
 import { Plus, Settings } from 'lucide-react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/dashboard/AppSidebar';
@@ -28,16 +28,23 @@ export default function FinancialPage() {
     year: new Date().getFullYear(),
   });
 
-  const [chartEntries, setChartEntries] = useState<EntryDTO[]>([]); // Últimos 6 meses para gráficos
-  const [tableEntries, setTableEntries] = useState<EntryDTO[]>([]); // Paginado para tabela
+  const [chartEntries, setChartEntries] = useState<EntryDTO[]>([]); 
+  const [tableEntries, setTableEntries] = useState<EntryDTO[]>([]); 
   const [tags, setTags] = useState<TagDTO[]>([]);
   const [tablePagination, setTablePagination] = useState({ page: 0, totalPages: 0, totalElements: 0 });
   const [isLoadingCharts, setIsLoadingCharts] = useState(true);
   const [isLoadingTable, setIsLoadingTable] = useState(true);
   const [isLoadingTags, setIsLoadingTags] = useState(true);
 
-  // Cache de páginas para evitar requisições duplicadas
-  const [cachedTablePages, setCachedTablePages] = useState<Map<number, EntryDTO[]>>(new Map());
+  const [tableFilters, setTableFilters] = useState({
+    periodFilter: 'all',
+    customStartDate: undefined as Date | undefined,
+    customEndDate: undefined as Date | undefined,
+    tagFilter: 'all',
+    searchQuery: '',
+  });
+
+  const [cachedTablePages, setCachedTablePages] = useState<Map<string, EntryDTO[]>>(new Map());
 
   const [isCreateEntryOpen, setIsCreateEntryOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<EntryDTO | null>(null);
@@ -54,7 +61,7 @@ export default function FinancialPage() {
   useEffect(() => {
     if (userId) {
       loadChartData();
-      loadTableData();
+      loadTableData(0);
     }
   }, [userId]);
 
@@ -74,7 +81,6 @@ export default function FinancialPage() {
     }
   };
 
-  // Request 1: Buscar últimos 6 meses para gráficos
   const loadChartData = async () => {
     setIsLoadingCharts(true);
     try {
@@ -99,26 +105,70 @@ export default function FinancialPage() {
     }
   };
 
-  // Request 2: Buscar dados paginados para tabela (com cache)
-  const loadTableData = async (page: number = 0) => {
-    // Verificar se a página já está em cache
-    if (cachedTablePages.has(page)) {
-      setTableEntries(cachedTablePages.get(page)!);
+  const loadTableData = async (page: number = 0, filters = tableFilters) => {
+    const cacheKey = `${page}-${JSON.stringify(filters)}`;
+
+    if (cachedTablePages.has(cacheKey)) {
+      setTableEntries(cachedTablePages.get(cacheKey)!);
       setTablePagination(prev => ({ ...prev, page }));
-      return; // Não faz requisição, usa o cache
+      return;
     }
 
     setIsLoadingTable(true);
     try {
-      const response = await getAllEntries(userId!, {
+      const apiParams: any = {
         page,
         size: 20,
         sortBy: 'entryDate',
         direction: 'DESC',
-      });
+      };
 
-      // Salvar no cache
-      setCachedTablePages(prev => new Map(prev).set(page, response.content));
+      if (filters.periodFilter !== 'all') {
+        const now = new Date();
+        let startDate: Date | undefined;
+        let endDate: Date | undefined = now;
+
+        switch (filters.periodFilter) {
+          case '7days':
+            startDate = subDays(now, 7);
+            break;
+          case '15days':
+            startDate = subDays(now, 15);
+            break;
+          case '30days':
+            startDate = subDays(now, 30);
+            break;
+          case 'thisMonth':
+            startDate = startOfMonth(now);
+            endDate = endOfMonth(now);
+            break;
+          case 'custom':
+            if (filters.customStartDate && filters.customEndDate) {
+              startDate = filters.customStartDate;
+              endDate = filters.customEndDate;
+            }
+            break;
+        }
+
+        if (startDate) {
+          apiParams.startDate = format(startDate, 'yyyy-MM-dd');
+        }
+        if (endDate) {
+          apiParams.endDate = format(endDate, 'yyyy-MM-dd');
+        }
+      }
+
+      if (filters.tagFilter !== 'all') {
+        apiParams.tagId = parseInt(filters.tagFilter);
+      }
+
+      if (filters.searchQuery) {
+        apiParams.search = filters.searchQuery;
+      }
+
+      const response = await getAllEntries(userId!, apiParams);
+
+      setCachedTablePages(prev => new Map(prev).set(cacheKey, response.content));
 
       setTableEntries(response.content);
       setTablePagination({
@@ -137,7 +187,6 @@ export default function FinancialPage() {
     }
   };
 
-  // Limpar cache quando dados forem modificados
   const clearTableCache = () => {
     setCachedTablePages(new Map());
   };
@@ -171,9 +220,9 @@ export default function FinancialPage() {
         title: 'Entrada excluída',
         description: 'A entrada foi excluída com sucesso.',
       });
-      clearTableCache(); // Limpar cache antes de recarregar
-      loadChartData(); // Recarregar dados dos gráficos
-      loadTableData(); // Recarregar dados da tabela
+      clearTableCache(); 
+      loadChartData(); 
+      loadTableData(); 
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -184,16 +233,33 @@ export default function FinancialPage() {
   };
 
   const handleEntrySuccess = () => {
-    clearTableCache(); // Limpar cache antes de recarregar
-    loadChartData(); // Recarregar dados dos gráficos
-    loadTableData(); // Recarregar dados da tabela
+    clearTableCache(); 
+    loadChartData(); 
+    loadTableData();
   };
 
   const handleTagsChange = () => {
     loadTags();
   };
 
-  // Derivar mês atual dos dados de gráficos (últimos 6 meses)
+  const handleFilterChange = (filterUpdates: Partial<typeof tableFilters>) => {
+    const newFilters = { ...tableFilters, ...filterUpdates };
+    setTableFilters(newFilters);
+
+    if ('customStartDate' in filterUpdates || 'customEndDate' in filterUpdates) {
+      const hasStartDate = newFilters.customStartDate !== undefined;
+      const hasEndDate = newFilters.customEndDate !== undefined;
+
+      if (hasStartDate && hasEndDate) {
+        clearTableCache();
+        loadTableData(0, newFilters);
+      }
+    } else {
+      clearTableCache();
+      loadTableData(0, newFilters);
+    }
+  };
+
   const currentPeriodEntries = useMemo(() => {
     return chartEntries.filter(entry => {
       const entryDate = parseISO(entry.entryDate);
@@ -268,6 +334,9 @@ export default function FinancialPage() {
               onDelete={handleDeleteEntry}
               pagination={tablePagination}
               onPageChange={loadTableData}
+              isLoading={isLoadingTable}
+              filters={tableFilters}
+              onFilterChange={handleFilterChange}
             />
           </div>
         </main>

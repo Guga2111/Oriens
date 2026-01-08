@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
-import { format, subDays, startOfMonth, endOfMonth, parseISO } from 'date-fns';
-import { Pencil, Trash2, Search, Filter, X, Calendar as CalendarIcon } from 'lucide-react';
+import { useState } from 'react';
+import { format, parseISO } from 'date-fns';
+import { Pencil, Trash2, Search, Filter, X, Calendar as CalendarIcon, Tag, CalendarClock } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -50,13 +50,22 @@ interface EntryHistoryTableProps {
   onEdit: (entry: EntryDTO) => void;
   onDelete: (id: number) => void;
   isLoading?: boolean;
-  // Server-side pagination
-  pagination?: {
+  // Server-side pagination (required)
+  pagination: {
     page: number;
     totalPages: number;
     totalElements: number;
   };
-  onPageChange?: (page: number) => void;
+  onPageChange: (page: number) => void;
+  // Server-side filtering (required)
+  filters: {
+    periodFilter: string;
+    customStartDate: Date | undefined;
+    customEndDate: Date | undefined;
+    tagFilter: string;
+    searchQuery: string;
+  };
+  onFilterChange: (filters: Partial<EntryHistoryTableProps['filters']>) => void;
 }
 
 export function EntryHistoryTable({
@@ -67,129 +76,46 @@ export function EntryHistoryTable({
   isLoading = false,
   pagination,
   onPageChange,
+  filters,
+  onFilterChange,
 }: EntryHistoryTableProps) {
   const [deletingEntryId, setDeletingEntryId] = useState<number | null>(null);
-
-  // Filters
-  const [periodFilter, setPeriodFilter] = useState<string>('all');
-  const [customStartDate, setCustomStartDate] = useState<Date | undefined>();
-  const [customEndDate, setCustomEndDate] = useState<Date | undefined>();
-  const [tagFilter, setTagFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Determinar se está usando paginação server-side ou local
-  const isServerSidePagination = !!pagination && !!onPageChange;
-
-  // Pagination local (fallback)
-  const [localCurrentPage, setLocalCurrentPage] = useState(0);
+  const [searchInput, setSearchInput] = useState(filters.searchQuery); // Estado local para input
   const pageSize = 20;
 
-  const filteredEntries = useMemo(() => {
-    // Se estiver usando server-side pagination, não filtra localmente
-    if (isServerSidePagination) {
-      return entries;
-    }
-
-    let filtered = [...entries];
-
-    // Period filter
-    if (periodFilter !== 'all') {
-      const now = new Date();
-      let startDate: Date;
-      let endDate = now;
-
-      switch (periodFilter) {
-        case '7days':
-          startDate = subDays(now, 7);
-          break;
-        case '15days':
-          startDate = subDays(now, 15);
-          break;
-        case '30days':
-          startDate = subDays(now, 30);
-          break;
-        case 'thisMonth':
-          startDate = startOfMonth(now);
-          endDate = endOfMonth(now);
-          break;
-        case 'custom':
-          if (customStartDate && customEndDate) {
-            filtered = filtered.filter(entry => {
-              const entryDate = parseISO(entry.entryDate);
-              return entryDate >= customStartDate && entryDate <= customEndDate;
-            });
-          }
-          return filtered;
-        default:
-          return filtered;
-      }
-
-      filtered = filtered.filter(entry => {
-        const entryDate = parseISO(entry.entryDate);
-        return entryDate >= startDate && entryDate <= endDate;
-      });
-    }
-
-    // Tag filter
-    if (tagFilter !== 'all') {
-      filtered = filtered.filter(entry => entry.tagId === parseInt(tagFilter));
-    }
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(entry =>
-        entry.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Sort by date descending
-    filtered.sort((a, b) => parseISO(b.entryDate).getTime() - parseISO(a.entryDate).getTime());
-
-    return filtered;
-  }, [entries, periodFilter, customStartDate, customEndDate, tagFilter, searchQuery, isServerSidePagination]);
-
-  const paginatedEntries = useMemo(() => {
-    // Se estiver usando server-side, não pagina localmente
-    if (isServerSidePagination) {
-      return entries;
-    }
-
-    const start = localCurrentPage * pageSize;
-    const end = start + pageSize;
-    return filteredEntries.slice(start, end);
-  }, [filteredEntries, localCurrentPage, pageSize, isServerSidePagination, entries]);
-
-  // Usa paginação do servidor se disponível, senão usa local
-  const currentPage = isServerSidePagination ? pagination.page : localCurrentPage;
-  const totalPages = isServerSidePagination
-    ? pagination.totalPages
-    : Math.ceil(filteredEntries.length / pageSize);
-  const totalElements = isServerSidePagination
-    ? pagination.totalElements
-    : filteredEntries.length;
+  const currentPage = pagination.page;
+  const totalPages = pagination.totalPages;
+  const totalElements = pagination.totalElements;
 
   const clearFilters = () => {
-    setPeriodFilter('all');
-    setCustomStartDate(undefined);
-    setCustomEndDate(undefined);
-    setTagFilter('all');
-    setSearchQuery('');
-    if (isServerSidePagination && onPageChange) {
-      onPageChange(0);
-    } else {
-      setLocalCurrentPage(0);
+    setSearchInput(''); 
+    onFilterChange({
+      periodFilter: 'all',
+      customStartDate: undefined,
+      customEndDate: undefined,
+      tagFilter: 'all',
+      searchQuery: '',
+    });
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onFilterChange({ searchQuery: searchInput });
     }
+  };
+
+  const handleSearchClick = () => {
+    onFilterChange({ searchQuery: searchInput });
   };
 
   const handlePageChange = (newPage: number) => {
-    if (isServerSidePagination && onPageChange) {
-      onPageChange(newPage);
-    } else {
-      setLocalCurrentPage(newPage);
-    }
+    onPageChange(newPage);
   };
 
-  const hasActiveFilters = periodFilter !== 'all' || tagFilter !== 'all' || searchQuery !== '';
+  const hasActiveFilters =
+    filters.periodFilter !== 'all' ||
+    filters.tagFilter !== 'all' ||
+    filters.searchQuery !== '';
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -220,16 +146,18 @@ export function EntryHistoryTable({
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-2 pt-4">
             {/* Period Filter */}
-            <Select value={periodFilter} onValueChange={(value) => {
-              setPeriodFilter(value);
-              handlePageChange(0);
-            }}>
+            <Select
+              value={filters.periodFilter}
+              onValueChange={(value) => {
+                onFilterChange({ periodFilter: value });
+              }}
+            >
               <SelectTrigger className="w-full sm:w-[180px]">
-                <Filter className="h-4 w-4 mr-2" />
+                <CalendarClock className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Período" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os períodos</SelectItem>
+                <SelectItem value="all">Todos períodos</SelectItem>
                 <SelectItem value="7days">Últimos 7 dias</SelectItem>
                 <SelectItem value="15days">Últimos 15 dias</SelectItem>
                 <SelectItem value="30days">Últimos 30 dias</SelectItem>
@@ -239,13 +167,13 @@ export function EntryHistoryTable({
             </Select>
 
             {/* Custom Date Range */}
-            {periodFilter === 'custom' && (
+            {filters.periodFilter === 'custom' && (
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full sm:w-auto">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {customStartDate && customEndDate
-                      ? `${format(customStartDate, 'dd/MM/yy')} - ${format(customEndDate, 'dd/MM/yy')}`
+                    {filters.customStartDate && filters.customEndDate
+                      ? `${format(filters.customStartDate, 'dd/MM/yy')} - ${format(filters.customEndDate, 'dd/MM/yy')}`
                       : 'Selecione o período'}
                   </Button>
                 </PopoverTrigger>
@@ -255,16 +183,16 @@ export function EntryHistoryTable({
                       <p className="text-sm font-medium mb-2">Data Início</p>
                       <Calendar
                         mode="single"
-                        selected={customStartDate}
-                        onSelect={setCustomStartDate}
+                        selected={filters.customStartDate}
+                        onSelect={(date) => onFilterChange({ customStartDate: date })}
                       />
                     </div>
                     <div>
                       <p className="text-sm font-medium mb-2">Data Fim</p>
                       <Calendar
                         mode="single"
-                        selected={customEndDate}
-                        onSelect={setCustomEndDate}
+                        selected={filters.customEndDate}
+                        onSelect={(date) => onFilterChange({ customEndDate: date })}
                       />
                     </div>
                   </div>
@@ -273,11 +201,14 @@ export function EntryHistoryTable({
             )}
 
             {/* Tag Filter */}
-            <Select value={tagFilter} onValueChange={(value) => {
-              setTagFilter(value);
-              handlePageChange(0);
-            }}>
+            <Select
+              value={filters.tagFilter}
+              onValueChange={(value) => {
+                onFilterChange({ tagFilter: value });
+              }}
+            >
               <SelectTrigger className="w-full sm:w-[180px]">
+                <Tag className='mr-2 h-4 w-4' />
                 <SelectValue placeholder="Tags" />
               </SelectTrigger>
               <SelectContent>
@@ -297,17 +228,25 @@ export function EntryHistoryTable({
             </Select>
 
             {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  handlePageChange(0);
-                }}
-                className="pl-9"
-              />
+            <div className="relative flex-1 flex items-center gap-0">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  className="pl-9 rounded-r-none border-r-0"
+                />
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleSearchClick}
+                className="rounded-l-none border-l h-10 w-10 shrink-0"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
             </div>
 
             {/* Clear Filters */}
@@ -323,7 +262,7 @@ export function EntryHistoryTable({
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Carregando...</div>
-          ) : filteredEntries.length === 0 ? (
+          ) : entries.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {hasActiveFilters
                 ? 'Nenhum resultado encontrado. Ajuste os filtros.'
@@ -344,7 +283,7 @@ export function EntryHistoryTable({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedEntries.map((entry) => {
+                    {entries.map((entry) => {
                       const tag = getTagById(entry.tagId);
                       const isExpense = entry.amount < 0;
 
