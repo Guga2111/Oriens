@@ -95,6 +95,13 @@ import {
   Calendar as CalendarIcon,
   ChevronLeft,
   X,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  ListTodo,
+  CalendarDays,
+  Sparkles,
 } from "lucide-react";
 
 interface ProjectObjectiveItemProps {
@@ -229,30 +236,63 @@ export default function ProjectDetailPage() {
     fetchProject();
   }, [id]);
 
-const { pendingCount, concludedCount, objectiveDueDates } =
+const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingTasks, nextDeadline, objectivesWithDates } =
     useMemo(() => {
       const objectives = project?.objectives || [];
       let pending = 0;
       let concluded = 0;
       const dueDates: Date[] = [];
+      let overdue = 0;
+      let upcoming = 0;
+      let withDates = 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const sevenDaysFromNow = new Date(today);
+      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+      const upcomingDates: Date[] = [];
 
       objectives.forEach((o) => {
         if (o.status === "CONCLUDED") {
           concluded++;
         } else {
           pending++;
+
+          if (o.dueDate) {
+            const datePart = o.dueDate.split('T')[0];
+            const [year, month, day] = datePart.split('-').map(Number);
+            const dueDate = new Date(year, month - 1, day);
+
+            if (dueDate < today) {
+              overdue++;
+            } else if (dueDate <= sevenDaysFromNow) {
+              upcoming++;
+            }
+
+            if (dueDate >= today) {
+              upcomingDates.push(dueDate);
+            }
+          }
         }
         if (o.dueDate) {
+          withDates++;
           const datePart = o.dueDate.split('T')[0];
           const [year, month, day] = datePart.split('-').map(Number);
           dueDates.push(new Date(year, month - 1, day));
         }
       });
 
+      upcomingDates.sort((a, b) => a.getTime() - b.getTime());
+      const nextDue = upcomingDates.length > 0 ? upcomingDates[0] : null;
+
       return {
         pendingCount: pending,
         concludedCount: concluded,
         objectiveDueDates: dueDates,
+        overdueTasks: overdue,
+        upcomingTasks: upcoming,
+        nextDeadline: nextDue,
+        objectivesWithDates: withDates,
       };
     }, [project]);
 
@@ -745,30 +785,68 @@ const { pendingCount, concludedCount, objectiveDueDates } =
               <div className="lg:col-span-1 space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Progresso</CardTitle>
+                    <CardTitle>Resumo do Projeto</CardTitle>
+                    <CardDescription>
+                      Visão geral e métricas importantes
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">Concluído</span>
-                      <span className="font-medium">
-                        {project.progress.toFixed(0)}%
-                      </span>
+                  <CardContent className="space-y-6">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-muted-foreground">Progresso Geral</span>
+                        <span className="font-bold text-lg">
+                          {project.progress.toFixed(0)}%
+                        </span>
+                      </div>
+                      <Progress
+                        value={project.progress}
+                        className="h-3 [&>[role='progressbar']]:bg-none [&>[role='progressbar']]:bg-[var(--gradient-primary)]"
+                      />
+                      <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center">
+                        <Target className="h-3.5 w-3.5 mr-1.5 text-primary" />
+                        {concludedCount} de {project.totalObjectives} objetivos completos
+                      </p>
                     </div>
-                    <Progress
-                      value={project.progress}
-                      className="[&>[role='progressbar']]:bg-none [&>[role='progressbar']]:bg-[var(--gradient-primary)]"
-                    />
-                    <p className="text-sm text-muted-foreground mt-3 flex items-center justify-center">
-                      <Target className="h-4 w-4 mr-2 text-primary" />
-                      {concludedCount} de {project.totalObjectives}{" "} 
-                      objetivos completos
-                    </p>
+
+                    <div className="space-y-3 pt-2 ">
+                      {nextDeadline && (
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                          <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded bg-primary/20">
+                              <CalendarDays className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground">
+                                Próximo Prazo
+                              </p>
+                              <p className="text-sm font-bold text-primary">
+                                {format(nextDeadline, "PPP", { locale: ptBR })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-muted-foreground">Faltam</p>
+                            <p className="text-lg font-bold text-primary">
+                              {Math.ceil(
+                                (nextDeadline.getTime() - new Date().getTime()) /
+                                  (1000 * 60 * 60 * 24)
+                              )}d
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                    </div>
+
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
                     <CardTitle>Datas Importantes</CardTitle>
+                    <CardDescription>
+                      Datas de vencimento dos objetivos
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="flex justify-center">
                     <Calendar
