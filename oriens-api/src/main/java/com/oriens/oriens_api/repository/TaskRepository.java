@@ -18,8 +18,12 @@ public interface TaskRepository extends CrudRepository<Task, Long> {
     List<Task> findByUserAndDueDateBetweenOrderByDueDateAscStartTimeAsc(User user, LocalDate startDate, LocalDate endDate);
 
     // Search tasks from today, that not received a reminder and are pendent
+    @Query("SELECT t FROM Task t JOIN FETCH t.user WHERE t.dueDate = :dueDate AND t.startTime BETWEEN :startTime AND :endTime AND t.status = :status AND t.reminderSent = false")
     List<Task> findByDueDateAndStartTimeBetweenAndStatusAndReminderSentIsFalse(
-            LocalDate dueDate, LocalTime startTime, LocalTime endTime, Status status
+            @Param("dueDate") LocalDate dueDate,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("status") Status status
     );
 
     // Search tasks from yesterday. that not received a late reminder not sent
