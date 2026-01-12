@@ -39,6 +39,9 @@ public class User {
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
     @Column(name = "user_preferences")
     private UserPreferences userPreferences = new UserPreferences();
 

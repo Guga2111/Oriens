@@ -1,13 +1,17 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, CheckCircle } from "lucide-react";
+import { WhatsAppIntegrationDialog } from "./WhatsAppIntegrationDialog";
 
 interface SummaryAsideProps {
   totalTasks: number;
   concludedTasks: number;
   pendingTasks: number;
   progress: number;
+  userPhoneNumber?: string | null;
+  onPhoneNumberUpdated?: () => void;
 }
 
 export function SummaryAside({
@@ -15,7 +19,13 @@ export function SummaryAside({
   concludedTasks,
   pendingTasks,
   progress,
+  userPhoneNumber,
+  onPhoneNumberUpdated,
 }: SummaryAsideProps) {
+  const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
+
+  const isPhoneNumberConnected = !!userPhoneNumber;
+
   return (
     <aside className="w-80 border-l border-border p-6 hidden lg:block bg-white dark:bg-card">
       <Card>
@@ -51,19 +61,55 @@ export function SummaryAside({
       <Card className="mt-6 border-primary/30 bg-primary/10">
         <CardHeader className="p-0">
           <div className="flex items-center gap-2 p-6 pb-2">
-            <MessageCircle className="h-5 w-5 text-primary" />
-            <CardTitle className="text-primary">Integração WhatsApp</CardTitle>
+            {isPhoneNumberConnected ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <MessageCircle className="h-5 w-5 text-primary" />
+            )}
+            <CardTitle className="text-primary">
+              {isPhoneNumberConnected ? "WhatsApp Conectado" : "Integração WhatsApp"}
+            </CardTitle>
           </div>
         </CardHeader>
         <CardContent className="p-6 pt-2">
-          <p className="text-sm text-primary/80 mb-4">
-            Receba lembretes e compartilhe suas tarefas diretamente pelo WhatsApp.
-          </p>
-          <Button className="w-full text-primary-foreground bg-gradient-primary hover:opacity-80 transition-opacity">
-            Conectar WhatsApp
-          </Button>
+          {isPhoneNumberConnected ? (
+            <>
+              <p className="text-sm text-green-700 dark:text-green-400 mb-2 font-medium">
+                Você receberá lembretes 15 minutos antes!
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                {userPhoneNumber}
+              </p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsWhatsAppDialogOpen(true)}
+              >
+                Alterar Número
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-primary/80 mb-4">
+                Receba lembretes das suas tarefas 15 minutos antes pelo WhatsApp.
+              </p>
+              <Button
+                className="w-full text-primary-foreground bg-gradient-primary hover:opacity-80 transition-opacity"
+                onClick={() => setIsWhatsAppDialogOpen(true)}
+              >
+                Conectar WhatsApp
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
+
+      <WhatsAppIntegrationDialog
+        open={isWhatsAppDialogOpen}
+        onOpenChange={setIsWhatsAppDialogOpen}
+        currentPhoneNumber={userPhoneNumber}
+        onSuccess={onPhoneNumberUpdated}
+      />
     </aside>
   );
 }

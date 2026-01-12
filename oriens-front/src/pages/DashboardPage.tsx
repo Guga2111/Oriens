@@ -52,6 +52,7 @@ export function DashboardPage() {
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
 
   console.log("Rendirizou!");
 
@@ -98,8 +99,20 @@ export function DashboardPage() {
     }
   };
 
+  const fetchUserData = async () => {
+    if (!userId) return;
+
+    try {
+      const response = await apiClient.get(`/user/${userId}`);
+      setUserPhoneNumber(response.data.phoneNumber || null);
+    } catch (error) {
+      console.error("Falha ao buscar dados do usuário: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchTasks(true);
+    fetchUserData();
   }, [userId, currentDate, viewMode]);
 
   const getTasksForPeriod = (start: string, end: string) => {
@@ -255,11 +268,13 @@ export function DashboardPage() {
           </div>
         </main>
 
-        <SummaryAside 
+        <SummaryAside
           totalTasks={totalTasks}
           concludedTasks={concludedTasks}
           pendingTasks={pendingTasks}
           progress={progress}
+          userPhoneNumber={userPhoneNumber}
+          onPhoneNumberUpdated={fetchUserData}
         />
 
         <CreateTaskDialog
