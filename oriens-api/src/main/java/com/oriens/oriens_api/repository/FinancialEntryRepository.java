@@ -4,6 +4,7 @@ import com.oriens.oriens_api.entity.FinancialEntry;
 import com.oriens.oriens_api.entity.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -13,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface FinancialEntryRepository extends CrudRepository<FinancialEntry, Long> {
+public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, Long> {
     Page<FinancialEntry> findByUserId(Long userId, Pageable pageable);
     Optional<FinancialEntry> findByIdAndUserId(Long id, Long userId);
 
@@ -52,6 +53,24 @@ public interface FinancialEntryRepository extends CrudRepository<FinancialEntry,
             Long userId,
             LocalDate startDate,
             LocalDate endDate
+    );
+
+    @Query("""
+        SELECT fe FROM FinancialEntry fe
+        WHERE fe.isRecurring = true
+        AND fe.parentEntryId IS NULL
+        AND (fe.recurrenceEndDate IS NULL OR fe.recurrenceEndDate >= :currentDate)
+        AND NOT EXISTS (
+            SELECT 1 FROM FinancialEntry child
+            WHERE child.parentEntryId = fe.id
+            AND child.entryDate = :nextExecutionDate
+        )
+        AND fe.entryDate <= :nextExecutionDate
+        ORDER BY fe.entryDate ASC
+        """)
+    List<FinancialEntry> findRecurringEntriesToProcess(
+            @Param("currentDate") LocalDate currentDate,
+            @Param("nextExecutionDate") LocalDate nextExecutionDate
     );
 
     // inbounds amount
