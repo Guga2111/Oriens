@@ -1,5 +1,6 @@
 package com.oriens.oriens_api.entity;
 
+import com.oriens.oriens_api.entity.enums.RecurrencePattern;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,7 +17,10 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "financial_entry")
+@Table(name = "financial_entry", indexes = {
+        @Index(name = "idx_is_recurring", columnList = "is_recurring"),
+        @Index(name = "idx_parent_entry", columnList = "parent_entry_id")
+})
 public class FinancialEntry {
 
     @Id
@@ -45,6 +49,19 @@ public class FinancialEntry {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
+
+    @Column(name = "is_recurring", nullable = false)
+    private Boolean isRecurring = false;
+
+    @Column(name = "recurrence_pattern")
+    @Enumerated(EnumType.STRING)
+    private RecurrencePattern recurrencePattern;
+
+    @Column(name = "recurrence_end_date")
+    private LocalDate recurrenceEndDate;
+
+    @Column(name = "parent_entry_id")
+    private Long parentEntryId;
 
     @PreUpdate
     protected void onUpdate () {

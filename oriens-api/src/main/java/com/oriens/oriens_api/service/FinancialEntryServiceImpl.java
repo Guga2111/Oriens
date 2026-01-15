@@ -37,6 +37,8 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
             throw new BusinessException(String.format("Tag '%s' não permite valores negativos", tag.getName()));
         }
 
+        validateRecurrence(entryDTO);
+
         FinancialEntry entry = financialMapper.toEntity(entryDTO, userId, tag);
         FinancialEntry entrySaved = financialEntryRepository.save(entry);
         return financialMapper.toDTO(entrySaved);
@@ -90,8 +92,12 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
         Tag tag = tagRepository.findByUserIdAndId(userId, entryDTO.getTagId())
                         .orElseThrow(() -> new TagNotFoundException(entryDTO.getTagId()));
 
-        financialMapper.updateEntity(entry, entryDTO, tag);
+        if (entry.getParentEntryId() != null) {
+            throw new BusinessException("Não é possível editar entradas geradas automaticamente por recorrência. " +
+                    "Edite a entrada recorrente original (ID: " + entry.getParentEntryId() + ")");
+        }
 
+        financialMapper.updateEntity(entry, entryDTO, tag);
         FinancialEntry updatedEntry = financialEntryRepository.save(entry);
 
         return financialMapper.toDTO(updatedEntry);
@@ -109,5 +115,20 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
     @Override
     public long countUserEntries(Long userId) {
         return financialEntryRepository.countByUserId(userId);
+    }
+
+    private void validateRecurrence(EntryDTO entryDTO) {
+        // Se isRecurring = true, recurrencePattern é obrigatório
+        if (Boolean.TRUE.equals(entryDTO.getIsRecurring())) {
+            if (entryDTO.getRecurrencePattern() == null) {
+                throw new BusinessException("Padrão de recorrência é obrigatório quando a entrada é recorrente");
+            }
+
+            // Data de fim não pode ser anterior à data inicial
+            if (entryDTO.getRecurrenceEndDate() != null &&
+                    entryDTO.getRecurrenceEndDate().isBefore(entryDTO.getEntryDate())) {
+                throw new BusinessException("Data de fim da recorrência não pode ser anterior à data inicial");
+            }
+        }
     }
 }

@@ -42,6 +42,10 @@ public class FinancialMapper {
         dto.setTagId(entry.getTag().getId());
         dto.setCreatedAt(entry.getCreatedAt());
         dto.setUpdatedAt(entry.getUpdatedAt());
+        dto.setIsRecurring(entry.getIsRecurring());
+        dto.setRecurrencePattern(entry.getRecurrencePattern());
+        dto.setRecurrenceEndDate(entry.getRecurrenceEndDate());
+        dto.setParentEntryId(entry.getParentEntryId());
         return dto;
     }
 
@@ -52,6 +56,10 @@ public class FinancialMapper {
         entry.setEntryDate(dto.getEntryDate());
         entry.setDescription(dto.getDescription());
         entry.setTag(tag);
+        entry.setIsRecurring(dto.getIsRecurring() != null ? dto.getIsRecurring() : false);
+        entry.setRecurrencePattern(dto.getRecurrencePattern());
+        entry.setRecurrenceEndDate(dto.getRecurrenceEndDate());
+        entry.setParentEntryId(null);
         return entry;
     }
 
@@ -60,5 +68,8 @@ public class FinancialMapper {
         entry.setEntryDate(dto.getEntryDate());
         entry.setDescription(dto.getDescription());
         entry.setTag(tag);
+        entry.setIsRecurring(dto.getIsRecurring() != null ? dto.getIsRecurring() : false);
+        entry.setRecurrencePattern(dto.getRecurrencePattern());
+        entry.setRecurrenceEndDate(dto.getRecurrenceEndDate());
     }
 }

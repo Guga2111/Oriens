@@ -1,4 +1,5 @@
 package com.oriens.oriens_api.entity.dto.financial;
+import com.oriens.oriens_api.entity.enums.RecurrencePattern;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -27,6 +28,15 @@ public class EntryDTO {
     private String description;
 
     private Long tagId;
+
+    @NotNull(message = "Campo 'isRecurring' é obrigatório")
+    private Boolean isRecurring = false;
+
+    private RecurrencePattern recurrencePattern;
+
+    private LocalDate recurrenceEndDate;
+
+    private Long parentEntryId;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
