@@ -28,8 +28,9 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { TagDTO } from '@/types/financial';
+import { TagDTO, RecurrencePattern, RecurrencePatternLabels } from '@/types/financial';
 import { createEntry } from '@/services/financialService';
 import { useAuth } from '@/context/AuthContext';
 
@@ -49,6 +50,9 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
   const [entryDate, setEntryDate] = useState<Date>(new Date());
   const [description, setDescription] = useState('');
   const [tagId, setTagId] = useState<string>('');
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern | ''>('');
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState<Date | undefined>(undefined);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -78,6 +82,10 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
       newErrors.description = 'Descrição deve ter no máximo 255 caracteres';
     }
 
+    if (isRecurring && !recurrencePattern) {
+      newErrors.recurrencePattern = 'Padrão de recorrência é obrigatório quando a entrada é recorrente';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -92,6 +100,9 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
         entryDate: format(entryDate, 'yyyy-MM-dd'),
         description: description || undefined,
         tagId: parseInt(tagId),
+        isRecurring: isRecurring,
+        recurrencePattern: isRecurring && recurrencePattern ? recurrencePattern : undefined,
+        recurrenceEndDate: isRecurring && recurrenceEndDate ? format(recurrenceEndDate, 'yyyy-MM-dd') : undefined,
       });
 
       toast({
@@ -104,6 +115,9 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
       setEntryDate(new Date());
       setDescription('');
       setTagId('');
+      setIsRecurring(false);
+      setRecurrencePattern('');
+      setRecurrenceEndDate(undefined);
       setErrors({});
 
       onOpenChange(false);
@@ -245,6 +259,88 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
             <p className="text-xs text-muted-foreground">
               {description.length}/255 caracteres
             </p>
+          </div>
+
+          {/* Recorrência */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isRecurring"
+                checked={isRecurring}
+                onCheckedChange={(checked) => {
+                  setIsRecurring(checked as boolean);
+                  if (!checked) {
+                    setRecurrencePattern('');
+                    setRecurrenceEndDate(undefined);
+                  }
+                }}
+              />
+              <Label htmlFor="isRecurring" className="text-sm font-normal cursor-pointer">
+                Esta é uma entrada recorrente
+              </Label>
+            </div>
+
+            {isRecurring && (
+              <div className="space-y-4 pl-6 border-l-2 border-muted">
+                {/* Padrão de Recorrência */}
+                <div className="space-y-2">
+                  <Label htmlFor="recurrencePattern">
+                    Padrão de Recorrência <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={recurrencePattern}
+                    onValueChange={(value) => setRecurrencePattern(value as RecurrencePattern)}
+                  >
+                    <SelectTrigger className={cn(errors.recurrencePattern && 'border-red-500')}>
+                      <SelectValue placeholder="Selecione a frequência">
+                        {recurrencePattern && RecurrencePatternLabels[recurrencePattern as RecurrencePattern]}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(RecurrencePatternLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.recurrencePattern && (
+                    <p className="text-sm text-red-500">{errors.recurrencePattern}</p>
+                  )}
+                </div>
+
+                {/* Data Final de Recorrência (Opcional) */}
+                <div className="space-y-2">
+                  <Label>Data Final (Opcional)</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          'w-full justify-start text-left font-normal',
+                          !recurrenceEndDate && 'text-muted-foreground'
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {recurrenceEndDate ? format(recurrenceEndDate, 'dd/MM/yyyy') : 'Sem data final'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={recurrenceEndDate}
+                        onSelect={(date) => setRecurrenceEndDate(date)}
+                        initialFocus
+                        disabled={(date) => date < entryDate}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground">
+                    Deixe em branco para recorrência sem fim
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
