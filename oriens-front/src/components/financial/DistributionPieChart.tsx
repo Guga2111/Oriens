@@ -16,8 +16,8 @@ interface DistributionPieChartProps {
 }
 
 export function DistributionPieChart({ entries, tags }: DistributionPieChartProps) {
-  const { chartData, chartConfig, totalRevenues } = useMemo(() => {
-    if (entries.length === 0) return { chartData: [], chartConfig: {} as ChartConfig, totalRevenues: 0 };
+  const { chartData, chartConfig, totalForPercentage } = useMemo(() => {
+    if (entries.length === 0) return { chartData: [], chartConfig: {} as ChartConfig, totalForPercentage: 0 };
 
     // Filtrar despesas (valores negativos) e receitas (valores positivos)
     const expenses = entries.filter(entry => entry.amount < 0);
@@ -30,7 +30,7 @@ export function DistributionPieChart({ entries, tags }: DistributionPieChartProp
 
     // Se não há gastos e nem saldo, não mostra nada
     if (totalExpenses === 0 && saldoLivre <= 0) {
-      return { chartData: [], chartConfig: {} as ChartConfig, totalRevenues: 0 };
+      return { chartData: [], chartConfig: {} as ChartConfig, totalForPercentage: 0 };
     }
 
     // Calcular total de gastos por tag (apenas despesas)
@@ -78,7 +78,10 @@ export function DistributionPieChart({ entries, tags }: DistributionPieChartProp
       };
     });
 
-    return { chartData: data, chartConfig: config, totalRevenues };
+    // Usar a soma dos valores do gráfico para calcular porcentagens (evita divisão por zero)
+    const totalForPercentage = data.reduce((sum, item) => sum + item.value, 0);
+
+    return { chartData: data, chartConfig: config, totalForPercentage };
   }, [entries, tags]);
 
   if (chartData.length === 0) {
@@ -117,7 +120,7 @@ export function DistributionPieChart({ entries, tags }: DistributionPieChartProp
                 <ChartTooltipContent
                   hideLabel
                   formatter={(value, name) => {
-                    const percentage = ((Number(value) / totalRevenues) * 100).toFixed(1);
+                    const percentage = ((Number(value) / totalForPercentage) * 100).toFixed(1);
                     return (
                       <div className="flex flex-col gap-1">
                         <span className="font-medium">{name}</span>
@@ -138,7 +141,7 @@ export function DistributionPieChart({ entries, tags }: DistributionPieChartProp
               cy="50%"
               outerRadius={80}
               label={({ payload }) => {
-                const percentage = ((payload.value / totalRevenues) * 100).toFixed(1);
+                const percentage = ((payload.value / totalForPercentage) * 100).toFixed(1);
                 return `${percentage}%`;
               }}
               labelLine={true}
@@ -156,7 +159,7 @@ export function DistributionPieChart({ entries, tags }: DistributionPieChartProp
               />
               <span className="text-xs truncate">{item.name}</span>
               <span className="text-xs text-muted-foreground ml-auto">
-                {((item.value / totalRevenues) * 100).toFixed(1)}%
+                {((item.value / totalForPercentage) * 100).toFixed(1)}%
               </span>
             </div>
           ))}
