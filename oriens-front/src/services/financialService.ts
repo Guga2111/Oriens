@@ -77,3 +77,9 @@ export const updateTag = async (userId: number, tagId: number, tag: TagDTO): Pro
 export const deleteTag = async (userId: number, tagId: number): Promise<void> => {
   await apiClient.delete(`/financial/user/${userId}/tags/${tagId}`);
 };
+
+// Recurring Entries Services
+export const getRecurringEntries = async (userId: number): Promise<EntryDTO[]> => {
+  const response = await apiClient.get(`/financial/user/${userId}/entries/recurring`);
+  return response.data;
+};

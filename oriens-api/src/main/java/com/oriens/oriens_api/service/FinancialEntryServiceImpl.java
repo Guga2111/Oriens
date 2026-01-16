@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -115,6 +117,15 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
     @Override
     public long countUserEntries(Long userId) {
         return financialEntryRepository.countByUserId(userId);
+    }
+
+    @Override
+    public List<EntryDTO> getRecurringEntries(Long userId) {
+        List<FinancialEntry> entries = financialEntryRepository
+                .findByUserIdAndIsRecurringTrueAndParentEntryIdIsNull(userId);
+        return entries.stream()
+                .map(financialMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     private void validateRecurrence(EntryDTO entryDTO) {

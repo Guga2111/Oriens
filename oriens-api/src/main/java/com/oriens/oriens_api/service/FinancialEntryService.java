@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface FinancialEntryService {
       EntryDTO createEntry (EntryDTO entryDTO, Long userId);
@@ -17,4 +18,6 @@ public interface FinancialEntryService {
       void deleteEntry (Long entryId, Long userId);
 
       long countUserEntries (Long userId);
+
+      List<EntryDTO> getRecurringEntries(Long userId);
 }

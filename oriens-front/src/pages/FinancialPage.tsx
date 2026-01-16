@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { startOfMonth, endOfMonth, format, subMonths, addMonths, parseISO, subDays } from 'date-fns';
-import { Plus, Settings } from 'lucide-react';
+import { Plus, Settings, Repeat } from 'lucide-react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/dashboard/AppSidebar';
 import { AppHeader } from '@/components/common/AppHeader';
@@ -18,6 +18,7 @@ import { EntryHistoryTable } from '@/components/financial/EntryHistoryTable';
 import { CreateEntryDialog } from '@/components/financial/CreateEntryDialog';
 import { EditEntryDialog } from '@/components/financial/EditEntryDialog';
 import { TagManagementDialog } from '@/components/financial/TagManagementDialog';
+import { RecurringManagementDialog } from '@/components/financial/RecurringManagementDialog';
 
 export default function FinancialPage() {
   const { userId } = useAuth();
@@ -49,6 +50,7 @@ export default function FinancialPage() {
   const [isCreateEntryOpen, setIsCreateEntryOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<EntryDTO | null>(null);
   const [isTagManagementOpen, setIsTagManagementOpen] = useState(false);
+  const [isRecurringManagementOpen, setIsRecurringManagementOpen] = useState(false);
 
   const isLoading = isLoadingCharts || isLoadingTable || isLoadingTags;
 
@@ -105,10 +107,10 @@ export default function FinancialPage() {
     }
   };
 
-  const loadTableData = async (page: number = 0, filters = tableFilters) => {
+  const loadTableData = async (page: number = 0, filters = tableFilters, bypassCache: boolean = false) => {
     const cacheKey = `${page}-${JSON.stringify(filters)}`;
 
-    if (cachedTablePages.has(cacheKey)) {
+    if (!bypassCache && cachedTablePages.has(cacheKey)) {
       setTableEntries(cachedTablePages.get(cacheKey)!);
       setTablePagination(prev => ({ ...prev, page }));
       return;
@@ -220,9 +222,9 @@ export default function FinancialPage() {
         title: 'Entrada excluída',
         description: 'A entrada foi excluída com sucesso.',
       });
-      clearTableCache(); 
-      loadChartData(); 
-      loadTableData(); 
+      clearTableCache();
+      loadChartData();
+      loadTableData(tablePagination.page, tableFilters, true);
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -233,9 +235,9 @@ export default function FinancialPage() {
   };
 
   const handleEntrySuccess = () => {
-    clearTableCache(); 
-    loadChartData(); 
-    loadTableData();
+    clearTableCache();
+    loadChartData();
+    loadTableData(tablePagination.page, tableFilters, true);
   };
 
   const handleTagsChange = () => {
@@ -246,17 +248,21 @@ export default function FinancialPage() {
     const newFilters = { ...tableFilters, ...filterUpdates };
     setTableFilters(newFilters);
 
-    if ('customStartDate' in filterUpdates || 'customEndDate' in filterUpdates) {
+    // Se estiver atualizando apenas uma data customizada sem limpar os filtros, aguarde ambas as datas
+    const isUpdatingCustomDate = ('customStartDate' in filterUpdates || 'customEndDate' in filterUpdates);
+    const isClearingCustomDates = filterUpdates.customStartDate === undefined && filterUpdates.customEndDate === undefined;
+
+    if (isUpdatingCustomDate && !isClearingCustomDates) {
       const hasStartDate = newFilters.customStartDate !== undefined;
       const hasEndDate = newFilters.customEndDate !== undefined;
 
       if (hasStartDate && hasEndDate) {
         clearTableCache();
-        loadTableData(0, newFilters);
+        loadTableData(0, newFilters, true);
       }
     } else {
       clearTableCache();
-      loadTableData(0, newFilters);
+      loadTableData(0, newFilters, true);
     }
   };
 
@@ -301,6 +307,13 @@ export default function FinancialPage() {
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   Gerenciar Tags
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsRecurringManagementOpen(true)}
+                >
+                  <Repeat className="h-4 w-4 mr-2" />
+                  Gerenciar Recorrencias
                 </Button>
                 <Button onClick={() => setIsCreateEntryOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
@@ -363,6 +376,15 @@ export default function FinancialPage() {
         onOpenChange={setIsTagManagementOpen}
         userId={userId!}
         onTagsChange={handleTagsChange}
+      />
+
+      <RecurringManagementDialog
+        open={isRecurringManagementOpen}
+        onOpenChange={setIsRecurringManagementOpen}
+        userId={userId!}
+        tags={tags}
+        onEditEntry={handleEditEntry}
+        onEntriesChange={handleEntrySuccess}
       />
     </SidebarProvider>
   );

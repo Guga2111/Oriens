@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -80,5 +81,10 @@ public class FinancialEntryController {
     public ResponseEntity<Long> countEntries(@PathVariable Long userId) {
         long count = financialEntryService.countUserEntries(userId);
         return new ResponseEntity<>(count, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/{userId}/entries/recurring")
+    public ResponseEntity<List<EntryDTO>> getRecurringEntries(@PathVariable Long userId) {
+        return ResponseEntity.ok(financialEntryService.getRecurringEntries(userId));
     }
 }

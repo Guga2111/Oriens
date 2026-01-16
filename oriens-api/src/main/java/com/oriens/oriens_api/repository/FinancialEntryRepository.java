@@ -97,4 +97,7 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
 
     long countByUserId(Long userId);
     long countByUserIdAndTag(Long userId, Tag tag);
+
+    // Buscar entradas recorrentes do usuário (apenas parent entries)
+    List<FinancialEntry> findByUserIdAndIsRecurringTrueAndParentEntryIdIsNull(Long userId);
 }
