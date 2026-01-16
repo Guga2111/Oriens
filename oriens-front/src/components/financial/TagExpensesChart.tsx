@@ -87,7 +87,7 @@ export function TagExpensesChart({ entries, tags }: TagExpensesChartProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-medium">Custos por Tag (Últimos 6 Meses)</CardTitle>
+          <CardTitle className="text-lg font-medium">Custos por Tag</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px] flex items-center justify-center">
           <p className="text-muted-foreground">Nenhum dado de gastos disponível</p>
@@ -115,7 +115,7 @@ export function TagExpensesChart({ entries, tags }: TagExpensesChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-medium">Custos por Tag (Últimos 6 Meses)</CardTitle>
+        <CardTitle className="text-lg font-medium">Custos por Tag</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
