@@ -21,6 +21,7 @@ interface CreateProjectDialogProps {
 interface ObjectiveInput {
   title: string;
   dueDate: string;
+  status?: "PENDING" | "CONCLUDED";
 }
 
 export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEdit }: CreateProjectDialogProps) {
@@ -40,10 +41,11 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
         setDescription(projectToEdit.description || "");
         setColor(projectToEdit.color || "#CCCCCC");
         const formattedObjectives = projectToEdit.objectives.map(obj => ({
-        title: obj.title,
-        dueDate: obj.dueDate ? format(new Date(obj.dueDate), 'yyyy-MM-dd') : "",
-      }));
-      setObjectives(formattedObjectives);
+          title: obj.title,
+          dueDate: obj.dueDate ? format(new Date(obj.dueDate), 'yyyy-MM-dd') : "",
+          status: obj.status,
+        }));
+        setObjectives(formattedObjectives);
       } else { 
         setTitle("");
         setDescription("");
@@ -53,7 +55,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
     }
   }, [open, projectToEdit, isEditMode]);
 
-  const handleObjectiveChange = (index: number, field: keyof ObjectiveInput, value: string) => {
+  const handleObjectiveChange = (index: number, field: "title" | "dueDate", value: string) => {
     const newObjectives = [...objectives];
     newObjectives[index][field] = value;
     setObjectives(newObjectives);
@@ -77,7 +79,14 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
       title,
       description,
       color,
-      objectives: objectives.filter(o => o.title.trim() !== ""), 
+      imageUrl: isEditMode ? projectToEdit?.imageUrl : undefined,
+      objectives: objectives
+        .filter(o => o.title.trim() !== "")
+        .map(o => ({
+          title: o.title,
+          dueDate: o.dueDate || null,
+          status: o.status || "PENDING",
+        })),
     };
 
     try {

@@ -92,9 +92,17 @@ public class ProjectServiceImpl implements ProjectService {
 
         existingProject.setColor(projectDetails.getColor());
         existingProject.setTitle(projectDetails.getTitle());
-        existingProject.setObjectives(projectDetails.getObjectives());
-        existingProject.setImageUrl(projectDetails.getImageUrl());
         existingProject.setDescription(projectDetails.getDescription());
+
+        // Preservar imageUrl existente se não for enviada uma nova
+        if (projectDetails.getImageUrl() != null) {
+            existingProject.setImageUrl(projectDetails.getImageUrl());
+        }
+
+        // Atualizar objetivos se forem enviados
+        if (projectDetails.getObjectives() != null) {
+            existingProject.setObjectives(projectDetails.getObjectives());
+        }
 
         projectRepository.save(existingProject);
         return convertProjectToDTO(existingProject);
