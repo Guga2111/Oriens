@@ -93,7 +93,7 @@ public class RecurringFinancialScheduler {
 
         // Se hoje é exatamente a data inicial, sempre processa
         if (today.isEqual(startDate)) {
-            return true;
+            return false;
         }
 
         // Calcula quantos dias passaram desde o início
