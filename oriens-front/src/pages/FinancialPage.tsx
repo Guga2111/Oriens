@@ -247,8 +247,7 @@ export default function FinancialPage() {
   const handleFilterChange = (filterUpdates: Partial<typeof tableFilters>) => {
     const newFilters = { ...tableFilters, ...filterUpdates };
     setTableFilters(newFilters);
-
-    // Se estiver atualizando apenas uma data customizada sem limpar os filtros, aguarde ambas as datas
+    
     const isUpdatingCustomDate = ('customStartDate' in filterUpdates || 'customEndDate' in filterUpdates);
     const isClearingCustomDates = filterUpdates.customStartDate === undefined && filterUpdates.customEndDate === undefined;
 

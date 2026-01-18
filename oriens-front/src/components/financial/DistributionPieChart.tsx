@@ -19,21 +19,17 @@ export function DistributionPieChart({ entries, tags }: DistributionPieChartProp
   const { chartData, chartConfig, totalForPercentage } = useMemo(() => {
     if (entries.length === 0) return { chartData: [], chartConfig: {} as ChartConfig, totalForPercentage: 0 };
 
-    // Filtrar despesas (valores negativos) e receitas (valores positivos)
     const expenses = entries.filter(entry => entry.amount < 0);
     const revenues = entries.filter(entry => entry.amount > 0);
 
-    // Calcular totais
     const totalRevenues = revenues.reduce((sum, entry) => sum + entry.amount, 0);
     const totalExpenses = Math.abs(expenses.reduce((sum, entry) => sum + entry.amount, 0));
     const saldoLivre = totalRevenues - totalExpenses;
 
-    // Se não há gastos e nem saldo, não mostra nada
     if (totalExpenses === 0 && saldoLivre <= 0) {
       return { chartData: [], chartConfig: {} as ChartConfig, totalForPercentage: 0 };
     }
 
-    // Calcular total de gastos por tag (apenas despesas)
     const tagTotals = new Map<number, { name: string; color: string; amount: number }>();
 
     tags.forEach(tag => {
@@ -45,7 +41,6 @@ export function DistributionPieChart({ entries, tags }: DistributionPieChartProp
       }
     });
 
-    // Montar dados para o gráfico (gastos por tag)
     const data = Array.from(tagTotals.values()).map((tag, index) => ({
       category: `tag-${index}`,
       name: tag.name,
@@ -53,24 +48,21 @@ export function DistributionPieChart({ entries, tags }: DistributionPieChartProp
       fill: tag.color,
     }));
 
-    // Adicionar saldo livre se positivo
     if (saldoLivre > 0) {
       data.push({
         category: 'saldo-livre',
         name: 'Saldo Livre',
         value: saldoLivre,
-        fill: '#14B8A6', // teal-500
+        fill: '#14B8A6', 
       });
     }
 
-    // Criar configuração do chart
     const config: ChartConfig = {
       value: {
         label: 'Valor',
       },
     };
 
-    // Adicionar cada item à configuração
     data.forEach((item) => {
       config[item.category] = {
         label: item.name,
@@ -78,7 +70,6 @@ export function DistributionPieChart({ entries, tags }: DistributionPieChartProp
       };
     });
 
-    // Usar a soma dos valores do gráfico para calcular porcentagens (evita divisão por zero)
     const totalForPercentage = data.reduce((sum, item) => sum + item.value, 0);
 
     return { chartData: data, chartConfig: config, totalForPercentage };

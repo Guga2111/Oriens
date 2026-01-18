@@ -1,7 +1,6 @@
 import apiClient from './api';
 import { EntryDTO, TagDTO, Page } from '@/types/financial';
 
-// Entry Services
 export const createEntry = async (userId: number, entry: EntryDTO): Promise<EntryDTO> => {
   const response = await apiClient.post(`/financial/user/${userId}/entries`, entry);
   return response.data;
@@ -43,7 +42,6 @@ export const countEntries = async (userId: number): Promise<number> => {
   return response.data;
 };
 
-// Tag Services
 export const createTag = async (userId: number, tag: TagDTO): Promise<TagDTO> => {
   const response = await apiClient.post(`/financial/user/${userId}/tags`, tag);
   return response.data;
@@ -78,7 +76,6 @@ export const deleteTag = async (userId: number, tagId: number): Promise<void> =>
   await apiClient.delete(`/financial/user/${userId}/tags/${tagId}`);
 };
 
-// Recurring Entries Services
 export const getRecurringEntries = async (userId: number): Promise<EntryDTO[]> => {
   const response = await apiClient.get(`/financial/user/${userId}/entries/recurring`);
   return response.data;

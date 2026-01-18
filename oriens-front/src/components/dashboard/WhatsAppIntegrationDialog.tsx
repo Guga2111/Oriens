@@ -39,15 +39,13 @@ export function WhatsAppIntegrationDialog({
   };
 
   const formatPhoneNumber = (value: string) => {
-    // Remove tudo que não for número
+
     const numbers = value.replace(/\D/g, "");
 
-    // Se começar com 55 (Brasil) e tiver mais de 2 dígitos
     if (numbers.startsWith("55") && numbers.length > 2) {
       return `+${numbers}`;
     }
 
-    // Se não começar com +, adiciona
     if (numbers.length > 0 && !value.startsWith("+")) {
       return `+${numbers}`;
     }
@@ -62,7 +60,6 @@ export function WhatsAppIntegrationDialog({
   };
 
   const validatePhoneNumber = (phone: string): boolean => {
-    // Formato esperado: +5511999999999 (mínimo 10 dígitos após o +)
     const regex = /^\+\d{10,15}$/;
     return regex.test(phone);
   };

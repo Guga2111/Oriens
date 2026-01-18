@@ -50,14 +50,12 @@ interface EntryHistoryTableProps {
   onEdit: (entry: EntryDTO) => void;
   onDelete: (id: number) => void;
   isLoading?: boolean;
-  // Server-side pagination (required)
   pagination: {
     page: number;
     totalPages: number;
     totalElements: number;
   };
   onPageChange: (page: number) => void;
-  // Server-side filtering (required)
   filters: {
     periodFilter: string;
     customStartDate: Date | undefined;
@@ -80,7 +78,7 @@ export function EntryHistoryTable({
   onFilterChange,
 }: EntryHistoryTableProps) {
   const [deletingEntryId, setDeletingEntryId] = useState<number | null>(null);
-  const [searchInput, setSearchInput] = useState(filters.searchQuery); // Estado local para input
+  const [searchInput, setSearchInput] = useState(filters.searchQuery); 
   const pageSize = 20;
 
   const currentPage = pagination.page;

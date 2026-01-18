@@ -1,12 +1,12 @@
 export interface EntryDTO {
   id?: number;
   amount: number;
-  entryDate: string; // "YYYY-MM-DD"
+  entryDate: string; 
   description?: string;
   tagId: number;
   isRecurring?: boolean;
   recurrencePattern?: RecurrencePattern;
-  recurrenceEndDate?: string; // "YYYY-MM-DD"
+  recurrenceEndDate?: string;
   parentEntryId?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -35,7 +35,7 @@ export const RecurrencePatternLabels: Record<RecurrencePattern, string> = {
 export interface TagDTO {
   id?: number;
   name: string;
-  color: string; // "#RRGGBB"
+  color: string; 
   isDefault?: boolean;
   createdAt?: string;
 }

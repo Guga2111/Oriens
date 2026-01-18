@@ -41,8 +41,8 @@ export interface TaskDTO {
   id: number;
   title: string;
   description?: string;
-  startTime: string; // "HH:mm:ss"
-  dueDate: string; // "YYYY-MM-DD"
+  startTime: string; 
+  dueDate: string; 
   completedAt?: string;
   priority: Priority;
   status: Status;

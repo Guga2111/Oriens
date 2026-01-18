@@ -27,15 +27,12 @@ export function TagExpensesChart({ entries, tags }: TagExpensesChartProps) {
       last6Months.push(subMonths(now, i));
     }
 
-    // Filtrar apenas despesas (amount < 0)
     const expenses = entries.filter(entry => entry.amount < 0);
 
-    // Identificar quais tags têm despesas (excluir tags de receita como Salário)
     const tagsWithExpenses = tags.filter(tag => {
       return expenses.some(entry => entry.tagId === tag.id);
     });
 
-    // Agrupar por mês e tag
     const monthlyData = last6Months.map(monthDate => {
       const monthStart = startOfMonth(monthDate);
       const monthEnd = endOfMonth(monthDate);
@@ -65,7 +62,6 @@ export function TagExpensesChart({ entries, tags }: TagExpensesChartProps) {
       return dataPoint;
     });
 
-    // Criar configuração do chart apenas para tags com despesas
     const config: ChartConfig = {};
     tagsWithExpenses.forEach((tag) => {
       config[tag.name] = {
@@ -105,7 +101,6 @@ export function TagExpensesChart({ entries, tags }: TagExpensesChartProps) {
     }).format(value);
   };
 
-  // Calcular total de gastos dos últimos 6 meses
   const totalExpenses = useMemo(() => {
     return chartData.reduce((total, month) => {
       return total + expenseTags.reduce((sum, tag) => sum + (month[tag.name] || 0), 0);
