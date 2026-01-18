@@ -128,10 +128,10 @@ public class StatisticsService {
         String additionalDescription = "Ritmo mantido";
 
         if (change > 0) {
-            description = "Melhora de %" + change + " nas pendências";
+            description = "Melhora de " + change + "% nas pendências";
             additionalDescription = "Continue com o ritmo assim";
         } else if (change < 0) {
-            description = "Piora de %" + change + " nas pendências";
+            description = "Piora de " + change + "% nas pendências";
             additionalDescription = "Resolva para manter o ritmo";
         }
 
