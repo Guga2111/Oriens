@@ -4,13 +4,17 @@ import com.oriens.oriens_api.entity.Task;
 import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.entity.dto.LocationDTO;
 import com.oriens.oriens_api.entity.dto.TaskDTO;
+import com.oriens.oriens_api.entity.dto.TaskResponseDTO;
 import com.oriens.oriens_api.entity.dto.WeeklySummaryDTO;
 import com.oriens.oriens_api.entity.embeddable.Location;
+import com.oriens.oriens_api.entity.enums.Priority;
 import com.oriens.oriens_api.entity.enums.Status;
 import com.oriens.oriens_api.exception.TaskNotFoundException;
 import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.TaskRepository;
 import com.oriens.oriens_api.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -140,5 +144,37 @@ public class TaskServiceImpl implements TaskService {
     static Task unwrapTask (Optional<Task> taskOptional, Long taskId) {
         if (taskOptional.isEmpty()) throw new TaskNotFoundException(taskId);
         return taskOptional.get();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<TaskResponseDTO> getAllTasksPaginated(
+            Long userId,
+            Status status,
+            Priority priority,
+            String search,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable
+    ) {
+        Page<Task> tasks = taskRepository.findAllFiltered(
+                userId, status, priority, search, startDate, endDate, pageable
+        );
+        return tasks.map(this::convertToDTO);
+    }
+
+    private TaskResponseDTO convertToDTO(Task task) {
+        return TaskResponseDTO.builder()
+                .id(task.getId())
+                .title(task.getTitle())
+                .description(task.getDescription())
+                .startTime(task.getStartTime())
+                .dueDate(task.getDueDate())
+                .completedAt(task.getCompletedAt())
+                .priority(task.getPriority())
+                .status(task.getStatus())
+                .createdAt(task.getCreatedAt())
+                .location(task.getLocation())
+                .build();
     }
 }

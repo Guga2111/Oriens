@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, Settings, LogOut, Database, FolderClosed } from "lucide-react";
 import { useState } from "react";
 import { EditableAvatar } from "../common/EditableAvatar";
 import apiClient from "@/services/api";
@@ -78,9 +78,13 @@ export function UserProfileNav() {
             <User className="mr-2 h-4 w-4" />
             <span>Meu Perfil</span>
           </DropdownMenuItem>
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem className="cursor-pointer" onClick={() => window.location.href = '/all-data'}>
+            <FolderClosed className="mr-2 h-4 w-4" />
+            <span>Todos os Dados</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" onClick={handleRedirectToConfigurations}>
             <Settings className="mr-2 h-4 w-4" />
-            <span onClick={handleRedirectToConfigurations}>Configurações</span>
+            <span>Configurações</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

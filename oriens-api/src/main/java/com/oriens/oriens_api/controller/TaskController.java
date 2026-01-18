@@ -2,9 +2,16 @@ package com.oriens.oriens_api.controller;
 
 import com.oriens.oriens_api.entity.Task;
 import com.oriens.oriens_api.entity.dto.TaskDTO;
+import com.oriens.oriens_api.entity.dto.TaskResponseDTO;
 import com.oriens.oriens_api.entity.dto.WeeklySummaryDTO;
+import com.oriens.oriens_api.entity.enums.Priority;
+import com.oriens.oriens_api.entity.enums.Status;
 import com.oriens.oriens_api.service.TaskServiceImpl;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,5 +69,30 @@ public class TaskController {
     public ResponseEntity<Void> deleteTask (@PathVariable Long id) {
         taskService.deleteTask(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/user/{userId}/all")
+    public ResponseEntity<Page<TaskResponseDTO>> getAllTasksPaginated(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "dueDate") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Priority priority,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("ASC")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<TaskResponseDTO> tasks = taskService.getAllTasksPaginated(
+                userId, status, priority, search, startDate, endDate, pageable
+        );
+
+        return ResponseEntity.ok(tasks);
     }
 }

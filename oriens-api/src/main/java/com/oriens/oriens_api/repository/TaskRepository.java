@@ -3,9 +3,12 @@ package com.oriens.oriens_api.repository;
 import com.oriens.oriens_api.entity.Task;
 import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.entity.dto.statistics.TasksCompletedByTimeRangeDTO;
+import com.oriens.oriens_api.entity.enums.Priority;
 import com.oriens.oriens_api.entity.enums.Status;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
@@ -13,7 +16,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-public interface TaskRepository extends CrudRepository<Task, Long> {
+public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByUserAndDueDate(User user, LocalDate dueDate);
     List<Task> findByUserAndDueDateBetweenOrderByDueDateAscStartTimeAsc(User user, LocalDate startDate, LocalDate endDate);
 
@@ -66,5 +69,21 @@ public interface TaskRepository extends CrudRepository<Task, Long> {
     List<Object[]> findTasksCompletedByDay(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate
+    );
+
+    @Query("SELECT t FROM Task t WHERE t.user.id = :userId " +
+            "AND (CAST(:status AS string) IS NULL OR t.status = :status) " +
+            "AND (CAST(:priority AS string) IS NULL OR t.priority = :priority) " +
+            "AND (:search IS NULL OR :search = '' OR LOWER(t.title) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (CAST(:startDate AS date) IS NULL OR t.dueDate >= :startDate) " +
+            "AND (CAST(:endDate AS date) IS NULL OR t.dueDate <= :endDate)")
+    Page<Task> findAllFiltered(
+            @Param("userId") Long userId,
+            @Param("status") Status status,
+            @Param("priority") Priority priority,
+            @Param("search") String search,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            Pageable pageable
     );
 }

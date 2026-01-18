@@ -243,6 +243,35 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
+    public ProjectDTO unarchiveProject(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (!email.equals(project.getUser().getEmail())) {
+            throw new AccessUnauthorizedException();
+        }
+
+        project.setArchived(false);
+
+        projectRepository.save(project);
+
+        return ProjectDTO.builder()
+                .id(project.getId())
+                .favorite(project.isFavorite())
+                .title(project.getTitle())
+                .progress(project.getProgress())
+                .objectives(project.getObjectives())
+                .imageUrl(project.getImageUrl())
+                .lastAccessed(project.getLastAccessed())
+                .archived(project.getArchived())
+                .description(project.getDescription())
+                .color(project.getColor())
+                .build();
+    }
+
+    @Override
+    @Transactional
     public void deleteProject(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
@@ -269,6 +298,13 @@ public class ProjectServiceImpl implements ProjectService {
         projectRepository.save(project);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProjectDTO> findAllProjectsByUser(Long userId, Boolean includeArchived, String search, Pageable pageable) {
+        Page<Project> projects = projectRepository.findAllFiltered(userId, includeArchived, search, pageable);
+        return projects.map(this::convertProjectToDTO);
+    }
+
     private ProjectDTO convertProjectToDTO(Project project) {
 
         ProjectDTO projectDto = new ProjectDTO();
@@ -279,6 +315,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectDto.setColor(project.getColor());
         projectDto.setLastAccessed(project.getLastAccessed());
         projectDto.setFavorite(project.isFavorite());
+        projectDto.setArchived(project.getArchived());
 
         projectDto.setProgress(project.getProgress());
         projectDto.setTotalObjectives(project.getObjectives().size());

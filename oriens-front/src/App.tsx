@@ -19,6 +19,7 @@ import TermsOfServicePage from "./pages/TermsOfServicePage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import { useEffect } from "react";
 import FinancialPage from "./pages/FinancialPage";
+import AllDataPage from "./pages/AllDataPage";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => {
                 <Route path="/config" element={<ConfigurationPage />} />
                 <Route path="/tasks/project/:id" element={<ProjectDetailPage />} />
                 <Route path="/financial" element={<FinancialPage />} />
+                <Route path="/all-data" element={<AllDataPage />} />
                 <Route path="/support" element={<HelpSupportPage />} />
                 <Route path="/admin/support" element={<AdminSupportPage />} />
                 <Route path="/admin/management" element={<AdminManagementPage />} />

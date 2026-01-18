@@ -20,4 +20,18 @@ public interface ProjectRepository extends CrudRepository<Project, Long> {
 
     @Query("SELECT COUNT(p) FROM Project p WHERE p.user.id = :userId AND p.archived = false")
     long countActiveProjects (@Param("userId") Long userId);
+
+    // Paginated query to find all projects (including archived) by user
+    Page<Project> findByUserId(Long userId, Pageable pageable);
+
+    // Paginated query with search filter
+    @Query("SELECT p FROM Project p WHERE p.user.id = :userId " +
+           "AND (:includeArchived = true OR p.archived = false OR p.archived IS NULL) " +
+           "AND (:search IS NULL OR :search = '' OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Project> findAllFiltered(
+            @Param("userId") Long userId,
+            @Param("includeArchived") Boolean includeArchived,
+            @Param("search") String search,
+            Pageable pageable
+    );
 }

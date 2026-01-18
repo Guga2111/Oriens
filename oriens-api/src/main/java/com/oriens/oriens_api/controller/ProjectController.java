@@ -9,6 +9,7 @@ import com.oriens.oriens_api.service.ProjectServiceImpl;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -66,6 +67,11 @@ public class ProjectController {
         return new ResponseEntity<>(projectService.archiveProject(id), HttpStatus.OK);
     }
 
+    @PatchMapping("/{id}/unarchive")
+    public ResponseEntity<ProjectDTO> unarchiveProject (@PathVariable Long id) {
+        return new ResponseEntity<>(projectService.unarchiveProject(id), HttpStatus.OK);
+    }
+
     @PutMapping("/{id}/picture")
     public ResponseEntity<?> uploadProjectPicture (
             @PathVariable Long id,
@@ -116,5 +122,23 @@ public class ProjectController {
     public ResponseEntity<Void> deleteProject (@PathVariable Long id) {
         projectService.deleteProject(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/user/{userId}/all")
+    public ResponseEntity<Page<ProjectDTO>> getAllProjects(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction,
+            @RequestParam(defaultValue = "false") Boolean includeArchived,
+            @RequestParam(required = false) String search
+    ) {
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("ASC")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        return ResponseEntity.ok(projectService.findAllProjectsByUser(userId, includeArchived, search, pageable));
     }
 }

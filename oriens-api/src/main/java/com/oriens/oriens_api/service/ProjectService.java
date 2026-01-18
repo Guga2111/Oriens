@@ -22,6 +22,7 @@ public interface ProjectService {
     ProjectDTO updateProject (Long projectId, ProjectDTO projectDTO);
     ProjectDTO toggleFavorite (Long projectId);
     ProjectDTO archiveProject (Long projectId);
+    ProjectDTO unarchiveProject (Long projectId);
     void updateProjectImageUrl (Long projectId, String imageUrl);
     ProjectDTO fastCreationOfObjective (Long id, Objective objective);
 
@@ -32,4 +33,6 @@ public interface ProjectService {
     void deleteProject (Long projectId);
 
     void deleteObjective (Long projectId, int objectiveIndex);
+
+    Page<ProjectDTO> findAllProjectsByUser(Long userId, Boolean includeArchived, String search, Pageable pageable);
 }
