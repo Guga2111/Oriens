@@ -244,10 +244,10 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
 
           {/* Descrição */}
           <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description">Descrição <span className="text-red-500">*</span></Label>
             <Textarea
               id="description"
-              placeholder="Descrição da entrada (opcional)"
+              placeholder="Descrição da entrada financeira"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className={cn(errors.description && 'border-red-500')}
