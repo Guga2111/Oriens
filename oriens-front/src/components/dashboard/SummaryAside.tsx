@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MessageCircle, CheckCircle } from "lucide-react";
-import { WhatsAppIntegrationDialog } from "./WhatsAppIntegrationDialog";
 
 interface SummaryAsideProps {
   totalTasks: number;
@@ -104,12 +103,6 @@ export function SummaryAside({
         </CardContent>
       </Card>
 
-      <WhatsAppIntegrationDialog
-        open={isWhatsAppDialogOpen}
-        onOpenChange={setIsWhatsAppDialogOpen}
-        currentPhoneNumber={userPhoneNumber}
-        onSuccess={onPhoneNumberUpdated}
-      />
     </aside>
   );
 }
