@@ -86,10 +86,8 @@ export default function FinancialPage() {
   const loadChartData = async () => {
     setIsLoadingCharts(true);
     try {
-      const sixMonthsAgo = subMonths(new Date(), 6);
+      // Remove the janela de datas para que o overview agregue o histórico completo.
       const response = await getAllEntries(userId!, {
-        startDate: format(sixMonthsAgo, 'yyyy-MM-dd'),
-        endDate: format(new Date(), 'yyyy-MM-dd'),
         size: 500,
         sortBy: 'entryDate',
         direction: 'DESC',
@@ -275,6 +273,8 @@ export default function FinancialPage() {
     });
   }, [chartEntries, period]);
 
+  const overviewEntries = useMemo(() => chartEntries, [chartEntries]);
+
   if (isLoading) {
     return (
       <SidebarProvider>
@@ -323,7 +323,7 @@ export default function FinancialPage() {
 
             {/* Period Overview Card */}
             <PeriodOverviewCard
-              entries={currentPeriodEntries}
+              entries={overviewEntries}
               period={period}
               onPeriodChange={handlePeriodChange}
             />
