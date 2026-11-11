@@ -122,7 +122,7 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
 
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao criar entrada',

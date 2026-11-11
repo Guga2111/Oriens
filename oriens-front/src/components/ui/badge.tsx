@@ -12,6 +12,11 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
+        // Tokens §9.1: texto em background (adaptativo) mantém ≥4.5 nos 2 temas.
+        negative: "border-transparent bg-negative text-background hover:bg-negative/80",
+        // §9.1 não define cor de warning: composto com --now (tinta + borda).
+        warning: "border-now/50 bg-now/15 text-foreground",
+        positive: "border-transparent bg-positive text-background hover:bg-positive/80",
       },
     },
     defaultVariants: {

@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
-const defaultTheme = require('tailwindcss/defaultTheme')
+import defaultTheme from "tailwindcss/defaultTheme";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -30,7 +31,16 @@ export default {
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
   			background: 'hsl(var(--background))',
+   			'background-brand': 'hsl(var(--background-brand))',
   			foreground: 'hsl(var(--foreground))',
+   			positive: 'hsl(var(--positive))',
+   			negative: 'hsl(var(--negative))',
+   			now: 'hsl(var(--now))',
+   			'chart-1': 'hsl(var(--chart-1))',
+   			'chart-2': 'hsl(var(--chart-2))',
+   			'chart-3': 'hsl(var(--chart-3))',
+   			'chart-4': 'hsl(var(--chart-4))',
+   			'chart-5': 'hsl(var(--chart-5))',
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
   				foreground: 'hsl(var(--primary-foreground))'
@@ -99,5 +109,5 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

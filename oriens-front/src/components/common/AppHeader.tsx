@@ -19,6 +19,7 @@ export function AppHeader() {
       await updatePreference("theme", newTheme);
       toast.success(`Tema alterado para ${newTheme === "light" ? "claro" : "escuro"}`);
     } catch (error) {
+      // erro já exibido como toast pelo SettingsContext
     }
   };
 

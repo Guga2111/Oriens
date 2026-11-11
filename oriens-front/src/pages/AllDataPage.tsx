@@ -90,7 +90,7 @@ export default function AllDataPage() {
         totalPages: response.totalPages,
         totalElements: response.totalElements,
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao carregar tarefas',
@@ -123,7 +123,7 @@ export default function AllDataPage() {
         totalPages: response.totalPages,
         totalElements: response.totalElements,
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao carregar projetos',
@@ -176,7 +176,7 @@ export default function AllDataPage() {
       });
       // Recarrega a página atual para refletir a mudança
       loadProjects(projectPagination.page, projectFilters);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao arquivar',
@@ -193,7 +193,7 @@ export default function AllDataPage() {
         description: "Projeto desarquivado com sucesso.",
       });
       loadProjects(projectPagination.page, projectFilters);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao desarquivar',

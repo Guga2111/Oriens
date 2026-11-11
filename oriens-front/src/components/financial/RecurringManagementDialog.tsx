@@ -84,7 +84,7 @@ export function RecurringManagementDialog({
       setDeletingEntry(null);
       await loadRecurringEntries();
       onEntriesChange();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao excluir recorrencia',

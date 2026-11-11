@@ -16,6 +16,13 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Credenciais locais de teste E2E (nunca commitar; ver e2e/.env.test.example)
+e2e/.env.test
+
+# Artefatos do Playwright
+test-results/
+playwright-report/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -22,7 +22,7 @@ export const description = "A line chart with a label"
 interface ReusableLineChartCardProps {
   title: string;
   description: string;
-  fullData: any[];
+  fullData: Array<{ date: string }>;
   dataKey: string;
   chartConfig: ChartConfig;
 }

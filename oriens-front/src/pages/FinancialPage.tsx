@@ -72,7 +72,7 @@ export default function FinancialPage() {
     try {
       const tagsData = await getAllTags(userId!);
       setTags(tagsData);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao carregar tags',
@@ -105,7 +105,7 @@ export default function FinancialPage() {
         ...firstPage.content,
         ...remainingPages.flatMap(page => page.content),
       ]);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao carregar dados dos gráficos',
@@ -127,7 +127,16 @@ export default function FinancialPage() {
 
     setIsLoadingTable(true);
     try {
-      const apiParams: any = {
+      const apiParams: {
+        page: number;
+        size: number;
+        sortBy: string;
+        direction: 'ASC' | 'DESC';
+        startDate?: string;
+        endDate?: string;
+        tagId?: number;
+        search?: string;
+      } = {
         page,
         size: 20,
         sortBy: 'entryDate',
@@ -187,7 +196,7 @@ export default function FinancialPage() {
         totalPages: response.totalPages,
         totalElements: response.totalElements,
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao carregar histórico',
@@ -234,7 +243,7 @@ export default function FinancialPage() {
       clearTableCache();
       loadChartData();
       loadTableData(tablePagination.page, tableFilters, true);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao excluir entrada',

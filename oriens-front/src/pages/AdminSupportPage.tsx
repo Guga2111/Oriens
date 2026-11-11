@@ -35,6 +35,7 @@ import {
   TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
+  type LucideIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 import apiClient from "@/services/api"
@@ -140,7 +141,17 @@ export default function AdminSupportPage() {
     }
   }
 
-  const StatCard = ({ icon: Icon, label, value, trend }: any) => (
+  const StatCard = ({
+    icon: Icon,
+    label,
+    value,
+    trend,
+  }: {
+    icon: LucideIcon;
+    label: string;
+    value: string | number;
+    trend?: number;
+  }) => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{label}</CardTitle>

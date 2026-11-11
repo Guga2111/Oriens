@@ -12,7 +12,7 @@ import { toast } from "@/hooks/use-toast";
 
 export function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background-brand">
       {/* Header */}
       <header className="px-4 lg:px-6 h-16 flex items-center border-b">
         <Link to="/" className="flex items-center" onClick={() => window.location.reload()}>

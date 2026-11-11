@@ -11,14 +11,17 @@
   }
 
   :root {
+    /* Marca (inalterada — SPEC §9.1) */
     --brand-cream: 38.4615 90.6977% 91.5686%;
     --brand-burgundy: 346.875 71.6418% 26.2745%;
     --brand-yellow: 45.679 99.1837% 51.9608%;
 
-    --background: var(--brand-cream);
+    /* §9.1 — claro */
+    --background: 38 40% 95%;
+    --background-brand: var(--brand-cream);
     --foreground: 350 28% 14%;
 
-    --card: 38 80% 97%;
+    --card: 38 50% 98.5%;
     --card-foreground: var(--foreground);
 
     --popover: var(--card);
@@ -27,44 +30,55 @@
     --primary: var(--brand-burgundy);
     --primary-foreground: var(--brand-cream);
 
-    --secondary: 37 58% 86%;
+    --secondary: 36 32% 91%;
     --secondary-foreground: var(--brand-burgundy);
 
-    --muted: 37 48% 87%;
+    --muted: 36 32% 91%;
     --muted-foreground: 15 17% 36%;
 
-    --accent: var(--secondary);
-    --accent-foreground: var(--secondary-foreground);
+    --accent: 36 32% 91%;
+    --accent-foreground: var(--brand-burgundy);
 
-    --destructive: 0 84.2% 60.2%;
+    --negative: 6 72% 40%;
+    --positive: 158 52% 26%;
+    --now: 38 92% 36%;
+    --destructive: var(--negative);
     --destructive-foreground: 0 0% 100%;
 
-    --border: 33 35% 80%;
+    --border: 33 24% 82%;
     --input: var(--border);
     --ring: var(--brand-burgundy);
 
-    --radius: 0.75rem;
+    --chart-1: var(--brand-burgundy);
+    --chart-2: 38 92% 36%;
+    --chart-3: 170 35% 32%;
+    --chart-4: 220 25% 45%;
+    --chart-5: 30 25% 55%;
 
-    --shadow-soft: 0 4px 20px -4px hsl(var(--brand-burgundy) / 0.15);
-    --shadow-medium: 0 10px 40px -10px hsl(var(--brand-burgundy) / 0.20);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius: 0.5rem;
 
-    --sidebar-background: var(--brand-burgundy);
-    --sidebar-foreground: var(--brand-cream);
-    --sidebar-primary: var(--brand-yellow);
-    --sidebar-primary-foreground: var(--brand-burgundy);
-    --sidebar-accent: 347 58% 33%;
-    --sidebar-accent-foreground: var(--brand-cream);
-    --sidebar-border: 347 45% 43%;
-    --sidebar-ring: var(--brand-yellow);
+    /* Sidebar clara (D1) — mesmos mapeamentos nos dois temas */
+    --sidebar-background: var(--background);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-accent: var(--muted);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
   }
 
   .dark {
+    /* §9.1 — escuro */
     --background: 350 18% 12%;
+    --background-brand: 350 18% 12%;
     --foreground: var(--brand-cream);
 
     --card: 350 17% 16%;
+    --card-foreground: var(--foreground);
+
     --popover: var(--card);
+    --popover-foreground: var(--foreground);
 
     --primary: var(--brand-cream);
     --primary-foreground: var(--brand-burgundy);
@@ -72,14 +86,36 @@
     --secondary: 349 25% 22%;
     --secondary-foreground: var(--brand-cream);
 
-    --muted: var(--secondary);
+    --muted: 349 25% 22%;
     --muted-foreground: 30 24% 72%;
 
-    --destructive: 0 62.8% 50%;
+    --accent: 349 25% 22%;
+    --accent-foreground: var(--brand-cream);
+
+    --negative: 6 85% 70%;
+    --positive: 152 45% 62%;
+    --now: var(--brand-yellow);
+    --destructive: var(--negative);
     --destructive-foreground: 0 0% 98%;
 
     --border: 347 17% 30%;
+    --input: var(--border);
     --ring: var(--brand-yellow);
+
+    --chart-1: var(--brand-yellow);
+    --chart-2: 38 92% 61%;
+    --chart-3: 170 35% 57%;
+    --chart-4: 220 25% 70%;
+    --chart-5: 30 25% 80%;
+
+    --sidebar-background: var(--background);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-accent: var(--muted);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
   }
 
   .gmp-ac-container {
