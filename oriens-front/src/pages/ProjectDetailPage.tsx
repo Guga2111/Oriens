@@ -800,7 +800,7 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
                       </div>
                       <Progress
                         value={project.progress}
-                        className="h-3 [&>[role='progressbar']]:bg-none [&>[role='progressbar']]:bg-[var(--gradient-primary)]"
+                        className="h-3"
                       />
                       <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center">
                         <Target className="h-3.5 w-3.5 mr-1.5 text-primary" />

@@ -348,10 +348,7 @@ export function ProjectCard({
             <span className="text-muted-foreground">Progresso</span>
             <span>{project.progress}%</span>
           </div>
-          <Progress
-            value={project.progress}
-            className="[&>[role='progressbar']]:bg-none [&>[role='progressbar']]:bg-[var(--gradient-primary)]"
-          />
+          <Progress value={project.progress} />
         </div>
         <div>
           <div>

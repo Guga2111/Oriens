@@ -96,7 +96,7 @@ export default function AdminManagementPage() {
 
   const getRoleBadge = (role: string) => {
     return role === "ADMIN" ? (
-      <Badge className="bg-gradient-primary text-white h-6 inline-flex items-center gap-1">
+      <Badge className="bg-primary text-primary-foreground h-6 inline-flex items-center gap-1">
         <Shield className="h-3 w-3 flex-shrink-0" />
         Admin
       </Badge>

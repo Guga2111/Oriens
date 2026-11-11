@@ -51,7 +51,7 @@ export function SummaryAside({
           </div>
           <div className="h-2 w-full rounded-full bg-primary/20">
             <div
-              className="h-2 rounded-full bg-gradient-primary"
+              className="h-2 rounded-full bg-primary"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -93,7 +93,7 @@ export function SummaryAside({
                 Receba lembretes das suas tarefas 15 minutos antes pelo WhatsApp.
               </p>
               <Button
-                className="w-full text-primary-foreground bg-gradient-primary hover:opacity-80 transition-opacity"
+                className="w-full text-primary-foreground bg-primary hover:opacity-80 transition-opacity"
                 onClick={() => setIsWhatsAppDialogOpen(true)}
               >
                 Conectar WhatsApp

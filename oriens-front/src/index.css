@@ -11,95 +11,77 @@
   }
 
   :root {
-    --background: 35 20% 98%;
-    --foreground: 30 15% 12%;
+    --brand-cream: 38.4615 90.6977% 91.5686%;
+    --brand-burgundy: 346.875 71.6418% 26.2745%;
+    --brand-yellow: 45.679 99.1837% 51.9608%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 30 15% 12%;
+    --background: var(--brand-cream);
+    --foreground: 350 28% 14%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 30 15% 12%;
+    --card: 38 80% 97%;
+    --card-foreground: var(--foreground);
 
-    --primary: 36 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --popover: var(--card);
+    --popover-foreground: var(--foreground);
 
-    --secondary: 36 35% 95%;
-    --secondary-foreground: 36 100% 35%;
+    --primary: var(--brand-burgundy);
+    --primary-foreground: var(--brand-cream);
 
-    --muted: 35 10% 96%;
-    --muted-foreground: 35 5% 50%;
+    --secondary: 37 58% 86%;
+    --secondary-foreground: var(--brand-burgundy);
 
-    --accent: 36 85% 92%;
-    --accent-foreground: 36 100% 35%;
+    --muted: 37 48% 87%;
+    --muted-foreground: 15 17% 36%;
+
+    --accent: var(--secondary);
+    --accent-foreground: var(--secondary-foreground);
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 35 15% 90%;
-    --input: 35 15% 90%;
-    --ring: 36 100% 50%;
+    --border: 33 35% 80%;
+    --input: var(--border);
+    --ring: var(--brand-burgundy);
 
     --radius: 0.75rem;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(36, 100%, 50%), hsl(25, 95%, 55%));
-    --gradient-subtle: linear-gradient(180deg, hsl(35, 20%, 98%), hsl(36, 30%, 96%));
-
-    /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(36 100% 50% / 0.20);
-    --shadow-medium: 0 10px 40px -10px hsl(36 100% 50% / 0.30);
-    
-    /* Transitions */
+    --shadow-soft: 0 4px 20px -4px hsl(var(--brand-burgundy) / 0.15);
+    --shadow-medium: 0 10px 40px -10px hsl(var(--brand-burgundy) / 0.20);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar: 35 20% 98%;
-    --sidebar-foreground: 30 15% 12%;
-    --sidebar-background: 35 20% 98%;
-    --sidebar-primary: 36 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 36 35% 95%;
-    --sidebar-accent-foreground: 30 15% 12%;
-    --sidebar-border: 30 10% 90%;
-    --sidebar-ring: 36 100% 50%;
+    --sidebar-background: var(--brand-burgundy);
+    --sidebar-foreground: var(--brand-cream);
+    --sidebar-primary: var(--brand-yellow);
+    --sidebar-primary-foreground: var(--brand-burgundy);
+    --sidebar-accent: 347 58% 33%;
+    --sidebar-accent-foreground: var(--brand-cream);
+    --sidebar-border: 347 45% 43%;
+    --sidebar-ring: var(--brand-yellow);
   }
 
   .dark {
-    --background: 240 5% 14%;
-    --foreground: 0 0% 98%;
+    --background: 350 18% 12%;
+    --foreground: var(--brand-cream);
 
-    --card: 240 5% 16%;
-    --card-foreground: 0 0% 98%;
+    --card: 350 17% 16%;
+    --popover: var(--card);
 
-    --popover: 30 10% 12%;
-    --popover-foreground: 0 0% 98%;
+    --primary: var(--brand-cream);
+    --primary-foreground: var(--brand-burgundy);
 
-    --primary: 36 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --secondary: 349 25% 22%;
+    --secondary-foreground: var(--brand-cream);
 
-    --secondary: 30 10% 18%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 30 10% 18%;
-    --muted-foreground: 35 5% 60%;
-
-    --accent: 30 10% 18%;
-    --accent-foreground: 0 0% 98%;
+    --muted: var(--secondary);
+    --muted-foreground: 30 24% 72%;
 
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 30 10% 20%;
-    --input: 30 10% 20%;
-    --ring: 36 100% 50%;
-    --sidebar-background: 240 5% 14%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 36 100% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 18%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 5% 22%;
-    --sidebar-ring: 36 100% 50%;
+    --border: 347 17% 30%;
+    --ring: var(--brand-yellow);
   }
+
   .gmp-ac-container {
   z-index: 9999 !important;
 }

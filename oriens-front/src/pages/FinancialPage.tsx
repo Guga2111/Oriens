@@ -86,14 +86,25 @@ export default function FinancialPage() {
   const loadChartData = async () => {
     setIsLoadingCharts(true);
     try {
-      // Remove the janela de datas para que o overview agregue o histórico completo.
-      const response = await getAllEntries(userId!, {
-        size: 500,
-        sortBy: 'entryDate',
-        direction: 'DESC',
-      });
+      // Sem janela de datas e percorrendo todas as páginas: o overview agrega o histórico completo.
+      const pageSize = 500;
+      const fetchPage = (page: number) =>
+        getAllEntries(userId!, {
+          page,
+          size: pageSize,
+          sortBy: 'entryDate',
+          direction: 'DESC',
+        });
 
-      setChartEntries(response.content);
+      const firstPage = await fetchPage(0);
+      const remainingPages = await Promise.all(
+        Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) => fetchPage(index + 1))
+      );
+
+      setChartEntries([
+        ...firstPage.content,
+        ...remainingPages.flatMap(page => page.content),
+      ]);
     } catch (error: any) {
       toast({
         variant: 'destructive',

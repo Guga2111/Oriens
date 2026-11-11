@@ -164,17 +164,17 @@ export function AppSidebar() {
       <SidebarHeader>
         {isHovered ? (
           <div className="flex items-center gap-2 p-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <CheckSquare className="h-5 w-5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
+              <CheckSquare className="h-5 w-5 text-sidebar-primary-foreground" />
             </div>
-            <span className="text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-lg font-semibold text-sidebar-foreground">
               Oriens
             </span>
           </div>
         ) : (
           <div className="flex items-center justify-center w-full h-full">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <CheckSquare className="h-5 w-5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
+              <CheckSquare className="h-5 w-5 text-sidebar-primary-foreground" />
             </div>
           </div>
         )}
@@ -206,7 +206,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {isLoadingProjects ? (
                 <div className="flex justify-center items-center p-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <Loader2 className="h-5 w-5 animate-spin text-sidebar-foreground/80" />
                 </div>
               ) : (
                 projects.map((project) => (
@@ -229,8 +229,8 @@ export function AppSidebar() {
                         >
                           <Star
                             className={`h-4 w-4 flex-shrink-0 ${project.favorite
-                                ? 'text-yellow-400 fill-current'
-                                : 'text-muted-foreground hover:text-yellow-400'
+                                ? 'text-sidebar-primary fill-current'
+                                : 'text-sidebar-foreground/80 hover:text-sidebar-primary'
                               }`}
                           />
                         </button>
@@ -249,18 +249,18 @@ export function AppSidebar() {
             <SidebarGroupContent>
               {isLoadingSummary ? (
                 <div className="flex justify-center items-center p-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <Loader2 className="h-5 w-5 animate-spin text-sidebar-foreground/80" />
                 </div>
               ) : (
                 <div className="space-y-4 text-sm p-2">
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-muted-foreground">Tarefas concluídas</span>
-                      <span className="font-bold text-foreground">{weeklySummary.completedTasks}</span>
+                      <span className="text-sidebar-foreground/80">Tarefas concluídas</span>
+                      <span className="font-bold text-sidebar-foreground">{weeklySummary.completedTasks}</span>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-muted">
+                    <div className="h-2 w-full rounded-full bg-sidebar-accent">
                       <div
-                        className="h-2 rounded-full bg-gradient-primary"
+                        className="h-2 rounded-full bg-sidebar-primary"
                         style={{ width: `${productivity}%` }}
                       />
                     </div>
@@ -268,12 +268,12 @@ export function AppSidebar() {
 
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-muted-foreground">Produtividade</span>
-                      <span className="font-bold text-foreground">{Math.round(productivity)}%</span>
+                      <span className="text-sidebar-foreground/80">Produtividade</span>
+                      <span className="font-bold text-sidebar-foreground">{Math.round(productivity)}%</span>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-muted">
+                    <div className="h-2 w-full rounded-full bg-sidebar-accent">
                       <div
-                        className="h-2 rounded-full bg-gradient-primary"
+                        className="h-2 rounded-full bg-sidebar-primary"
                         style={{ width: `${productivity}%` }}
                       />
                     </div>

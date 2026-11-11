@@ -21,6 +21,11 @@ export default {
                 ]
   		},
   		colors: {
+			brand: {
+				cream: 'hsl(var(--brand-cream))',
+				burgundy: 'hsl(var(--brand-burgundy))',
+				yellow: 'hsl(var(--brand-yellow))'
+			},
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
@@ -64,10 +69,6 @@ export default {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))',
   			}
-  		},
-  		backgroundImage: {
-  			'gradient-primary': 'var(--gradient-primary)',
-  			'gradient-subtle': 'var(--gradient-subtle)'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

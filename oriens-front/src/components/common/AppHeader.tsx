@@ -28,7 +28,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-10 flex h-20 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-8">
       <div className="flex items-center gap-3">
         <div>
-          <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-xl font-bold text-primary">
             Oriens
           </h1>
           <p className="text-xs text-muted-foreground">Organize seu dia</p>

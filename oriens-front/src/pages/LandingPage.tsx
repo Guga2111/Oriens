@@ -25,7 +25,7 @@ export function LandingPage() {
             <Button variant="ghost">Login</Button>
           </Link>
           <Link to="/auth">
-            <Button className="text-primary-foreground bg-gradient-primary hover:opacity-80 transition-opacity">
+            <Button className="text-primary-foreground bg-primary hover:opacity-80 transition-opacity">
               Registrar
             </Button>
           </Link>
@@ -41,14 +41,14 @@ export function LandingPage() {
                 ● Organize seu dia sem custos
               </Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter">
-                Organize suas tarefas <br /> com <span className="bg-gradient-primary bg-clip-text text-transparent">Oriens</span>
+                Organize suas tarefas <br /> com <span className="text-primary">Oriens</span>
               </h1>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                 A solução completa e gratuita para gerenciar seu calendário e tarefas diárias. Sem mensalidades, sem limitações.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/auth">
-                  <Button size="lg" className="text-primary-foreground bg-gradient-primary hover:opacity-80 transition-opacity">
+                  <Button size="lg" className="bg-brand-yellow text-brand-burgundy hover:bg-brand-yellow/85">
                     Começar agora →
                   </Button>
                 </Link>
@@ -85,19 +85,19 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section id="features-detail" className="w-full py-20 md:py-24 lg:py-32 bg-muted">
+        <section id="features-detail" className="w-full py-20 md:py-24 lg:py-32 bg-brand-burgundy text-brand-cream">
           <div className="container px-4 md:px-6 text-center">
             <div className="max-w-[800px] mx-auto space-y-4">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter">
-                Tudo que você precisa para <span className="bg-gradient-primary bg-clip-text text-transparent">produtividade máxima</span>
+                Tudo que você precisa para produtividade máxima
               </h2>
-              <p className="text-muted-foreground md:text-xl">
+              <p className="text-brand-cream/85 md:text-xl">
                 Recursos poderosos para organizar sua rotina sem complicação
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
               
-              <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
+              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <LayoutList className="h-5 w-5 text-primary" />
                 </div>
@@ -107,7 +107,7 @@ export function LandingPage() {
                 </p>
               </div>
 
-              <div className="bg-card p-6 rounded-lg text-left border border-primary/50 transition-transform duration-300 hover:-translate-y-2">
+              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-primary/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <CalendarDays className="h-5 w-5 text-primary" />
                 </div>
@@ -117,7 +117,7 @@ export function LandingPage() {
                 </p>
               </div>
 
-              <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
+              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Bell className="h-5 w-5 text-primary" />
                 </div>
@@ -127,7 +127,7 @@ export function LandingPage() {
                 </p>
               </div>
 
-              <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
+              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <MessageCircle className="h-5 w-5 text-primary" />
                 </div>
@@ -137,7 +137,7 @@ export function LandingPage() {
                 </p>
               </div>
 
-              <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
+              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <BarChart className="h-5 w-5 text-primary" />
                 </div>
@@ -147,7 +147,7 @@ export function LandingPage() {
                 </p>
               </div>
 
-              <div className="bg-card p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
+              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
                 <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Cloud className="h-5 w-5 text-primary" />
                 </div>
@@ -165,7 +165,7 @@ export function LandingPage() {
       <footer className="bg-muted/20 border-t border-border/50 py-12">
         <div className="container grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
           <div className="flex flex-col items-center md:items-start gap-2">
-            <h3 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">Oriens</h3>
+            <h3 className="text-2xl font-bold text-primary">Oriens</h3>
             <p className="max-w-xs text-sm text-muted-foreground">
               Organize suas tarefas diárias sem custos
             </p>

@@ -7,16 +7,16 @@ const TermsOfServicePage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-background via-accent/20 to-background text-foreground">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-background text-foreground">
 
       <div className="w-full max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-500">
 
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl flex items-center justify-center shadow-[var(--shadow-soft)] bg-gradient-primary">
-              <CheckSquare className="h-7 w-7 text-primary-foreground" />
+            <div className="h-12 w-12 rounded-xl flex items-center justify-center shadow-[var(--shadow-soft)] bg-brand-yellow">
+              <CheckSquare className="h-7 w-7 text-brand-burgundy" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold text-primary">
               Oriens
             </h1>
           </div>

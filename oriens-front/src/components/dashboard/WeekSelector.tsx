@@ -19,7 +19,7 @@ export function WeekSelector({ currentDate, setCurrentDate }: WeekSelectorProps)
           className={cn(
             "flex h-auto flex-col rounded-md p-2 text-center", 
             isSameDay(day, currentDate) 
-              ? "bg-gradient-primary text-primary-foreground shadow" 
+              ? "bg-primary text-primary-foreground shadow"
               : "text-foreground"
           )}
         >

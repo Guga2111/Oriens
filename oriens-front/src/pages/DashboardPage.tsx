@@ -218,7 +218,7 @@ export function DashboardPage() {
                   </ToggleGroupItem>
                 </ToggleGroup>
                 <Button
-                  className="text-primary-foreground bg-gradient-primary hover:opacity-80 transition-opacity"
+                  className="text-primary-foreground bg-primary hover:opacity-80 transition-opacity"
                   onClick={() => setIsCreateTaskOpen(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" /> Nova Tarefa

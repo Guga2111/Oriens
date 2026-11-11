@@ -88,7 +88,9 @@ export function PeriodOverviewCard({ entries, period, onPeriodChange }: PeriodOv
           {/* Saldo Geral - Principal */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-muted-foreground mb-1.5">Saldo geral</p>
+              <p className="text-sm text-muted-foreground mb-1.5">
+                Saldo geral <span className="text-xs">· todo o período</span>
+              </p>
               <p className="text-3xl font-bold tabular-nums tracking-tight">
                 {showBalance ? formatCurrency(summary.saldo) : 'R$ ••••••'}
               </p>
