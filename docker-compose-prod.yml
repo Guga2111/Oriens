@@ -1,0 +1,19 @@
+services:
+  api:
+    image: oriens-api:latest
+    container_name: oriens-api
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    volumes:
+      - /opt/oriens-uploads:/opt/oriens-uploads
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M

@@ -1,3 +1,7 @@
 *.sh
 *.txt
 *.claude
+
+# Segredos - nunca commitar
+.env
+!.env.example
