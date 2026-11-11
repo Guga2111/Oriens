@@ -117,7 +117,7 @@ export function TagManagementDialog({
       resetForm();
       await loadTags();
       onTagsChange();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao criar tag',
@@ -141,7 +141,7 @@ export function TagManagementDialog({
       resetForm();
       await loadTags();
       onTagsChange();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao atualizar tag',
@@ -165,7 +165,7 @@ export function TagManagementDialog({
       setDeletingTag(null);
       await loadTags();
       onTagsChange();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao excluir tag',

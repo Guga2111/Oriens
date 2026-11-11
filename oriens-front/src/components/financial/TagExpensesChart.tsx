@@ -38,7 +38,7 @@ export function TagExpensesChart({ entries, tags }: TagExpensesChartProps) {
       const monthEnd = endOfMonth(monthDate);
       const monthLabel = format(monthDate, 'MMM', { locale: ptBR });
 
-      const dataPoint: any = {
+      const dataPoint: Record<string, string | number> = {
         month: monthLabel,
       };
 
@@ -79,6 +79,12 @@ export function TagExpensesChart({ entries, tags }: TagExpensesChartProps) {
     );
   }, [chartData, expenseTags]);
 
+  const totalExpenses = useMemo(() => {
+    return chartData.reduce((total, month) => {
+      return total + expenseTags.reduce((sum, tag) => sum + (month[tag.name] || 0), 0);
+    }, 0);
+  }, [chartData, expenseTags]);
+
   if (!hasData) {
     return (
       <Card>
@@ -100,12 +106,6 @@ export function TagExpensesChart({ entries, tags }: TagExpensesChartProps) {
       maximumFractionDigits: 2,
     }).format(value);
   };
-
-  const totalExpenses = useMemo(() => {
-    return chartData.reduce((total, month) => {
-      return total + expenseTags.reduce((sum, tag) => sum + (month[tag.name] || 0), 0);
-    }, 0);
-  }, [chartData, expenseTags]);
 
   return (
     <Card>

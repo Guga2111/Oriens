@@ -28,6 +28,7 @@ export function PreferencesCard() {
       if (preferences.sound) playSwitchSound();
       toast.success(`Tema alterado para ${newTheme === "light" ? "claro" : "escuro"}`);
     } catch (error) {
+      // erro já exibido como toast pelo SettingsContext
     }
   };
 
@@ -38,6 +39,7 @@ export function PreferencesCard() {
       if (wasSoundEnabled) playSwitchSound();
       toast.success(`Notificações ${checked ? "ativadas" : "desativadas"}`);
     } catch (error) {
+      // erro já exibido como toast pelo SettingsContext
     }
   };
 
@@ -53,6 +55,7 @@ export function PreferencesCard() {
 
       toast.success(`Som ${checked ? "ativado" : "desativado"}`);
     } catch (error) {
+      // erro já exibido como toast pelo SettingsContext
     }
   };
 

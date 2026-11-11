@@ -69,7 +69,7 @@ const ResetPasswordPage = () => {
       setStatus('success');
       toast({ title: "Sucesso!", description: "Sua senha foi redefinida." });
 
-    } catch (err: any) {
+    } catch (err) {
       console.error("Erro ao resetar senha:", err);
       const message = err.response?.data || "Token expirado ou inválido. Tente novamente.";
       setStatus('error');

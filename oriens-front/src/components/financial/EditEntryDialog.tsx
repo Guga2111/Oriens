@@ -112,7 +112,7 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
       setErrors({});
       onOpenChange(false);
       onSuccess();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro ao atualizar entrada',
