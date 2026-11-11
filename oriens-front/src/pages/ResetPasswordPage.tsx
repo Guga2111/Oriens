@@ -111,7 +111,7 @@ const ResetPasswordPage = () => {
 
       <Button
         type="submit"
-        className="w-full text-primary-foreground transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-soft)] bg-primary hover:opacity-80"
+        className="w-full text-primary-foreground bg-primary hover:opacity-80"
         disabled={status === 'submitting'}
       >
         {status === 'submitting' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Salvar Nova Senha"}
@@ -123,7 +123,7 @@ const ResetPasswordPage = () => {
     <div className="space-y-4 text-center">
       <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
       <p>Sua senha foi redefinida com sucesso.</p>
-      <Button asChild className="w-full text-primary-foreground transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-soft)] bg-primary hover:opacity-80">
+      <Button asChild className="w-full text-primary-foreground bg-primary hover:opacity-80">
         <Link to="/auth">Ir para o Login</Link>
       </Button>
     </div>
@@ -162,9 +162,9 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background-brand">
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <Card className="border-border/50 shadow-[var(--shadow-medium)]">
+        <Card className="border-border/50">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl text-center">Redefinir Senha</CardTitle>
             <CardDescription className="text-center">

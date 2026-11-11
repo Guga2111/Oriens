@@ -7,13 +7,13 @@ const TermsOfServicePage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-background text-foreground">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-background-brand text-foreground">
 
       <div className="w-full max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-500">
 
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl flex items-center justify-center shadow-[var(--shadow-soft)] bg-brand-yellow">
+            <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-brand-yellow">
               <CheckSquare className="h-7 w-7 text-brand-burgundy" />
             </div>
             <h1 className="text-4xl font-bold text-primary">
@@ -31,7 +31,7 @@ const TermsOfServicePage = () => {
           </Button>
         </header>
 
-        <Card className="border-border/50 shadow-[var(--shadow-medium)]">
+        <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center">
               Termos de Serviço

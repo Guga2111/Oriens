@@ -146,12 +146,12 @@ const handleForgotPassword = async (e: React.FormEvent) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background-brand">
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
         {/* Logo e Título */}
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-12 w-12 rounded-xl flex items-center justify-center shadow-[var(--shadow-soft)] bg-brand-yellow">
+            <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-brand-yellow">
               <CheckSquare className="h-7 w-7 text-brand-burgundy" />
             </div>
             <h1 className="text-4xl font-bold text-primary">
@@ -164,7 +164,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
         </div>
 
         {/* Auth Card */}
-        <Card className="border-border/50 shadow-[var(--shadow-medium)]">
+        <Card className="border-border/50">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl text-center">Bem-vindo</CardTitle>
             <CardDescription className="text-center">
@@ -217,7 +217,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full text-primary-foreground transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-soft)] bg-primary hover:opacity-80"
+                    className="w-full text-primary-foreground bg-primary hover:opacity-80"
                     disabled={isLoading}
                   >
                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Entrar"}
@@ -253,7 +253,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                               <DialogFooter>
                                 <Button
                                   type="submit"
-                                  className="w-full text-primary-foreground transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-soft)] bg-primary hover:opacity-80"
+                                  className="w-full text-primary-foreground bg-primary hover:opacity-80"
                                   disabled={isLoading}
                                 >
                                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enviar link"}
@@ -369,7 +369,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                   
                   <Button 
                     type="submit" 
-                    className="w-full text-primary-foreground transition-[var(--transition-smooth)] hover:shadow-[var(--shadow-soft)] bg-primary hover:opacity-80"
+                    className="w-full text-primary-foreground bg-primary hover:opacity-80"
                     disabled={isLoading || !termsAccepted}
                   >
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Criar conta"}
