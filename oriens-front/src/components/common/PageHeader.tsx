@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
@@ -10,6 +11,8 @@ interface PageHeaderProps {
   meta?: ReactNode;
   /** Ações da tela. Em <768px quebram para uma segunda linha (SPEC R3). */
   actions?: ReactNode;
+  /** Troca de dados mantendo o conteúdo anterior (SPEC §11.1). */
+  isLoading?: boolean;
   className?: string;
 }
 
@@ -22,6 +25,7 @@ export function PageHeader({
   description,
   meta,
   actions,
+  isLoading = false,
   className,
 }: PageHeaderProps) {
   return (
@@ -32,9 +36,17 @@ export function PageHeader({
       )}
     >
       <div className="min-w-0">
-        <h1 className="text-2xl font-semibold leading-8 text-foreground">
-          {title}
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold leading-8 text-foreground">
+            {title}
+          </h1>
+          {isLoading && (
+            <Spinner
+              aria-label="Atualizando"
+              className="size-4 text-muted-foreground"
+            />
+          )}
+        </div>
         {description && (
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         )}

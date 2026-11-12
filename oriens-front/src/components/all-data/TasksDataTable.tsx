@@ -31,8 +31,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
-import { TaskDTO, Priority, Status, PriorityLabels, StatusLabels, PriorityColors, StatusColors } from '@/types/task';
-import { cn } from '@/lib/utils';
+import { TaskDTO, Priority, Status } from '@/types/task';
+import { PRIORITY, TASK_STATUS } from '@/lib/labels';
 
 export interface TasksFilters {
   status: string;
@@ -125,8 +125,9 @@ export function TasksDataTable({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os status</SelectItem>
-              <SelectItem value={Status.PENDING}>{StatusLabels[Status.PENDING]}</SelectItem>
-              <SelectItem value={Status.CONCLUDED}>{StatusLabels[Status.CONCLUDED]}</SelectItem>
+              <SelectItem value={Status.PENDING}>{TASK_STATUS.PENDING.label}</SelectItem>
+              <SelectItem value={Status.ON_DOING}>{TASK_STATUS.ON_DOING.label}</SelectItem>
+              <SelectItem value={Status.CONCLUDED}>{TASK_STATUS.CONCLUDED.label}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -140,9 +141,9 @@ export function TasksDataTable({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas prioridades</SelectItem>
-              <SelectItem value={Priority.LOW}>{PriorityLabels[Priority.LOW]}</SelectItem>
-              <SelectItem value={Priority.MEDIUM}>{PriorityLabels[Priority.MEDIUM]}</SelectItem>
-              <SelectItem value={Priority.HIGH}>{PriorityLabels[Priority.HIGH]}</SelectItem>
+              <SelectItem value={Priority.LOW}>{PRIORITY.LOW.label}</SelectItem>
+              <SelectItem value={Priority.MEDIUM}>{PRIORITY.MEDIUM.label}</SelectItem>
+              <SelectItem value={Priority.HIGH}>{PRIORITY.HIGH.label}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -265,13 +266,13 @@ export function TasksDataTable({
                         {formatTime(task.startTime)}
                       </TableCell>
                       <TableCell>
-                        <Badge className={cn(PriorityColors[task.priority], 'border-0')}>
-                          {PriorityLabels[task.priority]}
+                        <Badge variant={PRIORITY[task.priority].badge}>
+                          {PRIORITY[task.priority].label}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={cn(StatusColors[task.status], 'border-0')}>
-                          {StatusLabels[task.status]}
+                        <Badge variant={TASK_STATUS[task.status].badge}>
+                          {TASK_STATUS[task.status].label}
                         </Badge>
                       </TableCell>
                     </TableRow>

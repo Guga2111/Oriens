@@ -25,21 +25,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { LocationMap } from "./LocationMap";
 import { useSound } from "@/hooks/useSound";
+import type { Task } from "@/types/task";
 
-export interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  startTime: string;
-  dueDate: string;
-  priority: "LOW" | "MEDIUM" | "HIGH";
-  status: "PENDING" | "ON_DOING" | "CONCLUDED";
-  location?: {
-    latitude: number;
-    longitude: number;
-    address?: string;
-  };
-}
+export type { Task } from "@/types/task";
 
 interface TaskCardProps {
   task: Task;
@@ -208,12 +196,11 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
             </DialogHeader>
             <div className="mt-4 overflow-hidden rounded-lg">
               <LocationMap
-                lat={task.location.latitude}
-                lng={task.location.longitude}
+                lat={task.location.latitude ?? 0}
+                lng={task.location.longitude ?? 0}
                 taskTitle={task.title}
                 taskSubtitle={task.description}
-                priorityVariant={priorityVariants[task.priority]}
-                taskPriority={task.priority}
+                priority={task.priority}
               />
             </div>
           </DialogContent>

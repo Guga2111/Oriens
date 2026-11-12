@@ -1,65 +1,65 @@
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   ChevronLeft,
   ChevronRight,
   Plus,
   Calendar,
   LayoutGrid,
-  Sun,
-  Sunset,
-  Moon,
-  Loader2
+  AlertCircle,
 } from "lucide-react";
 import { CreateTaskDialog } from "@/components/dashboard/CreateTaskDialog";
-
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/services/api";
-import { format, subDays, addDays, startOfWeek, endOfWeek, isSameDay } from "date-fns";
+import {
+  format,
+  subDays,
+  addDays,
+  startOfWeek,
+  endOfWeek,
+  isSameDay,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { WeekSelector } from "@/components/dashboard/WeekSelector";
+import { Skeleton } from "@/components/ui/skeleton";
 import { EditTaskDialog } from "@/components/dashboard/EditTaskDialog";
-import { toast } from "sonner";
 import { WeekView } from "@/components/dashboard/WeekView";
 import { TaskSection } from "@/components/dashboard/TaskSection";
-import { SummaryAside } from "@/components/dashboard/SummaryAside";
+import { DayLine } from "@/components/dashboard/DayLine";
 import { PageHeader } from "@/components/common/PageHeader";
-
-interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  startTime: string;
-  dueDate: string;
-  priority: "LOW" | "MEDIUM" | "HIGH";
-  status: "PENDING" | "ON_DOING" | "CONCLUDED";
-  location?: { // Location with '?' for being optional
-    latitude: number;
-    longitude: number;
-    address?: string;
-  };
-}
+import { describeDay, describeWeek, groupTasksByPeriod } from "@/lib/tasks";
+import type { Task } from "@/types/task";
 
 export function DashboardPage() {
   const { userId } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
+  const [createTaskDefaults, setCreateTaskDefaults] = useState<{
+    date: Date;
+    startTime?: string;
+  }>({ date: new Date() });
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [userPhoneNumber, setUserPhoneNumber] = useState<string | null>(null);
 
-  console.log("Rendirizou!");
+  const hasLoaded = useRef(false);
 
-  const fetchTasks = async (isInitialLoad = false) => {
+  const fetchTasks = useCallback(async () => {
     if (!userId) return;
 
-    if (isInitialLoad) {
-      setIsLoading(true);
+    // Troca de data/visão mantém os dados anteriores e mostra o spinner no
+    // PageHeader; só o carregamento inicial usa skeletons (SPEC §11.1).
+    if (hasLoaded.current) {
+      setIsRefreshing(true);
+    } else {
+      setIsInitialLoading(true);
     }
+    setError(null);
 
     try {
       let response;
@@ -73,79 +73,40 @@ export function DashboardPage() {
         const weekStart = startOfWeek(currentDate, { locale: ptBR });
         const weekEnd = endOfWeek(currentDate, { locale: ptBR });
 
-        const formattedStartDate = format(weekStart, "yyyy-MM-dd");
-        const formattedEndDate = format(weekEnd, "yyyy-MM-dd");
-
         response = await apiClient.get(
-          `/task/user/${userId}/range?startDate=${formattedStartDate}&endDate=${formattedEndDate}`
+          `/task/user/${userId}/range?startDate=${format(
+            weekStart,
+            "yyyy-MM-dd"
+          )}&endDate=${format(weekEnd, "yyyy-MM-dd")}`
         );
       }
 
       setTasks(response.data);
-    } catch (error) {
-      console.error("Falha ao buscar tarefas: ", error);
-      toast.error("Erro de Rede", {
-        description: "Não foi possível buscar suas tarefas. Tente novamente mais tarde.",
-      });
+      hasLoaded.current = true;
+    } catch (fetchError) {
+      console.error("Falha ao buscar tarefas: ", fetchError);
+      setError("Não foi possível carregar suas tarefas.");
     } finally {
-      if (isInitialLoad) {
-        setIsLoading(false);
-      }
+      setIsInitialLoading(false);
+      setIsRefreshing(false);
     }
-  };
-
-  const fetchUserData = async () => {
-    if (!userId) return;
-
-    try {
-      const response = await apiClient.get(`/user/${userId}`);
-      setUserPhoneNumber(response.data.phoneNumber || null);
-    } catch (error) {
-      console.error("Falha ao buscar dados do usuário: ", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchTasks(true);
-    fetchUserData();
   }, [userId, currentDate, viewMode]);
 
-  const getTasksForPeriod = (start: string, end: string) => {
-    return tasks
-      .filter((task) => task.startTime >= start && task.startTime <= end)
-      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  useEffect(() => {
+    void fetchTasks();
+  }, [fetchTasks]);
+
+  const openCreateTask = (date: Date = currentDate, startTime?: string) => {
+    setCreateTaskDefaults({ date, startTime });
+    setIsCreateTaskOpen(true);
   };
 
-  const morningTasks = getTasksForPeriod("00:00:00", "11:59:59");
-  const afternoonTasks = getTasksForPeriod("12:00:00", "17:59:59");
-  const nightTasks = getTasksForPeriod("18:00:00", "23:59:59");
-
-  const countConcluded = (tasks: Task[]) =>
-    tasks.filter((t) => t.status === "CONCLUDED").length;
-
-  const totalTasks = tasks.length;
-  const concludedTasks = countConcluded(tasks);
-  const pendingTasks = totalTasks - concludedTasks;
-  const progress =
-    totalTasks > 0 ? Math.round((concludedTasks / totalTasks) * 100) : 0;
-
-  // Loading acontece dentro do shell (SPEC §10.2): nunca em tela cheia.
-  if (isLoading) {
-    return (
-      <div
-        className="flex items-center justify-center p-24"
-        role="status"
-        aria-live="polite"
-      >
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="sr-only">Carregando tarefas</span>
-      </div>
-    );
-  }
+  const periods = useMemo(() => groupTasksByPeriod(tasks), [tasks]);
 
   const isToday = isSameDay(currentDate, new Date());
   const longDate = format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR });
-  const longDateCapitalized = longDate.charAt(0).toUpperCase() + longDate.slice(1);
+  const longDateCapitalized =
+    longDate.charAt(0).toUpperCase() + longDate.slice(1);
   const title = isToday ? "Hoje" : longDateCapitalized;
   const weekStart = startOfWeek(currentDate, { locale: ptBR });
   const weekEnd = endOfWeek(currentDate, { locale: ptBR });
@@ -160,132 +121,156 @@ export function DashboardPage() {
         ? longDateCapitalized
         : undefined;
 
+  const description = isInitialLoading
+    ? undefined
+    : viewMode === "day"
+      ? describeDay(tasks)
+      : describeWeek(tasks);
+
   return (
     <>
-      <div className="flex min-h-full">
-        <div className="min-w-0 flex-1 p-6 md:p-8">
-        <PageHeader
-          title={title}
-          meta={meta}
-          actions={
-            <>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label={viewMode === "day" ? "Dia anterior" : "Semana anterior"}
-                  onClick={() =>
-                    setCurrentDate(subDays(currentDate, viewMode === "day" ? 1 : 7))
+      <div className="p-6 md:p-8">
+        <div className="max-w-[1280px]">
+          <PageHeader
+            title={title}
+            description={description}
+            meta={meta}
+            isLoading={isRefreshing}
+            actions={
+              <>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label={
+                      viewMode === "day" ? "Dia anterior" : "Semana anterior"
+                    }
+                    onClick={() =>
+                      setCurrentDate(
+                        subDays(currentDate, viewMode === "day" ? 1 : 7)
+                      )
+                    }
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label={
+                      viewMode === "day" ? "Próximo dia" : "Próxima semana"
+                    }
+                    onClick={() =>
+                      setCurrentDate(
+                        addDays(currentDate, viewMode === "day" ? 1 : 7)
+                      )
+                    }
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCurrentDate(new Date())}
+                  >
+                    Hoje
+                  </Button>
+                </div>
+
+                <ToggleGroup
+                  type="single"
+                  value={viewMode}
+                  onValueChange={(value: "day" | "week") =>
+                    value && setViewMode(value)
                   }
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <ToggleGroupItem value="day" aria-label="Ver dia">
+                    <Calendar className="h-4 w-4" />
+                    <span className="ml-1">Dia</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="week" aria-label="Ver semana">
+                    <LayoutGrid className="h-4 w-4" />
+                    <span className="ml-1">Semana</span>
+                  </ToggleGroupItem>
+                </ToggleGroup>
+
+                <Button
+                  className="text-primary-foreground bg-primary hover:opacity-80 transition-opacity"
+                  onClick={() => openCreateTask()}
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Nova Tarefa
                 </Button>
+              </>
+            }
+          />
+
+          {viewMode === "day" && !isInitialLoading && (
+            <DayLine tasks={tasks} date={currentDate} />
+          )}
+
+          {error && (
+            <Alert variant="destructive" className="mt-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Erro ao carregar tarefas</AlertTitle>
+              <AlertDescription className="flex flex-wrap items-center gap-3">
+                <span>{error}</span>
                 <Button
                   variant="outline"
-                  size="icon"
-                  aria-label={viewMode === "day" ? "Próximo dia" : "Próxima semana"}
-                  onClick={() =>
-                    setCurrentDate(addDays(currentDate, viewMode === "day" ? 1 : 7))
-                  }
+                  size="sm"
+                  onClick={() => void fetchTasks()}
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  Tentar novamente
                 </Button>
-                <Button variant="outline" onClick={() => setCurrentDate(new Date())}>
-                  Hoje
-                </Button>
-              </div>
+              </AlertDescription>
+            </Alert>
+          )}
 
-              <ToggleGroup
-                type="single"
-                value={viewMode}
-                onValueChange={(value: "day" | "week") => value && setViewMode(value)}
-              >
-                <ToggleGroupItem value="day" aria-label="Ver dia">
-                  <Calendar className="h-4 w-4" />
-                  <span className="ml-1 hidden sm:inline">Dia</span>
-                </ToggleGroupItem>
-                <ToggleGroupItem value="week" aria-label="Ver semana">
-                  <LayoutGrid className="h-4 w-4" />
-                  <span className="ml-1 hidden sm:inline">Semana</span>
-                </ToggleGroupItem>
-              </ToggleGroup>
-
-              <Button
-                className="text-primary-foreground bg-primary hover:opacity-80 transition-opacity"
-                onClick={() => setIsCreateTaskOpen(true)}
-              >
-                <Plus className="mr-2 h-4 w-4" /> Nova Tarefa
-              </Button>
-            </>
-          }
-        />
-
-        {viewMode === "week" && (
-          <div className="mt-6">
-            <WeekSelector
-              currentDate={currentDate}
-              setCurrentDate={(date) => setCurrentDate(new Date(date))}
-            />
-          </div>
-        )}
-
-        {viewMode === "day" ? (
-          <div className="mt-6 space-y-8">
-            <TaskSection
-              title="Manhã"
-              timeRange="00:00 - 11:59"
-              icon={<Sun className="h-6 w-6 text-yellow-500" />}
-              tasks={morningTasks}
-              onUpdateTasks={fetchTasks}
-              onEditTask={setEditingTask}
-              viewMode={viewMode}
-            />
-            <TaskSection
-              title="Tarde"
-              timeRange="12:00 - 17:59"
-              icon={<Sunset className="h-6 w-6 text-orange-500" />}
-              tasks={afternoonTasks}
-              onUpdateTasks={fetchTasks}
-              onEditTask={setEditingTask}
-              viewMode={viewMode}
-            />
-            <TaskSection
-              title="Noite"
-              timeRange="18:00 - 23:59"
-              icon={<Moon className="h-6 w-6 text-indigo-500" />}
-              tasks={nightTasks}
-              onUpdateTasks={fetchTasks}
-              onEditTask={setEditingTask}
-              viewMode={viewMode}
-            />
-          </div>
-        ) : (
-          <div className="mt-6">
-            <WeekView
-              tasks={tasks}
-              currentDate={currentDate}
-              onUpdateTasks={fetchTasks}
-              onEditTask={setEditingTask}
-              viewMode={viewMode}
-            />
-          </div>
-        )}
-      </div>
-
-      <SummaryAside
-        totalTasks={totalTasks}
-        concludedTasks={concludedTasks}
-        pendingTasks={pendingTasks}
-        progress={progress}
-        userPhoneNumber={userPhoneNumber}
-        onPhoneNumberUpdated={fetchUserData}
-      />
+          {viewMode === "day" ? (
+            <div
+              className="mt-6 space-y-8"
+              aria-busy={isRefreshing}
+              aria-live="polite"
+            >
+              {periods.map((period) => (
+                <TaskSection
+                  key={period.id}
+                  title={period.title}
+                  timeRange={period.range}
+                  emptyLabel={period.emptyLabel}
+                  tasks={period.tasks}
+                  onUpdateTasks={fetchTasks}
+                  onEditTask={setEditingTask}
+                  onAddTask={() => openCreateTask(currentDate)}
+                  isLoading={isInitialLoading}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-6" aria-busy={isRefreshing}>
+              {isInitialLoading ? (
+                <div className="grid grid-cols-7 gap-4">
+                  {Array.from({ length: 7 }).map((_, index) => (
+                    <Skeleton key={index} className="h-40 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <WeekView
+                  tasks={tasks}
+                  currentDate={currentDate}
+                  onUpdateTasks={fetchTasks}
+                  onEditTask={setEditingTask}
+                  viewMode={viewMode}
+                />
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <CreateTaskDialog
         open={isCreateTaskOpen}
         onOpenChange={setIsCreateTaskOpen}
         onTaskCreated={fetchTasks}
+        defaultDate={createTaskDefaults.date}
+        defaultStartTime={createTaskDefaults.startTime}
       />
       {editingTask && (
         <EditTaskDialog

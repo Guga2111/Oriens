@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { login } from "./helpers";
 
-// E2E 3 da SPEC §15 (P0.0): criar e concluir uma tarefa.
-test("cria e conclui uma tarefa", async ({ page }) => {
+// P1.1: concluir, marcar em andamento e voltar para a fazer (D9).
+test("cria, conclui e alterna o status de uma tarefa", async ({ page }) => {
   await login(page);
 
   const title = `Tarefa E2E ${Date.now()}`;
@@ -13,16 +13,12 @@ test("cria e conclui uma tarefa", async ({ page }) => {
   await expect(dialog).toBeVisible();
 
   await dialog.locator("#title").fill(title);
-
-  // Data: calendário (o PopoverContent é portaled para o body, fora do dialog).
-  await dialog.getByRole("button", { name: /Escolha data/ }).click();
-  const today = new Date().getDate();
-  await page
-    .locator(`button[role="gridcell"]:not(.day-outside)`)
-    .filter({ hasText: new RegExp(`^${today}$`) })
-    .click();
-
   await dialog.locator("#startTime").fill("09:00");
+
+  // A data já vem preenchida com o dia visível (P1.1).
+  await expect(
+    dialog.getByRole("button", { name: /\d{2}\/\d{2}\/\d{4}/ })
+  ).toBeVisible();
 
   await dialog.getByRole("combobox").click();
   await page.getByRole("option", { name: "Média" }).click();
@@ -36,26 +32,107 @@ test("cria e conclui uma tarefa", async ({ page }) => {
   expect(createResp.ok()).toBe(true);
 
   await expect(dialog).toBeHidden();
-  await expect(page.getByText(title)).toBeVisible();
 
-  // Concluir: o toggle do card envia PUT com status CONCLUDED e o card
-  // re-renderiza riscado após o refetch.
-  const card = page
-    .locator("div.mb-2")
-    .filter({ has: page.getByText(title) });
-  const toggle = card.getByRole("button").first();
+  const row = page.getByRole("listitem").filter({ hasText: title });
+  await expect(row).toBeVisible();
 
-  const [putResp] = await Promise.all([
+  // Concluir: PENDING → CONCLUDED.
+  const [concludeResp] = await Promise.all([
     page.waitForResponse(
       (r) => r.request().method() === "PUT" && r.url().includes("/task/")
     ),
-    toggle.click(),
+    row.getByRole("checkbox", { name: `Concluir ${title}` }).click(),
   ]);
-  expect(putResp.ok()).toBe(true);
-  expect(putResp.request().postDataJSON()).toMatchObject({
+  expect(concludeResp.ok()).toBe(true);
+  expect(concludeResp.request().postDataJSON()).toMatchObject({
     title,
     status: "CONCLUDED",
   });
+  await expect(row.getByText(title, { exact: true })).toHaveClass(
+    /line-through/
+  );
 
-  await expect(card.locator("p.font-medium")).toHaveClass(/line-through/);
+  // Recarrega para sair de qualquer refetch em andamento antes do menu.
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Manhã" })
+  ).toBeVisible();
+  let currentRow = page.getByRole("listitem").filter({ hasText: title });
+  await expect(currentRow.getByText(title, { exact: true })).toHaveClass(
+    /line-through/
+  );
+
+  // Voltar para a fazer: CONCLUDED → PENDING.
+  await currentRow
+    .getByRole("button", { name: `Ações da tarefa ${title}` })
+    .click();
+  const [reopenResp] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.request().method() === "PUT" && r.url().includes("/task/")
+    ),
+    page.getByRole("menuitem", { name: "Voltar para a fazer" }).click(),
+  ]);
+  expect(reopenResp.ok()).toBe(true);
+  expect(reopenResp.request().postDataJSON()).toMatchObject({
+    title,
+    status: "PENDING",
+  });
+  await expect(currentRow.getByText(title, { exact: true })).not.toHaveClass(
+    /line-through/
+  );
+
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Manhã" })
+  ).toBeVisible();
+  currentRow = page.getByRole("listitem").filter({ hasText: title });
+
+  // Marcar como em andamento: PENDING → ON_DOING.
+  await currentRow
+    .getByRole("button", { name: `Ações da tarefa ${title}` })
+    .click();
+  const [doingResp] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.request().method() === "PUT" && r.url().includes("/task/")
+    ),
+    page.getByRole("menuitem", { name: "Marcar como em andamento" }).click(),
+  ]);
+  expect(doingResp.ok()).toBe(true);
+  expect(doingResp.request().postDataJSON()).toMatchObject({
+    title,
+    status: "ON_DOING",
+  });
+  await expect(
+    currentRow.getByText("Em andamento", { exact: true })
+  ).toBeVisible();
+  await expect(
+    currentRow.getByRole("checkbox", {
+      name: `Concluir ${title} (em andamento)`,
+    })
+  ).toHaveAttribute("aria-checked", "mixed");
+
+  // ON_DOING persiste após recarregar.
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Manhã" })
+  ).toBeVisible();
+  currentRow = page.getByRole("listitem").filter({ hasText: title });
+  await expect(
+    currentRow.getByText("Em andamento", { exact: true })
+  ).toBeVisible();
+
+  // E volta para a fazer pelo menu.
+  await currentRow
+    .getByRole("button", { name: `Ações da tarefa ${title}` })
+    .click();
+  const [backResp] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.request().method() === "PUT" && r.url().includes("/task/")
+    ),
+    page.getByRole("menuitem", { name: "Voltar para a fazer" }).click(),
+  ]);
+  expect(backResp.ok()).toBe(true);
+  await expect(
+    currentRow.getByText("Em andamento", { exact: true })
+  ).toBeHidden();
 });

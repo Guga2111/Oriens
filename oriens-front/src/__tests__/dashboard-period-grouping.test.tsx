@@ -2,9 +2,10 @@ import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardPage } from "@/pages/DashboardPage";
 import apiClient from "@/services/api";
+import type { Task } from "@/types/task";
 
 // Dependências de shell/API mockadas: o comportamento sob teste é o
-// agrupamento de tarefas por período (getTasksForPeriod do DashboardPage).
+// agrupamento de tarefas por período e a descrição do PageHeader.
 vi.mock("@/services/api", () => ({
   default: {
     get: vi.fn(),
@@ -31,26 +32,9 @@ vi.mock("@/context/AuthContext", () => ({
   }),
 }));
 
-vi.mock("@/context/SettingsContext", () => ({
-  useSettings: () => ({
-    preferences: { theme: "light", sound: false, notifications: false },
-    updatePreference: vi.fn(),
-    isUpdating: false,
-  }),
-}));
-
 vi.mock("@/hooks/useSound", () => ({
   useSound: () => vi.fn(),
 }));
-
-interface Task {
-  id: number;
-  title: string;
-  startTime: string;
-  dueDate: string;
-  priority: "LOW" | "MEDIUM" | "HIGH";
-  status: "PENDING" | "ON_DOING" | "CONCLUDED";
-}
 
 // Fronteiras dos períodos: 11:59:59/12:00:00 e 17:59:59/18:00:00.
 const tasks: Task[] = [
@@ -62,24 +46,17 @@ const tasks: Task[] = [
   { id: 6, title: "Fim da noite", startTime: "23:59:59", dueDate: "2026-11-11", priority: "HIGH", status: "PENDING" },
 ];
 
-/** Container da seção do TaskSection (raiz acima do header com o h3). */
 function sectionContainer(title: "Manhã" | "Tarde" | "Noite"): HTMLElement {
-  const heading = screen.getByRole("heading", { level: 3, name: title });
-  const headerRow = heading.closest("div.flex.items-center.justify-between");
-  expect(headerRow).not.toBeNull();
-  return headerRow!.parentElement as HTMLElement;
+  const heading = screen.getByRole("heading", { level: 2, name: title });
+  const section = heading.closest("section");
+  expect(section).not.toBeNull();
+  return section as HTMLElement;
 }
 
 beforeEach(() => {
   vi.mocked(apiClient.get).mockImplementation(((url: string) => {
     if (url.startsWith("/task/user/1?")) {
       return Promise.resolve({ data: tasks });
-    }
-    if (url === "/user/1") {
-      return Promise.resolve({ data: { phoneNumber: null } });
-    }
-    if (url.includes("/summary/weekly-counts")) {
-      return Promise.resolve({ data: { completedTasks: 0, totalTasks: 0 } });
     }
     return Promise.resolve({ data: [] });
   }) as typeof apiClient.get);
@@ -88,7 +65,7 @@ beforeEach(() => {
 describe("DashboardPage — agrupamento de tarefas por período", () => {
   it("respeita as fronteiras 11:59:59/12:00:00 e 17:59:59/18:00:00", async () => {
     render(<DashboardPage />);
-    await screen.findByRole("heading", { level: 3, name: "Manhã" });
+    await screen.findByRole("heading", { level: 2, name: "Manhã" });
 
     const manha = sectionContainer("Manhã");
     const tarde = sectionContainer("Tarde");
@@ -110,13 +87,13 @@ describe("DashboardPage — agrupamento de tarefas por período", () => {
     expect(within(noite).queryByText("Fim da tarde")).toBeNull();
   });
 
-  it("mostra a contagem de concluídas por seção", async () => {
+  it("mostra a contagem de concluídas por seção no formato N de M", async () => {
     render(<DashboardPage />);
-    await screen.findByRole("heading", { level: 3, name: "Manhã" });
+    await screen.findByRole("heading", { level: 2, name: "Manhã" });
 
     for (const title of ["Manhã", "Tarde", "Noite"] as const) {
       expect(
-        within(sectionContainer(title)).getByText("0 de 2 concluídas")
+        within(sectionContainer(title)).getByText("0 de 2")
       ).toBeInTheDocument();
     }
   });

@@ -11,14 +11,15 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { Badge } from "../ui/badge";
+import { PRIORITY } from "@/lib/labels";
+import type { TaskPriority } from "@/types/task";
 
 interface LocationMapProps {
   lat: number;
   lng: number;
   taskTitle: string;
   taskSubtitle?: string;
-  priorityVariant: string;
-  taskPriority: string;
+  priority: TaskPriority;
 }
 
 const containerStyle = {
@@ -31,8 +32,7 @@ export function LocationMap({
   lng,
   taskTitle,
   taskSubtitle,
-  priorityVariant,
-  taskPriority,
+  priority,
 }: LocationMapProps) {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script-map-card",
@@ -142,8 +142,8 @@ export function LocationMap({
                 <div className="p-1">
                   <div className="flex justify-between gap-2">
                     <p className="font-bold text-lg">{taskTitle}</p>
-                    <Badge variant={priorityVariant}>
-                      {taskPriority}
+                    <Badge variant={PRIORITY[priority].badge}>
+                      {PRIORITY[priority].label}
                     </Badge>
                   </div>
                   {taskSubtitle && (

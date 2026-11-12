@@ -16,5 +16,5 @@ test("login com credenciais válidas leva ao Dashboard", async ({ page }) => {
 
   await page.waitForURL("**/tasks");
   await expect(page).toHaveURL(/\/tasks$/);
-  await expect(page.getByRole("heading", { level: 3, name: "Manhã" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Manhã" })).toBeVisible();
 });
