@@ -854,8 +854,8 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação não pode ser desfeita. Isso irá deletar
-              permanentemente o projeto **{project.title}** e todos os seus
-              objetivos.
+              permanentemente o projeto <strong>{project.title}</strong> e todos
+              os seus objetivos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -942,17 +942,8 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
                       )}
                     </Button>
                   </PopoverTrigger>
-                  {editDueDate && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-12 top-[125px] h-8 w-8"
-                      onClick={() => setEditDueDate(undefined)}
-                      disabled={isSubmittingEdit}
-                    >
-                      
-                    </Button>
-                  )}
+                  {/* A9 (P0.3): o botão vazio absolute foi removido; limpar a
+                      data virou um botão com texto dentro do PopoverContent. */}
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
@@ -961,8 +952,20 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
                       initialFocus
                       locale={ptBR}
                     />
-                  </PopoverContent>
-                </Popover>
+                    {editDueDate && (
+                      <div className="flex justify-end border-t border-border p-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditDueDate(undefined)}
+                          disabled={isSubmittingEdit}
+                        >
+                          Limpar data
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>                </Popover>
               </div>
             </div>
             <DialogFooter>

@@ -106,6 +106,7 @@ export function StatisticsPage() {
             change={kpis.completedTasks.change}
             description={kpis.completedTasks.description}
             additionalDescription={kpis.completedTasks.additionalDescription}
+            goodDirection="up"
           />
           <KpiCard
             title="Taxa de Produtividade (Semanal)"
@@ -113,12 +114,14 @@ export function StatisticsPage() {
             change={kpis.productivityRate.change}
             description={kpis.productivityRate.description}
             additionalDescription={kpis.productivityRate.additionalDescription}
+            goodDirection="up"
           />
           <KpiCard
             title="Projetos Ativos"
             value={kpis.activeProjects.value.toString()}
             description={kpis.activeProjects.description}
             additionalDescription={kpis.activeProjects.additionalDescription}
+            goodDirection="up"
           />
           <KpiCard
             title="Tarefas Atrasadas"
@@ -126,6 +129,7 @@ export function StatisticsPage() {
             change={kpis.overdueTasks.change}
             description={kpis.overdueTasks.description}
             additionalDescription={kpis.overdueTasks.additionalDescription}
+            goodDirection="down"
           />
         </div>
 

@@ -22,6 +22,7 @@ import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { LocationMap } from "./LocationMap";
 import { useSound } from "@/hooks/useSound";
 
@@ -55,6 +56,8 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const [isMapOpen, setIsMapOpen] = useState(false);
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const priorityVariants: {
     [key in Task["priority"]]: "default" | "secondary" | "destructive";
@@ -193,7 +196,7 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
               Editar
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={handleDelete}
+              onClick={() => setIsDeleteDialogOpen(true)}
               className="flex cursor-pointer items-center gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
@@ -243,7 +246,7 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
         </Button>
 
         <p
-          className={`font-medium text-sm leading-snug break-words flex-1 min-w-0 ${
+          className={`font-medium text-sm leading-snug line-clamp-2 flex-1 min-w-0 ${
             isConcluded ? "line-through" : ""
           }`}
         >
@@ -269,7 +272,7 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
               Editar
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={handleDelete}
+              onClick={() => setIsDeleteDialogOpen(true)}
               className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
             >
               <Trash2 className="w-4 h-4" />
@@ -279,22 +282,14 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
         </DropdownMenu>
       </div>
 
-      {(task.startTime || task.priority) && (
+      {/* A6 (P0.3): sem badge de texto no chip semanal — o `text-[10px]`
+          vazava a coluna; o chip mostra só o horário. */}
+      {task.startTime && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground pl-7">
-          {task.startTime && (
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span>{task.startTime.substring(0, 5)}</span>
-            </div>
-          )}
-          {task.priority && (
-            <Badge
-              variant={priorityVariants[task.priority]}
-              className="h-5 text-[10px]"
-            >
-              {task.priority}
-            </Badge>
-          )}
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            <span>{task.startTime.substring(0, 5)}</span>
+          </div>
         </div>
       )}
     </div>
@@ -311,6 +306,15 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
       <CardContent className="p-2">
         {viewMode === "day" ? <DayViewLayout /> : <WeekViewLayout />}
       </CardContent>
+      {/* A8 (P0.3): exclusão sempre passa por confirmação. */}
+      <ConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="Excluir tarefa?"
+        objectName={`"${task.title}"`}
+        confirmLabel="Excluir"
+        onConfirm={handleDelete}
+      />
     </Card>
   );
 }
