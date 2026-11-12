@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface EditableAvatarProps {
   src?: string;
@@ -24,17 +24,13 @@ export function EditableAvatar({ src, fallback, alt, onImageChange, isLoading }:
     const file = event.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
-        toast({
-          variant: "destructive",
-          title: "Erro",
+        toast.error("Erro", {
           description: "Por favor, selecione um arquivo de imagem válido.",
         });
         return;
       }
       if (file.size > 2 * 1024 * 1024) { 
-        toast({
-          variant: "destructive",
-          title: "Erro",
+        toast.error("Erro", {
           description: "A imagem deve ter no máximo 2MB.",
         });
         return;
@@ -48,8 +44,7 @@ export function EditableAvatar({ src, fallback, alt, onImageChange, isLoading }:
 
       if (onImageChange) {
         onImageChange(file);
-        toast({
-          title: "Imagem selecionada!",
+        toast.success("Imagem selecionada!", {
           description: "A sua nova imagem de perfil foi selecionada. (Não salva)",
         });
       }

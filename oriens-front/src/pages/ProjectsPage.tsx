@@ -17,7 +17,7 @@ import apiClient from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/common/PageHeader";
 import { useSidebarProjects } from "@/components/layout/AppLayout";
 
@@ -58,9 +58,7 @@ export default function ProjectsPage() {
       setHasMore(!data.last);
       setPage(pageNum + 1);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível carregar os projetos.",
       });
     } finally {
@@ -112,9 +110,7 @@ export default function ProjectsPage() {
       await apiClient.delete(`/project/${projectToDelete}`);
       refreshProjects();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível deletar o projeto.",
       });
     } finally {

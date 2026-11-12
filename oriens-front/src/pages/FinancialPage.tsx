@@ -3,7 +3,7 @@ import { startOfMonth, endOfMonth, format, subMonths, addMonths, parseISO, subDa
 import { Plus, Settings, Repeat } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { EntryDTO, TagDTO } from '@/types/financial';
 import { getAllEntries, getAllTags, deleteEntry } from '@/services/financialService';
@@ -20,7 +20,6 @@ import { RecurringManagementDialog } from '@/components/financial/RecurringManag
 
 export default function FinancialPage() {
   const { userId } = useAuth();
-  const { toast } = useToast();
 
   const [period, setPeriod] = useState<{ month: number; year: number }>({
     month: new Date().getMonth(),
@@ -71,9 +70,7 @@ export default function FinancialPage() {
       const tagsData = await getAllTags(userId!);
       setTags(tagsData);
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar tags',
+      toast.error('Erro ao carregar tags', {
         description: error.response?.data?.message || 'Não foi possível carregar as tags.',
       });
     } finally {
@@ -104,9 +101,7 @@ export default function FinancialPage() {
         ...remainingPages.flatMap(page => page.content),
       ]);
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar dados dos gráficos',
+      toast.error('Erro ao carregar dados dos gráficos', {
         description: error.response?.data?.message || 'Não foi possível carregar os dados.',
       });
     } finally {
@@ -195,9 +190,7 @@ export default function FinancialPage() {
         totalElements: response.totalElements,
       });
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar histórico',
+      toast.error('Erro ao carregar histórico', {
         description: error.response?.data?.message || 'Não foi possível carregar o histórico.',
       });
     } finally {
@@ -234,17 +227,14 @@ export default function FinancialPage() {
   const handleDeleteEntry = async (id: number) => {
     try {
       await deleteEntry(userId!, id);
-      toast({
-        title: 'Entrada excluída',
+      toast.success('Entrada excluída', {
         description: 'A entrada foi excluída com sucesso.',
       });
       clearTableCache();
       loadChartData();
       loadTableData(tablePagination.page, tableFilters, true);
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao excluir entrada',
+      toast.error('Erro ao excluir entrada', {
         description: error.response?.data?.message || 'Não foi possível excluir a entrada.',
       });
     }

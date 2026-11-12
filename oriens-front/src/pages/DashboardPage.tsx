@@ -20,7 +20,7 @@ import { ptBR } from "date-fns/locale";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { WeekSelector } from "@/components/dashboard/WeekSelector";
 import { EditTaskDialog } from "@/components/dashboard/EditTaskDialog";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { WeekView } from "@/components/dashboard/WeekView";
 import { TaskSection } from "@/components/dashboard/TaskSection";
 import { SummaryAside } from "@/components/dashboard/SummaryAside";
@@ -84,11 +84,8 @@ export function DashboardPage() {
       setTasks(response.data);
     } catch (error) {
       console.error("Falha ao buscar tarefas: ", error);
-      toast({
-        variant: "destructive",
-        title: "Erro de Rede",
-        description:
-          "Não foi possível buscar suas tarefas. Tente novamente mais tarde.",
+      toast.error("Erro de Rede", {
+        description: "Não foi possível buscar suas tarefas. Tente novamente mais tarde.",
       });
     } finally {
       if (isInitialLoad) {

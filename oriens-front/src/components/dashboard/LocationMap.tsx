@@ -9,7 +9,7 @@ import {
 import { Loader2, LocateFixed } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Badge } from "../ui/badge";
 
 interface LocationMapProps {
@@ -85,13 +85,11 @@ export function LocationMap({
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
           setIsFindingLocation(false);
-          toast({ title: "Sua localização foi encontrada!" });
+          toast.success("Sua localização foi encontrada!");
         },
         () => {
           setIsFindingLocation(false);
-          toast({
-            variant: "destructive",
-            title: "Erro",
+          toast.error("Erro", {
             description: "Não foi possível obter sua localização.",
           });
         }

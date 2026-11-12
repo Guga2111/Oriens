@@ -18,7 +18,7 @@ import {
   MapPin,
 } from "lucide-react";
 import apiClient from "@/services/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
@@ -81,9 +81,7 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
       }
 
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível atualizar a tarefa.",
       });
     } finally {
@@ -96,9 +94,7 @@ export function TaskCard({ task, onUpdate, onEdit, viewMode }: TaskCardProps) {
       await apiClient.delete(`/task/${task.id}`);
       onUpdate();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível deletar a tarefa.",
       });
     }

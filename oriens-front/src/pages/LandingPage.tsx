@@ -8,7 +8,7 @@ import {
   LayoutList, CalendarDays, Bell, MessageCircle, Cloud,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function LandingPage() {
   return (
@@ -179,7 +179,9 @@ export function LandingPage() {
               to="#" 
               onClick={(e) => {
                 e.preventDefault();
-                toast({ title: "Em breve!", description: "A nossa documentação está a ser preparada." });
+                toast.success("Em breve!", {
+                  description: "A nossa documentação está a ser preparada.",
+                });
               }}
               className="text-sm text-muted-foreground hover:text-primary"
             >
@@ -189,7 +191,9 @@ export function LandingPage() {
               to="#" 
               onClick={(e) => {
                 e.preventDefault();
-                toast({ title: "Em breve!", description: "O nosso roadmap será publicado em breve." });
+                toast.success("Em breve!", {
+                  description: "O nosso roadmap será publicado em breve.",
+                });
               }}
               className="text-sm text-muted-foreground hover:text-primary"
             >

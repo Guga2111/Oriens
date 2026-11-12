@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/services/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useGoogleMapsScript } from "@/hooks/useGoogleMapsScript";
 import { LocationInput } from "../common/LocationInput";
@@ -55,7 +55,9 @@ export function CreateTaskDialog({ open, onOpenChange, onTaskCreated }: CreateTa
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!dueDate || !startTime || !priority || !userId) {
-      toast({ variant: "destructive", title: "Erro", description: "Por favor, preencha todos os campos." });
+      toast.error("Erro", {
+        description: "Por favor, preencha todos os campos.",
+      });
       return;
     }
     setIsLoading(true);
@@ -67,7 +69,9 @@ export function CreateTaskDialog({ open, onOpenChange, onTaskCreated }: CreateTa
       await apiClient.post(`/task/user/${userId}`, newTask);
       onTaskCreated(); onOpenChange(false);
     } catch (error) {
-      toast({ variant: "destructive", title: "Erro", description: "Não foi possível criar a tarefa." });
+      toast.error("Erro", {
+        description: "Não foi possível criar a tarefa.",
+      });
     } finally {
       setIsLoading(false);
     }

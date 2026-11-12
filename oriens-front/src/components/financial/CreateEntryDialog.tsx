@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { TagDTO, RecurrencePattern, RecurrencePatternLabels } from '@/types/financial';
 import { createEntry } from '@/services/financialService';
 import { useAuth } from '@/context/AuthContext';
@@ -43,7 +43,6 @@ interface CreateEntryDialogProps {
 
 export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: CreateEntryDialogProps) {
   const { userId } = useAuth();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const [amount, setAmount] = useState('');
@@ -105,8 +104,7 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
         recurrenceEndDate: isRecurring && recurrenceEndDate ? format(recurrenceEndDate, 'yyyy-MM-dd') : undefined,
       });
 
-      toast({
-        title: 'Entrada criada',
+      toast.success('Entrada criada', {
         description: 'A entrada foi criada com sucesso.',
       });
 
@@ -123,9 +121,7 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
       onOpenChange(false);
       onSuccess();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao criar entrada',
+      toast.error('Erro ao criar entrada', {
         description: error.response?.data?.message || 'Ocorreu um erro ao criar a entrada.',
       });
     } finally {

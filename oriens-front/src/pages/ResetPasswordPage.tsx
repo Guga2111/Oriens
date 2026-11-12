@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import apiClient from "@/services/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 type PageStatus = 'validating' | 'ready' | 'submitting' | 'success' | 'error';
 
@@ -67,14 +67,18 @@ const ResetPasswordPage = () => {
       });
 
       setStatus('success');
-      toast({ title: "Sucesso!", description: "Sua senha foi redefinida." });
+      toast.success("Sucesso!", {
+        description: "Sua senha foi redefinida.",
+      });
 
     } catch (err) {
       console.error("Erro ao resetar senha:", err);
       const message = err.response?.data || "Token expirado ou inválido. Tente novamente.";
       setStatus('error');
       setErrorMessage(message);
-      toast({ variant: "destructive", title: "Erro", description: message });
+      toast.error("Erro", {
+        description: message,
+      });
     }
   };
 

@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { TagDTO } from '@/types/financial';
 import {
   getAllTags,
@@ -48,7 +48,6 @@ export function TagManagementDialog({
   userId,
   onTagsChange,
 }: TagManagementDialogProps) {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [defaultTags, setDefaultTags] = useState<TagDTO[]>([]);
   const [customTags, setCustomTags] = useState<TagDTO[]>([]);
@@ -77,9 +76,7 @@ export function TagManagementDialog({
       setDefaultTags(defaultTagsData);
       setCustomTags(customTagsData);
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar tags',
+      toast.error('Erro ao carregar tags', {
         description: 'Não foi possível carregar as tags.',
       });
     } finally {
@@ -110,17 +107,14 @@ export function TagManagementDialog({
     setIsLoading(true);
     try {
       await createTag(userId, { name: formName, color: formColor });
-      toast({
-        title: 'Tag criada',
+      toast.success('Tag criada', {
         description: 'A tag foi criada com sucesso.',
       });
       resetForm();
       await loadTags();
       onTagsChange();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao criar tag',
+      toast.error('Erro ao criar tag', {
         description: error.response?.data?.message || 'Ocorreu um erro ao criar a tag.',
       });
     } finally {
@@ -134,17 +128,14 @@ export function TagManagementDialog({
     setIsLoading(true);
     try {
       await updateTag(userId, editingTag.id!, { name: formName, color: formColor });
-      toast({
-        title: 'Tag atualizada',
+      toast.success('Tag atualizada', {
         description: 'A tag foi atualizada com sucesso.',
       });
       resetForm();
       await loadTags();
       onTagsChange();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao atualizar tag',
+      toast.error('Erro ao atualizar tag', {
         description: error.response?.data?.message || 'Ocorreu um erro ao atualizar a tag.',
       });
     } finally {
@@ -158,17 +149,14 @@ export function TagManagementDialog({
     setIsLoading(true);
     try {
       await deleteTag(userId, deletingTag.id!);
-      toast({
-        title: 'Tag excluída',
+      toast.success('Tag excluída', {
         description: 'A tag foi excluída com sucesso.',
       });
       setDeletingTag(null);
       await loadTags();
       onTagsChange();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao excluir tag',
+      toast.error('Erro ao excluir tag', {
         description: error.response?.data?.message || 'Ocorreu um erro ao excluir a tag.',
       });
     } finally {

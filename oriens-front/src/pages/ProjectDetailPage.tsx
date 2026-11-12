@@ -25,7 +25,7 @@ import apiClient from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 import { PageHeader } from "@/components/common/PageHeader";
 import { useSidebarProjects } from "@/components/layout/AppLayout";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -221,9 +221,7 @@ export default function ProjectDetailPage() {
       const response = await apiClient.get<ProjectDTO>(`/project/${id}`);
       setProject(response.data);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Projeto não encontrado ou você não tem permissão.",
       });
       navigate("/projects");
@@ -317,14 +315,12 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
         { status: newStatus }
       );
       setProject(response.data);
-      toast({ title: "Status do objetivo atualizado!" });
+      toast.success("Status do objetivo atualizado!");
       if (newStatus === "CONCLUDED") {
         playConcludedSound();
       }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível atualizar o objetivo.",
       });
     } finally {
@@ -344,11 +340,9 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
       );
       setProject(response.data);
       setNewObjectiveTitle("");
-      toast({ title: "Objetivo adicionado!" });
+      toast.success("Objetivo adicionado!");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível adicionar o objetivo.",
       });
     } finally {
@@ -408,14 +402,12 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
         updatedObjective
       );
       setProject(response.data);
-      toast({ title: "Objetivo atualizado!" });
+      toast.success("Objetivo atualizado!");
       setIsEditObjectiveDialogOpen(false);
       setObjectiveToEdit(null);
       setObjectiveToEditIndex(null);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível atualizar o objetivo.",
       });
     } finally {
@@ -468,11 +460,9 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
         };
       });
 
-      toast({ title: "Objetivo deletado!" });
+      toast.success("Objetivo deletado!");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível deletar o objetivo.",
       });
     } finally {
@@ -490,15 +480,11 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
       );
       setProject(response.data);
       refreshSidebarProjects();
-      toast({
-        title: response.data.favorite
+      toast.success(response.data.favorite
           ? "Projeto favoritado!"
-          : "Projeto desfavoritado.",
-      });
+          : "Projeto desfavoritado.");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível alterar o status de favorito.",
       });
     }
@@ -512,15 +498,11 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
       );
       setProject(response.data);
       refreshSidebarProjects();
-      toast({
-        title: response.data.archived
+      toast.success(response.data.archived
           ? "Projeto arquivado!"
-          : "Projeto desarquivado.",
-      });
+          : "Projeto desarquivado.");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível alterar o status de arquivado.",
       });
     }
@@ -531,12 +513,12 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
     try {
       await apiClient.delete(`/project/${project.id}`);
       refreshSidebarProjects();
-      toast({ title: "Sucesso!", description: "Projeto deletado." });
+      toast.success("Sucesso!", {
+        description: "Projeto deletado.",
+      });
       navigate("/projects");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível deletar o projeto.",
       });
     } finally {

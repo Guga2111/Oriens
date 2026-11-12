@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { PageHeader } from '@/components/common/PageHeader';
 import { useSidebarProjects } from '@/components/layout/AppLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { TaskDTO, ProjectDTO, Status, Priority } from '@/types/task';
 import { getAllTasks, TaskFilters } from '@/services/taskService';
@@ -13,7 +13,6 @@ import { ProjectsDataTable, ProjectsFilters } from '@/components/all-data/Projec
 
 export default function AllDataPage() {
   const { userId } = useAuth();
-  const { toast } = useToast();
   const { refreshSidebarProjects } = useSidebarProjects();
 
   const [activeTab, setActiveTab] = useState<'tasks' | 'projects'>('tasks');
@@ -91,9 +90,7 @@ export default function AllDataPage() {
         totalElements: response.totalElements,
       });
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar tarefas',
+      toast.error('Erro ao carregar tarefas', {
         description: error.response?.data?.message || 'Não foi possível carregar as tarefas.',
       });
     } finally {
@@ -124,9 +121,7 @@ export default function AllDataPage() {
         totalElements: response.totalElements,
       });
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar projetos',
+      toast.error('Erro ao carregar projetos', {
         description: error.response?.data?.message || 'Não foi possível carregar os projetos.',
       });
     } finally {
@@ -170,17 +165,14 @@ export default function AllDataPage() {
   const handleArchiveProject = async (id: number) => {
     try {
       await archiveProject(id);
-      toast({
-        title: "Sucesso",
+      toast.success("Sucesso", {
         description: "Projeto arquivado com sucesso.",
       });
       // Recarrega a página atual para refletir a mudança
       loadProjects(projectPagination.page, projectFilters);
       refreshSidebarProjects();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao arquivar',
+      toast.error('Erro ao arquivar', {
         description: error.response?.data?.message || 'Erro inesperado.',
       });
     }
@@ -189,16 +181,13 @@ export default function AllDataPage() {
   const handleUnarchiveProject = async (id: number) => {
     try {
       await unarchiveProject(id);
-      toast({
-        title: "Sucesso",
+      toast.success("Sucesso", {
         description: "Projeto desarquivado com sucesso.",
       });
       loadProjects(projectPagination.page, projectFilters);
       refreshSidebarProjects();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao desarquivar',
+      toast.error('Erro ao desarquivar', {
         description: error.response?.data?.message || 'Erro inesperado.',
       });
     }
@@ -211,11 +200,9 @@ export default function AllDataPage() {
       loadProjects(projectPagination.page, projectFilters);
       refreshSidebarProjects();
     } catch (error) {
-        toast({
-        variant: 'destructive',
-        title: 'Erro ao favoritar',
-        description: error.response?.data?.message || 'Erro inesperado.',
-      });
+        toast.error('Erro ao favoritar', {
+          description: error.response?.data?.message || 'Erro inesperado.',
+        });
     }
   };
 

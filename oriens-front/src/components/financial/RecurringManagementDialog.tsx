@@ -22,7 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { EntryDTO, TagDTO, RecurrencePatternLabels } from '@/types/financial';
 import { getRecurringEntries, deleteEntry } from '@/services/financialService';
 import { cn } from '@/lib/utils';
@@ -44,7 +44,6 @@ export function RecurringManagementDialog({
   onEditEntry,
   onEntriesChange,
 }: RecurringManagementDialogProps) {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [recurringEntries, setRecurringEntries] = useState<EntryDTO[]>([]);
   const [deletingEntry, setDeletingEntry] = useState<EntryDTO | null>(null);
@@ -61,9 +60,7 @@ export function RecurringManagementDialog({
       const entries = await getRecurringEntries(userId);
       setRecurringEntries(entries);
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao carregar recorrencias',
+      toast.error('Erro ao carregar recorrencias', {
         description: 'Nao foi possivel carregar as entradas recorrentes.',
       });
     } finally {
@@ -77,17 +74,14 @@ export function RecurringManagementDialog({
     setIsLoading(true);
     try {
       await deleteEntry(userId, deletingEntry.id!);
-      toast({
-        title: 'Recorrencia excluida',
+      toast.success('Recorrencia excluida', {
         description: 'A entrada recorrente foi excluida com sucesso.',
       });
       setDeletingEntry(null);
       await loadRecurringEntries();
       onEntriesChange();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao excluir recorrencia',
+      toast.error('Erro ao excluir recorrencia', {
         description: error.response?.data?.message || 'Ocorreu um erro ao excluir a entrada.',
       });
     } finally {
