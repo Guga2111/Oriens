@@ -1,9 +1,7 @@
-import { AppHeader } from "@/components/common/AppHeader";
-import { AppSidebar } from "@/components/dashboard/AppSidebar";
+import { PageHeader } from "@/components/common/PageHeader";
 import { KpiCard } from "@/components/statistics/KpiCard";
 import { ReusableLineChartCard } from "@/components/statistics/ReusableLineChartCard";
 import { ChartConfig } from "@/components/ui/chart";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { CheckCircle2, Clock, FolderKanban, Loader2, TrendingUp } from "lucide-react";
 
 import { getDashboardData } from "@/services/api";
@@ -68,10 +66,13 @@ export function StatisticsPage() {
 
     if (isLoading || isAuthLoading) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-          <div className="flex items-center gap-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
+        <div
+          className="flex items-center justify-center p-24"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="sr-only">Carregando estatísticas</span>
         </div>
       );
     }
@@ -98,7 +99,7 @@ export function StatisticsPage() {
 
     return (
       <>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 my-6">
+        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <KpiCard
             title="Tarefas Concluídas (Este Mês)"
             value={kpis.completedTasks.value.toString()}
@@ -142,23 +143,10 @@ export function StatisticsPage() {
   };
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full bg-muted/40">
-        <AppSidebar />
-        <div className="flex flex-1 flex-col">
-          <AppHeader />
-          <main className="flex-1 overflow-y-auto p-6 md:p-8">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold tracking-tight">
-                Estatísticas
-              </h1>
-            </div>
+    <div className="p-6 md:p-8">
+      <PageHeader title="Estatísticas" />
 
-            {renderContent()}
-
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      {renderContent()}
+    </div>
   );
 }

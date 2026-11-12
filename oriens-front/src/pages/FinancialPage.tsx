@@ -1,9 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { startOfMonth, endOfMonth, format, subMonths, addMonths, parseISO, subDays } from 'date-fns';
 import { Plus, Settings, Repeat } from 'lucide-react';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/dashboard/AppSidebar';
-import { AppHeader } from '@/components/common/AppHeader';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -297,29 +295,21 @@ export default function FinancialPage() {
 
   if (isLoading) {
     return (
-      <SidebarProvider>
-        <AppSidebar />
-        <div className="flex flex-1 flex-col">
-          <AppHeader />
-          <main className="flex-1 overflow-auto p-6">
-            <FinancialEntrySkeleton />
-          </main>
-        </div>
-      </SidebarProvider>
+      <div className="p-6">
+        <FinancialEntrySkeleton />
+      </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-1 flex-col">
-        <AppHeader />
-        <main className="flex-1 overflow-auto p-6">
-          <div className="space-y-6 max-w-[1800px] mx-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-bold">Gestão Financeira</h1>
-              <div className="flex gap-2">
+    <>
+      <div className="p-6">
+        <div className="mx-auto max-w-[1800px] space-y-6">
+          {/* Header */}
+          <PageHeader
+            title="Gestão Financeira"
+            actions={
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setIsTagManagementOpen(true)}
@@ -339,7 +329,8 @@ export default function FinancialPage() {
                   Nova Entrada
                 </Button>
               </div>
-            </div>
+            }
+          />
 
             {/* Period Overview Card */}
             <PeriodOverviewCard
@@ -371,8 +362,7 @@ export default function FinancialPage() {
               onFilterChange={handleFilterChange}
             />
           </div>
-        </main>
-      </div>
+        </div>
 
       {/* Dialogs */}
       <CreateEntryDialog
@@ -405,6 +395,6 @@ export default function FinancialPage() {
         onEditEntry={handleEditEntry}
         onEntriesChange={handleEntrySuccess}
       />
-    </SidebarProvider>
+    </>
   );
 }

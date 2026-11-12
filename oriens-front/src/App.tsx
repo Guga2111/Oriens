@@ -8,6 +8,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LandingPage } from "./pages/LandingPage";
 import { ProtectedRoute } from "./router/ProtectedRoute";
+import { AppLayout } from "./components/layout/AppLayout";
 import ProjectsPage from "./pages/ProjectsPage";
 import ConfigurationPage from "./pages/ConfigurationPage";
 import HelpSupportPage from "./pages/HelpSupportPage";
@@ -45,16 +46,19 @@ const App = () => {
 
               {/* Protected Route / Tasks */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/tasks" element={<DashboardPage />} />
-                <Route path="/projects" element={<ProjectsPage />} />
-                <Route path="/stats" element={<StatisticsPage />} />
-                <Route path="/config" element={<ConfigurationPage />} />
-                <Route path="/tasks/project/:id" element={<ProjectDetailPage />} />
-                <Route path="/financial" element={<FinancialPage />} />
-                <Route path="/all-data" element={<AllDataPage />} />
-                <Route path="/support" element={<HelpSupportPage />} />
-                <Route path="/admin/support" element={<AdminSupportPage />} />
-                <Route path="/admin/management" element={<AdminManagementPage />} />
+                {/* Shell único (SPEC §10.2): as URLs não mudam. */}
+                <Route element={<AppLayout />}>
+                  <Route path="/tasks" element={<DashboardPage />} />
+                  <Route path="/projects" element={<ProjectsPage />} />
+                  <Route path="/stats" element={<StatisticsPage />} />
+                  <Route path="/config" element={<ConfigurationPage />} />
+                  <Route path="/tasks/project/:id" element={<ProjectDetailPage />} />
+                  <Route path="/financial" element={<FinancialPage />} />
+                  <Route path="/all-data" element={<AllDataPage />} />
+                  <Route path="/support" element={<HelpSupportPage />} />
+                  <Route path="/admin/support" element={<AdminSupportPage />} />
+                  <Route path="/admin/management" element={<AdminManagementPage />} />
+                </Route>
               </Route>
 
               {/* Catch-All "*" Route */}

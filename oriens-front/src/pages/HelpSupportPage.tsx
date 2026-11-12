@@ -1,7 +1,5 @@
 import { useState, useMemo } from "react"
-import { AppSidebar } from "@/components/dashboard/AppSidebar"
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppHeader } from "@/components/common/AppHeader"
+import { PageHeader } from "@/components/common/PageHeader";
 import {
   Accordion,
   AccordionContent,
@@ -170,23 +168,16 @@ export default function HelpSupportPage() {
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full">
-        <AppSidebar />
-        <main className="flex-1 flex flex-col">
-          <AppHeader />
-          <div className="flex-1 overflow-y-auto bg-background">
-          <div className="max-w-5xl w-full mx-auto p-8 space-y-8 transition-colors">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Ajuda & Suporte</h1>
-              <p className="text-muted-foreground">
-                Encontre ajuda, tutoriais e entre em contato com nossa equipe
-              </p>
-            </div>
+    <div className="bg-background">
+      <div className="mx-auto w-full max-w-5xl space-y-8 p-8 transition-colors">
+        <PageHeader
+          title="Ajuda & Suporte"
+          description="Encontre ajuda, tutoriais e entre em contato com nossa equipe"
+        />
 
-            <Separator />
+        <Separator />
 
-            <Tabs defaultValue="faq" className="w-full">
+        <Tabs defaultValue="faq" className="w-full">
               <TabsList className="grid w-full grid-cols-4 bg-muted">
                 <TabsTrigger value="faq" className="data-[state=active]:bg-background">
                   <HelpCircle className="h-4 w-4 mr-2" />
@@ -428,11 +419,8 @@ export default function HelpSupportPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
-                            </Tabs>
-              </div>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
-    )
+        </Tabs>
+      </div>
+    </div>
+  )
 }

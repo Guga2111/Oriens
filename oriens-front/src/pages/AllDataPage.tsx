@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/dashboard/AppSidebar';
-import { AppHeader } from '@/components/common/AppHeader';
+import { PageHeader } from '@/components/common/PageHeader';
+import { useSidebarProjects } from '@/components/layout/AppLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -15,6 +14,7 @@ import { ProjectsDataTable, ProjectsFilters } from '@/components/all-data/Projec
 export default function AllDataPage() {
   const { userId } = useAuth();
   const { toast } = useToast();
+  const { refreshSidebarProjects } = useSidebarProjects();
 
   const [activeTab, setActiveTab] = useState<'tasks' | 'projects'>('tasks');
 
@@ -176,6 +176,7 @@ export default function AllDataPage() {
       });
       // Recarrega a página atual para refletir a mudança
       loadProjects(projectPagination.page, projectFilters);
+      refreshSidebarProjects();
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -193,6 +194,7 @@ export default function AllDataPage() {
         description: "Projeto desarquivado com sucesso.",
       });
       loadProjects(projectPagination.page, projectFilters);
+      refreshSidebarProjects();
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -207,6 +209,7 @@ export default function AllDataPage() {
       await toggleFavoriteProject(id); 
       console.log("Toggle favorite para:", id);
       loadProjects(projectPagination.page, projectFilters);
+      refreshSidebarProjects();
     } catch (error) {
         toast({
         variant: 'destructive',
@@ -217,53 +220,45 @@ export default function AllDataPage() {
   };
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <div className="flex flex-1 flex-col">
-        <AppHeader />
-        <main className="flex-1 overflow-auto p-6">
-          <div className="space-y-6 max-w-[1800px] mx-auto">
-            <div>
-              <h1 className="text-3xl font-bold">Todos os Dados</h1>
-              <p className="text-muted-foreground mt-1">
-                Visualize todas as suas tarefas e projetos em um só lugar
-              </p>
-            </div>
+    <div className="p-6">
+      <div className="mx-auto max-w-[1800px] space-y-6">
+        <PageHeader
+          title="Todos os Dados"
+          description="Visualize todas as suas tarefas e projetos em um só lugar"
+        />
 
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'tasks' | 'projects')}>
-              <TabsList>
-                <TabsTrigger value="tasks">Tarefas</TabsTrigger>
-                <TabsTrigger value="projects">Projetos</TabsTrigger>
-              </TabsList>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'tasks' | 'projects')}>
+          <TabsList>
+            <TabsTrigger value="tasks">Tarefas</TabsTrigger>
+            <TabsTrigger value="projects">Projetos</TabsTrigger>
+          </TabsList>
 
-              <TabsContent value="tasks" className="mt-6">
-                <TasksDataTable
-                  tasks={tasks}
-                  isLoading={isLoadingTasks}
-                  pagination={taskPagination}
-                  onPageChange={handleTaskPageChange}
-                  filters={taskFilters}
-                  onFilterChange={handleTaskFilterChange}
-                />
-              </TabsContent>
+          <TabsContent value="tasks" className="mt-6">
+            <TasksDataTable
+              tasks={tasks}
+              isLoading={isLoadingTasks}
+              pagination={taskPagination}
+              onPageChange={handleTaskPageChange}
+              filters={taskFilters}
+              onFilterChange={handleTaskFilterChange}
+            />
+          </TabsContent>
 
-              <TabsContent value="projects" className="mt-6">
-                <ProjectsDataTable
-                  projects={projects}
-                  isLoading={isLoadingProjects}
-                  pagination={projectPagination}
-                  onPageChange={handleProjectPageChange}
-                  filters={projectFilters}
-                  onFilterChange={handleProjectFilterChange}
-                  onArchive={handleArchiveProject}
-                  onUnarchive={handleUnarchiveProject}
-                  onToggleFavorite={handleToggleFavoriteProject}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </main>
+          <TabsContent value="projects" className="mt-6">
+            <ProjectsDataTable
+              projects={projects}
+              isLoading={isLoadingProjects}
+              pagination={projectPagination}
+              onPageChange={handleProjectPageChange}
+              filters={projectFilters}
+              onFilterChange={handleProjectFilterChange}
+              onArchive={handleArchiveProject}
+              onUnarchive={handleUnarchiveProject}
+              onToggleFavorite={handleToggleFavoriteProject}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
-    </SidebarProvider>
+    </div>
   );
 }
