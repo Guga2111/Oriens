@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MessageCircle, CheckCircle } from "lucide-react";
@@ -13,16 +11,19 @@ interface SummaryAsideProps {
   onPhoneNumberUpdated?: () => void;
 }
 
+/**
+ * A7 (P0.3): nenhum CTA é renderizado sem efeito — "Conectar WhatsApp" e
+ * "Alterar Número" abriam um diálogo que não existe (isWhatsAppDialogOpen
+ * nunca era consumido). O formulário de conexão só chega com o BE1, no PR 2;
+ * aqui o card fica apenas informativo.
+ */
 export function SummaryAside({
   totalTasks,
   concludedTasks,
   pendingTasks,
   progress,
   userPhoneNumber,
-  onPhoneNumberUpdated,
 }: SummaryAsideProps) {
-  const [isWhatsAppDialogOpen, setIsWhatsAppDialogOpen] = useState(false);
-
   const isPhoneNumberConnected = !!userPhoneNumber;
 
   return (
@@ -76,29 +77,14 @@ export function SummaryAside({
               <p className="text-sm text-green-700 dark:text-green-400 mb-2 font-medium">
                 Você receberá lembretes 15 minutos antes!
               </p>
-              <p className="text-xs text-muted-foreground mb-4">
+              <p className="text-xs text-muted-foreground">
                 {userPhoneNumber}
               </p>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setIsWhatsAppDialogOpen(true)}
-              >
-                Alterar Número
-              </Button>
             </>
           ) : (
-            <>
-              <p className="text-sm text-primary/80 mb-4">
-                Receba lembretes das suas tarefas 15 minutos antes pelo WhatsApp.
-              </p>
-              <Button
-                className="w-full text-primary-foreground bg-primary hover:opacity-80 transition-opacity"
-                onClick={() => setIsWhatsAppDialogOpen(true)}
-              >
-                Conectar WhatsApp
-              </Button>
-            </>
+            <p className="text-sm text-primary/80">
+              Receba lembretes das suas tarefas 15 minutos antes pelo WhatsApp.
+            </p>
           )}
         </CardContent>
       </Card>

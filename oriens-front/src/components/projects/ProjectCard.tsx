@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import apiClient from "@/services/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useSound } from "@/hooks/useSound";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -106,9 +106,7 @@ export function ProjectCard({
       }
 
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível atualizar o objetivo.",
       });
     } finally {
@@ -138,9 +136,7 @@ export function ProjectCard({
       };
       onProjectUpdate(updatedProject);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível enviar a imagem.",
       });
     } finally {
@@ -160,9 +156,7 @@ export function ProjectCard({
       );
       onProjectUpdate(response.data);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível alterar o status de favorito.",
       });
     }
@@ -177,15 +171,11 @@ export function ProjectCard({
       );
       onProjectUpdate(response.data);
 
-      toast({
-        title: response.data.archived
+      toast.success(response.data.archived
           ? "Projeto arquivado!"
-          : "Projeto desarquivado.",
-      });
+          : "Projeto desarquivado.");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível arquivar.",
       });
     }

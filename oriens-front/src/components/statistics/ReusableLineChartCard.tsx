@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/chart"
 import { useMemo, useState } from "react"
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group"
+import { getChartLineColor } from "./chartLineColor"
 
 export const description = "A line chart with a label"
 
@@ -115,10 +116,10 @@ export function ReusableLineChartCard({
             <Line
               dataKey={dataKey} 
               type="natural"
-              stroke="hsl(var(--primary))"
+              stroke={getChartLineColor(chartConfig, dataKey)}
               strokeWidth={2}
               dot={{ 
-                fill: "hsl(var(--primary))",
+                fill: getChartLineColor(chartConfig, dataKey),
               }}
               activeDot={{
                 r: 6, 

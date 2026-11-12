@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react"
-import { AppSidebar } from "@/components/dashboard/AppSidebar"
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppHeader } from "@/components/common/AppHeader"
+import { PageHeader } from "@/components/common/PageHeader"
 import {
   Card,
   CardContent,
@@ -174,21 +172,14 @@ export default function AdminSupportPage() {
   )
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full">
-        <AppSidebar />
-        <main className="flex-1 flex flex-col">
-          <AppHeader />
-          <div className="flex-1 overflow-y-auto bg-background">
-            <div className="max-w-7xl w-full mx-auto p-8 space-y-8">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">Dashboard de Suporte</h1>
-                <p className="text-muted-foreground">
-                  Gerencie e acompanhe todos os tickets de suporte dos usuários
-                </p>
-              </div>
+    <div className="bg-background">
+      <div className="mx-auto w-full max-w-7xl space-y-8 p-8">
+        <PageHeader
+          title="Dashboard de Suporte"
+          description="Gerencie e acompanhe todos os tickets de suporte dos usuários"
+        />
 
-              <Separator />
+        <Separator />
 
               {/* Stats Grid */}
               {stats && (
@@ -346,10 +337,7 @@ export default function AdminSupportPage() {
                   </Tabs>
                 </CardContent>
               </Card>
-            </div>
-          </div>
-        </main>
       </div>
-    </SidebarProvider>
+    </div>
   )
 }

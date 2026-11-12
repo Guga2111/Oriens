@@ -28,7 +28,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { EntryDTO, TagDTO } from '@/types/financial';
 import { updateEntry } from '@/services/financialService';
 import { useAuth } from '@/context/AuthContext';
@@ -43,7 +43,6 @@ interface EditEntryDialogProps {
 
 export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: EditEntryDialogProps) {
   const { userId } = useAuth();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const [amount, setAmount] = useState('');
@@ -104,8 +103,7 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
         tagId: parseInt(tagId),
       });
 
-      toast({
-        title: 'Entrada atualizada',
+      toast.success('Entrada atualizada', {
         description: 'A entrada foi atualizada com sucesso.',
       });
 
@@ -113,9 +111,7 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
       onOpenChange(false);
       onSuccess();
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao atualizar entrada',
+      toast.error('Erro ao atualizar entrada', {
         description: error.response?.data?.message || 'Ocorreu um erro ao atualizar a entrada.',
       });
     } finally {

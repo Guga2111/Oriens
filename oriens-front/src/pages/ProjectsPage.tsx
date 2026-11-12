@@ -17,10 +17,9 @@ import apiClient from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/dashboard/AppSidebar";
-import { AppHeader } from "@/components/common/AppHeader";
+import { toast } from "sonner";
+import { PageHeader } from "@/components/common/PageHeader";
+import { useSidebarProjects } from "@/components/layout/AppLayout";
 
 interface Page<T> {
   content: T[];
@@ -29,6 +28,7 @@ interface Page<T> {
 
 export default function ProjectsPage() {
   const { userId } = useAuth();
+  const { refreshSidebarProjects } = useSidebarProjects();
   const [projects, setProjects] = useState<ProjectDTO[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -58,9 +58,7 @@ export default function ProjectsPage() {
       setHasMore(!data.last);
       setPage(pageNum + 1);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível carregar os projetos.",
       });
     } finally {
@@ -72,6 +70,7 @@ export default function ProjectsPage() {
     setPage(0);
     setProjects([]);
     fetchProjects(0, true);
+    refreshSidebarProjects();
   };
 
   useEffect(() => {
@@ -102,6 +101,7 @@ export default function ProjectsPage() {
         p.id === updatedProject.id ? updatedProject : p
       )
     );
+    refreshSidebarProjects();
   };
 
   const handleDeleteConfirm = async () => {
@@ -110,9 +110,7 @@ export default function ProjectsPage() {
       await apiClient.delete(`/project/${projectToDelete}`);
       refreshProjects();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível deletar o projeto.",
       });
     } finally {
@@ -121,89 +119,81 @@ export default function ProjectsPage() {
     }
   };
 
-    return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full bg-background">
-        <AppSidebar />        <main className="flex-1 flex flex-col">
-          <AppHeader />
-
-          <div className="flex-1 overflow-y-auto p-6 md:p-8">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h1 className="text-3xl font-bold">Projetos</h1>
-                <p className="text-muted-foreground">
-                  Gerencie seus projetos e objetivos
-                </p>
-              </div>
-              <Button
-                onClick={() => {
-                  setEditingProject(null);
-                  setIsCreateDialogOpen(true);
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Projeto
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  onEdit={handleOpenEditDialog}
-                  onDelete={handleOpenDeleteDialog}
-                  onProjectUpdate={handleProjectUpdate}
-                />
-              ))}
-              {isLoading &&
-                Array.from({ length: 3 }).map((_, i) => (
-                  <ProjectSkeleton key={`skel-${i}`} />
-                ))}
-            </div>
-
-            {!isLoading && hasMore && <div ref={ref} className="h-10" />}
-
-            {!isLoading && projects.length === 0 && (
-              <div className="text-center col-span-full mt-10">
-                <h3 className="text-lg font-semibold">
-                  Nenhum projeto encontrado.
-                </h3>
-                <p className="text-muted-foreground">
-                  Que tal criar o seu primeiro?
-                </p>
-              </div>
-            )}
-          </div>
-        </main>
-
-        <CreateProjectDialog
-          open={isCreateDialogOpen}
-          onOpenChange={setIsCreateDialogOpen}
-          onSuccess={refreshProjects}
-          projectToEdit={editingProject}
+  return (
+    <>
+      <div className="p-6 md:p-8">
+        <PageHeader
+          title="Projetos"
+          description="Gerencie seus projetos e objetivos"
+          actions={
+            <Button
+              onClick={() => {
+                setEditingProject(null);
+                setIsCreateDialogOpen(true);
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Novo Projeto
+            </Button>
+          }
         />
-        <AlertDialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Esta ação não pode ser desfeita. Isso irá deletar
-                permanentemente o projeto e todos os seus objetivos.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm}>
-                Continuar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onEdit={handleOpenEditDialog}
+              onDelete={handleOpenDeleteDialog}
+              onProjectUpdate={handleProjectUpdate}
+            />
+          ))}
+          {isLoading &&
+            Array.from({ length: 3 }).map((_, i) => (
+              <ProjectSkeleton key={`skel-${i}`} />
+            ))}
+        </div>
+
+        {!isLoading && hasMore && <div ref={ref} className="h-10" />}
+
+        {!isLoading && projects.length === 0 && (
+          <div className="mt-10 text-center">
+            <h3 className="text-lg font-semibold">
+              Nenhum projeto encontrado.
+            </h3>
+            <p className="text-muted-foreground">
+              Que tal criar o seu primeiro?
+            </p>
+          </div>
+        )}
       </div>
-    </SidebarProvider>
+
+      <CreateProjectDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSuccess={refreshProjects}
+        projectToEdit={editingProject}
+      />
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso irá deletar
+              permanentemente o projeto e todos os seus objetivos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>
+              Continuar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

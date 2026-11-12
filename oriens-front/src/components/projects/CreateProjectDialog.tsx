@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2, PlusCircle, X } from "lucide-react";
 import apiClient from "@/services/api";
 import { useAuth } from "@/context/AuthContext"; 
@@ -92,17 +92,19 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
     try {
       if (isEditMode) {
         await apiClient.put(`/project/${projectToEdit!.id}`, payload);
-        toast({ title: "Sucesso!", description: "Projeto atualizado." });
+        toast.success("Sucesso!", {
+          description: "Projeto atualizado.",
+        });
       } else {
         await apiClient.post(`/project/user/${userId}`, payload);
-        toast({ title: "Sucesso!", description: "Novo projeto criado." });
+        toast.success("Sucesso!", {
+          description: "Novo projeto criado.",
+        });
       }
       onSuccess();
       onOpenChange(false); 
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: `Não foi possível ${isEditMode ? 'atualizar' : 'criar'} o projeto.`,
       });
     } finally {

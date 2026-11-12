@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import {TrendingDown, TrendingUp } from "lucide-react";
+import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 
 interface KpiCardProps {
   title: string;
@@ -8,21 +8,45 @@ interface KpiCardProps {
   change?: number; // Percentage variation (12.5, 20.0, etc...)
   description: string;
   additionalDescription?: string;
+  /**
+   * Direção em que a variação é boa (A10): "up" para métricas onde mais é
+   * melhor (concluídas) e "down" para onde menos é melhor (atrasadas).
+   */
+  goodDirection: "up" | "down";
 }
 
-export function KpiCard({ title, value, change, description, additionalDescription }: KpiCardProps) {
-  const isPositive = change !== undefined && change >= 0;
-
+/**
+ * A10 (P0.3): a cor e a seta da variação seguem `goodDirection`, nunca o sinal
+ * do número. Variação 0 fica neutra (cinza). Os textos narrativos continuam
+ * vindo do backend como estão (D12).
+ */
+export function KpiCard({
+  title,
+  value,
+  change,
+  description,
+  additionalDescription,
+  goodDirection,
+}: KpiCardProps) {
   const formatChange = (changeValue: number) => {
-    const sign = changeValue > 0 ? "+" : ""; 
+    const sign = changeValue > 0 ? "+" : "";
 
     if (changeValue === 100 || changeValue === 0) {
       return `${sign}${changeValue}%`;
-    } 
+    }
     else {
       return `${sign}${changeValue.toFixed(2)}%`;
     }
   };
+
+  // null = neutro (0%); true = bom; false = ruim.
+  const isGood: boolean | null =
+    change === undefined || change === 0
+      ? null
+      : goodDirection === "up"
+        ? change > 0
+        : change < 0;
+
   return (
     <Card className="bg-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -34,13 +58,19 @@ export function KpiCard({ title, value, change, description, additionalDescripti
           <div
             className={cn(
               "flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs",
-              isPositive ? "text-emerald-500" : "text-red-500" 
+              isGood === null
+                ? "text-muted-foreground"
+                : isGood
+                  ? "text-positive"
+                  : "text-negative"
             )}
           >
-            {isPositive ? (
+            {change > 0 ? (
               <TrendingUp className="h-3 w-3" />
-            ) : (
+            ) : change < 0 ? (
               <TrendingDown className="h-3 w-3" />
+            ) : (
+              <Minus className="h-3 w-3" />
             )}
             <span>{formatChange(change)}</span>
           </div>

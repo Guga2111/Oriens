@@ -459,6 +459,14 @@ const SidebarMenuButton = React.forwardRef<
     return button;
   }
 
+  // O Tooltip só é montado quando ficaria visível (sidebar em modo ícone,
+  // desktop). Em mobile/expandido o conteúdo ficaria com `hidden` — montá-lo
+  // dentro do Sheet quebra a navegação por Tab: o FocusScope do dialog
+  // refoqueia o container a cada transferência de foco.
+  if (state !== "collapsed" || isMobile) {
+    return button;
+  }
+
   if (typeof tooltip === "string") {
     tooltip = {
       children: tooltip,
@@ -468,7 +476,7 @@ const SidebarMenuButton = React.forwardRef<
   return (
     <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent side="right" align="center" hidden={state !== "collapsed" || isMobile} {...tooltip} />
+      <TooltipContent side="right" align="center" {...tooltip} />
     </Tooltip>
   );
 });

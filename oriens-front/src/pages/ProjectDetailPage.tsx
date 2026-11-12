@@ -23,10 +23,9 @@ export interface ProjectDTO {
 
 import apiClient from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/dashboard/AppSidebar";
-import { AppHeader } from "@/components/common/AppHeader";
-import { toast } from "@/hooks/use-toast";
+import { PageHeader } from "@/components/common/PageHeader";
+import { useSidebarProjects } from "@/components/layout/AppLayout";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -189,6 +188,7 @@ export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const playConcludedSound = useSound("/concluding-sound.wav");
+  const { refreshSidebarProjects } = useSidebarProjects();
 
   const [project, setProject] = useState<ProjectDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -221,9 +221,7 @@ export default function ProjectDetailPage() {
       const response = await apiClient.get<ProjectDTO>(`/project/${id}`);
       setProject(response.data);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Projeto não encontrado ou você não tem permissão.",
       });
       navigate("/projects");
@@ -317,14 +315,12 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
         { status: newStatus }
       );
       setProject(response.data);
-      toast({ title: "Status do objetivo atualizado!" });
+      toast.success("Status do objetivo atualizado!");
       if (newStatus === "CONCLUDED") {
         playConcludedSound();
       }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível atualizar o objetivo.",
       });
     } finally {
@@ -344,11 +340,9 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
       );
       setProject(response.data);
       setNewObjectiveTitle("");
-      toast({ title: "Objetivo adicionado!" });
+      toast.success("Objetivo adicionado!");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível adicionar o objetivo.",
       });
     } finally {
@@ -408,14 +402,12 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
         updatedObjective
       );
       setProject(response.data);
-      toast({ title: "Objetivo atualizado!" });
+      toast.success("Objetivo atualizado!");
       setIsEditObjectiveDialogOpen(false);
       setObjectiveToEdit(null);
       setObjectiveToEditIndex(null);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível atualizar o objetivo.",
       });
     } finally {
@@ -468,11 +460,9 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
         };
       });
 
-      toast({ title: "Objetivo deletado!" });
+      toast.success("Objetivo deletado!");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível deletar o objetivo.",
       });
     } finally {
@@ -489,15 +479,12 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
         `/project/${project.id}/favorite`
       );
       setProject(response.data);
-      toast({
-        title: response.data.favorite
+      refreshSidebarProjects();
+      toast.success(response.data.favorite
           ? "Projeto favoritado!"
-          : "Projeto desfavoritado.",
-      });
+          : "Projeto desfavoritado.");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível alterar o status de favorito.",
       });
     }
@@ -510,15 +497,12 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
         `/project/${project.id}/archive`
       );
       setProject(response.data);
-      toast({
-        title: response.data.archived
+      refreshSidebarProjects();
+      toast.success(response.data.archived
           ? "Projeto arquivado!"
-          : "Projeto desarquivado.",
-      });
+          : "Projeto desarquivado.");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível alterar o status de arquivado.",
       });
     }
@@ -528,12 +512,13 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
     if (!project) return;
     try {
       await apiClient.delete(`/project/${project.id}`);
-      toast({ title: "Sucesso!", description: "Projeto deletado." });
+      refreshSidebarProjects();
+      toast.success("Sucesso!", {
+        description: "Projeto deletado.",
+      });
       navigate("/projects");
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro",
+      toast.error("Erro", {
         description: "Não foi possível deletar o projeto.",
       });
     } finally {
@@ -543,135 +528,112 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
 
   if (isLoading) {
     return (
-      <SidebarProvider>
-        <div className="flex h-screen w-full bg-gray-50/50 dark:bg-background">
-          <AppSidebar />
-          <main className="flex-1 flex flex-col h-screen">
-            <AppHeader />
-            <div className="flex-1 overflow-y-auto p-6 md:p-8">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <Skeleton className="h-9 w-64 mb-2" />
-                  <Skeleton className="h-5 w-96" />
-                </div>
-                <div className="flex gap-2">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                  <Skeleton className="h-64 w-full rounded-lg" />
-                  <Skeleton className="h-80 w-full rounded-lg" />
-                </div>
-                <div className="lg:col-span-1 space-y-6">
-                  <Skeleton className="h-32 w-full rounded-lg" />
-                  <Skeleton className="h-72 w-full rounded-lg" />
-                </div>
-              </div>
-            </div>
-          </main>
+      <div className="p-6 md:p-8">
+        <div className="mb-6 flex justify-between items-start">
+          <div>
+            <Skeleton className="h-9 w-64 mb-2" />
+            <Skeleton className="h-5 w-96" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
         </div>
-      </SidebarProvider>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Skeleton className="h-64 w-full rounded-lg" />
+            <Skeleton className="h-80 w-full rounded-lg" />
+          </div>
+          <div className="lg:col-span-1 space-y-6">
+            <Skeleton className="h-32 w-full rounded-lg" />
+            <Skeleton className="h-72 w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (!project) {
     return (
-      <SidebarProvider>
-        <div className="flex h-screen w-full bg-gray-50/50 dark:bg-background">
-          <AppSidebar />
-          <main className="flex-1 flex flex-col h-screen">
-            <AppHeader />
-            <div className="flex-1 flex items-center justify-center">
-              <p>Projeto não encontrado.</p>
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <div className="flex items-center justify-center p-24">
+        <p>Projeto não encontrado.</p>
+      </div>
     );
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full bg-gray-50/50 dark:bg-background">
-        <AppSidebar />
+    <>
+    <div className="p-6 md:p-8">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate("/projects")}
+        className="mb-2 text-muted-foreground"
+      >
+        <ChevronLeft className="h-4 w-4 mr-1" />
+        Voltar para Projetos
+      </Button>
 
-        <main className="flex-1 flex flex-col h-screen">
-          <AppHeader />
-
-          <div className="flex-1 overflow-y-auto p-6 md:p-8">
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/projects")}
-                  className="mb-2 text-muted-foreground"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Voltar para Projetos
+      <PageHeader
+        title={
+          <span className="flex flex-wrap items-center gap-3">
+            <span
+              className="h-4 w-4 shrink-0 rounded-full"
+              style={{ backgroundColor: project.color || "#ccc" }}
+            />
+            {project.title}
+            {project.archived && <Badge variant="outline">Arquivado</Badge>}
+          </span>
+        }
+        description={project.description}
+        actions={
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={handleToggleFavorite}>
+              <Star
+                className={cn(
+                  "h-5 w-5 transition-colors",
+                  project.favorite
+                    ? "text-yellow-500 fill-yellow-400"
+                    : "text-muted-foreground hover:text-yellow-500"
+                )}
+              />
+              <span className="sr-only">
+                {project.favorite ? "Desfavoritar" : "Favoritar"} projeto
+              </span>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="h-5 w-5" />
+                  <span className="sr-only">Ações do projeto</span>
                 </Button>
-                <div className="flex items-center gap-3">
-                  <span
-                    className="w-4 h-4 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: project.color || "#ccc" }}
-                  />
-                  <h1 className="text-3xl font-bold">{project.title}</h1>
-                  {project.archived && (
-                    <Badge variant="outline">Arquivado</Badge>
-                  )}
-                </div>
-                <p className="text-muted-foreground mt-1 max-w-2xl">
-                  {project.description}
-                </p>
-              </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleToggleFavorite}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  <span>Editar Projeto</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleArchiveProject}>
+                  <Archive className="mr-2 h-4 w-4" />
+                  <span>
+                    {project.archived ? "Desarquivar" : "Arquivar"}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => setIsDeleteDialogOpen(true)}
                 >
-                  <Star
-                    className={cn(
-                      "h-5 w-5 transition-colors",
-                      project.favorite
-                        ? "text-yellow-500 fill-yellow-400"
-                        : "text-muted-foreground hover:text-yellow-500"
-                    )}
-                  />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      <span>Editar Projeto</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleArchiveProject}>
-                      <Archive className="mr-2 h-4 w-4" />
-                      <span>
-                        {project.archived ? "Desarquivar" : "Arquivar"}
-                      </span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={() => setIsDeleteDialogOpen(true)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Deletar Projeto</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>Deletar Projeto</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        }
+      />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
                 <AspectRatio
                   ratio={16 / 9}
@@ -864,8 +826,6 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
               </div>
             </div>
           </div>
-        </main>
-      </div>
 
       <AlertDialog
         open={isDeleteDialogOpen}
@@ -876,8 +836,8 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta ação não pode ser desfeita. Isso irá deletar
-              permanentemente o projeto **{project.title}** e todos os seus
-              objetivos.
+              permanentemente o projeto <strong>{project.title}</strong> e todos
+              os seus objetivos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -964,17 +924,8 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
                       )}
                     </Button>
                   </PopoverTrigger>
-                  {editDueDate && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-12 top-[125px] h-8 w-8"
-                      onClick={() => setEditDueDate(undefined)}
-                      disabled={isSubmittingEdit}
-                    >
-                      
-                    </Button>
-                  )}
+                  {/* A9 (P0.3): o botão vazio absolute foi removido; limpar a
+                      data virou um botão com texto dentro do PopoverContent. */}
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
@@ -983,8 +934,20 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
                       initialFocus
                       locale={ptBR}
                     />
-                  </PopoverContent>
-                </Popover>
+                    {editDueDate && (
+                      <div className="flex justify-end border-t border-border p-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditDueDate(undefined)}
+                          disabled={isSubmittingEdit}
+                        >
+                          Limpar data
+                        </Button>
+                      </div>
+                    )}
+                  </PopoverContent>                </Popover>
               </div>
             </div>
             <DialogFooter>
@@ -1007,6 +970,6 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
           </form>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </>
   );
 }

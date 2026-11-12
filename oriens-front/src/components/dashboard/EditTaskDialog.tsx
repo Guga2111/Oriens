@@ -11,7 +11,7 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import apiClient from "@/services/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface Task {
@@ -50,7 +50,9 @@ export function EditTaskDialog({ task, open, onOpenChange, onTaskUpdated }: Edit
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!dueDate || !startTime || !priority) {
-      toast({ variant: "destructive", title: "Erro", description: "Por favor, preencha todos os campos obrigatórios." });
+      toast.error("Erro", {
+        description: "Por favor, preencha todos os campos obrigatórios.",
+      });
       return;
     }
     setIsLoading(true);
@@ -69,7 +71,9 @@ export function EditTaskDialog({ task, open, onOpenChange, onTaskUpdated }: Edit
       onTaskUpdated();
       onOpenChange(false); 
     } catch (error) {
-      toast({ variant: "destructive", title: "Erro", description: "Não foi possível atualizar a tarefa." });
+      toast.error("Erro", {
+        description: "Não foi possível atualizar a tarefa.",
+      });
     } finally {
       setIsLoading(false);
     }

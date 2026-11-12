@@ -8,7 +8,7 @@ import { CheckSquare, Loader2, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/services/api";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -62,9 +62,7 @@ const SignLoginPage = () => {
     } catch (e) {
       console.log ('Falha no login: ', e);
       setLoginError('Email ou senha inválidos. Por favor, tente novamente.');
-      toast({
-        variant: "destructive",
-        title: "Falha no login",
+      toast.error("Falha no login", {
         description: "Email ou senha inválidos. Por favor, tente novamente.",
       });
     } finally {
@@ -78,7 +76,9 @@ const SignLoginPage = () => {
 
     if (registerPassword !== registerConfirmPassword) {
       setRegisterError("As senhas não coincidem!");
-      toast({ variant: "destructive", title: "Erro", description: "As senhas não coincidem!" });
+      toast.error("Erro", {
+        description: "As senhas não coincidem!",
+      });
       return;
     }
 
@@ -107,9 +107,7 @@ const SignLoginPage = () => {
     } catch (e) {
       console.error('Falha no registro: ', e);
       setRegisterError('Não foi possível criar a conta. O email já pode estar em uso.');
-      toast({
-        variant: "destructive",
-        title: "Falha no registro",
+      toast.error("Falha no registro", {
         description: "Não foi possível criar a conta. O email já pode estar em uso.",
       });
     } finally {
