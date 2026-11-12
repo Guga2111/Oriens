@@ -38,7 +38,7 @@ export function AppLayout() {
     <SidebarProjectsContext.Provider value={contextValue}>
       <SidebarProvider>
         <AppSidebar projectsVersion={projectsVersion} />
-        <SidebarInset>
+        <SidebarInset className="min-w-0">
           <AppHeader />
           {/* Loading e erro das páginas acontecem dentro deste Outlet,
               nunca substituindo o shell (SPEC §10.2). */}

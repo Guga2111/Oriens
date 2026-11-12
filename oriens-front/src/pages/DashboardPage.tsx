@@ -257,7 +257,10 @@ export function DashboardPage() {
                   currentDate={currentDate}
                   onUpdateTasks={fetchTasks}
                   onEditTask={setEditingTask}
-                  viewMode={viewMode}
+                  onSelectDay={(date) => {
+                    setCurrentDate(date);
+                    setViewMode("day");
+                  }}
                 />
               )}
             </div>
