@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Search,
+  SlidersHorizontal,
   X,
   Star,
   Archive,
@@ -41,7 +42,18 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { ProjectDTO } from "@/types/project";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 
 export interface ProjectsFilters {
@@ -78,12 +90,63 @@ export function ProjectsDataTable({
 }: ProjectsDataTableProps) {
   const [searchInput, setSearchInput] = useState(filters.searchQuery);
   const pageSize = 20;
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const currentPage = pagination.page;
   const totalPages = pagination.totalPages;
   const totalElements = pagination.totalElements;
   const firstItem = totalElements === 0 ? 0 : currentPage * pageSize + 1;
   const lastItem = Math.min((currentPage + 1) * pageSize, totalElements);
+
+
+  const renderActions = (project: ProjectDTO) => (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 p-0"
+                            aria-label={`Ações de ${project.title}`}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {/* Opção de Favoritar */}
+                          <DropdownMenuItem
+                            onClick={() => onToggleFavorite(project.id)}
+                          >
+                            {project.favorite ? (
+                              <>
+                                <StarOff className="mr-2 h-4 w-4" />
+                                <span>Remover favorito</span>
+                              </>
+                            ) : (
+                              <>
+                                <Star className="mr-2 h-4 w-4" />
+                                <span>Favoritar</span>
+                              </>
+                            )}
+                          </DropdownMenuItem>
+
+                          {/* Opção de Arquivar/Desarquivar */}
+                          {project.archived ? (
+                            <DropdownMenuItem
+                              onClick={() => onUnarchive(project.id)}
+                            >
+                              <Archive className="mr-2 h-4 w-4" />
+                              <span>Desarquivar</span>
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => onArchive(project.id)}
+                            >
+                              <Archive className="mr-2 h-4 w-4" />
+                              <span>Arquivar</span>
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+  );
 
   const clearFilters = () => {
     setSearchInput("");
@@ -106,62 +169,109 @@ export function ProjectsDataTable({
   const hasActiveFilters =
     filters.includeArchived || filters.searchQuery !== "";
 
+  const activeFilterCount =
+    (filters.includeArchived ? 1 : 0) + (filters.searchQuery !== "" ? 1 : 0);
+
+  const filtersPanel = (
+    <div className="flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+        {/* Toggle Archived */}
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="include-archived"
+            checked={filters.includeArchived}
+            onCheckedChange={(checked) =>
+              onFilterChange({ includeArchived: checked })
+            }
+          />
+          <Label
+            htmlFor="include-archived"
+            className="cursor-pointer text-sm"
+          >
+            Mostrar arquivados
+          </Label>
+        </div>
+
+        {/* Search */}
+        <div className="relative flex min-w-[200px] flex-1 items-center gap-0">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por título"
+              aria-label="Buscar por título"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="rounded-r-none border-r-0 pl-9"
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleSearchClick}
+            aria-label="Buscar"
+            className="h-10 w-10 shrink-0 rounded-l-none border-l"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Clear Filters */}
+        {hasActiveFilters && (
+          <Button variant="outline" onClick={clearFilters}>
+            <X className="mr-2 h-4 w-4" />
+            Limpar
+          </Button>
+        )}
+    </div>
+  );
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-medium">Todos os projetos</CardTitle>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-lg font-medium">Todos os projetos</CardTitle>
 
-        {/* Filters */}
-        <div className="flex flex-col items-start gap-4 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
-          {/* Toggle Archived */}
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="include-archived"
-              checked={filters.includeArchived}
-              onCheckedChange={(checked) =>
-                onFilterChange({ includeArchived: checked })
-              }
-            />
-            <Label
-              htmlFor="include-archived"
-              className="cursor-pointer text-sm"
-            >
-              Mostrar arquivados
-            </Label>
-          </div>
-
-          {/* Search */}
-          <div className="relative flex min-w-[200px] flex-1 items-center gap-0">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por título"
-                aria-label="Buscar por título"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                className="rounded-r-none border-r-0 pl-9"
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleSearchClick}
-              aria-label="Buscar"
-              className="h-10 w-10 shrink-0 rounded-l-none border-l"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Clear Filters */}
-          {hasActiveFilters && (
-            <Button variant="outline" onClick={clearFilters}>
-              <X className="mr-2 h-4 w-4" />
-              Limpar
-            </Button>
+          {!isDesktop && (
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="h-10 gap-2">
+                  <SlidersHorizontal className="h-4 w-4" aria-hidden />
+                  Filtros
+                  {activeFilterCount > 0 && (
+                    <Badge variant="secondary" className="px-1.5">
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="bottom"
+                className="max-h-[85dvh] overflow-y-auto"
+              >
+                <SheetHeader>
+                  <SheetTitle>Filtros</SheetTitle>
+                  <SheetDescription>
+                    Refine a lista de projetos.
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="px-4 pb-4">{filtersPanel}</div>
+                <SheetFooter className="flex-row justify-end gap-2">
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={clearFilters}>
+                      <X className="mr-2 h-4 w-4" aria-hidden />
+                      Limpar
+                    </Button>
+                  )}
+                  <SheetClose asChild>
+                    <Button>Fechar</Button>
+                  </SheetClose>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
           )}
         </div>
+
+        {isDesktop && <div className="pt-4">{filtersPanel}</div>}
       </CardHeader>
 
       <CardContent>
@@ -186,8 +296,8 @@ export function ProjectsDataTable({
           </Empty>
         ) : (
           <>
-            {/* Até o P2 a tabela rola dentro deste container (SPEC §11.7). */}
-            <div className="overflow-x-auto rounded-lg border">
+            {/* Abaixo de 768 a tabela vira lista de 2 linhas (SPEC §11.7). */}
+            <div className="hidden overflow-x-auto rounded-lg border md:block">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -264,59 +374,71 @@ export function ProjectsDataTable({
                           )}
                         />
                       </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0"
-                              aria-label={`Ações de ${project.title}`}
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {/* Opção de Favoritar */}
-                            <DropdownMenuItem
-                              onClick={() => onToggleFavorite(project.id)}
-                            >
-                              {project.favorite ? (
-                                <>
-                                  <StarOff className="mr-2 h-4 w-4" />
-                                  <span>Remover favorito</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Star className="mr-2 h-4 w-4" />
-                                  <span>Favoritar</span>
-                                </>
-                              )}
-                            </DropdownMenuItem>
-
-                            {/* Opção de Arquivar/Desarquivar */}
-                            {project.archived ? (
-                              <DropdownMenuItem
-                                onClick={() => onUnarchive(project.id)}
-                              >
-                                <Archive className="mr-2 h-4 w-4" />
-                                <span>Desarquivar</span>
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem
-                                onClick={() => onArchive(project.id)}
-                              >
-                                <Archive className="mr-2 h-4 w-4" />
-                                <span>Arquivar</span>
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                      <TableCell>{renderActions(project)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
+
+            <ul
+              aria-label="Lista de projetos"
+              className="divide-y rounded-lg border md:hidden"
+            >
+              {projects.map((project) => (
+                <li key={project.id} className="flex flex-col gap-2 p-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    {project.color && (
+                      <div
+                        className="h-3 w-3 shrink-0 rounded-full"
+                        style={{ backgroundColor: project.color }}
+                        aria-hidden
+                      />
+                    )}
+                    <span
+                      className="truncate text-sm font-medium"
+                      title={project.title}
+                    >
+                      {project.title}
+                    </span>
+                    <Star
+                      role="img"
+                      aria-label={
+                        project.favorite
+                          ? `Favorito: ${project.title}`
+                          : `Não favorito: ${project.title}`
+                      }
+                      className={cn(
+                        "ml-auto h-4 w-4 shrink-0",
+                        project.favorite
+                          ? "fill-primary text-primary"
+                          : "text-muted-foreground"
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Progress value={project.progress} className="h-2 w-16" />
+                      <span className="text-xs tabular-nums text-muted-foreground">
+                        {project.progress}%
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {project.archived ? (
+                        <Badge variant="secondary" className="gap-1">
+                          <Archive className="h-3 w-3" aria-hidden />
+                          Arquivado
+                        </Badge>
+                      ) : (
+                        <Badge variant="positive">Ativo</Badge>
+                      )}
+                      {renderActions(project)}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
 
             {totalElements > 0 && (
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -330,6 +452,7 @@ export function ProjectsDataTable({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="max-md:h-10"
                         onClick={() => onPageChange(currentPage - 1)}
                         disabled={currentPage === 0}
                         aria-label="Página anterior"
@@ -347,6 +470,7 @@ export function ProjectsDataTable({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="max-md:h-10"
                         onClick={() => onPageChange(currentPage + 1)}
                         disabled={currentPage >= totalPages - 1}
                         aria-label="Próxima página"

@@ -1,224 +1,214 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { 
-  CheckSquare, Check, Calendar, BarChart, Github, Twitter, Mail, Linkedin,
-  Shield, LayoutGrid, 
-  Clock, Lock, Smartphone,
-  LayoutList, CalendarDays, Bell, MessageCircle, Cloud,
-} from "lucide-react";
+import { OriensLogo } from "@/components/common/OriensLogo";
+import { Github, Mail, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
+const highlights = [
+  {
+    title: "Planejamento por período",
+    description:
+      "Organize o dia em manhã, tarde e noite, com a lista completa sempre à vista.",
+  },
+  {
+    title: "Visão semanal",
+    description:
+      "Veja a semana inteira de uma vez e salte para o dia que precisa.",
+  },
+  {
+    title: "Lembretes no seu ritmo",
+    description:
+      "Notificações e som são opcionais e ficam em Configurações.",
+  },
+  {
+    title: "Financeiro e projetos juntos",
+    description:
+      "Acompanhe gastos, projetos e objetivos no mesmo lugar.",
+  },
+];
+
 export function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background-brand">
+    <div className="flex min-h-screen flex-col bg-background-brand">
       {/* Header */}
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b">
-        <Link to="/" className="flex items-center" onClick={() => window.location.reload()}>
-            <img src="/oriens-logo.png" 
-            alt="Logo da Oriens" 
-            className="h-[60px] w-auto"/>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link to="/auth">
-            <Button variant="ghost">Login</Button>
+      <header className="px-4 md:px-6">
+        <div className="mx-auto flex h-16 max-w-[1120px] items-center">
+          <Link to="/" className="flex items-center gap-2">
+            <OriensLogo className="h-8 w-8" title="Oriens" />
+            <span className="text-lg font-semibold tracking-tight">Oriens</span>
           </Link>
-          <Link to="/auth">
-            <Button className="text-primary-foreground bg-primary hover:opacity-80 transition-opacity">
-              Registrar
-            </Button>
-          </Link>
-        </nav>
+          <nav className="ml-auto flex items-center gap-2 sm:gap-3">
+            <Button variant="ghost" asChild><Link to="/auth">Entrar</Link></Button>
+            <Button asChild><Link to="/auth">Criar conta</Link></Button>
+          </nav>
+        </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1">
-        <section className="w-full py-20 md:py-24 lg:py-26 text-center">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center space-y-6">
-              <Badge variant="outline" className="border-primary/50 text-primary">
-                ● Organize seu dia sem custos
-              </Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter">
-                Organize suas tarefas <br /> com <span className="text-primary">Oriens</span>
-              </h1>
-              <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                A solução completa e gratuita para gerenciar seu calendário e tarefas diárias. Sem mensalidades, sem limitações.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/auth">
-                  <Button size="lg" className="bg-brand-yellow text-brand-burgundy hover:bg-brand-yellow/85">
-                    Começar agora →
-                  </Button>
-                </Link>
-                <a href="/#features-detail">
-                  <Button size="lg" variant="outline">
-                    Ver demonstração
-                  </Button>
-                </a>
-              </div>
-              <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4 pt-6 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" /> 100% Gratuito
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary" /> Calendário Integrado
-                </div>
-                <div className="flex items-center gap-2">
-                  <BarChart className="h-4 w-4 text-primary" /> Dashboard de Produtividade
-                </div>
-              </div>
+        <section className="w-full py-20 text-center md:py-24">
+          <div className="mx-auto max-w-[1120px] px-4 md:px-6">
+            <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+              Organize suas tarefas com Oriens
+            </h1>
+            <p className="mx-auto mt-4 max-w-[640px] text-foreground md:text-lg">
+              A solução completa e gratuita para gerenciar seu calendário e
+              tarefas diárias. Sem mensalidades, sem limitações.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button size="lg" asChild><Link to="/auth">Começar agora</Link></Button>
+              <Button size="lg" variant="outline" asChild>
+                <a href="#demo">Ver demonstração</a>
+              </Button>
             </div>
+            <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
+              <li>100% gratuito</li>
+              <li>Sem mensalidades</li>
+              <li>Sem cartão de crédito</li>
+            </ul>
           </div>
         </section>
 
-        <section id="demo" className="w-full pb-20 md:pb-24 lg:pb-32">
-          <div className="container px-4 md:px-6">
-            <div className="relative mx-auto max-w-5xl">
-              <img
-                src="/oriens-tasks-screen.png" 
-                alt="Dashboard do Oriens em funcionamento"
-                className="rounded-xl border border-border/50 shadow-2xl shadow-primary/10"
-              />
-            </div>
+        <section id="demo" className="w-full pb-20 md:pb-24">
+          <div className="mx-auto max-w-[1120px] px-4 md:px-6">
+            <img
+              src="/oriens-tasks-screen.png"
+              alt="Tela de hoje do Oriens com as tarefas do dia em três períodos"
+              className="w-full rounded-xl"
+            />
           </div>
         </section>
 
-        <section id="features-detail" className="w-full py-20 md:py-24 lg:py-32 bg-brand-burgundy text-brand-cream">
-          <div className="container px-4 md:px-6 text-center">
-            <div className="max-w-[800px] mx-auto space-y-4">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter">
-                Tudo que você precisa para produtividade máxima
+        <section
+          id="features-detail"
+          className="w-full bg-brand-burgundy py-20 text-brand-cream md:py-28"
+        >
+          <div className="mx-auto grid max-w-[1120px] gap-12 px-4 md:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                O dia inteiro em uma faixa
               </h2>
-              <p className="text-brand-cream/85 md:text-xl">
-                Recursos poderosos para organizar sua rotina sem complicação
+              <p className="mt-4 max-w-[52ch] text-brand-cream/80">
+                O Oriens organiza o dia como um horizonte: a linha do dia
+                mostra, de um vistazo, o que já passou e o que vem a seguir.
+                Cada marca é uma tarefa que você abre em um clique.
               </p>
+
+              <div
+                aria-hidden
+                className="mt-8 rounded-xl bg-brand-cream/5 p-5"
+              >
+                <div className="flex h-16 items-center gap-3 rounded-lg bg-brand-cream/10 px-4">
+                  <span className="h-6 w-1 rounded-full bg-brand-cream/40" />
+                  <span className="h-6 w-1 rounded-full bg-brand-cream/40" />
+                  <span className="h-6 w-1 rounded-full bg-brand-yellow" />
+                  <span className="h-6 w-1 rounded-full bg-brand-cream/40" />
+                </div>
+                <p className="mt-3 text-sm text-brand-cream/70">
+                  Manhã, tarde e noite, com a contagem de concluídas sempre no
+                  topo.
+                </p>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-              
-              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
-                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <LayoutList className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Planeamento Diário por Período</h3>
-                <p className="text-muted-foreground">
-                  Organize o seu dia de forma intuitiva, dividindo as suas tarefas em Manhã, Tarde e Noite para uma visão clara e focada.
-                </p>
-              </div>
 
-              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-primary/50 transition-transform duration-300 hover:-translate-y-2">
-                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <CalendarDays className="h-5 w-5 text-primary" />
+            <dl className="flex flex-col gap-8">
+              {highlights.map((highlight) => (
+                <div key={highlight.title}>
+                  <dt className="text-base font-semibold">{highlight.title}</dt>
+                  <dd className="mt-1 text-brand-cream/75">
+                    {highlight.description}
+                  </dd>
                 </div>
-                <h3 className="text-xl font-bold mb-2">Visão Semanal Estratégica</h3>
-                <p className="text-muted-foreground">
-                  Planeie a sua semana com antecedência. A nossa vista semanal ajuda-o a distribuir a carga de trabalho e a antecipar compromissos.
-                </p>
+              ))}
+              <div className="flex items-center gap-2">
+                <dt className="text-base font-semibold">
+                  Lembretes no WhatsApp
+                </dt>
+                <dd>
+                  <Badge className="border-brand-yellow/60 bg-brand-yellow/15 text-brand-yellow">
+                    Em breve
+                  </Badge>
+                </dd>
               </div>
-
-              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
-                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Bell className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Lembretes Automáticos</h3>
-                <p className="text-muted-foreground">
-                  Nunca mais perca um prazo. Receba notificações sobre tarefas atrasadas e lembretes antes dos seus compromissos.
-                </p>
-              </div>
-
-              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
-                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <MessageCircle className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Integração com WhatsApp</h3>
-                <p className="text-muted-foreground">
-                  Receba o seu plano do dia e insights de produtividade com IA diretamente no seu WhatsApp. A sua organização, na sua mão.
-                </p>
-              </div>
-
-              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
-                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <BarChart className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Dashboard de Produtividade</h3>
-                <p className="text-muted-foreground">
-                  Acompanhe o seu progresso diário. Veja quantas tarefas concluiu e mantenha-se motivado com um resumo visual do seu desempenho.
-                </p>
-              </div>
-
-              <div className="bg-card text-card-foreground p-6 rounded-lg text-left border border-border/50 transition-transform duration-300 hover:-translate-y-2">
-                <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <Cloud className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Acesso Multiplataforma</h3>
-                <p className="text-muted-foreground">
-                  Hospedado na nuvem AWS, o Oriens sincroniza as suas tarefas para que você possa aceder e gerir o seu dia a partir de qualquer dispositivo.
-                </p>
-              </div>
-
-            </div>
+            </dl>
           </div>
         </section>
       </main>
-      
-      <footer className="bg-muted/20 border-t border-border/50 py-12">
-        <div className="container grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-          <div className="flex flex-col items-center md:items-start gap-2">
-            <h3 className="text-2xl font-bold text-primary">Oriens</h3>
+
+      <footer className="bg-background-brand py-16">
+        <div className="mx-auto grid max-w-[1120px] grid-cols-1 gap-8 px-4 text-center md:grid-cols-3 md:px-6 md:text-left">
+          <div className="flex flex-col items-center gap-2 md:items-start">
+            <div className="flex items-center gap-2">
+              <OriensLogo className="h-6 w-6" />
+              <span className="text-lg font-semibold">Oriens</span>
+            </div>
             <p className="max-w-xs text-sm text-muted-foreground">
               Organize suas tarefas diárias sem custos
             </p>
           </div>
-          <div className="flex flex-col items-center md:items-start gap-2">
-            <h4 className="font-semibold tracking-wider text-foreground">Produto</h4>
-<a href="#features-detail" className="text-sm text-muted-foreground hover:text-primary">
+          <div className="flex flex-col items-center gap-2 md:items-start">
+            <h2 className="text-sm font-semibold text-foreground">Produto</h2>
+            <a
+              href="#features-detail"
+              className="text-sm text-muted-foreground hover:text-primary"
+            >
               Recursos
             </a>
-            <Link 
-              to="#" 
+            <Link
+              to="/auth"
+              className="text-sm text-muted-foreground hover:text-primary"
+            >
+              Criar conta
+            </Link>
+            <Link
+              to="/auth"
               onClick={(e) => {
                 e.preventDefault();
                 toast.success("Em breve!", {
-                  description: "A nossa documentação está a ser preparada.",
+                  description: "A nossa documentação está sendo preparada.",
                 });
               }}
               className="text-sm text-muted-foreground hover:text-primary"
             >
               Documentação
             </Link>
-            <Link 
-              to="#" 
-              onClick={(e) => {
-                e.preventDefault();
-                toast.success("Em breve!", {
-                  description: "O nosso roadmap será publicado em breve.",
-                });
-              }}
-              className="text-sm text-muted-foreground hover:text-primary"
-            >
-              Roadmap
-            </Link>
           </div>
-          <div className="flex flex-col items-center md:items-start gap-2">
-            <h4 className="font-semibold tracking-wider text-foreground">Conecte-se</h4>
+          <div className="flex flex-col items-center gap-2 md:items-start">
+            <h2 className="text-sm font-semibold text-foreground">Conecte-se</h2>
             <div className="flex gap-2">
-              <a href="https://github.com/Guga2111" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="icon"><Github className="h-4 w-4" /></Button>
-              </a>
-              <a href="https://www.linkedin.com/in/luisgustavosampaio/" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="icon"><Linkedin className="h-4 w-4" /></Button>
-              </a>
-              <a href="mailto:luisgosampaio@gmail.com">
-                <Button variant="outline" size="icon"><Mail className="h-4 w-4" /></Button>
-              </a>
+              <Button asChild variant="outline" size="icon">
+                <a
+                  href="https://github.com/Guga2111"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub do Oriens"
+                >
+                  <Github className="h-4 w-4" aria-hidden />
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="icon">
+                <a
+                  href="https://www.linkedin.com/in/luisgustavosampaio/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn do Oriens"
+                >
+                  <Linkedin className="h-4 w-4" aria-hidden />
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="icon">
+                <a href="mailto:luisgosampaio@gmail.com" aria-label="E-mail do Oriens">
+                  <Mail className="h-4 w-4" aria-hidden />
+                </a>
+              </Button>
             </div>
           </div>
         </div>
-        <div className="container mt-8">
-          <Separator />
-          <p className="pt-8 text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Oriens. Desenvolvido com Spring Boot, React, Vite e TypeScript.
+        <div className="mx-auto mt-8 max-w-[1120px] px-4 md:px-6">
+          <p className="text-center text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Oriens. Desenvolvido com Spring Boot,
+            React, Vite e TypeScript.
           </p>
         </div>
       </footer>

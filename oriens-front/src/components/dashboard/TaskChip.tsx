@@ -89,13 +89,14 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
             onCheckedChange={() =>
               void updateStatus(isConcluded ? "PENDING" : "CONCLUDED")
             }
+            aria-busy={isUpdating}
             disabled={isUpdating}
             aria-label={
               isOnDoing
                 ? `Concluir ${task.title} (em andamento)`
                 : `Concluir ${task.title}`
             }
-            className="h-4 w-4"
+            className="task-completion h-4 w-4"
           />
         </div>
 
@@ -128,7 +129,7 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
               size="icon"
               className="-mr-1 -mt-1 h-6 w-6 shrink-0"
               aria-label={`Ações da tarefa ${task.title}`}
-              disabled={isUpdating}
+                disabled={isUpdating}
             >
               <MoreHorizontal className="h-4 w-4" />
             </Button>

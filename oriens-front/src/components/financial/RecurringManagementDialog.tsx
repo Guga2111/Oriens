@@ -25,6 +25,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { EntryDTO, TagDTO, RecurrencePatternLabels } from '@/types/financial';
 import { getRecurringEntries, deleteEntry } from '@/services/financialService';
+import { FieldError } from '@/components/ui/field';
+import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface RecurringManagementDialogProps {
@@ -46,6 +48,7 @@ export function RecurringManagementDialog({
 }: RecurringManagementDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [recurringEntries, setRecurringEntries] = useState<EntryDTO[]>([]);
+  const [error, setError] = useState('');
   const [deletingEntry, setDeletingEntry] = useState<EntryDTO | null>(null);
 
   useEffect(() => {
@@ -55,14 +58,13 @@ export function RecurringManagementDialog({
   }, [open, userId]);
 
   const loadRecurringEntries = async () => {
+    setError('');
     setIsLoading(true);
     try {
       const entries = await getRecurringEntries(userId);
       setRecurringEntries(entries);
     } catch (error) {
-      toast.error('Erro ao carregar recorrencias', {
-        description: 'Nao foi possivel carregar as entradas recorrentes.',
-      });
+      setError('Não foi possível carregar as entradas recorrentes.');
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +73,7 @@ export function RecurringManagementDialog({
   const handleDelete = async () => {
     if (!deletingEntry) return;
 
+    setError('');
     setIsLoading(true);
     try {
       await deleteEntry(userId, deletingEntry.id!);
@@ -81,9 +84,7 @@ export function RecurringManagementDialog({
       await loadRecurringEntries();
       onEntriesChange();
     } catch (error) {
-      toast.error('Erro ao excluir recorrencia', {
-        description: error.response?.data?.message || 'Ocorreu um erro ao excluir a entrada.',
-      });
+      setError('Não foi possível excluir a entrada recorrente. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
@@ -98,12 +99,6 @@ export function RecurringManagementDialog({
     return tags.find(tag => tag.id === tagId);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(Math.abs(value));
-  };
 
   return (
     <>
@@ -117,7 +112,8 @@ export function RecurringManagementDialog({
           </DialogHeader>
 
           <ScrollArea className="max-h-[60vh] pr-4">
-            <div className="space-y-4 py-4">
+            <div className="flex flex-col gap-4 py-4">
+              {error && <FieldError>{error}</FieldError>}
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -132,7 +128,7 @@ export function RecurringManagementDialog({
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3">
                   {recurringEntries.map((entry) => {
                     const tag = getTagById(entry.tagId);
                     const isExpense = entry.amount < 0;
@@ -142,15 +138,15 @@ export function RecurringManagementDialog({
                         key={entry.id}
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex-1 space-y-1">
+                        <div className="flex flex-col flex-1 gap-1">
                           <div className="flex items-center gap-3">
                             <span
                               className={cn(
                                 'font-semibold',
-                                isExpense ? 'text-red-500' : 'text-green-500'
+                                isExpense ? 'text-negative' : 'text-positive'
                               )}
                             >
-                              {isExpense ? '-' : '+'} {formatCurrency(entry.amount)}
+                              {isExpense ? '-' : '+'} {formatCurrency(Math.abs(entry.amount))}
                             </span>
                             {tag && (
                               <Badge style={{ backgroundColor: tag.color }}>
@@ -181,6 +177,7 @@ export function RecurringManagementDialog({
                           <Button
                             size="icon"
                             variant="ghost"
+                            aria-label={`Editar recorrência ${entry.description || "entrada"}`}
                             onClick={() => handleEdit(entry)}
                             disabled={isLoading}
                           >
@@ -189,10 +186,11 @@ export function RecurringManagementDialog({
                           <Button
                             size="icon"
                             variant="ghost"
+                            aria-label={`Excluir recorrência ${entry.description || "entrada"}`}
                             onClick={() => setDeletingEntry(entry)}
                             disabled={isLoading}
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4 text-negative" />
                           </Button>
                         </div>
                       </div>
@@ -214,12 +212,13 @@ export function RecurringManagementDialog({
               automaticamente nao serao afetadas, mas novas entradas nao serao mais criadas.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {error && <FieldError>{error}</FieldError>}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
+              onClick={(event) => { event.preventDefault(); void handleDelete(); }}
               disabled={isLoading}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Excluir

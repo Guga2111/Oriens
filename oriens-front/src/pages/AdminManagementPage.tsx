@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react"
-import { PageHeader } from "@/components/common/PageHeader"
+import { useState, useEffect } from "react";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { PageHeader } from "@/components/common/PageHeader";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -17,278 +18,287 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
-  AlertCircle,
-  Shield,
-  Users,
-  User,
-} from "lucide-react"
-import { toast } from "sonner"
-import apiClient from "@/services/api"
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { KpiStrip, type KpiStripItem } from "@/components/statistics/KpiStrip";
+import { Users } from "lucide-react";
+import { toast } from "sonner";
+import apiClient from "@/services/api";
+import { USER_ROLE } from "@/lib/labels";
 
 interface User {
-  id: number
-  name: string
-  email: string
-  role: "USER" | "ADMIN"
-  createdAt: string
+  id: number;
+  name: string;
+  email: string;
+  role: "USER" | "ADMIN";
+  createdAt: string;
 }
 
 export default function AdminManagementPage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedRole, setSelectedRole] = useState<string>("")
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
+  const [users, setUsers] = useState<User[]>([]);
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchAllUsers()
-  }, [])
+    fetchAllUsers();
+  }, []);
 
   const fetchAllUsers = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response = await apiClient.get("/user/admin/all-users")
-      setUsers(response.data)
+      const response = await apiClient.get("/user/admin/all-users");
+      setUsers(response.data);
     } catch (error) {
-      console.error("Erro ao carregar usuários:", error)
-      toast.error("Erro ao carregar lista de usuários")
+      console.error("Erro ao carregar usuários:", error);
+      toast.error("Erro ao carregar lista de usuários");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleUpdateRole = async (userId: number, newRole: string) => {
     try {
       const response = await apiClient.patch(
         `/user/admin/${userId}/role/${newRole}`
-      )
+      );
       setUsers(
         users.map((user) =>
           user.id === userId ? { ...user, role: response.data.role } : user
         )
-      )
-      toast.success(`Permissão atualizada para ${newRole}`)
-      setSelectedRole("")
-      setSelectedUserId(null)
+      );
+      toast.success("Permissão atualizada");
+      setSelectedRole("");
+      setSelectedUserId(null);
     } catch (error) {
-      console.error("Erro ao atualizar role:", error)
-      toast.error("Erro ao atualizar permissão do usuário")
+      console.error("Erro ao atualizar role:", error);
+      toast.error("Erro ao atualizar permissão do usuário");
     }
-  }
+  };
 
-  const getRoleBadge = (role: string) => {
-    return role === "ADMIN" ? (
-      <Badge className="bg-primary text-primary-foreground h-6 inline-flex items-center gap-1">
-        <Shield className="h-3 w-3 flex-shrink-0" />
-        Admin
-      </Badge>
-    ) : (
-      <Badge variant="secondary" className="h-6 inline-flex items-center gap-1">
-        <User className="h-3 w-3 flex-shrink-0" />
-        Usuário
-      </Badge>
-    )
-  }
+  const renderRoleAction = (user: User) => (
+<Dialog open={selectedUserId === user.id} onOpenChange={(open) => { if (!open) { setSelectedUserId(null); setSelectedRole(""); } }}>
+                              <DialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedUserId(user.id);
+                                    setSelectedRole(user.role);
+                                  }}
+                                >
+                                  Alterar
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Alterar permissão</DialogTitle>
+                                  <DialogDescription>
+                                    Usuário: {user.name} ({user.email})
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="flex flex-col gap-4 py-4">
+                                  <div className="flex flex-col gap-2">
+                                    <label
+                                      htmlFor="user-role"
+                                      className="text-sm font-medium"
+                                    >
+                                      Nova permissão
+                                    </label>
+                                    <Select
+                                      value={selectedRole}
+                                      onValueChange={setSelectedRole}
+                                    >
+                                      <SelectTrigger id="user-role">
+                                        <SelectValue placeholder="Selecione uma permissão" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="USER">
+                                          Usuário
+                                        </SelectItem>
+                                        <SelectItem value="ADMIN">
+                                          Administrador
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
 
-  const adminCount = users.filter((u) => u.role === "ADMIN").length
-  const userCount = users.filter((u) => u.role === "USER").length
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => {
+                                        setSelectedRole("");
+                                        setSelectedUserId(null);
+                                      }}
+                                    >
+                                      Cancelar
+                                    </Button>
+                                    <Button
+                                      onClick={() => {
+                                        if (selectedUserId && selectedRole) {
+                                          handleUpdateRole(
+                                            selectedUserId,
+                                            selectedRole
+                                          );
+                                        }
+                                      }}
+                                    >
+                                      Confirmar
+                                    </Button>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+  );
+
+  const adminCount = users.filter((u) => u.role === "ADMIN").length;
+  const userCount = users.filter((u) => u.role === "USER").length;
+
+  const kpis: KpiStripItem[] = [
+    {
+      label: "Total de usuários",
+      value: String(users.length),
+      goodDirection: "up",
+      description: "Contas registradas",
+    },
+    {
+      label: "Usuários",
+      value: String(userCount),
+      goodDirection: "up",
+      description: "Com acesso padrão",
+    },
+    {
+      label: "Administradores",
+      value: String(adminCount),
+      goodDirection: "up",
+      description: "Com acesso completo",
+    },
+  ];
 
   return (
-    <div className="bg-background">
-      <div className="mx-auto w-full max-w-7xl space-y-8 p-8">
+    <div className="p-6 md:p-8">
+      <div className="flex max-w-[1280px] flex-col gap-6">
         <PageHeader
-          title="Gerenciar Admins"
-          description="Gerencie as permissões e roles dos usuários"
+          title="Gerenciar permissões"
+          description="Gerencie as permissões e papéis dos usuários"
         />
 
         <Separator />
 
-              {/* Stats Cards */}
-              <div className="grid gap-4 md:grid-cols-3">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Total de Usuários
-                    </CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{users.length}</div>
-                  </CardContent>
-                </Card>
+        <KpiStrip items={kpis} isLoading={isLoading && users.length === 0} />
 
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Usuários Normais
-                    </CardTitle>
-                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{userCount}</div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Administradores
-                    </CardTitle>
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{adminCount}</div>
-                  </CardContent>
-                </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Usuários</CardTitle>
+            <CardDescription>
+              Selecione um usuário para alterar suas permissões
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div
+                className="py-8 text-center text-muted-foreground"
+                aria-busy="true"
+              >
+                Carregando usuários...
               </div>
-
-              {/* Users Table */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Usuários</CardTitle>
-                  <CardDescription>
-                    Clique em um usuário para alterar suas permissões
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      Carregando usuários...
+            ) : users.length > 0 ? isMobile ? (
+              <ul aria-label="Lista de usuários" className="divide-y rounded-lg border">
+                {users.map((user) => (
+                  <li key={user.id} className="flex min-w-0 flex-col gap-2 p-3">
+                    <div className="flex min-w-0 items-center justify-between gap-2">
+                      <span className="min-w-0 truncate font-medium">{user.name}</span>
+                      <Badge variant={USER_ROLE[user.role].badge}>{USER_ROLE[user.role].label}</Badge>
                     </div>
-                  ) : users.length > 0 ? (
-                    <div className="border rounded-lg overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Nome</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Permissão</TableHead>
-                            <TableHead>Data de Criação</TableHead>
-                            <TableHead>Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {users.map((user) => (
-                            <TableRow key={user.id}>
-                              <TableCell className="font-medium">
-                                {user.id}
-                              </TableCell>
-                              <TableCell>{user.name}</TableCell>
-                              <TableCell className="text-sm">
-                                {user.email}
-                              </TableCell>
-                              <TableCell>
-                                {getRoleBadge(user.role)}
-                              </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">
-                                {new Date(user.createdAt).toLocaleDateString(
-                                  "pt-BR"
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => {
-                                        setSelectedUserId(user.id)
-                                        setSelectedRole(user.role)
-                                      }}
-                                    >
-                                      Alterar
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent>
-                                    <DialogHeader>
-                                      <DialogTitle>
-                                        Alterar Permissão
-                                      </DialogTitle>
-                                      <DialogDescription>
-                                        Usuário: {user.name} ({user.email})
-                                      </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="space-y-4 py-4">
-                                      <div className="space-y-2">
-                                        <label className="text-sm font-medium">
-                                          Nova Permissão
-                                        </label>
-                                        <Select
-                                          value={selectedRole}
-                                          onValueChange={setSelectedRole}
-                                        >
-                                          <SelectTrigger>
-                                            <SelectValue placeholder="Selecione uma permissão" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="USER">
-                                              Usuário Normal
-                                            </SelectItem>
-                                            <SelectItem value="ADMIN">
-                                              Administrador
-                                            </SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-
-                                      <div className="flex gap-2 justify-end">
-                                        <Button
-                                          variant="outline"
-                                          onClick={() => {
-                                            setSelectedRole("")
-                                            setSelectedUserId(null)
-                                          }}
-                                        >
-                                          Cancelar
-                                        </Button>
-                                        <Button
-                                          onClick={() => {
-                                            if (selectedUserId && selectedRole) {
-                                              handleUpdateRole(
-                                                selectedUserId,
-                                                selectedRole
-                                              )
-                                            }
-                                          }}
-                                        >
-                                          Confirmar
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-sm">
+                      <span className="min-w-0 flex-1 truncate text-muted-foreground" title={user.email}>{user.email}</span>
+                      {renderRoleAction(user)}
                     </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>Nenhum usuário encontrado</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="overflow-x-auto rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[80px]">ID</TableHead>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>E-mail</TableHead>
+                      <TableHead>Permissão</TableHead>
+                      <TableHead className="text-right">Data de criação</TableHead>
+                      <TableHead className="w-[140px] text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="tabular-nums text-muted-foreground">
+                          {user.id}
+                        </TableCell>
+                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell className="text-sm">{user.email}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              USER_ROLE[
+                                user.role as keyof typeof USER_ROLE
+                              ].badge
+                            }
+                          >
+                            {USER_ROLE[user.role as keyof typeof USER_ROLE].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right text-sm tabular-nums text-muted-foreground">
+                          {new Date(user.createdAt).toLocaleDateString("pt-BR")}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end">
+                            {renderRoleAction(user)}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <Empty className="border-0 p-0">
+                <EmptyHeader>
+                  <EmptyTitle className="text-base">
+                    Nenhum usuário encontrado
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    As contas registradas aparecem aqui.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
-  )
+  );
 }

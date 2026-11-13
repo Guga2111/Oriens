@@ -17,8 +17,8 @@ test("cria, conclui e alterna o status de uma tarefa", async ({ page }) => {
 
   // A data já vem preenchida com o dia visível (P1.1).
   await expect(
-    dialog.getByRole("button", { name: /\d{2}\/\d{2}\/\d{4}/ })
-  ).toBeVisible();
+    dialog.getByRole("button", { name: "Data", exact: true })
+  ).toHaveText(/\d{2}\/\d{2}\/\d{4}/);
 
   await dialog.getByRole("combobox").click();
   await page.getByRole("option", { name: "Média" }).click();

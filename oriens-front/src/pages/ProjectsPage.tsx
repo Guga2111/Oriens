@@ -231,7 +231,7 @@ export default function ProjectsPage() {
             </ToggleGroupItem>
           </ToggleGroup>
 
-          <Button asChild variant="link" className="h-auto p-0 text-sm">
+          <Button asChild variant="link" className="h-auto max-md:min-h-10 p-0 text-sm">
             <Link to="/all-data?tab=projects&archived=1">Ver arquivados</Link>
           </Button>
         </div>

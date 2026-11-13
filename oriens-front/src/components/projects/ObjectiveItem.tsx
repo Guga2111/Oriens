@@ -59,7 +59,7 @@ export function ObjectiveItem({
       <Button
         variant="ghost"
         size="icon"
-        className="mt-0.5 h-7 w-7 shrink-0 rounded-full"
+        className="mt-0.5 h-10 w-10 shrink-0 rounded-full md:h-7 md:w-7"
         onClick={() => onToggleStatus(index)}
         disabled={isUpdating}
         aria-pressed={isConcluded}
@@ -106,7 +106,7 @@ export function ObjectiveItem({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 shrink-0"
+              className="h-10 w-10 shrink-0 md:h-8 md:w-8"
               aria-label={`Ações do objetivo: ${objective.title}`}
             >
               <MoreHorizontal className="h-4 w-4" aria-hidden />

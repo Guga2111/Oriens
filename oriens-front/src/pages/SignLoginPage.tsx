@@ -4,11 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { CheckSquare, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+import { OriensLogo } from "@/components/common/OriensLogo";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/services/api";
-import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -60,11 +60,8 @@ const SignLoginPage = () => {
       }
 
     } catch (e) {
-      console.log ('Falha no login: ', e);
-      setLoginError('Email ou senha inválidos. Por favor, tente novamente.');
-      toast.error("Falha no login", {
-        description: "Email ou senha inválidos. Por favor, tente novamente.",
-      });
+      console.error("Falha no login:", e);
+      setLoginError("E-mail ou senha inválidos. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -75,10 +72,7 @@ const SignLoginPage = () => {
     setRegisterError('');
 
     if (registerPassword !== registerConfirmPassword) {
-      setRegisterError("As senhas não coincidem!");
-      toast.error("Erro", {
-        description: "As senhas não coincidem!",
-      });
+      setRegisterError("As senhas não coincidem.");
       return;
     }
 
@@ -106,10 +100,7 @@ const SignLoginPage = () => {
 
     } catch (e) {
       console.error('Falha no registro: ', e);
-      setRegisterError('Não foi possível criar a conta. O email já pode estar em uso.');
-      toast.error("Falha no registro", {
-        description: "Não foi possível criar a conta. O email já pode estar em uso.",
-      });
+      setRegisterError("Não foi possível criar a conta. O e-mail já pode estar em uso.");
     } finally {
       setIsLoading(false);
     }
@@ -145,25 +136,23 @@ const handleForgotPassword = async (e: React.FormEvent) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background-brand">
-      <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-md">
         {/* Logo e Título */}
         <div className="flex flex-col items-center mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-brand-yellow">
-              <CheckSquare className="h-7 w-7 text-brand-burgundy" />
-            </div>
-            <h1 className="text-4xl font-bold text-primary">
-              Oriens
+          <div className="flex flex-col items-center gap-3">
+            <OriensLogo className="h-12 w-12" title="Oriens" />
+            <h1 className="text-3xl font-bold tracking-tight text-primary">
+              Entrar no Oriens
             </h1>
           </div>
-          <p className="text-muted-foreground text-center">
+          <p className="mt-3 text-muted-foreground text-center">
             Organize seu dia com eficiência
           </p>
         </div>
 
         {/* Auth Card */}
         <Card className="border-border/50">
-          <CardHeader className="space-y-1 pb-4">
+          <CardHeader className="flex flex-col gap-1 pb-4">
             <CardTitle className="text-2xl text-center">Bem-vindo</CardTitle>
             <CardDescription className="text-center">
               Faça login ou crie sua conta para começar
@@ -178,8 +167,8 @@ const handleForgotPassword = async (e: React.FormEvent) => {
 
               {/* Login Tab */}
               <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
+                <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="login-email">E-mail</Label>
                     <Input
                       id="login-email"
@@ -188,9 +177,11 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       required
+                      aria-invalid={Boolean(loginError)}
+                      aria-describedby={loginError ? "login-error" : undefined}
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="login-password">Senha</Label>
                     <div className="relative">
                     <Input
@@ -201,6 +192,8 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                       onChange={(e) => setLoginPassword(e.target.value)}
                       required
                       className="pr-10"
+                      aria-invalid={Boolean(loginError)}
+                      aria-describedby={loginError ? "login-error" : undefined}
                     />
                     <Button
                       type="button" 
@@ -213,9 +206,19 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                     </Button>
                     </div>
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full text-primary-foreground bg-primary hover:opacity-80"
+                  {loginError && (
+                    <p
+                      id="login-error"
+                      role="alert"
+                      className="text-sm text-destructive"
+                    >
+                      {loginError}
+                    </p>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="w-full"
                     disabled={isLoading}
                   >
                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Entrar"}
@@ -236,8 +239,8 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                                 Digite seu e-mail para enviarmos um link de recuperação.
                               </DialogDescription>
                             </DialogHeader>
-                            <form onSubmit={handleForgotPassword} className="space-y-4">
-                              <div className="space-y-2">
+                            <form onSubmit={handleForgotPassword} className="flex flex-col gap-4">
+                              <div className="flex flex-col gap-2">
                                 <Label htmlFor="forgot-email" className="sr-only">E-mail</Label>
                                 <Input
                                   id="forgot-email"
@@ -282,11 +285,13 @@ const handleForgotPassword = async (e: React.FormEvent) => {
 
               {/* Register Tab */}
               <TabsContent value="register">
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="space-y-2">
+                <form onSubmit={handleRegister} className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="register-name">Nome completo</Label>
                     <Input
                       id="register-name"
+                      aria-invalid={Boolean(registerError)}
+                      aria-describedby={registerError ? "register-error" : undefined}
                       type="text"
                       placeholder="Seu nome"
                       value={registerName}
@@ -294,10 +299,12 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="register-email">E-mail</Label>
                     <Input
                       id="register-email"
+                      aria-invalid={Boolean(registerError)}
+                      aria-describedby={registerError ? "register-error" : undefined}
                       type="email"
                       placeholder="seu@email.com"
                       value={registerEmail}
@@ -305,11 +312,13 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="register-password">Senha</Label>
                     <div className="relative">
                       <Input
                       id="register-password"
+                      aria-invalid={Boolean(registerError)}
+                      aria-describedby={registerError ? "register-error" : undefined}
                       type={isRegisterPasswordVisible ? "text" : "password"}
                       placeholder="••••••••"
                       value={registerPassword}
@@ -328,11 +337,13 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                     </Button>
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="register-confirm-password">Confirmar senha</Label>
                     <div className="relative">
                       <Input
                       id="register-confirm-password"
+                      aria-invalid={Boolean(registerError)}
+                      aria-describedby={registerError ? "register-error" : undefined}
                       type={isConfirmPasswordVisible ? "text" : "password"}
                       placeholder="••••••••"
                       value={registerConfirmPassword}
@@ -365,9 +376,19 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                     </Label>
                   </div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full text-primary-foreground bg-primary hover:opacity-80"
+                  {registerError && (
+                    <p
+                      id="register-error"
+                      role="alert"
+                      className="text-sm text-destructive"
+                    >
+                      {registerError}
+                    </p>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="w-full"
                     disabled={isLoading || !termsAccepted}
                   >
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Criar conta"}

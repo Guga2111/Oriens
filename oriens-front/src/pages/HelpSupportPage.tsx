@@ -15,8 +15,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -56,8 +62,9 @@ const faqItems = [
     answer: "O Oriens envia notificações para lembrá-lo de tarefas próximas do prazo, atualizações em projetos compartilhados e mensagens de equipe. Você pode personalizar suas preferências de notificação nas configurações."
   },
   {
-    question: "Como compartilhar um projeto com outros usuários?",
-    answer: "Dentro do projeto, clique no botão 'Compartilhar' e insira os emails dos usuários com quem deseja compartilhar. Você pode definir diferentes níveis de permissão para cada usuário."
+    question: "Poderei compartilhar projetos com outras pessoas?",
+    answer: "Ainda não. O compartilhamento está planejado e chega em uma próxima versão.",
+    badge: "Em breve"
   },
   {
     question: "Como acompanhar meu progresso?",
@@ -94,11 +101,23 @@ export default function HelpSupportPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [copiedEmail, setCopiedEmail] = useState(false)
   const [copiedPhone, setCopiedPhone] = useState(false)
+  const [errors, setErrors] = useState<{ subject?: string; message?: string }>({})
+  const [submitError, setSubmitError] = useState("")
 
   const handleSubmitSupport = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!subject.trim() || !message.trim()) {
-      toast.error("Por favor, preencha todos os campos")
+
+    const nextErrors: { subject?: string; message?: string } = {}
+    if (!subject.trim()) {
+      nextErrors.subject = "Informe o assunto."
+    }
+    if (!message.trim()) {
+      nextErrors.message = "Descreva a sua dúvida."
+    }
+    setErrors(nextErrors)
+    setSubmitError("")
+
+    if (Object.keys(nextErrors).length > 0) {
       return
     }
 
@@ -114,7 +133,7 @@ export default function HelpSupportPage() {
       setMessage("")
     } catch (error) {
       console.error("Erro ao enviar solicitação:", error)
-      toast.error("Erro ao enviar sua solicitação. Tente novamente.")
+      setSubmitError("Não foi possível enviar sua solicitação. Tente novamente.")
     } finally {
       setIsSubmitting(false)
     }
@@ -168,8 +187,8 @@ export default function HelpSupportPage() {
   }
 
   return (
-    <div className="bg-background">
-      <div className="mx-auto w-full max-w-5xl space-y-8 p-8 transition-colors">
+    <div className="p-6 md:p-8">
+      <div className="flex max-w-[1280px] flex-col gap-6 transition-colors">
         <PageHeader
           title="Ajuda & Suporte"
           description="Encontre ajuda, tutoriais e entre em contato com nossa equipe"
@@ -205,21 +224,35 @@ export default function HelpSupportPage() {
                       Encontre respostas para as dúvidas mais comuns
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="flex flex-col gap-4">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Buscar nas perguntas frequentes..."
+                        aria-label="Buscar nas perguntas frequentes"
+                        aria-controls="faq-list"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
                       />
                     </div>
                     {filteredFaqItems.length > 0 ? (
-                      <Accordion type="single" collapsible className="w-full">
+                      <Accordion
+                        type="single"
+                        collapsible
+                        id="faq-list"
+                        className="w-full"
+                      >
                         {filteredFaqItems.map((item, index) => (
                           <AccordionItem key={index} value={`item-${index}`}>
-                            <AccordionTrigger>{item.question}</AccordionTrigger>
+                            <AccordionTrigger>
+                              <span className="flex flex-wrap items-center gap-2">
+                                {item.question}
+                                {item.badge && (
+                                  <Badge variant="warning">{item.badge}</Badge>
+                                )}
+                              </span>
+                            </AccordionTrigger>
                             <AccordionContent>{item.answer}</AccordionContent>
                           </AccordionItem>
                         ))}
@@ -340,7 +373,7 @@ export default function HelpSupportPage() {
                                 onClick={handleCopyEmail}
                               >
                                 {copiedEmail ? (
-                                  <Check className="h-4 w-4 text-green-500" />
+                                  <Check className="h-4 w-4 text-positive" />
                                 ) : (
                                   <Copy className="h-4 w-4" />
                                 )}
@@ -364,7 +397,7 @@ export default function HelpSupportPage() {
                                 onClick={handleCopyPhone}
                               >
                                 {copiedPhone ? (
-                                  <Check className="h-4 w-4 text-green-500" />
+                                  <Check className="h-4 w-4 text-positive" />
                                 ) : (
                                   <Copy className="h-4 w-4" />
                                 )}
@@ -377,27 +410,45 @@ export default function HelpSupportPage() {
                         </Card>
                       </div>
 
-                      <form onSubmit={handleSubmitSupport} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Seu Email</Label>
+                      <form
+                        onSubmit={handleSubmitSupport}
+                        className="flex flex-col gap-4"
+                        noValidate
+                      >
+                        <Field>
+                          <FieldLabel htmlFor="email">Seu e-mail</FieldLabel>
                           <Input
                             id="email"
                             value={userEmail || ""}
                             disabled
                           />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="subject">Assunto</Label>
+                          <FieldDescription>
+                            Usamos este e-mail para responder.
+                          </FieldDescription>
+                        </Field>
+
+                        <Field data-invalid={Boolean(errors.subject)}>
+                          <FieldLabel htmlFor="subject">Assunto</FieldLabel>
                           <Input
                             id="subject"
                             placeholder="Ex: Dúvida sobre criação de projetos"
                             value={subject}
                             onChange={(e) => setSubject(e.target.value)}
                             disabled={isSubmitting}
+                            aria-invalid={Boolean(errors.subject)}
+                            aria-describedby={
+                              errors.subject ? "subject-error" : undefined
+                            }
                           />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="message">Mensagem</Label>
+                          {errors.subject && (
+                            <FieldError id="subject-error">
+                              {errors.subject}
+                            </FieldError>
+                          )}
+                        </Field>
+
+                        <Field data-invalid={Boolean(errors.message)}>
+                          <FieldLabel htmlFor="message">Mensagem</FieldLabel>
                           <Textarea
                             id="message"
                             placeholder="Descreva sua dúvida ou problema em detalhes..."
@@ -405,10 +456,24 @@ export default function HelpSupportPage() {
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             disabled={isSubmitting}
+                            aria-invalid={Boolean(errors.message)}
+                            aria-describedby={
+                              errors.message ? "message-error" : undefined
+                            }
                           />
-                        </div>
-                        <Button 
-                          type="submit" 
+                          {errors.message && (
+                            <FieldError id="message-error">
+                              {errors.message}
+                            </FieldError>
+                          )}
+                        </Field>
+
+                        {submitError && (
+                          <FieldError id="submit-error">{submitError}</FieldError>
+                        )}
+
+                        <Button
+                          type="submit"
                           className="w-full"
                           disabled={isSubmitting}
                         >

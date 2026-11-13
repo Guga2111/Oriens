@@ -10,9 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -57,7 +62,8 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
       setAmount(entry.amount.toString());
       setEntryDate(parseISO(entry.entryDate));
       setDescription(entry.description || '');
-      setTagId(entry.tagId.toString());
+      setTagId(entry.tagId ? entry.tagId.toString() : '');
+      setErrors({});
     }
   }, [entry]);
 
@@ -65,26 +71,26 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
     const newErrors: Record<string, string> = {};
 
     if (!amount || amount === '0') {
-      newErrors.amount = 'Valor é obrigatório';
+      newErrors.amount = 'Informe o valor da entrada.';
     } else {
       const numAmount = parseFloat(amount);
-      if (isNaN(numAmount)) {
-        newErrors.amount = 'Valor inválido';
+      if (!Number.isFinite(numAmount) || numAmount === 0) {
+        newErrors.amount = 'Valor inválido.';
       } else if (numAmount < -999999999.99 || numAmount > 999999999999.99) {
-        newErrors.amount = 'Valor fora dos limites permitidos';
+        newErrors.amount = 'Valor fora dos limites permitidos.';
       }
     }
 
     if (!entryDate) {
-      newErrors.entryDate = 'Data é obrigatória';
+      newErrors.entryDate = 'Escolha a data da entrada.';
     }
 
     if (!tagId) {
-      newErrors.tagId = 'Tag é obrigatória';
+      newErrors.tagId = 'Selecione uma tag.';
     }
 
     if (description && description.length > 255) {
-      newErrors.description = 'Descrição deve ter no máximo 255 caracteres';
+      newErrors.description = 'A descrição deve ter no máximo 255 caracteres.';
     }
 
     setErrors(newErrors);
@@ -96,7 +102,8 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
 
     setIsLoading(true);
     try {
-      await updateEntry(userId!, entry.id!, {
+      await updateEntry(userId!, entry.id, {
+        ...entry,
         amount: parseFloat(amount),
         entryDate: format(entryDate, 'yyyy-MM-dd'),
         description: description || undefined,
@@ -107,12 +114,15 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
         description: 'A entrada foi atualizada com sucesso.',
       });
 
-      setErrors({});
       onOpenChange(false);
       onSuccess();
     } catch (error) {
+      setErrors({ submit: "Não foi possível salvar. Revise os dados e tente novamente." });
+      console.error('Erro ao atualizar entrada:', error);
       toast.error('Erro ao atualizar entrada', {
-        description: error.response?.data?.message || 'Ocorreu um erro ao atualizar a entrada.',
+        description:
+          error.response?.data?.message ||
+          'Não foi possível atualizar a entrada.',
       });
     } finally {
       setIsLoading(false);
@@ -123,20 +133,18 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Editar Entrada</DialogTitle>
           <DialogDescription>
             Atualize as informações da entrada financeira.
           </DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-4 py-4">
+        <div className="flex flex-col gap-4">
+          {errors.submit && <FieldError>{errors.submit}</FieldError>}
           {/* Valor */}
-          <div className="space-y-2">
-            <Label htmlFor="amount">
-              Valor <span className="text-red-500">*</span>
-            </Label>
+          <Field data-invalid={Boolean(errors.amount)}>
+            <FieldLabel htmlFor="amount">Valor</FieldLabel>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 R$
@@ -148,31 +156,35 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
                 placeholder="0,00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className={cn('pl-10', errors.amount && 'border-red-500')}
+                className={cn('pl-10', errors.amount && 'border-destructive')}
+                aria-invalid={Boolean(errors.amount)}
+                aria-describedby={errors.amount ? 'amount-error' : 'amount-hint'}
               />
             </div>
-            {errors.amount && (
-              <p className="text-sm text-red-500">{errors.amount}</p>
+            {errors.amount ? (
+              <FieldError id="amount-error">{errors.amount}</FieldError>
+            ) : (
+              <FieldDescription id="amount-hint">
+                Use valores negativos para despesas e positivos para receitas.
+              </FieldDescription>
             )}
-            <p className="text-xs text-muted-foreground">
-              Use valores negativos para despesas e positivos para receitas
-            </p>
-          </div>
+          </Field>
 
           {/* Data */}
-          <div className="space-y-2">
-            <Label>
-              Data <span className="text-red-500">*</span>
-            </Label>
+          <Field data-invalid={Boolean(errors.entryDate)}>
+            <FieldLabel htmlFor="entryDate">Data</FieldLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  id="entryDate"
                   variant="outline"
                   className={cn(
                     'w-full justify-start text-left font-normal',
                     !entryDate && 'text-muted-foreground',
-                    errors.entryDate && 'border-red-500'
+                    errors.entryDate && 'border-destructive'
                   )}
+                  aria-invalid={Boolean(errors.entryDate)}
+                  aria-describedby={errors.entryDate ? 'entryDate-error' : undefined}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {entryDate ? format(entryDate, 'dd/MM/yyyy') : 'Selecione uma data'}
@@ -188,17 +200,20 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
               </PopoverContent>
             </Popover>
             {errors.entryDate && (
-              <p className="text-sm text-red-500">{errors.entryDate}</p>
+              <FieldError id="entryDate-error">{errors.entryDate}</FieldError>
             )}
-          </div>
+          </Field>
 
           {/* Tag */}
-          <div className="space-y-2">
-            <Label htmlFor="tag">
-              Tag <span className="text-red-500">*</span>
-            </Label>
+          <Field data-invalid={Boolean(errors.tagId)}>
+            <FieldLabel htmlFor="tag">Tag</FieldLabel>
             <Select value={tagId} onValueChange={setTagId}>
-              <SelectTrigger className={cn(errors.tagId && 'border-red-500')}>
+              <SelectTrigger
+                id="tag"
+                className={cn(errors.tagId && 'border-destructive')}
+                aria-invalid={Boolean(errors.tagId)}
+                aria-describedby={errors.tagId ? 'tag-error' : undefined}
+              >
                 <SelectValue placeholder="Selecione uma tag">
                   {selectedTag && (
                     <div className="flex items-center gap-2">
@@ -224,30 +239,34 @@ export function EditEntryDialog({ open, onOpenChange, entry, tags, onSuccess }: 
               </SelectContent>
             </Select>
             {errors.tagId && (
-              <p className="text-sm text-red-500">{errors.tagId}</p>
+              <FieldError id="tag-error">{errors.tagId}</FieldError>
             )}
-          </div>
+          </Field>
 
           {/* Descrição */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
+          <Field data-invalid={Boolean(errors.description)}>
+            <FieldLabel htmlFor="description">Descrição</FieldLabel>
             <Textarea
               id="description"
               placeholder="Descrição da entrada (opcional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className={cn(errors.description && 'border-red-500')}
+              className={cn(errors.description && 'border-destructive')}
+              aria-invalid={Boolean(errors.description)}
+              aria-describedby={
+                errors.description ? 'description-error' : 'description-hint'
+              }
               rows={3}
             />
-            {errors.description && (
-              <p className="text-sm text-red-500">{errors.description}</p>
+            {errors.description ? (
+              <FieldError id="description-error">{errors.description}</FieldError>
+            ) : (
+              <FieldDescription id="description-hint">
+                {description.length}/255 caracteres
+              </FieldDescription>
             )}
-            <p className="text-xs text-muted-foreground">
-              {description.length}/255 caracteres
-            </p>
-          </div>
+          </Field>
         </div>
-
         <DialogFooter>
           <Button
             variant="outline"

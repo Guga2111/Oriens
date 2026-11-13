@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 import { expect, test } from "@playwright/test";
 import { format } from "date-fns";
-import { login } from "./helpers";
+import { login, openFiltersSheet } from "./helpers";
 
 const API_BASE_URL = process.env.E2E_API_BASE_URL ?? "http://localhost:8080";
 
@@ -25,6 +25,8 @@ test("abas e arquivados vivem na URL", async ({ page }) => {
   await page.getByRole("tab", { name: "Projetos" }).click();
   await expect(page).toHaveURL(/tab=projects/);
 
+  await openFiltersSheet(page);
+
   const archivedSwitch = page.getByRole("switch", {
     name: "Mostrar arquivados",
   });
@@ -36,6 +38,7 @@ test("abas e arquivados vivem na URL", async ({ page }) => {
     "aria-selected",
     "true"
   );
+  await openFiltersSheet(page);
   await expect(
     page.getByRole("switch", { name: "Mostrar arquivados" })
   ).toBeChecked();
@@ -43,6 +46,7 @@ test("abas e arquivados vivem na URL", async ({ page }) => {
   await page.goto("/projects");
   await page.getByRole("link", { name: "Ver arquivados" }).click();
   await expect(page).toHaveURL(/\/all-data\?tab=projects&archived=1/);
+  await openFiltersSheet(page);
   await expect(
     page.getByRole("switch", { name: "Mostrar arquivados" })
   ).toBeChecked();
@@ -52,6 +56,7 @@ test("abas e arquivados vivem na URL", async ({ page }) => {
 test("filtro de status inclui Em andamento", async ({ page }) => {
   await login(page);
   await page.goto("/all-data?tab=tasks");
+  await openFiltersSheet(page);
 
   await page.getByRole("combobox", { name: "Status" }).click();
   await expect(
@@ -59,8 +64,9 @@ test("filtro de status inclui Em andamento", async ({ page }) => {
   ).toBeVisible();
 });
 
-// §11.7: até o P2, a tabela rola dentro do próprio container no mobile.
-test("tabela rola dentro do container no mobile", async ({
+// §11.7 (P2.0): abaixo de 768 a tabela vira lista de 2 linhas e os filtros
+// ficam dentro de um Sheet; a página não rola na horizontal.
+test("no mobile a tabela vira lista e a página não rola", async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile", "mobile only");
@@ -77,7 +83,7 @@ test("tabela rola dentro do container no mobile", async ({
     },
     body: JSON.stringify({
       title: `Tabela mobile ${Date.now()} com um título longo para forçar rolagem`,
-      description: "Tarefa criada para validar a rolagem da tabela",
+      description: "Tarefa criada para validar a lista no mobile",
       startTime: "09:00",
       dueDate: format(new Date(), "yyyy-MM-dd"),
       priority: "MEDIUM",
@@ -87,16 +93,9 @@ test("tabela rola dentro do container no mobile", async ({
 
   await login(page);
   await page.goto("/all-data?tab=tasks");
-  await expect(page.getByRole("table")).toBeVisible();
 
-  const scroll = await page.getByRole("table").evaluate((table) => {
-    const container = table.parentElement as HTMLElement;
-    return {
-      clientWidth: container.clientWidth,
-      scrollWidth: container.scrollWidth,
-    };
-  });
-  expect(scroll.scrollWidth).toBeGreaterThan(scroll.clientWidth);
+  await expect(page.getByRole("list", { name: "Lista de tarefas" })).toBeVisible();
+  await expect(page.getByRole("table")).toBeHidden();
 
   const pageOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth - window.innerWidth

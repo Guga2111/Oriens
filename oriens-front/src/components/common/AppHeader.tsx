@@ -10,7 +10,7 @@ import { NotificationBell } from "@/components/dashboard/NotificationBell";
 export function AppHeader() {
   return (
     <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <SidebarTrigger aria-label="Alternar menu de navegação" />
+      <SidebarTrigger className="h-10 w-10" aria-label="Alternar menu de navegação" />
       <Separator orientation="vertical" className="h-4" />
       <div className="flex-1" />
       <NotificationBell />

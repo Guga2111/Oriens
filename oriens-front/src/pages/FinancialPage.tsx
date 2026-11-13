@@ -347,7 +347,7 @@ export default function FinancialPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-10 w-10 md:h-8 md:w-8"
                   aria-label="Mês anterior"
                   onClick={() => handlePeriodChange("prev")}
                 >
@@ -362,7 +362,7 @@ export default function FinancialPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-10 w-10 md:h-8 md:w-8"
                   aria-label="Próximo mês"
                   onClick={() => handlePeriodChange("next")}
                 >
@@ -371,6 +371,7 @@ export default function FinancialPage() {
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="max-md:h-10"
                   onClick={() => handlePeriodChange("today")}
                 >
                   Este mês

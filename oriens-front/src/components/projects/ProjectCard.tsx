@@ -211,7 +211,7 @@ export function ProjectCard({
               <h2 className="min-w-0 text-base font-semibold leading-6">
                 <Link
                   to={`/tasks/project/${project.id}`}
-                  className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 max-md:inline-flex max-md:min-h-10 max-md:items-center"
                 >
                   {project.title}
                 </Link>
@@ -228,7 +228,7 @@ export function ProjectCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-10 w-10 md:h-8 md:w-8"
               onClick={handleToggleFavorite}
               aria-pressed={project.favorite}
               aria-label="Favoritar"
@@ -249,7 +249,7 @@ export function ProjectCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-10 w-10 md:h-8 md:w-8"
                   aria-label={`Ações do projeto: ${project.title}`}
                 >
                   <MoreHorizontal className="h-4 w-4" aria-hidden />
@@ -321,7 +321,7 @@ export function ProjectCard({
               Nenhum objetivo pendente.
             </p>
           ) : (
-            <ul className="space-y-1">
+            <ul className="flex flex-col gap-1">
               {nextObjectives.map(({ objective, index }) => (
                 <ObjectiveItem
                   key={`${index}-${objective.title}`}

@@ -1,0 +1,1082 @@
+[
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "landing",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "auth",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "reset",
+    "overflow": 0,
+    "h1": 0,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "terms",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "404",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "week",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "project",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "financial",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "stats",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "all-data-tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "all-data-projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "config",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "light",
+    "name": "support",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "landing",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "auth",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "reset",
+    "overflow": 0,
+    "h1": 0,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "terms",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "404",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "week",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "project",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "financial",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "stats",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "all-data-tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "all-data-projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "config",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 1440,
+    "theme": "dark",
+    "name": "support",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "landing",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "auth",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "reset",
+    "overflow": 0,
+    "h1": 0,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "terms",
+    "overflow": 95,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "404",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "week",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "project",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "financial",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "stats",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "all-data-tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "all-data-projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "config",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "light",
+    "name": "support",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "landing",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "auth",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "reset",
+    "overflow": 0,
+    "h1": 0,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "terms",
+    "overflow": 95,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "404",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "week",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "project",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "financial",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "stats",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "all-data-tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "all-data-projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "config",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "antes",
+    "width": 390,
+    "theme": "dark",
+    "name": "support",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "landing",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "auth",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "reset",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "terms",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "404",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "project",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "financial",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "stats",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "all-data-tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "all-data-projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "support",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "landing",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "auth",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "reset",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "terms",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "404",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "project",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "financial",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "stats",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "all-data-tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "all-data-projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "support",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "landing",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "auth",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "reset",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "terms",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "404",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "project",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "financial",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "stats",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "all-data-tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "all-data-projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "support",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "landing",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "auth",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "reset",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "terms",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "404",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "project",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "financial",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "stats",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "all-data-tasks",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "all-data-projects",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "support",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "week",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "light",
+    "name": "config",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "week",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 1440,
+    "theme": "dark",
+    "name": "config",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "week",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "light",
+    "name": "config",
+    "overflow": 0,
+    "h1": 1,
+    "dark": false
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "week",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  },
+  {
+    "stage": "depois",
+    "width": 390,
+    "theme": "dark",
+    "name": "config",
+    "overflow": 0,
+    "h1": 1,
+    "dark": true
+  }
+]

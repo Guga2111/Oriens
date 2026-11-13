@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Pencil,
   Search,
+  SlidersHorizontal,
   Tag,
   Trash2,
   X,
@@ -39,6 +40,16 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
   Table,
   TableBody,
   TableCell,
@@ -54,6 +65,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { EntryDTO, TagDTO } from "@/types/financial";
@@ -125,6 +137,7 @@ export function EntryHistoryTable({
 }: EntryHistoryTableProps) {
   const [deletingEntry, setDeletingEntry] = useState<EntryDTO | null>(null);
   const [searchInput, setSearchInput] = useState(filters.searchQuery);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const currentPage = pagination.page;
   const totalPages = pagination.totalPages;
@@ -152,6 +165,11 @@ export function EntryHistoryTable({
     filters.tagFilter !== "all" ||
     filters.searchQuery !== "";
 
+  const activeFilterCount =
+    (filters.periodFilter !== "all" ? 1 : 0) +
+    (filters.tagFilter !== "all" ? 1 : 0) +
+    (filters.searchQuery !== "" ? 1 : 0);
+
   const getTagById = (tagId: number) => tags.find((tag) => tag.id === tagId);
 
   const confirmDelete = () => {
@@ -168,7 +186,7 @@ export function EntryHistoryTable({
         <Button
           size="icon"
           variant="ghost"
-          className="h-8 w-8"
+          className="h-10 w-10 md:h-8 md:w-8"
           onClick={() => onEdit(entry)}
           aria-label={`Editar entrada${label}`}
         >
@@ -177,7 +195,7 @@ export function EntryHistoryTable({
         <Button
           size="icon"
           variant="ghost"
-          className="h-8 w-8"
+          className="h-10 w-10 md:h-8 md:w-8"
           onClick={() => setDeletingEntry(entry)}
           aria-label={`Excluir entrada${label}`}
         >
@@ -190,139 +208,184 @@ export function EntryHistoryTable({
   const firstItem = currentPage * PAGE_SIZE + 1;
   const lastItem = Math.min((currentPage + 1) * PAGE_SIZE, totalElements);
 
+  const filtersPanel = (
+    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+      <Select
+        value={filters.periodFilter}
+        onValueChange={(value) => {
+          onFilterChange({ periodFilter: value });
+        }}
+      >
+        <SelectTrigger
+          className="w-full sm:w-[180px]"
+          aria-label="Filtrar por período"
+        >
+          <CalendarClock className="mr-2 h-4 w-4" aria-hidden />
+          <SelectValue placeholder="Período" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Todos períodos</SelectItem>
+          <SelectItem value="7days">Últimos 7 dias</SelectItem>
+          <SelectItem value="15days">Últimos 15 dias</SelectItem>
+          <SelectItem value="30days">Últimos 30 dias</SelectItem>
+          <SelectItem value="thisMonth">Este mês</SelectItem>
+          <SelectItem value="custom">Personalizado</SelectItem>
+        </SelectContent>
+      </Select>
+
+      {filters.periodFilter === "custom" && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="w-full sm:w-auto">
+              <CalendarIcon className="mr-2 h-4 w-4" aria-hidden />
+              {filters.customStartDate && filters.customEndDate
+                ? `${format(filters.customStartDate, "dd/MM/yy")} - ${format(
+                    filters.customEndDate,
+                    "dd/MM/yy"
+                  )}`
+                : "Selecione o período"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <div className="flex flex-col gap-2 p-3">
+              <div>
+                <p className="mb-2 text-sm font-medium">Data início</p>
+                <Calendar
+                  mode="single"
+                  selected={filters.customStartDate}
+                  onSelect={(date) =>
+                    onFilterChange({ customStartDate: date })
+                  }
+                />
+              </div>
+              <div>
+                <p className="mb-2 text-sm font-medium">Data fim</p>
+                <Calendar
+                  mode="single"
+                  selected={filters.customEndDate}
+                  onSelect={(date) =>
+                    onFilterChange({ customEndDate: date })
+                  }
+                />
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
+
+      <Select
+        value={filters.tagFilter}
+        onValueChange={(value) => {
+          onFilterChange({ tagFilter: value });
+        }}
+      >
+        <SelectTrigger
+          className="w-full sm:w-[180px]"
+          aria-label="Filtrar por tag"
+        >
+          <Tag className="mr-2 h-4 w-4" aria-hidden />
+          <SelectValue placeholder="Tags" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Todas as tags</SelectItem>
+          {tags.map((tag) => (
+            <SelectItem key={tag.id} value={tag.id!.toString()}>
+              <span className="flex items-center gap-2">
+                <span
+                  aria-hidden
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: tag.color }}
+                />
+                {tag.name}
+              </span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <div className="flex flex-1 items-center gap-0">
+        <div className="relative flex-1">
+          <Search
+            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
+          <Input
+            placeholder="Buscar descrição"
+            aria-label="Buscar no histórico"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            onKeyDown={handleSearchKeyDown}
+            className="rounded-r-none border-r-0 pl-9"
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onFilterChange({ searchQuery: searchInput })}
+          className="h-10 w-10 shrink-0 rounded-l-none border-l"
+          aria-label="Buscar"
+        >
+          <Search className="h-4 w-4" aria-hidden />
+        </Button>
+      </div>
+
+      {hasActiveFilters && (
+        <Button variant="outline" onClick={clearFilters}>
+          <X className="mr-2 h-4 w-4" aria-hidden />
+          Limpar
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <>
       <Card>
         <CardHeader className="p-5 pb-3">
-          <h2 className="text-base font-semibold">Histórico</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-base font-semibold">Histórico</h2>
 
-          <div className="flex flex-col gap-2 pt-3 sm:flex-row sm:flex-wrap">
-            <Select
-              value={filters.periodFilter}
-              onValueChange={(value) => {
-                onFilterChange({ periodFilter: value });
-              }}
-            >
-              <SelectTrigger
-                className="w-full sm:w-[180px]"
-                aria-label="Filtrar por período"
-              >
-                <CalendarClock className="mr-2 h-4 w-4" aria-hidden />
-                <SelectValue placeholder="Período" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos períodos</SelectItem>
-                <SelectItem value="7days">Últimos 7 dias</SelectItem>
-                <SelectItem value="15days">Últimos 15 dias</SelectItem>
-                <SelectItem value="30days">Últimos 30 dias</SelectItem>
-                <SelectItem value="thisMonth">Este mês</SelectItem>
-                <SelectItem value="custom">Personalizado</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {filters.periodFilter === "custom" && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full sm:w-auto">
-                    <CalendarIcon className="mr-2 h-4 w-4" aria-hidden />
-                    {filters.customStartDate && filters.customEndDate
-                      ? `${format(filters.customStartDate, "dd/MM/yy")} - ${format(
-                          filters.customEndDate,
-                          "dd/MM/yy"
-                        )}`
-                      : "Selecione o período"}
+            {!isDesktop && (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="h-10 gap-2">
+                    <SlidersHorizontal className="h-4 w-4" aria-hidden />
+                    Filtros
+                    {activeFilterCount > 0 && (
+                      <Badge variant="secondary" className="px-1.5">
+                        {activeFilterCount}
+                      </Badge>
+                    )}
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <div className="space-y-2 p-3">
-                    <div>
-                      <p className="mb-2 text-sm font-medium">Data início</p>
-                      <Calendar
-                        mode="single"
-                        selected={filters.customStartDate}
-                        onSelect={(date) =>
-                          onFilterChange({ customStartDate: date })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <p className="mb-2 text-sm font-medium">Data fim</p>
-                      <Calendar
-                        mode="single"
-                        selected={filters.customEndDate}
-                        onSelect={(date) =>
-                          onFilterChange({ customEndDate: date })
-                        }
-                      />
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            )}
-
-            <Select
-              value={filters.tagFilter}
-              onValueChange={(value) => {
-                onFilterChange({ tagFilter: value });
-              }}
-            >
-              <SelectTrigger
-                className="w-full sm:w-[180px]"
-                aria-label="Filtrar por tag"
-              >
-                <Tag className="mr-2 h-4 w-4" aria-hidden />
-                <SelectValue placeholder="Tags" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as tags</SelectItem>
-                {tags.map((tag) => (
-                  <SelectItem key={tag.id} value={tag.id!.toString()}>
-                    <span className="flex items-center gap-2">
-                      <span
-                        aria-hidden
-                        className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      {tag.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <div className="flex flex-1 items-center gap-0">
-              <div className="relative flex-1">
-                <Search
-                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden
-                />
-                <Input
-                  placeholder="Buscar descrição"
-                  aria-label="Buscar no histórico"
-                  value={searchInput}
-                  onChange={(event) => setSearchInput(event.target.value)}
-                  onKeyDown={handleSearchKeyDown}
-                  className="rounded-r-none border-r-0 pl-9"
-                />
-              </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onFilterChange({ searchQuery: searchInput })}
-                className="h-10 w-10 shrink-0 rounded-l-none border-l"
-                aria-label="Buscar"
-              >
-                <Search className="h-4 w-4" aria-hidden />
-              </Button>
-            </div>
-
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters}>
-                <X className="mr-2 h-4 w-4" aria-hidden />
-                Limpar
-              </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="bottom"
+                  className="max-h-[85dvh] overflow-y-auto"
+                >
+                  <SheetHeader>
+                    <SheetTitle>Filtros</SheetTitle>
+                    <SheetDescription>
+                      Refine o histórico de entradas.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="px-4 pb-4">{filtersPanel}</div>
+                  <SheetFooter className="flex-row justify-end gap-2">
+                    {hasActiveFilters && (
+                      <Button variant="outline" onClick={clearFilters}>
+                        <X className="mr-2 h-4 w-4" aria-hidden />
+                        Limpar
+                      </Button>
+                    )}
+                    <SheetClose asChild>
+                      <Button>Fechar</Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
             )}
           </div>
+
+          {isDesktop && <div className="pt-3">{filtersPanel}</div>}
         </CardHeader>
 
         <CardContent className="p-5 pt-0">
@@ -405,7 +468,10 @@ export function EntryHistoryTable({
                 </Table>
               </div>
 
-              <ul className="divide-y rounded-lg border md:hidden">
+              <ul
+                aria-label="Lista de entradas"
+                className="divide-y rounded-lg border md:hidden"
+              >
                 {entries.map((entry) => {
                   const tag = getTagById(entry.tagId);
                   return (
@@ -460,6 +526,7 @@ export function EntryHistoryTable({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="max-md:h-10"
                         onClick={() => onPageChange(currentPage - 1)}
                         disabled={currentPage === 0}
                         aria-label="Página anterior"
@@ -477,6 +544,7 @@ export function EntryHistoryTable({
                       <Button
                         variant="outline"
                         size="sm"
+                        className="max-md:h-10"
                         onClick={() => onPageChange(currentPage + 1)}
                         disabled={currentPage >= totalPages - 1}
                         aria-label="Próxima página"

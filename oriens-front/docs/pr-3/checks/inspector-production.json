@@ -1,0 +1,1338 @@
+{
+ "url": "http://localhost:4173/",
+ "at": "2026-11-13T19:42:33.541Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    1,
+    1,
+    1
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 2211,
+     "screens": 2.5,
+     "words": 180,
+     "img": 1,
+     "video": 0,
+     "canvas": 0,
+     "svg": 5,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "oriens-tasks-screen.png"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Organize suas tarefas com Oriens",
+     "words": 5,
+     "chars": 32,
+     "lines": 1,
+     "size": 48,
+     "vw": 3.3,
+     "font": "Inter",
+     "weight": 700,
+     "tracking": -0.025,
+     "leading": 1,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.74,
+     "top": 160,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Organize suas tarefas com Oriens",
+     "words": 5,
+     "lines": 1,
+     "size": 48,
+     "font": "Inter"
+    },
+    "headings": [
+     {
+      "text": "Organize suas tarefas com Oriens",
+      "words": 5,
+      "chars": 32,
+      "lines": 1,
+      "size": 48,
+      "vw": 3.3,
+      "font": "Inter",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.74,
+      "top": 160,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "O dia inteiro em uma faixa",
+      "words": 6,
+      "chars": 26,
+      "lines": 1,
+      "size": 36,
+      "vw": 2.5,
+      "font": "Inter",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.11,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.37,
+      "top": 1475,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 2,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 1,
+     "medianWords": 6,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      12,
+      14,
+      16,
+      18,
+      36,
+      48
+     ],
+     "sizeCount": 6,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 16,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 10
+     },
+     "measureChars": 65,
+     "max": {
+      "size": 48,
+      "vw": 3.3,
+      "font": "Inter",
+      "text": "Organize suas tarefas com Oriens"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.28,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f6f4ec",
+     "bodyBgHsl": {
+      "h": 48,
+      "s": 0.36,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fceed6",
+       "top": 0,
+       "hsl": {
+        "h": 38,
+        "s": 0.86,
+        "l": 0.91
+       }
+      },
+      {
+       "color": "#731229",
+       "top": 1318,
+       "hsl": {
+        "h": 346,
+        "s": 0.73,
+        "l": 0.26
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffeed6",
+       "share": 0.24
+      },
+      {
+       "color": "#2e1a1d",
+       "share": 0.19
+      },
+      {
+       "color": "#6a544d",
+       "share": 0.18
+      },
+      {
+       "color": "#fdefd7",
+       "share": 0.16
+      },
+      {
+       "color": "#fceed6",
+       "share": 0.15
+      }
+     ],
+     "button": {
+      "bg": "#731229",
+      "hsl": {
+       "h": 346,
+       "s": 0.73,
+       "l": 0.26
+      },
+      "fg": "#fceed6"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 3,
+     "radius": 6,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Criar conta",
+      "Começar agora",
+      "Ver demonstração"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 1,
+     "boxRadius": 12,
+     "squareMedia": 0,
+     "roundedMedia": 1,
+     "mediaRadius": 12,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.32
+     }
+    ],
+    "nav": {
+     "links": 3,
+     "fixed": false,
+     "height": 64,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 2211,
+    "margins": {
+     "left": 184,
+     "right": 184
+    },
+    "sections": [
+     {
+      "sel": "section.w-full.py-20",
+      "tag": "section",
+      "top": 64,
+      "height": 448,
+      "words": 36,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Organize suas tarefas com Oriens",
+       "size": 48,
+       "tag": "h1"
+      },
+      "left": 366,
+      "right": 366,
+      "textLeft": 366,
+      "textRight": 366,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#demo.w-full.pb-20",
+      "tag": "section",
+      "top": 512,
+      "height": 806,
+      "words": 0,
+      "media": 1,
+      "middle": 0,
+      "heading": null,
+      "left": 184,
+      "right": 184,
+      "textLeft": null,
+      "textRight": null,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#features-detail.w-full.bg-brand-burgundy",
+      "tag": "section",
+      "top": 1318,
+      "height": 609,
+      "words": 114,
+      "media": 0,
+      "middle": 68,
+      "heading": {
+       "text": "O dia inteiro em uma faixa",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 184,
+      "right": 191,
+      "textLeft": 184,
+      "textRight": 191,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-background-brand.py-16",
+      "tag": "footer",
+      "top": 1927,
+      "height": 284,
+      "words": 24,
+      "media": 0,
+      "middle": 40,
+      "heading": {
+       "text": "Produto",
+       "size": 14,
+       "tag": "h2"
+      },
+      "left": 184,
+      "right": 441,
+      "textLeft": 184,
+      "textRight": 441,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Organize suas tarefas com Oriens",
+      "size": 48,
+      "top": 160,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 184,
+      "n": 2
+     },
+     {
+      "x": 204,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 3,
+    "bodySize": 16,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0.11,
+    "voidBox": {
+     "x": 0,
+     "y": 120,
+     "w": 180,
+     "h": 780
+    }
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    1,
+    1,
+    0.99
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 2298,
+     "screens": 2.2,
+     "words": 180,
+     "img": 1,
+     "video": 0,
+     "canvas": 0,
+     "svg": 5,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "oriens-tasks-screen.png"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Organize suas tarefas com Oriens",
+     "words": 5,
+     "chars": 32,
+     "lines": 1,
+     "size": 48,
+     "vw": 6.3,
+     "font": "Inter",
+     "weight": 700,
+     "tracking": -0.025,
+     "leading": 1,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.94,
+     "top": 160,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Organize suas tarefas com Oriens",
+     "words": 5,
+     "lines": 1,
+     "size": 48,
+     "font": "Inter"
+    },
+    "headings": [
+     {
+      "text": "Organize suas tarefas com Oriens",
+      "words": 5,
+      "chars": 32,
+      "lines": 1,
+      "size": 48,
+      "vw": 6.3,
+      "font": "Inter",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.94,
+      "top": 160,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "O dia inteiro em uma faixa",
+      "words": 6,
+      "chars": 26,
+      "lines": 1,
+      "size": 36,
+      "vw": 4.7,
+      "font": "Inter",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.11,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.94,
+      "top": 1197,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 2,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 1,
+     "medianWords": 6,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      12,
+      14,
+      16,
+      18,
+      36,
+      48
+     ],
+     "sizeCount": 6,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 16,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 10
+     },
+     "measureChars": 65,
+     "max": {
+      "size": 48,
+      "vw": 6.3,
+      "font": "Inter",
+      "text": "Organize suas tarefas com Oriens"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.28,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f6f4ec",
+     "bodyBgHsl": {
+      "h": 48,
+      "s": 0.36,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fceed6",
+       "top": 0,
+       "hsl": {
+        "h": 38,
+        "s": 0.86,
+        "l": 0.91
+       }
+      },
+      {
+       "color": "#731229",
+       "top": 1085,
+       "hsl": {
+        "h": 346,
+        "s": 0.73,
+        "l": 0.26
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffeed6",
+       "share": 0.24
+      },
+      {
+       "color": "#2e1a1d",
+       "share": 0.19
+      },
+      {
+       "color": "#6a544d",
+       "share": 0.18
+      },
+      {
+       "color": "#fdefd7",
+       "share": 0.16
+      },
+      {
+       "color": "#fceed6",
+       "share": 0.15
+      }
+     ],
+     "button": {
+      "bg": "#731229",
+      "hsl": {
+       "h": 346,
+       "s": 0.73,
+       "l": 0.26
+      },
+      "fg": "#fceed6"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 3,
+     "radius": 6,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Criar conta",
+      "Começar agora",
+      "Ver demonstração"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 1,
+     "boxRadius": 12,
+     "squareMedia": 0,
+     "roundedMedia": 1,
+     "mediaRadius": 12,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.44
+     }
+    ],
+    "nav": {
+     "links": 3,
+     "fixed": false,
+     "height": 64,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 2298,
+    "margins": {
+     "left": 24,
+     "right": 30
+    },
+    "sections": [
+     {
+      "sel": "section.w-full.py-20",
+      "tag": "section",
+      "top": 64,
+      "height": 448,
+      "words": 36,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Organize suas tarefas com Oriens",
+       "size": 48,
+       "tag": "h1"
+      },
+      "left": 30,
+      "right": 30,
+      "textLeft": 30,
+      "textRight": 30,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#demo.w-full.pb-20",
+      "tag": "section",
+      "top": 512,
+      "height": 573,
+      "words": 0,
+      "media": 1,
+      "middle": 0,
+      "heading": null,
+      "left": 24,
+      "right": 24,
+      "textLeft": null,
+      "textRight": null,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#features-detail.w-full.bg-brand-burgundy",
+      "tag": "section",
+      "top": 1085,
+      "height": 929,
+      "words": 114,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "O dia inteiro em uma faixa",
+       "size": 36,
+       "tag": "h2"
+      },
+      "left": 24,
+      "right": 169,
+      "textLeft": 24,
+      "textRight": 169,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-background-brand.py-16",
+      "tag": "footer",
+      "top": 2014,
+      "height": 284,
+      "words": 24,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Produto",
+       "size": 14,
+       "tag": "h2"
+      },
+      "left": 24,
+      "right": 143,
+      "textLeft": 24,
+      "textRight": 143,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Organize suas tarefas com Oriens",
+      "size": 48,
+      "top": 160,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 24,
+      "n": 2
+     },
+     {
+      "x": 44,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 3,
+    "bodySize": 16,
+    "stage": false,
+    "explains": true,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    0.99,
+    1,
+    0.98
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 2426,
+     "screens": 2.9,
+     "words": 180,
+     "img": 1,
+     "video": 0,
+     "canvas": 0,
+     "svg": 5,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "oriens-tasks-screen.png"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Organize suas tarefas com Oriens",
+     "words": 5,
+     "chars": 32,
+     "lines": 2,
+     "size": 36,
+     "vw": 9.2,
+     "font": "Inter",
+     "weight": 700,
+     "tracking": -0.025,
+     "leading": 1.11,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.92,
+     "top": 144,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Organize suas tarefas com Oriens",
+     "words": 5,
+     "lines": 2,
+     "size": 36,
+     "font": "Inter"
+    },
+    "headings": [
+     {
+      "text": "Organize suas tarefas com Oriens",
+      "words": 5,
+      "chars": 32,
+      "lines": 2,
+      "size": 36,
+      "vw": 9.2,
+      "font": "Inter",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.11,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 144,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "O dia inteiro em uma faixa",
+      "words": 6,
+      "chars": 26,
+      "lines": 1,
+      "size": 30,
+      "vw": 7.7,
+      "font": "Inter",
+      "weight": 700,
+      "tracking": -0.025,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 1013,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 2,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 1,
+     "medianWords": 6,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      12,
+      14,
+      16,
+      18,
+      30,
+      36
+     ],
+     "sizeCount": 6,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 16,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 14.3
+     },
+     "measureChars": 45,
+     "max": {
+      "size": 36,
+      "vw": 9.2,
+      "font": "Inter",
+      "text": "Organize suas tarefas com Oriens"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.37,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f6f4ec",
+     "bodyBgHsl": {
+      "h": 48,
+      "s": 0.36,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#fceed6",
+       "top": 0,
+       "hsl": {
+        "h": 38,
+        "s": 0.86,
+        "l": 0.91
+       }
+      },
+      {
+       "color": "#731229",
+       "top": 933,
+       "hsl": {
+        "h": 346,
+        "s": 0.73,
+        "l": 0.26
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffeed6",
+       "share": 0.24
+      },
+      {
+       "color": "#2e1a1d",
+       "share": 0.19
+      },
+      {
+       "color": "#6a544d",
+       "share": 0.18
+      },
+      {
+       "color": "#fdefd7",
+       "share": 0.16
+      },
+      {
+       "color": "#fceed6",
+       "share": 0.15
+      }
+     ],
+     "button": {
+      "bg": "#731229",
+      "hsl": {
+       "h": 346,
+       "s": 0.73,
+       "l": 0.26
+      },
+      "fg": "#fceed6"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 3,
+     "radius": 6,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Criar conta",
+      "Começar agora",
+      "Ver demonstração"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 1,
+     "boxRadius": 12,
+     "squareMedia": 0,
+     "roundedMedia": 1,
+     "mediaRadius": 12,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.25
+     }
+    ],
+    "nav": {
+     "links": 3,
+     "fixed": false,
+     "height": 64,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 2426,
+    "margins": {
+     "left": 16,
+     "right": 18
+    },
+    "sections": [
+     {
+      "sel": "section.w-full.py-20",
+      "tag": "section",
+      "top": 64,
+      "height": 552,
+      "words": 36,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Organize suas tarefas com Oriens",
+       "size": 36,
+       "tag": "h1"
+      },
+      "left": 24,
+      "right": 24,
+      "textLeft": 24,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#demo.w-full.pb-20",
+      "tag": "section",
+      "top": 616,
+      "height": 317,
+      "words": 0,
+      "media": 1,
+      "middle": 0,
+      "heading": null,
+      "left": 16,
+      "right": 16,
+      "textLeft": null,
+      "textRight": null,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#features-detail.w-full.bg-brand-burgundy",
+      "tag": "section",
+      "top": 933,
+      "height": 1001,
+      "words": 114,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "O dia inteiro em uma faixa",
+       "size": 30,
+       "tag": "h2"
+      },
+      "left": 16,
+      "right": 18,
+      "textLeft": 16,
+      "textRight": 18,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "footer.bg-background-brand.py-16",
+      "tag": "footer",
+      "top": 1934,
+      "height": 492,
+      "words": 24,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Produto",
+       "size": 14,
+       "tag": "h2"
+      },
+      "left": 55,
+      "right": 38,
+      "textLeft": 55,
+      "textRight": 38,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Organize suas tarefas com Oriens",
+      "size": 36,
+      "top": 144,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 16,
+      "n": 2
+     },
+     {
+      "x": 36,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 3,
+    "bodySize": 16,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": null,
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (page background #f6f4ec, section #fceed6, text #ffeed6).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "few-pictures",
+   "width": 1440,
+   "message": "Only 1 picture(s) on the page (1 photographs, footage or raster images, 0 interface fragments). Drawings in SVG do not count.",
+   "fix": "Find real pictures of the subject's world with scripts/assets.mjs (photographs, archival images, maps, engravings, footage), download them to assets/ and give them room: a hero picture, one per section that has a subject, a full-width band. At least four, usually six to twelve."
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "FAIL",
+   "id": "still-page",
+   "width": 1440,
+   "message": "Only 0 element(s) moved while the page loaded and scrolled.",
+   "fix": "Build the motion layer (SKILL.md step 9, references/motion.md): the signature move, an entrance for the parts of every section, feedback on every control, and one moving picture. Transform and opacity only, with a reduced-motion fallback."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/oriens-front/.taste-skill/pr3-production/desktop-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/oriens-front/.taste-skill/pr3-production/desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/oriens-front/.taste-skill/pr3-production/tablet-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/oriens-front/.taste-skill/pr3-production/tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/oriens-front/.taste-skill/pr3-production/mobile-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/oriens-front/.taste-skill/pr3-production/mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

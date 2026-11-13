@@ -2,13 +2,23 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
-// jsdom não implementa matchMedia (usado pelo useIsMobile do sidebar.tsx).
-// Sempre "desktop": em teste de componente queremos o shell desktop.
+// jsdom não implementa matchMedia. Resolvemos min/max-width a partir de
+// window.innerWidth (1024 por padrão) para que componentes que trocam de
+// layout por breakpoint continuem determinísticos nos testes.
+function matchesMediaQuery(query: string): boolean {
+  const width = window.innerWidth || 1024;
+  const min = query.match(/min-width:\s*(\d+)px/);
+  if (min) return width >= Number(min[1]);
+  const max = query.match(/max-width:\s*(\d+)px/);
+  if (max) return width <= Number(max[1]);
+  return false;
+}
+
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string): MediaQueryList =>
     ({
-      matches: false,
+      matches: matchesMediaQuery(query),
       media: query,
       onchange: null,
       addListener: () => {},

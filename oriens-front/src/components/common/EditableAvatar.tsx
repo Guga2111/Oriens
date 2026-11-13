@@ -75,8 +75,8 @@ export function EditableAvatar({ src, fallback, alt, onImageChange, isLoading }:
         onClick={handleClick}
         disabled={isLoading}
         className={cn(
-          "absolute inset-0 bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer",
-          isLoading && "opacity-100 cursor-not-allowed bg-black/70"
+          "absolute inset-0 bg-primary/80 text-primary-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer",
+          isLoading && "opacity-100 cursor-not-allowed bg-primary/90"
         )}
       >
         <Camera className="h-6 w-6" />
