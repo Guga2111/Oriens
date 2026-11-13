@@ -12,7 +12,7 @@ export interface KpiStripItem {
   change?: number | null;
   goodDirection: "up" | "down";
   /** `description` do backend, exibida sem alteração (D12). */
-  description: string;
+  description?: string;
   /** `additionalDescription` do backend, exibida sem alteração (D12). */
   additionalDescription?: string;
 }
@@ -34,7 +34,7 @@ export function KpiStrip({
   className,
 }: KpiStripProps) {
   const columns = isLoading
-    ? Array.from({ length: 4 }, (_, index) => ({
+    ? Array.from({ length: items.length || 4 }, (_, index) => ({
         key: `skeleton-${index}`,
         item: null,
       }))
@@ -74,7 +74,9 @@ export function KpiStrip({
                       goodDirection={item.goodDirection}
                     />
                   </div>
-                  <p className="text-sm text-foreground">{item.description}</p>
+                  {item.description && (
+                    <p className="text-sm text-foreground">{item.description}</p>
+                  )}
                   {item.additionalDescription && (
                     <p className="text-xs text-muted-foreground">
                       {item.additionalDescription}
