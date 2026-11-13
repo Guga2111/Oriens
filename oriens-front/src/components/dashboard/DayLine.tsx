@@ -51,7 +51,8 @@ export function DayLine({ tasks, date }: DayLineProps) {
   const focusTask = (taskId: number) => {
     const row = document.getElementById(`task-row-${taskId}`);
     if (!row) return;
-    row.scrollIntoView?.({ behavior: "smooth", block: "center" });
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    row.scrollIntoView?.({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
     row.focus({ preventScroll: true });
   };
 

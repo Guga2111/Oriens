@@ -187,3 +187,46 @@ test("mobile: /all-data vira lista e os filtros ficam no Sheet", async ({
   await expect(page.getByRole("list", { name: "Lista de projetos" })).toBeVisible();
   expect(await pageOverflow(page)).toBeLessThanOrEqual(0);
 });
+
+test("mobile: canvas e listas cabem em 360px", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "Cobertura adicional de R1 em 360px");
+  await page.setViewportSize({ width: 360, height: 844 });
+  await login(page);
+  expect(await pageOverflow(page)).toBeLessThanOrEqual(0);
+  await page.getByRole("radio", { name: "Ver semana" }).click();
+  await expect(page.getByRole("region", { name: "Agenda semanal" })).toBeVisible();
+  expect(await pageOverflow(page)).toBeLessThanOrEqual(0);
+  for (const path of ["/financial", "/all-data?tab=tasks", "/all-data?tab=projects", "/projects", "/config", "/support", "/stats"]) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await pageOverflow(page), path).toBeLessThanOrEqual(0);
+    const lists = page.getByRole("list", { name: /^Lista de/ });
+    for (const list of await lists.all()) {
+      if (await list.isVisible()) {
+        expect(await list.evaluate((element) => element.scrollWidth - element.clientWidth), path).toBeLessThanOrEqual(0);
+      }
+    }
+  }
+});
+
+test("mobile: formulários longos usam Drawer sem overflow em 360px", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "Drawer R6 abaixo de 640px");
+  await page.setViewportSize({ width: 360, height: 844 });
+  await login(page);
+  for (const [path, trigger, title] of [
+    ["/tasks", "Nova Tarefa", "Criar Nova Tarefa"],
+    ["/financial", "Nova entrada", "Nova Entrada"],
+    ["/projects", "Novo projeto", "Criar Novo Projeto"],
+  ]) {
+    await page.goto(path);
+    await page.getByRole("button", { name: trigger, exact: true }).first().click();
+    const dialog = page.getByRole("dialog", { name: title });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveAttribute("data-vaul-drawer", "");
+    expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth), path).toBeLessThanOrEqual(0);
+    expect((await dialog.boundingBox())!.height, path).toBeLessThanOrEqual(844 * 0.9 + 1);
+    expect(await pageOverflow(page), path).toBeLessThanOrEqual(0);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  }
+});

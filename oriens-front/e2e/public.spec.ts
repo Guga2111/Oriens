@@ -12,7 +12,7 @@ test("a landing tem um único CTA primário e a imagem do produto", async ({
   ).toBeVisible();
 
   // Um único botão primário (o CTA de destaque).
-  const primary = page.getByRole("button", { name: "Começar agora" });
+  const primary = page.getByRole("link", { name: "Começar agora" });
   await expect(primary).toBeVisible();
   await expect(primary).toHaveClass(/bg-primary/);
 
@@ -50,4 +50,15 @@ test("a página 404 usa um Link tokenizado", async ({ page }) => {
   await expect(back).toBeVisible();
   await expect(back).toHaveAttribute("href", "/");
   await expect(back).not.toHaveClass(/text-blue-500/);
+});
+
+test("páginas públicas mantêm um h1 e cabem em 360 e 390px", async ({ page }) => {
+  for (const width of [360, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const path of ["/", "/auth", "/reset-password", "/terms", "/rota-inexistente"]) {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), path).toBeLessThanOrEqual(0);
+    }
+  }
 });

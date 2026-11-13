@@ -10,7 +10,7 @@ const TermsOfServicePage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-background-brand text-foreground">
 
-      <div className="w-full max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-3xl">
 
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -36,7 +36,7 @@ const TermsOfServicePage = () => {
               Termos de Serviço
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-6">
+          <CardContent className="flex flex-col gap-6 [overflow-wrap:anywhere]">
             <p className="text-sm text-muted-foreground text-center">
               Última atualização: 29 de Outubro de 2025
             </p>

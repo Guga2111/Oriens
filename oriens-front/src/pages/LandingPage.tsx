@@ -39,12 +39,8 @@ export function LandingPage() {
             <span className="text-lg font-semibold tracking-tight">Oriens</span>
           </Link>
           <nav className="ml-auto flex items-center gap-2 sm:gap-3">
-            <Link to="/auth">
-              <Button variant="ghost">Entrar</Button>
-            </Link>
-            <Link to="/auth">
-              <Button>Criar conta</Button>
-            </Link>
+            <Button variant="ghost" asChild><Link to="/auth">Entrar</Link></Button>
+            <Button asChild><Link to="/auth">Criar conta</Link></Button>
           </nav>
         </div>
       </header>
@@ -61,14 +57,10 @@ export function LandingPage() {
               tarefas diárias. Sem mensalidades, sem limitações.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link to="/auth">
-                <Button size="lg">Começar agora</Button>
-              </Link>
-              <a href="#demo">
-                <Button size="lg" variant="outline">
-                  Ver demonstração
-                </Button>
-              </a>
+              <Button size="lg" asChild><Link to="/auth">Começar agora</Link></Button>
+              <Button size="lg" variant="outline" asChild>
+                <a href="#demo">Ver demonstração</a>
+              </Button>
             </div>
             <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
               <li>100% gratuito</li>

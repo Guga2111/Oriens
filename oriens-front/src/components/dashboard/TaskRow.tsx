@@ -99,9 +99,10 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
     >
       <div className="-m-2 flex h-10 w-10 shrink-0 items-center justify-center">
         <Checkbox
-          className="relative after:absolute after:-inset-3 after:content-['']"
+          className="task-completion"
           checked={isConcluded ? true : isOnDoing ? "indeterminate" : false}
           onCheckedChange={handleToggle}
+          aria-busy={isUpdating}
           disabled={isUpdating}
           aria-label={
             isOnDoing

@@ -52,3 +52,29 @@ test("cada rota autenticada tem exatamente um h1", async ({ page }, testInfo) =>
     ).toHaveCount(1);
   }
 });
+
+test("teclado abre a navegação e segue um link com Enter", async ({ page }, testInfo) => {
+  await login(page);
+  if (testInfo.project.name === "mobile") {
+    const trigger = page.getByRole("button", { name: /alternar menu de navegação/i }).first();
+    await trigger.focus();
+    await page.keyboard.press("Enter");
+  } else {
+    const sidebar = page.locator('[data-state="expanded"][data-side="left"]').first();
+    await expect(sidebar).toBeVisible();
+    await page.keyboard.press("Control+b");
+    await expect(page.locator('[data-state="collapsed"][data-side="left"]').first()).toBeVisible();
+    await page.keyboard.press("Control+b");
+    await expect(sidebar).toBeVisible();
+  }
+  const projects = page.locator('[data-sidebar="sidebar"]').getByRole("link", { name: "Projetos", exact: true });
+  // Tab is the only way focus moves through the open navigation.
+  for (let i = 0; i < 30 && !(await projects.evaluate((element) => element === document.activeElement)); i++) {
+    await page.keyboard.press("Tab");
+  }
+  await expect(projects).toBeFocused();
+  expect(await projects.evaluate((element) => getComputedStyle(element).boxShadow)).not.toBe("none");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/projects$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Projetos" })).toBeVisible();
+});

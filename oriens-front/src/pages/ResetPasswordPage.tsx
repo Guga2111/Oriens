@@ -167,10 +167,10 @@ const ResetPasswordPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background-brand">
-      <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full max-w-md">
         <Card className="border-border/50">
           <CardHeader className="flex flex-col gap-1 pb-4">
-            <CardTitle className="text-2xl text-center">Redefinir Senha</CardTitle>
+            <h1 className="text-2xl font-semibold tracking-tight text-center">Redefinir Senha</h1>
             <CardDescription className="text-center">
               {status === 'success' ? "Sua senha foi alterada!" : "Digite sua nova senha abaixo."}
             </CardDescription>
