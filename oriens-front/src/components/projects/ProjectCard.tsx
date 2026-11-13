@@ -1,63 +1,33 @@
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, type ChangeEvent } from "react";
+import { Link } from "react-router-dom";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Archive,
+  ArchiveRestore,
+  MoreHorizontal,
+  Pencil,
+  Star,
+  Target,
+  Trash2,
+  UploadCloud,
+} from "lucide-react";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  CheckCircle2,
-  Circle,
-  ChevronDown,
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-  Loader2,
-  UploadCloud,
-  Target,
-  Calendar,
-  Star,
-  Archive,
-} from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ObjectiveItem } from "@/components/projects/ObjectiveItem";
+import { parseLocalDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import apiClient from "@/services/api";
-import { toast } from "sonner";
 import { useSound } from "@/hooks/useSound";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-
-interface ObjectiveDTO {
-  title: string;
-  dueDate?: string;
-  status: "PENDING" | "CONCLUDED";
-}
-
-export interface ProjectDTO {
-  id: number;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  color?: string;
-  progress: number;
-  totalObjectives: number;
-  objectives: ObjectiveDTO[];
-  favorite: boolean;
-  archived: boolean;
-}
+import { toast } from "sonner";
+import type { ObjectiveDTO, ProjectDTO } from "@/types/project";
 
 interface ProjectCardProps {
   project: ProjectDTO;
@@ -66,6 +36,31 @@ interface ProjectCardProps {
   onProjectUpdate: (updatedProject: ProjectDTO) => void;
 }
 
+interface IndexedObjective {
+  objective: ObjectiveDTO;
+  index: number;
+}
+
+/** Pendentes primeiro por vencimento; sem data fica por último. */
+function compareByDueDate(a: IndexedObjective, b: IndexedObjective): number {
+  const dueA = parseLocalDate(a.objective.dueDate);
+  const dueB = parseLocalDate(b.objective.dueDate);
+
+  if (dueA && dueB) return dueA.getTime() - dueB.getTime();
+  if (dueA) return -1;
+  if (dueB) return 1;
+  return a.index - b.index;
+}
+
+function objectivesCountLabel(completed: number, total: number): string {
+  return `${completed} de ${total} ${total === 1 ? "objetivo" : "objetivos"}`;
+}
+
+/**
+ * Card de projeto (SPEC §11.3): sem placeholder de imagem, progresso lido de
+ * `project.progress` (D10) e até 3 objetivos pendentes ordenados por
+ * vencimento — sempre guardando o índice ORIGINAL de `project.objectives`.
+ */
 export function ProjectCard({
   project,
   onEdit,
@@ -73,24 +68,30 @@ export function ProjectCard({
   onProjectUpdate,
 }: ProjectCardProps) {
   const [isUpdating, setIsUpdating] = useState<number | null>(null);
-  const [isObjectivesExpanded, setIsObjectivesExpanded] = useState(false);
-
-  const playConcludedSound = useSound("/concluding-sound.wav");
-
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const playConcludedSound = useSound("/concluding-sound.wav");
 
-  const initialObjectives = project.objectives.slice(0, 2);
-  const remainingObjectives = project.objectives.slice(2);
   const completedObjectivesCount = project.objectives.filter(
-    (o) => o.status === "CONCLUDED"
+    (objective) => objective.status === "CONCLUDED"
   ).length;
 
-  console.log(project);
+  const indexedObjectives: IndexedObjective[] = project.objectives.map(
+    (objective, index) => ({ objective, index })
+  );
+  const pendingObjectives = indexedObjectives.filter(
+    ({ objective }) => objective.status !== "CONCLUDED"
+  );
+  const nextObjectives = [...pendingObjectives]
+    .sort(compareByDueDate)
+    .slice(0, 3);
+  const hasMoreObjectives = pendingObjectives.length > nextObjectives.length;
 
   const handleToggleStatus = async (objectiveIndex: number) => {
-    setIsUpdating(objectiveIndex);
     const objective = project.objectives[objectiveIndex];
+    if (!objective) return;
+
+    setIsUpdating(objectiveIndex);
     const newStatus =
       objective.status === "CONCLUDED" ? "PENDING" : "CONCLUDED";
 
@@ -104,8 +105,7 @@ export function ProjectCard({
       if (newStatus === "CONCLUDED") {
         playConcludedSound();
       }
-
-    } catch (error) {
+    } catch {
       toast.error("Erro", {
         description: "Não foi possível atualizar o objetivo.",
       });
@@ -116,7 +116,6 @@ export function ProjectCard({
 
   const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
     if (!file) return;
 
     setIsUploadingImage(true);
@@ -130,12 +129,12 @@ export function ProjectCard({
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      const updatedProject = {
+      onProjectUpdate({
         ...project,
         imageUrl: response.data.projectImageUrl,
-      };
-      onProjectUpdate(updatedProject);
-    } catch (error) {
+      });
+      toast.success("Imagem atualizada.");
+    } catch {
       toast.error("Erro", {
         description: "Não foi possível enviar a imagem.",
       });
@@ -147,105 +146,101 @@ export function ProjectCard({
     }
   };
 
-  const handleToggleFavorite = async (event: React.MouseEvent) => {
-    event.stopPropagation();
-
+  const handleToggleFavorite = async () => {
     try {
       const response = await apiClient.patch<ProjectDTO>(
         `/project/${project.id}/favorite`
       );
       onProjectUpdate(response.data);
-    } catch (error) {
+    } catch {
       toast.error("Erro", {
         description: "Não foi possível alterar o status de favorito.",
       });
     }
   };
 
-  const handleArchiveProject = async (event: React.MouseEvent) => {
-    event.stopPropagation();
-
+  const handleToggleArchive = async () => {
     try {
+      const action = project.archived ? "unarchive" : "archive";
       const response = await apiClient.patch<ProjectDTO>(
-        `/project/${project.id}/archive`
+        `/project/${project.id}/${action}`
       );
       onProjectUpdate(response.data);
 
-      toast.success(response.data.archived
-          ? "Projeto arquivado!"
-          : "Projeto desarquivado.");
-    } catch (error) {
+      toast.success(
+        response.data.archived
+          ? "Projeto arquivado."
+          : "Projeto desarquivado."
+      );
+    } catch {
       toast.error("Erro", {
-        description: "Não foi possível arquivar.",
+        description: "Não foi possível alterar o status de arquivado.",
       });
     }
   };
 
-  const ObjectiveItem = ({
-    objective,
-    index,
-  }: {
-    objective: ObjectiveDTO;
-    index: number;
-  }) => (
-    <Card>
-      <div className="flex items-start gap-2 p-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 rounded-full flex-shrink-0"
-          onClick={() => handleToggleStatus(index)}
-          disabled={isUpdating === index}
-        >
-          {isUpdating === index ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : objective.status === "CONCLUDED" ? (
-            <CheckCircle2 className="h-5 w-5 text-primary" />
-          ) : (
-            <Circle className="h-5 w-5 text-muted-foreground" />
-          )}
-        </Button>
-        <div className="space-y-1 md:space-y-2">
-          <span
-            className={cn(
-              "text-sm",
-              objective.status === "CONCLUDED" &&
-              "line-through text-muted-foreground"
-            )}
-          >
-            {objective.title}
-          </span>
-
-          {objective.dueDate && (
-            <p className="text-xs text-muted-foreground flex items-center">
-              <Calendar className="mr-2 h-4 w-4" />
-              {format(new Date(objective.dueDate), "P", { locale: ptBR })}
-            </p>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
-
   return (
-    <Card>
-      <CardHeader>
-        <div className="relative mb-4">
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
+    <Card className="flex flex-col">
+      <CardHeader className="p-5 pb-3">
+        {project.imageUrl && (
+          <AspectRatio
+            ratio={16 / 9}
+            className="mb-4 overflow-hidden rounded-md border bg-muted"
+          >
+            <img
+              src={project.imageUrl}
+              alt={project.title}
+              className="h-full w-full object-cover"
+            />
+          </AspectRatio>
+        )}
 
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden
+                className={cn(
+                  "h-2 w-2 shrink-0 rounded-full",
+                  !project.color && "bg-muted-foreground"
+                )}
+                style={
+                  project.color ? { backgroundColor: project.color } : undefined
+                }
+              />
+              <h2 className="min-w-0 text-base font-semibold leading-6">
+                <Link
+                  to={`/tasks/project/${project.id}`}
+                  className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  {project.title}
+                </Link>
+              </h2>
+            </div>
+            {project.description && (
+              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                {project.description}
+              </p>
+            )}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1">
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 bg-background/50 hover:bg-background/80 rounded-full"
+              className="h-8 w-8"
               onClick={handleToggleFavorite}
+              aria-pressed={project.favorite}
+              aria-label="Favoritar"
             >
               <Star
                 className={cn(
-                  "h-5 w-5 transition-colors",
+                  "h-4 w-4",
                   project.favorite
-                    ? "text-yellow-500 fill-yellow-400"
-                    : "text-muted-foreground hover:text-yellow-500"
+                    ? "fill-primary text-primary"
+                    : "text-muted-foreground"
                 )}
+                aria-hidden
               />
             </Button>
 
@@ -254,140 +249,99 @@ export function ProjectCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 bg-background/50 hover:bg-background/80 rounded-full"
+                  className="h-8 w-8"
+                  aria-label={`Ações do projeto: ${project.title}`}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="h-4 w-4" aria-hidden />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  onClick={() => fileInputRef.current?.click()}
-                  className="cursor-pointer"
-                >
-                  <UploadCloud className="mr-2 h-4 w-4" />
-                  <span>Trocar Foto</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onEdit(project)}
-                  className="cursor-pointer"
-                >
-                  <Pencil className="mr-2 h-4 w-4" />
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit(project)}>
+                  <Pencil className="mr-2 h-4 w-4" aria-hidden />
                   <span>Editar</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={handleArchiveProject}
-                  className="cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingImage}
                 >
-                  <Archive className="mr-2 h-4 w-4" />
-                  <span>Arquivar</span>
+                  <UploadCloud className="mr-2 h-4 w-4" aria-hidden />
+                  <span>
+                    {project.imageUrl ? "Trocar imagem" : "Adicionar imagem"}
+                  </span>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleToggleArchive}>
+                  {project.archived ? (
+                    <ArchiveRestore className="mr-2 h-4 w-4" aria-hidden />
+                  ) : (
+                    <Archive className="mr-2 h-4 w-4" aria-hidden />
+                  )}
+                  <span>{project.archived ? "Desarquivar" : "Arquivar"}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => onDelete(project.id)}
-                  className="cursor-pointer text-destructive focus:text-destructive"
+                  className="text-destructive focus:text-destructive"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Deletar</span>
+                  <Trash2 className="mr-2 h-4 w-4" aria-hidden />
+                  <span>Excluir</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          {project.imageUrl ? (
-            <img
-              src={project.imageUrl}
-              alt={project.title}
-              className="h-40 w-full object-cover rounded-md"
-            />
-          ) : (
-            <div
-              className="h-40 bg-muted rounded-md flex items-center justify-center relative group cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {isUploadingImage ? (
-                <Loader2 className="h-8 w-8 text-primary animate-spin" />
-              ) : (
-                <>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
-                    <UploadCloud className="h-8 w-8 text-white" />
-                    <span className="text-sm text-white mt-1">
-                      Enviar imagem
-                    </span>
-                  </div>
-
-                  <span className="text-muted-foreground text-sm group-hover:opacity-0 transition-opacity">
-                    Sem imagem
-                  </span>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="flex justify-between items-start">
-          <div className="space-y-1 md:space-y-2">
-            <CardTitle>{project.title}</CardTitle>
-            <CardDescription>{project.description}</CardDescription>
-          </div>
-          <div
-            className="w-4 h-4 rounded-full flex-shrink-0 mt-1"
-            style={{ backgroundColor: project.color || "#ccc" }}
-          />
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-muted-foreground">Progresso</span>
-            <span>{project.progress}%</span>
-          </div>
-          <Progress value={project.progress} />
-        </div>
+
+      <CardContent className="flex flex-1 flex-col p-5 pt-0">
         <div>
-          <div>
-            <h4 className="font-medium text-foreground mb-2 text-sm flex items-center">
-              <Target className="mr-2 h-4 w-4 text-primary" />
-              Objetivos ({completedObjectivesCount}/{project.totalObjectives})
-            </h4>
+          <div className="mb-2 flex items-center justify-between gap-2 text-sm">
+            <span className="text-muted-foreground">Progresso</span>
+            <span className="tabular-nums">{project.progress}%</span>
           </div>
-
-          <div className="space-y-2">
-            {initialObjectives.map((obj, index) => (
-              <ObjectiveItem key={index} objective={obj} index={index} />
-            ))}
-          </div>
+          <Progress
+            value={project.progress}
+            className="h-2"
+            aria-label={`Progresso: ${project.progress}%`}
+          />
+          <p className="mt-2 text-xs text-muted-foreground">
+            {objectivesCountLabel(
+              completedObjectivesCount,
+              project.objectives.length
+            )}
+          </p>
         </div>
 
-        {remainingObjectives.length > 0 && (
-          <Collapsible
-            className="mt-2"
-            open={isObjectivesExpanded}
-            onOpenChange={setIsObjectivesExpanded}
-          >
-            <CollapsibleContent className="space-y-2">
-              {remainingObjectives.map((obj, index) => (
+        <div className="mt-4 flex-1">
+          <h3 className="mb-2 flex items-center gap-2 text-sm font-medium">
+            <Target className="h-4 w-4 text-primary" aria-hidden />
+            Próximos objetivos
+          </h3>
+
+          {nextObjectives.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Nenhum objetivo pendente.
+            </p>
+          ) : (
+            <ul className="space-y-1">
+              {nextObjectives.map(({ objective, index }) => (
                 <ObjectiveItem
-                  key={index}
-                  objective={obj}
-                  index={initialObjectives.length + index}
+                  key={`${index}-${objective.title}`}
+                  objective={objective}
+                  index={index}
+                  onToggleStatus={handleToggleStatus}
+                  isUpdating={isUpdating === index}
                 />
               ))}
-            </CollapsibleContent>
-            <CollapsibleTrigger asChild className="">
-              <Button
-                variant="link"
-                className="p-0 h-auto mt-2 text-sm text-primary"
-              >
-                {isObjectivesExpanded
-                  ? "Ver menos"
-                  : `Ver mais ${remainingObjectives.length} objetivo${remainingObjectives.length > 1 ? 's' : ''}`
-                }
-                <ChevronDown className={cn(
-                  "h-4 w-4 ml-1 transition-transform duration-200",
-                  isObjectivesExpanded && "rotate-180"
-                )} />
-              </Button>
-            </CollapsibleTrigger>
-          </Collapsible>
-        )}
+            </ul>
+          )}
+
+          {hasMoreObjectives && (
+            <Button asChild variant="link" className="mt-1 h-auto p-0">
+              <Link to={`/tasks/project/${project.id}`}>Ver todos</Link>
+            </Button>
+          )}
+        </div>
       </CardContent>
+
       <input
         type="file"
         ref={fileInputRef}
@@ -399,3 +353,4 @@ export function ProjectCard({
     </Card>
   );
 }
+

@@ -36,23 +36,7 @@ export interface Task {
 
 export type TaskDTO = Task;
 
-export interface ProjectDTO {
-  id: number;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  color?: string;
-  favorite: boolean;
-  archived?: boolean;
-  lastAccessed?: string;
-  progress: number;
-  totalObjectives: number;
-  objectives: ObjectiveDTO[];
-}
+// Reexportado para consumidores ainda não migrados; a definição única vive em
+// `types/project.ts` (SPEC §10.3/P1.4).
+export type { ObjectiveDTO, ProjectDTO } from "./project";
 
-export interface ObjectiveDTO {
-  title: string;
-  dueDate?: string;
-  status: Status;
-  completed: boolean;
-}

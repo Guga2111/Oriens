@@ -1,9 +1,9 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProjectDetailPage from "@/pages/ProjectDetailPage";
-import type { ProjectDTO } from "@/pages/ProjectDetailPage";
+import type { ProjectDTO } from "@/types/project";
 import apiClient from "@/services/api";
 
 vi.mock("@/services/api", () => ({
@@ -53,7 +53,6 @@ const project: ProjectDTO = {
   archived: false,
   objectives: [
     {
-      id: 11,
       title: "Objetivo com vencimento",
       status: "PENDING",
       dueDate: "2026-11-15T00:00:00.000Z",
@@ -99,7 +98,7 @@ describe("ProjectDetailPage — A9 diálogos", () => {
     await screen.findByText("Objetivo com vencimento");
 
     await user.click(screen.getByRole("button", { name: "Ações do projeto" }));
-    await user.click(await screen.findByRole("menuitem", { name: "Deletar Projeto" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Excluir" }));
 
     const dialog = await screen.findByRole("alertdialog");
     const strong = dialog.querySelector("strong");
@@ -115,10 +114,11 @@ describe("ProjectDetailPage — A9 diálogos", () => {
     await screen.findByText("Objetivo com vencimento");
 
     // Abre o diálogo de editar objetivo pelo menu da linha do objetivo.
-    const objectiveRow = screen
-      .getByText("Objetivo com vencimento")
-      .closest("div.flex.items-center") as HTMLElement;
-    await user.click(within(objectiveRow).getByRole("button"));
+    await user.click(
+      screen.getByRole("button", {
+        name: "Ações do objetivo: Objetivo com vencimento",
+      })
+    );
     await user.click(await screen.findByRole("menuitem", { name: "Editar" }));
 
     await screen.findByText("Editar Objetivo");

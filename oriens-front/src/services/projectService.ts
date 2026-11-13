@@ -1,5 +1,5 @@
 import apiClient from './api';
-import { ProjectDTO } from '@/types/task';
+import { ProjectDTO } from '@/types/project';
 import { Page } from '@/types/financial';
 
 export interface ProjectFilters {

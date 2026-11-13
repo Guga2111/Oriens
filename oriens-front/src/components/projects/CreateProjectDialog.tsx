@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { Loader2, PlusCircle, X } from "lucide-react";
 import apiClient from "@/services/api";
 import { useAuth } from "@/context/AuthContext"; 
-import { ProjectDTO } from "./ProjectCard"; 
+import { parseLocalDate } from "@/lib/date";
+import type { ProjectDTO } from "@/types/project";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -40,11 +41,14 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
         setTitle(projectToEdit.title);
         setDescription(projectToEdit.description || "");
         setColor(projectToEdit.color || "#CCCCCC");
-        const formattedObjectives = projectToEdit.objectives.map(obj => ({
-          title: obj.title,
-          dueDate: obj.dueDate ? format(new Date(obj.dueDate), 'yyyy-MM-dd') : "",
-          status: obj.status,
-        }));
+        const formattedObjectives = projectToEdit.objectives.map(obj => {
+          const due = parseLocalDate(obj.dueDate);
+          return {
+            title: obj.title,
+            dueDate: due ? format(due, "yyyy-MM-dd") : "",
+            status: obj.status,
+          };
+        });
         setObjectives(formattedObjectives);
       } else { 
         setTitle("");

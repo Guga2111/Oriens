@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProjectDetailPage from "@/pages/ProjectDetailPage";
-import type { ProjectDTO } from "@/pages/ProjectDetailPage";
+import type { ProjectDTO } from "@/types/project";
 import apiClient from "@/services/api";
 
 vi.mock("@/services/api", () => ({
@@ -54,7 +54,6 @@ const project: ProjectDTO = {
   archived: false,
   objectives: [
     {
-      id: 11,
       title: "Objetivo com vencimento",
       status: "PENDING",
       dueDate: "2026-11-15T00:00:00.000Z",
@@ -95,9 +94,9 @@ describe("ProjectDetailPage — parse local de dueDate", () => {
     renderPage();
 
     expect(
-      await screen.findByText(/Vence em: 15\/11\/2026/)
+      await screen.findByText(/Vence em 15\/11/)
     ).toBeInTheDocument();
     // Regressão: um new Date(dueDate) ingênuo mostraria 14/11 em BRT.
-    expect(screen.queryByText(/14\/11\/2026/)).toBeNull();
+    expect(screen.queryByText(/14\/11/)).toBeNull();
   });
 });

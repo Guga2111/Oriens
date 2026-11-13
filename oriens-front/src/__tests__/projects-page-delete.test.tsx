@@ -1,8 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProjectsPage from "@/pages/ProjectsPage";
-import type { ProjectDTO } from "@/components/projects/ProjectCard";
+import type { ProjectDTO } from "@/types/project";
 import apiClient from "@/services/api";
 
 vi.mock("@/services/api", () => ({
@@ -63,28 +64,31 @@ beforeEach(() => {
   vi.mocked(apiClient.delete).mockResolvedValue({ data: undefined } as never);
 });
 
-/** Abre o dropdown do card do projeto e clica em "Deletar". */
+/** Abre o dropdown do card do projeto e clica em "Excluir". */
 async function openDeleteDialog(user: ReturnType<typeof userEvent.setup>) {
-  await screen.findByText(project.title);
-  const card = screen
-    .getByText(project.title)
-    .closest("div.rounded-lg") as HTMLElement;
-  const trigger = card.querySelector('[aria-haspopup="menu"]');
-  expect(trigger).not.toBeNull();
-  await user.click(trigger as HTMLElement);
-  await user.click(await screen.findByRole("menuitem", { name: "Deletar" }));
-  expect(await screen.findByText("Você tem certeza?")).toBeInTheDocument();
+  const heading = await screen.findByRole("heading", { name: project.title });
+  const card = heading.closest("div.rounded-lg") as HTMLElement;
+  const trigger = within(card).getByRole("button", {
+    name: `Ações do projeto: ${project.title}`,
+  });
+  await user.click(trigger);
+  await user.click(await screen.findByRole("menuitem", { name: "Excluir" }));
+  expect(await screen.findByText("Excluir projeto?")).toBeInTheDocument();
 }
 
 describe("ProjectsPage — AlertDialog de excluir projeto", () => {
   it("não chama DELETE antes da confirmação e chama após confirmar", async () => {
     const user = userEvent.setup();
-    render(<ProjectsPage />);
+    render(
+      <MemoryRouter>
+        <ProjectsPage />
+      </MemoryRouter>
+    );
 
     await openDeleteDialog(user);
     expect(apiClient.delete).not.toHaveBeenCalled();
 
-    await user.click(screen.getByRole("button", { name: "Continuar" }));
+    await user.click(screen.getByRole("button", { name: "Excluir" }));
 
     await waitFor(() =>
       expect(apiClient.delete).toHaveBeenCalledWith("/project/9")
@@ -93,12 +97,16 @@ describe("ProjectsPage — AlertDialog de excluir projeto", () => {
 
   it("não chama DELETE ao cancelar", async () => {
     const user = userEvent.setup();
-    render(<ProjectsPage />);
+    render(
+      <MemoryRouter>
+        <ProjectsPage />
+      </MemoryRouter>
+    );
 
     await openDeleteDialog(user);
     await user.click(screen.getByRole("button", { name: "Cancelar" }));
 
-    expect(screen.queryByText("Você tem certeza?")).toBeNull();
+    expect(screen.queryByText("Excluir projeto?")).toBeNull();
     expect(apiClient.delete).not.toHaveBeenCalled();
   });
 });
