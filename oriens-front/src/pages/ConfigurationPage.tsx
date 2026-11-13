@@ -1,23 +1,26 @@
-import { Separator } from "@/components/ui/separator";
 import { PageHeader } from "@/components/common/PageHeader";
-import { PreferencesCard } from "@/components/settings/PreferencesCard";
-import { AccountCard } from "@/components/settings/AccountCard";
+import { AccountSection } from "@/components/settings/AccountSection";
+import { AppearanceSection } from "@/components/settings/AppearanceSection";
+import { IntegrationsSection } from "@/components/settings/IntegrationsSection";
+import { NotificationsSection } from "@/components/settings/NotificationsSection";
 
+/**
+ * Configurações (SPEC §11.8): canvas de 720 px alinhado à esquerda, com as
+ * seções Aparência, Notificações e som, Integrações e Conta.
+ */
 export default function ConfigurationPage() {
   return (
     <div className="p-6 md:p-8">
-      <div className="flex flex-col gap-6">
+      <div className="flex max-w-[720px] flex-col gap-8">
         <PageHeader
           title="Configurações"
-          description="Gerencie as suas preferências"
+          description="Gerencie suas preferências"
         />
 
-        <Separator />
-
-        <div className="grid gap-6">
-          <PreferencesCard />
-          <AccountCard />
-        </div>
+        <AppearanceSection />
+        <NotificationsSection />
+        <IntegrationsSection />
+        <AccountSection />
       </div>
     </div>
   );

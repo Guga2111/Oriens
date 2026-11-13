@@ -17,6 +17,8 @@ interface AuthContextType {
   username: string | null;
   userId: number | null;
   profileImageUrl: string | null;
+  /** Telefone do WhatsApp (BE1 ainda não expõe a edição). */
+  phoneNumber: string | null;
   token: string | null;
   role: string | null;
   isLoading: boolean;
@@ -40,6 +42,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [role, setRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -57,6 +60,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUsername(decodedToken.username);
         setRole(decodedToken.role);
         setProfileImageUrl(user.profileImageUrl);
+        setPhoneNumber(user.phoneNumber ?? null);
         setIsAuthenticated(true);
         } else {
           localStorage.removeItem('authToken'); 
@@ -83,6 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUserId(decodedToken.userId);
     setRole(decodedToken.role);
     setProfileImageUrl(user.profileImageUrl);
+    setPhoneNumber(user.phoneNumber ?? null);
     setIsAuthenticated(true);
     setToken(token);
   };
@@ -98,6 +103,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUsername(null);
     setUserId(null);
     setRole(null);
+    setPhoneNumber(null);
     setIsAuthenticated(false);
     setToken(null);
     window.location.href = '/auth';
@@ -116,6 +122,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     role,
     isLoading,
     profileImageUrl,
+    phoneNumber,
     login,
     logout,
     updateProfileImage,
