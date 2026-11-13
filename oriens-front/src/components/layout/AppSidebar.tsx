@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/sidebar";
 import {
   ChartLine,
-  CheckSquare,
   ChevronUp,
   Circle,
   Database,
@@ -44,6 +43,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EditableAvatar } from "@/components/common/EditableAvatar";
+import { OriensLogo } from "@/components/common/OriensLogo";
 import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/context/SettingsContext";
 import apiClient from "@/services/api";
@@ -191,9 +191,7 @@ export function AppSidebar({ projectsVersion = 0 }: AppSidebarProps) {
     <Sidebar side="left" collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
-            <CheckSquare className="h-5 w-5 text-sidebar-primary-foreground" />
-          </div>
+          <OriensLogo className="h-8 w-8 shrink-0" />
           <span className="truncate text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
             Oriens
           </span>

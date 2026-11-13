@@ -1,4 +1,5 @@
-import { CheckSquare, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { OriensLogo } from "@/components/common/OriensLogo";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; 
@@ -13,9 +14,7 @@ const TermsOfServicePage = () => {
 
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-brand-yellow">
-              <CheckSquare className="h-7 w-7 text-brand-burgundy" />
-            </div>
+            <OriensLogo className="h-12 w-12" title="Oriens" />
             <h1 className="text-4xl font-bold text-primary">
               Oriens
             </h1>
