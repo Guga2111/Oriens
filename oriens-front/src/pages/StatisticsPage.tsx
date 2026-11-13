@@ -1,42 +1,55 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/common/PageHeader";
-import { KpiCard } from "@/components/statistics/KpiCard";
+import {
+  KpiStrip,
+  type KpiStripItem,
+} from "@/components/statistics/KpiStrip";
 import { ReusableLineChartCard } from "@/components/statistics/ReusableLineChartCard";
+import { Button } from "@/components/ui/button";
 import { ChartConfig } from "@/components/ui/chart";
-import { CheckCircle2, Clock, FolderKanban, Loader2, TrendingUp } from "lucide-react";
-
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { getDashboardData } from "@/services/api";
 import { DashboardData } from "@/types/statistics";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
 
 const tasksChartConfig = {
   completed: {
-    label: "Tarefas Concluídas",
-    color: "hsl(var(--chart-1))", 
+    label: "Tarefas concluídas",
+    color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
-
-const projectsChartConfig = {
-  created: {
-    label: "Projetos Criados",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig;
-
 
 export function StatisticsPage() {
-
-  const {userId, isLoading: isAuthLoading} = useAuth();
+  const { userId, isLoading: isAuthLoading } = useAuth();
 
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isAuthLoading) {
-      setIsLoading(true); 
-      return;
+  const loadData = useCallback(async () => {
+    if (!userId) return;
+
+    setIsLoading(true);
+    try {
+      const fetchedData = await getDashboardData(userId);
+      setData(fetchedData);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError("Falha ao carregar as estatísticas.");
+    } finally {
+      setIsLoading(false);
     }
+  }, [userId]);
+
+  useEffect(() => {
+    if (isAuthLoading) return;
 
     if (!userId) {
       setError("Usuário não autenticado.");
@@ -44,113 +57,86 @@ export function StatisticsPage() {
       return;
     }
 
-    const loadData = async () => {
-      try {
-        setIsLoading(true); 
-        const fetchedData = await getDashboardData(userId);
-        setData(fetchedData);
-        setError(null);
-      } catch (err) {
-        console.error(err);
-        setError("Falha ao carregar as estatísticas.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    void loadData();
+  }, [isAuthLoading, userId, loadData]);
 
-    loadData();
-    
-  }, [userId, isAuthLoading]);
-
-  const renderContent = () => {
-
-    if (isLoading || isAuthLoading) {
-      return (
-        <div
-          className="flex items-center justify-center p-24"
-          role="status"
-          aria-live="polite"
-        >
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="sr-only">Carregando estatísticas</span>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <p className="text-lg text-destructive">{error}</p>
-        </div>
-      );
-    }
-
-    if (!data) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <p className="text-lg text-muted-foreground">Nenhum dado encontrado.</p>
-        </div>
-      );
-    }
-
+  const kpiItems = useMemo<KpiStripItem[]>(() => {
+    if (!data) return [];
 
     const { kpis } = data.kpi;
-    const { tasksCompletedByTimeRangeDTOS } = data.charts;
 
-    return (
-      <>
-        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KpiCard
-            title="Tarefas Concluídas (Este Mês)"
-            value={kpis.completedTasks.value.toString()}
-            change={kpis.completedTasks.change}
-            description={kpis.completedTasks.description}
-            additionalDescription={kpis.completedTasks.additionalDescription}
-            goodDirection="up"
-          />
-          <KpiCard
-            title="Taxa de Produtividade (Semanal)"
-            value={`${kpis.productivityRate.value.toFixed(0)}%`} 
-            change={kpis.productivityRate.change}
-            description={kpis.productivityRate.description}
-            additionalDescription={kpis.productivityRate.additionalDescription}
-            goodDirection="up"
-          />
-          <KpiCard
-            title="Projetos Ativos"
-            value={kpis.activeProjects.value.toString()}
-            description={kpis.activeProjects.description}
-            additionalDescription={kpis.activeProjects.additionalDescription}
-            goodDirection="up"
-          />
-          <KpiCard
-            title="Tarefas Atrasadas"
-            value={kpis.overdueTasks.value.toString()}
-            change={kpis.overdueTasks.change}
-            description={kpis.overdueTasks.description}
-            additionalDescription={kpis.overdueTasks.additionalDescription}
-            goodDirection="down"
-          />
-        </div>
+    return [
+      {
+        label: "Tarefas concluídas (este mês)",
+        value: kpis.completedTasks.value.toString(),
+        change: kpis.completedTasks.change,
+        goodDirection: "up",
+        description: kpis.completedTasks.description,
+        additionalDescription: kpis.completedTasks.additionalDescription,
+      },
+      {
+        label: "Taxa de produtividade (semanal)",
+        value: `${kpis.productivityRate.value}%`,
+        change: kpis.productivityRate.change,
+        goodDirection: "up",
+        description: kpis.productivityRate.description,
+        additionalDescription: kpis.productivityRate.additionalDescription,
+      },
+      {
+        label: "Projetos ativos",
+        value: kpis.activeProjects.value.toString(),
+        change: kpis.activeProjects.change,
+        goodDirection: "up",
+        description: kpis.activeProjects.description,
+        additionalDescription: kpis.activeProjects.additionalDescription,
+      },
+      {
+        label: "Tarefas atrasadas",
+        value: kpis.overdueTasks.value.toString(),
+        change: kpis.overdueTasks.change,
+        goodDirection: "down",
+        description: kpis.overdueTasks.description,
+        additionalDescription: kpis.overdueTasks.additionalDescription,
+      },
+    ];
+  }, [data]);
 
-        <div className="grid gap-6">
-          <ReusableLineChartCard
-            title="Tarefas Concluídas"
-            description="Evolução de tarefas concluídas ao longo do tempo."
-            fullData={tasksCompletedByTimeRangeDTOS} 
-            dataKey="completed"
-            chartConfig={tasksChartConfig}
-          />
-        </div>
-      </>
-    );
-  };
+  const showError = !isLoading && !data;
 
   return (
     <div className="p-6 md:p-8">
       <PageHeader title="Estatísticas" />
 
-      {renderContent()}
+      <div className="mt-6 flex flex-col gap-6">
+        {showError ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>
+                Não foi possível carregar as estatísticas
+              </EmptyTitle>
+              <EmptyDescription>
+                {error ?? "Nenhum dado encontrado."}
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button onClick={() => void loadData()}>Tentar novamente</Button>
+            </EmptyContent>
+          </Empty>
+        ) : (
+          <>
+            <KpiStrip items={kpiItems} isLoading={isLoading} />
+
+            <ReusableLineChartCard
+              title="Tarefas concluídas"
+              description="Evolução de tarefas concluídas ao longo do tempo."
+              fullData={data?.charts.tasksCompletedByTimeRangeDTOS ?? []}
+              dataKey="completed"
+              chartConfig={tasksChartConfig}
+              isLoading={isLoading}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }
