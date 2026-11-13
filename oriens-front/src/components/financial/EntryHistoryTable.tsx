@@ -247,7 +247,7 @@ export function EntryHistoryTable({
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
-            <div className="space-y-2 p-3">
+            <div className="flex flex-col gap-2 p-3">
               <div>
                 <p className="mb-2 text-sm font-medium">Data início</p>
                 <Calendar

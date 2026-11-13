@@ -48,7 +48,7 @@ export function TaskSection({
       </div>
 
       {isLoading ? (
-        <div className="space-y-3 py-3" aria-hidden>
+        <div className="flex flex-col gap-3 py-3" aria-hidden>
           {Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={index} className="h-10 w-full" />
           ))}

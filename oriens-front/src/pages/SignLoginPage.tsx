@@ -152,7 +152,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
 
         {/* Auth Card */}
         <Card className="border-border/50">
-          <CardHeader className="space-y-1 pb-4">
+          <CardHeader className="flex flex-col gap-1 pb-4">
             <CardTitle className="text-2xl text-center">Bem-vindo</CardTitle>
             <CardDescription className="text-center">
               Faça login ou crie sua conta para começar
@@ -167,8 +167,8 @@ const handleForgotPassword = async (e: React.FormEvent) => {
 
               {/* Login Tab */}
               <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
+                <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="login-email">E-mail</Label>
                     <Input
                       id="login-email"
@@ -181,7 +181,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                       aria-describedby={loginError ? "login-error" : undefined}
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="login-password">Senha</Label>
                     <div className="relative">
                     <Input
@@ -239,8 +239,8 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                                 Digite seu e-mail para enviarmos um link de recuperação.
                               </DialogDescription>
                             </DialogHeader>
-                            <form onSubmit={handleForgotPassword} className="space-y-4">
-                              <div className="space-y-2">
+                            <form onSubmit={handleForgotPassword} className="flex flex-col gap-4">
+                              <div className="flex flex-col gap-2">
                                 <Label htmlFor="forgot-email" className="sr-only">E-mail</Label>
                                 <Input
                                   id="forgot-email"
@@ -285,8 +285,8 @@ const handleForgotPassword = async (e: React.FormEvent) => {
 
               {/* Register Tab */}
               <TabsContent value="register">
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="space-y-2">
+                <form onSubmit={handleRegister} className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="register-name">Nome completo</Label>
                     <Input
                       id="register-name"
@@ -299,7 +299,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="register-email">E-mail</Label>
                     <Input
                       id="register-email"
@@ -312,7 +312,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="register-password">Senha</Label>
                     <div className="relative">
                       <Input
@@ -337,7 +337,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                     </Button>
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     <Label htmlFor="register-confirm-password">Confirmar senha</Label>
                     <div className="relative">
                       <Input

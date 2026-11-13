@@ -199,11 +199,11 @@ export function TagManagementDialog({
           </DialogHeader>
 
           <ScrollArea className="max-h-[60vh] pr-4">
-            <div className="space-y-6 py-4">
+            <div className="flex flex-col gap-6 py-4">
               {/* Tags Padrão */}
               <div>
                 <h3 className="text-sm font-medium mb-3">Tags Padrão</h3>
-                <div className="space-y-2">
+                <div className="flex flex-col gap-2">
                   {defaultTags.map((tag) => (
                     <div
                       key={tag.id}
@@ -243,7 +243,7 @@ export function TagManagementDialog({
 
                 {/* Form de Criar/Editar */}
                 {(isCreating || editingTag) && (
-                  <div className="p-4 border rounded-lg mb-3 space-y-3">
+                  <div className="flex flex-col p-4 border rounded-lg mb-3 gap-3">
                     <Field data-invalid={Boolean(formErrors.name)}>
                       <FieldLabel htmlFor="tag-name">Nome</FieldLabel>
                       <Input
@@ -307,7 +307,7 @@ export function TagManagementDialog({
                 )}
 
                 {/* Lista de Tags Personalizadas */}
-                <div className="space-y-2">
+                <div className="flex flex-col gap-2">
                   {customTags.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
                       Nenhuma tag personalizada criada
@@ -342,7 +342,7 @@ export function TagManagementDialog({
                             onClick={() => setDeletingTag(tag)}
                             disabled={isLoading}
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4 text-negative" />
                           </Button>
                         </div>
                       </div>
@@ -367,7 +367,7 @@ export function TagManagementDialog({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isLoading} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction onClick={handleDelete} disabled={isLoading} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Excluir
             </AlertDialogAction>

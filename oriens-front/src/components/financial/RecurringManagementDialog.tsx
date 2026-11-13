@@ -112,7 +112,7 @@ export function RecurringManagementDialog({
           </DialogHeader>
 
           <ScrollArea className="max-h-[60vh] pr-4">
-            <div className="space-y-4 py-4">
+            <div className="flex flex-col gap-4 py-4">
               {error && <FieldError>{error}</FieldError>}
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
@@ -128,7 +128,7 @@ export function RecurringManagementDialog({
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3">
                   {recurringEntries.map((entry) => {
                     const tag = getTagById(entry.tagId);
                     const isExpense = entry.amount < 0;
@@ -138,12 +138,12 @@ export function RecurringManagementDialog({
                         key={entry.id}
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex-1 space-y-1">
+                        <div className="flex flex-col flex-1 gap-1">
                           <div className="flex items-center gap-3">
                             <span
                               className={cn(
                                 'font-semibold',
-                                isExpense ? 'text-red-500' : 'text-green-500'
+                                isExpense ? 'text-negative' : 'text-positive'
                               )}
                             >
                               {isExpense ? '-' : '+'} {formatCurrency(Math.abs(entry.amount))}
@@ -190,7 +190,7 @@ export function RecurringManagementDialog({
                             onClick={() => setDeletingEntry(entry)}
                             disabled={isLoading}
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4 text-negative" />
                           </Button>
                         </div>
                       </div>
@@ -218,7 +218,7 @@ export function RecurringManagementDialog({
             <AlertDialogAction
               onClick={(event) => { event.preventDefault(); void handleDelete(); }}
               disabled={isLoading}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Excluir

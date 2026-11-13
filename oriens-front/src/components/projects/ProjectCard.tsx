@@ -321,7 +321,7 @@ export function ProjectCard({
               Nenhum objetivo pendente.
             </p>
           ) : (
-            <ul className="space-y-1">
+            <ul className="flex flex-col gap-1">
               {nextObjectives.map(({ objective, index }) => (
                 <ObjectiveItem
                   key={`${index}-${objective.title}`}

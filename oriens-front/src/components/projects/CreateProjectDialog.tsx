@@ -161,7 +161,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
           </Field>
           <Field>
             <span className="text-sm font-medium">Objetivos</span>
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {objectives.map((obj, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <Input
