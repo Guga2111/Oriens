@@ -11,7 +11,7 @@ test("cria projeto com objetivo e alterna o objetivo", async ({ page }) => {
   const objectiveTitle = `Objetivo E2E ${Date.now()}`;
   const dialog = page.getByRole("dialog", { name: "Criar Novo Projeto" });
 
-  await page.getByRole("button", { name: "Novo Projeto" }).click();
+  await page.getByRole("button", { name: "Novo projeto" }).click();
   await expect(dialog).toBeVisible();
 
   await dialog.locator("#title").fill(projectName);
@@ -29,11 +29,13 @@ test("cria projeto com objetivo e alterna o objetivo", async ({ page }) => {
   const main = page.locator("main");
   await expect(main.getByText(projectName)).toBeVisible();
 
-  // Card sem imagem: botões na ordem favorito (0), menu (1), toggle (2).
+  // Card sem imagem: alterna o objetivo pelo rótulo acessível.
   const card = main.locator("div.rounded-lg").filter({
     has: page.getByText(projectName),
   });
-  const objectiveToggle = card.getByRole("button").nth(2);
+  const objectiveToggle = card.getByRole("button", {
+    name: `Concluir objetivo: ${objectiveTitle}`,
+  });
 
   const [patchResp] = await Promise.all([
     page.waitForResponse(
@@ -45,5 +47,7 @@ test("cria projeto com objetivo e alterna o objetivo", async ({ page }) => {
   ]);
   expect(patchResp.ok()).toBe(true);
 
-  await expect(card.getByText(objectiveTitle)).toHaveClass(/line-through/);
+  // O card só lista pendentes; ao concluir, o objetivo sai e a contagem muda.
+  await expect(card.getByText("1 de 1 objetivo")).toBeVisible();
+  await expect(card.getByText(objectiveTitle)).toBeHidden();
 });

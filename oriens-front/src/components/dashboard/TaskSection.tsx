@@ -1,53 +1,77 @@
-import type { ReactNode } from 'react';
-import { Task } from './TaskCard';
-import { TaskCard } from './TaskCard';
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TaskRow } from "@/components/dashboard/TaskRow";
+import type { Task } from "@/types/task";
 
 interface TaskSectionProps {
   title: string;
   timeRange: string;
-  icon: ReactNode;
+  emptyLabel: string;
   tasks: Task[];
   onUpdateTasks: () => void;
   onEditTask: (task: Task) => void;
-  viewMode: 'day' | 'week';
+  onAddTask: () => void;
+  isLoading?: boolean;
 }
 
-export function TaskSection({ title, timeRange, icon, tasks, onUpdateTasks, onEditTask, viewMode }: TaskSectionProps) {
-  
-  const concludedCount = tasks.filter(t => t.status === 'CONCLUDED').length;
+/**
+ * Seção de período da visão dia (SPEC §11.1): cabeçalho em texto, intervalo,
+ * contagem à direita e sem ícones coloridos.
+ */
+export function TaskSection({
+  title,
+  timeRange,
+  emptyLabel,
+  tasks,
+  onUpdateTasks,
+  onEditTask,
+  onAddTask,
+  isLoading = false,
+}: TaskSectionProps) {
+  const headingId = `period-${title.toLowerCase()}`;
+  const concludedCount = tasks.filter(
+    (task) => task.status === "CONCLUDED"
+  ).length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/5">
-            {icon}
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">{title}</h3>
-            <p className="text-xs text-muted-foreground">{timeRange}</p>
-          </div>
+    <section aria-labelledby={headingId}>
+      <div className="mb-2 flex items-baseline justify-between gap-3 border-b pb-2">
+        <div>
+          <h2 id={headingId} className="text-base font-semibold">
+            {title}
+          </h2>
+          <p className="text-xs text-muted-foreground">{timeRange}</p>
         </div>
-        <p className="text-sm font-medium text-muted-foreground">
-          {concludedCount} de {tasks.length} concluídas
+        <p className="text-sm font-medium tabular-nums text-muted-foreground">
+          {concludedCount} de {tasks.length}
         </p>
       </div>
-      
-      {tasks.length > 0 ? (
-        tasks.map((task) => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onUpdate={onUpdateTasks}
-            onEdit={onEditTask}
-            viewMode={viewMode}
-          />
-        ))
+
+      {isLoading ? (
+        <div className="space-y-3 py-3" aria-hidden>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index} className="h-10 w-full" />
+          ))}
+        </div>
+      ) : tasks.length > 0 ? (
+        <ul role="list">
+          {tasks.map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              onUpdate={onUpdateTasks}
+              onEdit={onEditTask}
+            />
+          ))}
+        </ul>
       ) : (
-        <p className="text-sm text-muted-foreground ml-12">
-          Nenhuma tarefa para {title.toLowerCase()}.
-        </p>
+        <div className="flex items-center gap-3 py-3 text-sm text-muted-foreground">
+          <span>{emptyLabel}</span>
+          <Button variant="ghost" size="sm" onClick={onAddTask}>
+            Adicionar
+          </Button>
+        </div>
       )}
-    </div>
+    </section>
   );
 }

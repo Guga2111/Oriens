@@ -16,11 +16,17 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useGoogleMapsScript } from "@/hooks/useGoogleMapsScript";
 import { LocationInput } from "../common/LocationInput";
+import { PRIORITY } from "@/lib/labels";
+import type { TaskPriority } from "@/types/task";
 
 interface CreateTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onTaskCreated: () => void;
+  /** Data pré-preenchida ao abrir (ex.: período vazio ou dia visível). */
+  defaultDate?: Date;
+  /** Hora inicial sugerida para o período. */
+  defaultStartTime?: string;
 }
 interface LocationData {
   address: string;
@@ -29,13 +35,13 @@ interface LocationData {
 }
 const libraries = ["places"];
 
-export function CreateTaskDialog({ open, onOpenChange, onTaskCreated }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ open, onOpenChange, onTaskCreated, defaultDate, defaultStartTime }: CreateTaskDialogProps) {
   const { userId } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>();
   const [startTime, setStartTime] = useState("");
-  const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>();
+  const [priority, setPriority] = useState<TaskPriority>();
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<LocationData | null>(null);
 
@@ -51,6 +57,13 @@ export function CreateTaskDialog({ open, onOpenChange, onTaskCreated }: CreateTa
       setIsLoading(false);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      setDueDate(defaultDate);
+      setStartTime(defaultStartTime ?? "");
+    }
+  }, [open, defaultDate, defaultStartTime]);
   
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -127,14 +140,16 @@ export function CreateTaskDialog({ open, onOpenChange, onTaskCreated }: CreateTa
           </div>
           <div className="grid gap-2">
             <Label htmlFor="priority">Prioridade</Label>
-            <Select onValueChange={(value: "LOW" | "MEDIUM" | "HIGH") => setPriority(value)} value={priority || ""} required>
+            <Select onValueChange={(value: TaskPriority) => setPriority(value)} value={priority || ""} required>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a prioridade" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="LOW">Baixa</SelectItem>
-                <SelectItem value="MEDIUM">Média</SelectItem>
-                <SelectItem value="HIGH">Alta</SelectItem>
+                {Object.entries(PRIORITY).map(([value, config]) => (
+                  <SelectItem key={value} value={value}>
+                    {config.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

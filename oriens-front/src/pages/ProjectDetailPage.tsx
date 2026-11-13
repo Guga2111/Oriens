@@ -1,37 +1,34 @@
-import { useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-
-export interface ObjectiveDTO {
-  id: number;
-  title: string;
-  dueDate?: string;
-  status: "PENDING" | "CONCLUDED";
-}
-
-export interface ProjectDTO {
-  id: number;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  color?: string;
-  progress: number;
-  totalObjectives: number;
-  objectives: ObjectiveDTO[];
-  favorite: boolean;
-  archived: boolean;
-}
-
-import apiClient from "@/services/api";
-import { useAuth } from "@/context/AuthContext";
-import { PageHeader } from "@/components/common/PageHeader";
-import { useSidebarProjects } from "@/components/layout/AppLayout";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  Archive,
+  ArchiveRestore,
+  Calendar as CalendarIcon,
+  Loader2,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Star,
+  Target,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-import { useSound } from "@/hooks/useSound";
-
+import { PageHeader } from "@/components/common/PageHeader";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
+import { ObjectiveItem } from "@/components/projects/ObjectiveItem";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -40,31 +37,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -72,116 +68,23 @@ import {
 } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar } from "@/components/ui/calendar";
-
+import { useSidebarProjects } from "@/components/layout/AppLayout";
 import {
-  Star,
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-  Archive,
-  Loader2,
-  Plus,
-  Target,
-  Edit,
-  ImageIcon,
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  X,
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  ListTodo,
-  CalendarDays,
-  Sparkles,
-} from "lucide-react";
+  formatDue,
+  formatDueDistance,
+  parseLocalDate,
+} from "@/lib/date";
+import { cn } from "@/lib/utils";
+import apiClient from "@/services/api";
+import { useSound } from "@/hooks/useSound";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import type { ObjectiveDTO, ProjectDTO } from "@/types/project";
 
-interface ProjectObjectiveItemProps {
+interface IndexedObjective {
   objective: ObjectiveDTO;
-  objectiveIndex: number;
-  isUpdating: boolean;
-  onToggleStatus: (index: number) => void;
-  onEdit: (index: number) => void;
-  onDelete: (index: number) => void;
-}
-
-function ProjectObjectiveItem({
-  objective,
-  objectiveIndex,
-  isUpdating,
-  onToggleStatus,
-  onEdit,
-  onDelete,
-}: ProjectObjectiveItemProps) {
-  const isConcluded = objective.status === "CONCLUDED";
-
-  let formattedDueDate: string | null = null;
-  if (objective.dueDate) {
-    const datePart = objective.dueDate.split('T')[0];
-    const [year, month, day] = datePart.split('-').map(Number);
-    const localDate = new Date(year, month - 1, day);
-    formattedDueDate = format(localDate, "P", { locale: ptBR });
-  }
-
-  return (
-    <div className="flex items-center gap-3 p-3 transition-colors rounded-lg hover:bg-muted/50">
-      <Checkbox
-        id={`obj-${objective.id}`}
-        checked={isConcluded}
-        onCheckedChange={() => onToggleStatus(objectiveIndex)}
-        disabled={isUpdating}
-      />
-      <div className="flex-1 grid gap-1">
-        <label
-          htmlFor={`obj-${objective.id}`}
-          className={cn(
-            "text-sm font-medium leading-none cursor-pointer",
-            isConcluded && "line-through text-muted-foreground"
-          )}
-        >
-          {objective.title}
-        </label>
-        {objective.dueDate && (
-          <p className="text-xs text-muted-foreground flex items-center">
-            <CalendarIcon className="mr-1.5 h-3 w-3" />
-            Vence em: {formattedDueDate}
-          </p>
-        )}
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 ml-auto flex-shrink-0"
-            disabled={isUpdating}
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => onEdit(objectiveIndex)}>
-            <Edit className="mr-2 h-4 w-4" />
-            <span>Editar</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => onDelete(objectiveIndex)}
-            className="text-destructive focus:text-destructive"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span>Deletar</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
+  index: number;
 }
 
 export default function ProjectDetailPage() {
@@ -194,113 +97,85 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditProjectDialogOpen, setIsEditProjectDialogOpen] = useState(false);
 
   const [newObjectiveTitle, setNewObjectiveTitle] = useState("");
   const [isSubmittingObjective, setIsSubmittingObjective] = useState(false);
 
-  const [updatingObjective, setUpdatingObjective] = useState<number | null>(null);
-  const [objectiveToDelete, setObjectiveToDelete] = useState<number | null>(null);
+  const [updatingObjective, setUpdatingObjective] = useState<number | null>(
+    null
+  );
+  const [objectiveToDelete, setObjectiveToDelete] = useState<number | null>(
+    null
+  );
 
   const [isEditObjectiveDialogOpen, setIsEditObjectiveDialogOpen] =
     useState(false);
-  const [objectiveToEdit, setObjectiveToEdit] = useState<ObjectiveDTO | null>(
-    null
-  );
-  const [objectiveToEditIndex, setObjectiveToEditIndex] = useState<number | null>(
-    null
-  );
+  const [objectiveToEditIndex, setObjectiveToEditIndex] = useState<
+    number | null
+  >(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDueDate, setEditDueDate] = useState<Date | undefined>(undefined);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
 
-  const fetchProject = async () => {
+  const fetchProject = async (silent = false) => {
     if (!id) return;
-    setIsLoading(true);
+    if (!silent) setIsLoading(true);
+
     try {
       const response = await apiClient.get<ProjectDTO>(`/project/${id}`);
       setProject(response.data);
-    } catch (error) {
+    } catch {
+      setProject(null);
       toast.error("Erro", {
         description: "Projeto não encontrado ou você não tem permissão.",
       });
-      navigate("/projects");
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProject();
+    void fetchProject();
   }, [id]);
 
-const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingTasks, nextDeadline, objectivesWithDates } =
-    useMemo(() => {
-      const objectives = project?.objectives || [];
-      let pending = 0;
-      let concluded = 0;
-      const dueDates: Date[] = [];
-      let overdue = 0;
-      let upcoming = 0;
-      let withDates = 0;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const sevenDaysFromNow = new Date(today);
-      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+  const stats = useMemo(() => {
+    const objectives = project?.objectives ?? [];
+    const pending: IndexedObjective[] = [];
+    const concluded: IndexedObjective[] = [];
+    const dueDates: Date[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-      const upcomingDates: Date[] = [];
+    let overdue = 0;
+    let nextDeadline: Date | null = null;
 
-      objectives.forEach((o) => {
-        if (o.status === "CONCLUDED") {
-          concluded++;
-        } else {
-          pending++;
+    objectives.forEach((objective, index) => {
+      const indexed = { objective, index };
+      if (objective.status === "CONCLUDED") {
+        concluded.push(indexed);
+      } else {
+        pending.push(indexed);
+      }
 
-          if (o.dueDate) {
-            const datePart = o.dueDate.split('T')[0];
-            const [year, month, day] = datePart.split('-').map(Number);
-            const dueDate = new Date(year, month - 1, day);
+      const due = parseLocalDate(objective.dueDate);
+      if (!due) return;
+      dueDates.push(due);
 
-            if (dueDate < today) {
-              overdue++;
-            } else if (dueDate <= sevenDaysFromNow) {
-              upcoming++;
-            }
+      if (objective.status === "CONCLUDED") return;
 
-            if (dueDate >= today) {
-              upcomingDates.push(dueDate);
-            }
-          }
-        }
-        if (o.dueDate) {
-          withDates++;
-          const datePart = o.dueDate.split('T')[0];
-          const [year, month, day] = datePart.split('-').map(Number);
-          dueDates.push(new Date(year, month - 1, day));
-        }
-      });
+      if (due < today) {
+        overdue += 1;
+      } else if (!nextDeadline || due < nextDeadline) {
+        nextDeadline = due;
+      }
+    });
 
-      upcomingDates.sort((a, b) => a.getTime() - b.getTime());
-      const nextDue = upcomingDates.length > 0 ? upcomingDates[0] : null;
-
-      return {
-        pendingCount: pending,
-        concludedCount: concluded,
-        objectiveDueDates: dueDates,
-        overdueTasks: overdue,
-        upcomingTasks: upcoming,
-        nextDeadline: nextDue,
-        objectivesWithDates: withDates,
-      };
-    }, [project]);
+    return { pending, concluded, dueDates, overdue, nextDeadline };
+  }, [project]);
 
   const handleToggleObjectiveStatus = async (objectiveIndex: number) => {
-    if (
-      !project ||
-      objectiveIndex < 0 ||
-      objectiveIndex >= project.objectives.length
-    )
-      return;
+    if (!project) return;
 
     const objective = project.objectives[objectiveIndex];
     if (!objective) return;
@@ -315,11 +190,12 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
         { status: newStatus }
       );
       setProject(response.data);
-      toast.success("Status do objetivo atualizado!");
+      toast.success("Status do objetivo atualizado.");
+
       if (newStatus === "CONCLUDED") {
         playConcludedSound();
       }
-    } catch (error) {
+    } catch {
       toast.error("Erro", {
         description: "Não foi possível atualizar o objetivo.",
       });
@@ -328,20 +204,20 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
     }
   };
 
-  const handleAddObjective = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddObjective = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!newObjectiveTitle.trim() || !project) return;
 
     setIsSubmittingObjective(true);
     try {
       const response = await apiClient.post<ProjectDTO>(
         `/project/${project.id}/objective`,
-        { title: newObjectiveTitle, status: "PENDING" }
+        { title: newObjectiveTitle.trim(), status: "PENDING" }
       );
       setProject(response.data);
       setNewObjectiveTitle("");
-      toast.success("Objetivo adicionado!");
-    } catch (error) {
+      toast.success("Objetivo adicionado.");
+    } catch {
       toast.error("Erro", {
         description: "Não foi possível adicionar o objetivo.",
       });
@@ -351,62 +227,48 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
   };
 
   const handleOpenEditObjectiveDialog = (objectiveIndex: number) => {
-    if (
-      !project ||
-      objectiveIndex < 0 ||
-      objectiveIndex >= project.objectives.length
-    )
-      return;
+    if (!project) return;
 
     const objective = project.objectives[objectiveIndex];
-    if (objective) {
-      setObjectiveToEdit(objective);
-      setObjectiveToEditIndex(objectiveIndex);
-      setEditTitle(objective.title);
-      let localDueDate: Date | undefined = undefined;
-      if (objective.dueDate) {
-        const datePart = objective.dueDate.split('T')[0];
-        const [year, month, day] = datePart.split('-').map(Number);
-        localDueDate = new Date(year, month - 1, day); 
-      }
-      setEditDueDate(localDueDate);
-      setIsEditObjectiveDialogOpen(true);
-    }
+    if (!objective) return;
+
+    setObjectiveToEditIndex(objectiveIndex);
+    setEditTitle(objective.title);
+    setEditDueDate(parseLocalDate(objective.dueDate));
+    setIsEditObjectiveDialogOpen(true);
   };
 
-  const handleSubmitEditObjective = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitEditObjective = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!project || objectiveToEditIndex === null || !editTitle.trim()) return;
 
     setIsSubmittingEdit(true);
 
     const originalObjective = project.objectives[objectiveToEditIndex];
-    let utcDueDate: string | undefined = undefined;
-    if (editDueDate) {
-      const utcDate = new Date(Date.UTC(
-        editDueDate.getFullYear(),
-        editDueDate.getMonth(),
-        editDueDate.getDate()
-      ));
-      utcDueDate = utcDate.toISOString(); 
-    }
-    const updatedObjective = {
-      ...originalObjective,
-      title: editTitle.trim(),
-      dueDate: utcDueDate,
-    };
+    const dueDate = editDueDate
+      ? new Date(
+          Date.UTC(
+            editDueDate.getFullYear(),
+            editDueDate.getMonth(),
+            editDueDate.getDate()
+          )
+        ).toISOString()
+      : undefined;
 
     try {
       const response = await apiClient.put<ProjectDTO>(
         `/project/${project.id}/objective/${objectiveToEditIndex}`,
-        updatedObjective
+        {
+          ...originalObjective,
+          title: editTitle.trim(),
+          dueDate,
+        }
       );
       setProject(response.data);
-      toast.success("Objetivo atualizado!");
+      toast.success("Objetivo atualizado.");
       setIsEditObjectiveDialogOpen(false);
-      setObjectiveToEdit(null);
       setObjectiveToEditIndex(null);
-    } catch (error) {
+    } catch {
       toast.error("Erro", {
         description: "Não foi possível atualizar o objetivo.",
       });
@@ -415,63 +277,26 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
     }
   };
 
-  const handleOpenDeleteObjectiveDialog = (objectiveIndex: number) => {
-    if (
-      project === null ||
-      objectiveIndex < 0 ||
-      objectiveIndex >= project.objectives.length
-    )
-      return;
-
-    const objective = project.objectives[objectiveIndex];
-    if (objective) {
-      setObjectiveToDelete(objectiveIndex);
-    }
-  };
-
   const handleDeleteObjective = async () => {
-    if (project === null || objectiveToDelete === null) return;
-
-    const objectiveIndexToDelete = objectiveToDelete;
+    if (!project || objectiveToDelete === null) return;
 
     try {
       await apiClient.delete(
-        `/project/${project.id}/objective/${objectiveIndexToDelete}`
+        `/project/${project.id}/objective/${objectiveToDelete}`
       );
-      
-      setProject((prevProject) => {
-        if (!prevProject) return null;
-        
-        const newObjectives = [...prevProject.objectives];
-        newObjectives.splice(objectiveIndexToDelete, 1);
-        
-        const newConcludedCount = newObjectives.filter(
-          (o) => o.status === "CONCLUDED"
-        ).length;
-        const newTotalCount = newObjectives.length;
-        const newProgress =
-          newTotalCount > 0 ? (newConcludedCount / newTotalCount) * 100 : 0;
-
-        return {
-          ...prevProject,
-          objectives: newObjectives,
-          totalObjectives: newTotalCount,
-          progress: newProgress,
-        };
-      });
-
-      toast.success("Objetivo deletado!");
-    } catch (error) {
+      // Sem recalcular progresso no front (D10): busca o projeto atualizado.
+      await fetchProject(true);
+      toast.success("Objetivo excluído.");
+    } catch {
       toast.error("Erro", {
-        description: "Não foi possível deletar o objetivo.",
+        description: "Não foi possível excluir o objetivo.",
       });
     } finally {
       setObjectiveToDelete(null);
     }
   };
 
-  const handleToggleFavorite = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggleFavorite = async () => {
     if (!project) return;
 
     try {
@@ -480,28 +305,29 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
       );
       setProject(response.data);
       refreshSidebarProjects();
-      toast.success(response.data.favorite
-          ? "Projeto favoritado!"
-          : "Projeto desfavoritado.");
-    } catch (error) {
+    } catch {
       toast.error("Erro", {
         description: "Não foi possível alterar o status de favorito.",
       });
     }
   };
 
-  const handleArchiveProject = async () => {
+  const handleToggleArchive = async () => {
     if (!project) return;
+
     try {
+      const action = project.archived ? "unarchive" : "archive";
       const response = await apiClient.patch<ProjectDTO>(
-        `/project/${project.id}/archive`
+        `/project/${project.id}/${action}`
       );
       setProject(response.data);
       refreshSidebarProjects();
-      toast.success(response.data.archived
-          ? "Projeto arquivado!"
-          : "Projeto desarquivado.");
-    } catch (error) {
+      toast.success(
+        response.data.archived
+          ? "Projeto arquivado."
+          : "Projeto desarquivado."
+      );
+    } catch {
       toast.error("Erro", {
         description: "Não foi possível alterar o status de arquivado.",
       });
@@ -510,16 +336,15 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
 
   const handleDeleteProject = async () => {
     if (!project) return;
+
     try {
       await apiClient.delete(`/project/${project.id}`);
       refreshSidebarProjects();
-      toast.success("Sucesso!", {
-        description: "Projeto deletado.",
-      });
+      toast.success("Projeto excluído.");
       navigate("/projects");
-    } catch (error) {
+    } catch {
       toast.error("Erro", {
-        description: "Não foi possível deletar o projeto.",
+        description: "Não foi possível excluir o projeto.",
       });
     } finally {
       setIsDeleteDialogOpen(false);
@@ -529,24 +354,22 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
   if (isLoading) {
     return (
       <div className="p-6 md:p-8">
-        <div className="mb-6 flex justify-between items-start">
-          <div>
-            <Skeleton className="h-9 w-64 mb-2" />
-            <Skeleton className="h-5 w-96" />
+        <Skeleton className="mb-3 h-4 w-48" />
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-80" />
           </div>
           <div className="flex gap-2">
             <Skeleton className="h-10 w-10 rounded-full" />
             <Skeleton className="h-10 w-10 rounded-full" />
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Skeleton className="h-64 w-full rounded-lg" />
-            <Skeleton className="h-80 w-full rounded-lg" />
-          </div>
-          <div className="lg:col-span-1 space-y-6">
-            <Skeleton className="h-32 w-full rounded-lg" />
-            <Skeleton className="h-72 w-full rounded-lg" />
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <Skeleton className="h-96 rounded-lg lg:col-span-2" />
+          <div className="space-y-6">
+            <Skeleton className="h-44 rounded-lg" />
+            <Skeleton className="h-72 rounded-lg" />
           </div>
         </div>
       </div>
@@ -555,327 +378,360 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
 
   if (!project) {
     return (
-      <div className="flex items-center justify-center p-24">
-        <p>Projeto não encontrado.</p>
+      <div className="p-6 md:p-8">
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>Projeto não encontrado</EmptyTitle>
+            <EmptyDescription>
+              Ele pode ter sido excluído ou você não tem acesso a ele.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button asChild>
+              <Link to="/projects">Voltar para Projetos</Link>
+            </Button>
+          </EmptyContent>
+        </Empty>
       </div>
     );
   }
 
+  const objectiveToDeleteData =
+    objectiveToDelete !== null
+      ? project.objectives[objectiveToDelete]
+      : undefined;
+
   return (
     <>
-    <div className="p-6 md:p-8">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate("/projects")}
-        className="mb-2 text-muted-foreground"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        Voltar para Projetos
-      </Button>
+      <div className="p-6 md:p-8">
+        <Breadcrumb className="mb-3">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/projects">Projetos</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{project.title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
-      <PageHeader
-        title={
-          <span className="flex flex-wrap items-center gap-3">
-            <span
-              className="h-4 w-4 shrink-0 rounded-full"
-              style={{ backgroundColor: project.color || "#ccc" }}
-            />
-            {project.title}
-            {project.archived && <Badge variant="outline">Arquivado</Badge>}
-          </span>
-        }
-        description={project.description}
-        actions={
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={handleToggleFavorite}>
-              <Star
+        <PageHeader
+          title={
+            <span className="flex flex-wrap items-center gap-3">
+              <span
+                aria-hidden
                 className={cn(
-                  "h-5 w-5 transition-colors",
-                  project.favorite
-                    ? "text-yellow-500 fill-yellow-400"
-                    : "text-muted-foreground hover:text-yellow-500"
+                  "h-2 w-2 shrink-0 rounded-full",
+                  !project.color && "bg-muted-foreground"
                 )}
+                style={
+                  project.color ? { backgroundColor: project.color } : undefined
+                }
               />
-              <span className="sr-only">
-                {project.favorite ? "Desfavoritar" : "Favoritar"} projeto
-              </span>
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-5 w-5" />
-                  <span className="sr-only">Ações do projeto</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  <span>Editar Projeto</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleArchiveProject}>
-                  <Archive className="mr-2 h-4 w-4" />
-                  <span>
-                    {project.archived ? "Desarquivar" : "Arquivar"}
-                  </span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Deletar Projeto</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        }
-      />
+              {project.title}
+              {project.archived && <Badge variant="outline">Arquivado</Badge>}
+            </span>
+          }
+          description={project.description}
+          actions={
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleToggleFavorite}
+                aria-pressed={project.favorite}
+                aria-label="Favoritar"
+              >
+                <Star
+                  className={cn(
+                    "h-5 w-5",
+                    project.favorite
+                      ? "fill-primary text-primary"
+                      : "text-muted-foreground"
+                  )}
+                  aria-hidden
+                />
+              </Button>
 
-            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <AspectRatio
-                  ratio={16 / 9}
-                  className="bg-muted rounded-lg overflow-hidden border"
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-5 w-5" aria-hidden />
+                    <span className="sr-only">Ações do projeto</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => setIsEditProjectDialogOpen(true)}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" aria-hidden />
+                    <span>Editar</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleToggleArchive}>
+                    {project.archived ? (
+                      <ArchiveRestore className="mr-2 h-4 w-4" aria-hidden />
+                    ) : (
+                      <Archive className="mr-2 h-4 w-4" aria-hidden />
+                    )}
+                    <span>
+                      {project.archived ? "Desarquivar" : "Arquivar"}
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" aria-hidden />
+                    <span>Excluir</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          }
+        />
+
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <Card>
+              <CardHeader className="p-5 pb-3">
+                <CardTitle className="text-base">Objetivos</CardTitle>
+                <CardDescription>
+                  Acompanhe aqui todas as entregas do projeto.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-5 pt-0">
+                <form
+                  onSubmit={handleAddObjective}
+                  className="flex flex-col gap-2 sm:flex-row"
                 >
-                  {project.imageUrl ? (
+                  <Input
+                    placeholder="Adicionar novo objetivo..."
+                    value={newObjectiveTitle}
+                    onChange={(event) =>
+                      setNewObjectiveTitle(event.target.value)
+                    }
+                    disabled={isSubmittingObjective}
+                    aria-label="Novo objetivo"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={
+                      isSubmittingObjective || !newObjectiveTitle.trim()
+                    }
+                  >
+                    {isSubmittingObjective ? (
+                      <Loader2
+                        className="mr-2 h-4 w-4 animate-spin"
+                        aria-hidden
+                      />
+                    ) : (
+                      <Plus className="mr-2 h-4 w-4" aria-hidden />
+                    )}
+                    Adicionar
+                  </Button>
+                </form>
+
+                <Tabs defaultValue="pending" className="mt-4">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="pending">
+                      A fazer ({stats.pending.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="concluded">
+                      Concluídos ({stats.concluded.length})
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="pending" className="mt-4">
+                    {stats.pending.length === 0 ? (
+                      <p className="p-4 text-center text-sm text-muted-foreground">
+                        Nenhum objetivo pendente.
+                      </p>
+                    ) : (
+                      <ul className="space-y-1">
+                        {stats.pending.map(({ objective, index }) => (
+                          <ObjectiveItem
+                            key={`${index}-${objective.title}`}
+                            objective={objective}
+                            index={index}
+                            onToggleStatus={handleToggleObjectiveStatus}
+                            isUpdating={updatingObjective === index}
+                            onEdit={handleOpenEditObjectiveDialog}
+                            onDelete={setObjectiveToDelete}
+                          />
+                        ))}
+                      </ul>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="concluded" className="mt-4">
+                    {stats.concluded.length === 0 ? (
+                      <p className="p-4 text-center text-sm text-muted-foreground">
+                        Nenhum objetivo concluído ainda.
+                      </p>
+                    ) : (
+                      <ul className="space-y-1">
+                        {stats.concluded.map(({ objective, index }) => (
+                          <ObjectiveItem
+                            key={`${index}-${objective.title}`}
+                            objective={objective}
+                            index={index}
+                            onToggleStatus={handleToggleObjectiveStatus}
+                            isUpdating={updatingObjective === index}
+                            onEdit={handleOpenEditObjectiveDialog}
+                            onDelete={setObjectiveToDelete}
+                          />
+                        ))}
+                      </ul>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+
+          <aside className="space-y-6 lg:col-span-1">
+            <Card>
+              <CardHeader className="p-5 pb-3">
+                <CardTitle className="text-base">Resumo</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 p-5 pt-0">
+                <div>
+                  <div className="mb-2 flex items-center justify-between gap-2 text-sm">
+                    <span className="text-muted-foreground">Progresso</span>
+                    <span className="font-medium tabular-nums">
+                      {project.progress}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={project.progress}
+                    className="h-2"
+                    aria-label={`Progresso: ${project.progress}%`}
+                  />
+                  <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Target className="h-3.5 w-3.5" aria-hidden />
+                    {stats.concluded.length} de {project.objectives.length}{" "}
+                    {project.objectives.length === 1 ? "objetivo" : "objetivos"}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <span className="text-muted-foreground">Próximo prazo</span>
+                  <span className="text-right font-medium">
+                    {stats.nextDeadline
+                      ? `${formatDue(stats.nextDeadline)} · ${formatDueDistance(
+                          stats.nextDeadline
+                        )}`
+                      : "—"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 text-sm">
+                  <span className="text-muted-foreground">Vencidos</span>
+                  <span
+                    className={cn(
+                      "font-medium tabular-nums",
+                      stats.overdue > 0 && "text-negative"
+                    )}
+                  >
+                    {stats.overdue}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="p-5 pb-3">
+                <CardTitle className="text-base">Calendário</CardTitle>
+                <CardDescription>
+                  Datas de vencimento dos objetivos
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex justify-center p-5 pt-0">
+                <Calendar
+                  mode="multiple"
+                  selected={stats.dueDates}
+                  locale={ptBR}
+                  className="w-full p-0"
+                  classNames={{
+                    caption_label:
+                      "text-xs font-medium xl:text-sm",
+                    table: "w-full border-collapse",
+                    head_row: "flex w-full",
+                    head_cell:
+                      "w-full flex-1 text-muted-foreground rounded-md font-normal text-[0.7rem] xl:text-[0.8rem]",
+                    row: "flex w-full mt-2",
+                    cell: "h-9 flex-1 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+                    day: "h-9 w-full rounded-md p-0 font-normal hover:bg-accent hover:text-accent-foreground aria-selected:opacity-100",
+                  }}
+                />
+              </CardContent>
+            </Card>
+
+            {project.imageUrl && (
+              <Card>
+                <CardContent className="p-4">
+                  <AspectRatio
+                    ratio={16 / 9}
+                    className="overflow-hidden rounded-md border bg-muted"
+                  >
                     <img
                       src={project.imageUrl}
                       alt={project.title}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
-                      <ImageIcon className="h-16 w-16" />
-                      <span className="mt-2 text-sm">Sem imagem</span>
-                    </div>
-                  )}
-                </AspectRatio>
+                  </AspectRatio>
+                </CardContent>
+              </Card>
+            )}
+          </aside>
+        </div>
+      </div>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Lista de Objetivos</CardTitle>
-                    <CardDescription>
-                      Acompanhe aqui todas as entregas do projeto.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form
-                      onSubmit={handleAddObjective}
-                      className="flex gap-2 mb-4"
-                    >
-                      <Input
-                        placeholder="Adicionar novo objetivo..."
-                        value={newObjectiveTitle}
-                        onChange={(e) => setNewObjectiveTitle(e.target.value)}
-                        disabled={isSubmittingObjective}
-                      />
-                      <Button type="submit" disabled={isSubmittingObjective}>
-                        {isSubmittingObjective ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Plus className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </form>
+      <CreateProjectDialog
+        open={isEditProjectDialogOpen}
+        onOpenChange={setIsEditProjectDialogOpen}
+        onSuccess={() => {
+          void fetchProject(true);
+          refreshSidebarProjects();
+        }}
+        projectToEdit={project}
+      />
 
-                    <Tabs defaultValue="pending">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="pending">
-                          A Fazer ({pendingCount})
-                        </TabsTrigger>
-                        <TabsTrigger value="concluded">
-                          Concluídos ({concludedCount})
-                        </TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="pending" className="mt-4 space-y-1">
-                        {pendingCount === 0 ? (
-                          <p className="text-muted-foreground text-sm text-center p-4">
-                            Nenhum objetivo pendente.
-                          </p>
-                        ) : (
-                          project.objectives.map((obj, index) => {
-
-                            if (obj.status === "CONCLUDED") return null;
-
-                            return (
-                              <ProjectObjectiveItem
-                                key={obj.id}
-                                objective={obj}
-                                objectiveIndex={index}
-                                isUpdating={updatingObjective === index}
-                                onToggleStatus={handleToggleObjectiveStatus}
-                                onEdit={handleOpenEditObjectiveDialog}
-                                onDelete={handleOpenDeleteObjectiveDialog}
-                              />
-                            );
-                          })
-                        )}
-                      </TabsContent>
-
-                      <TabsContent value="concluded" className="mt-4 space-y-1">
-                        {concludedCount === 0 ? (
-                          <p className="text-muted-foreground text-sm text-center p-4">
-                            Nenhum objetivo concluído ainda.
-                          </p>
-                        ) : (
-                          project.objectives.map((obj, index) => {
-                            
-                            if (obj.status !== "CONCLUDED") return null;
-
-                            return (
-                              <ProjectObjectiveItem
-                                key={obj.id}
-                                objective={obj}
-                                objectiveIndex={index} 
-                                isUpdating={updatingObjective === index}
-                                onToggleStatus={handleToggleObjectiveStatus}
-                                onEdit={handleOpenEditObjectiveDialog}
-                                onDelete={handleOpenDeleteObjectiveDialog}
-                              />
-                            );
-                          })
-                        )}
-                      </TabsContent>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="lg:col-span-1 space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Resumo do Projeto</CardTitle>
-                    <CardDescription>
-                      Visão geral e métricas importantes
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-muted-foreground">Progresso Geral</span>
-                        <span className="font-bold text-lg">
-                          {project.progress.toFixed(0)}%
-                        </span>
-                      </div>
-                      <Progress
-                        value={project.progress}
-                        className="h-3"
-                      />
-                      <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center">
-                        <Target className="h-3.5 w-3.5 mr-1.5 text-primary" />
-                        {concludedCount} de {project.totalObjectives} objetivos completos
-                      </p>
-                    </div>
-
-                    <div className="space-y-3 pt-2 ">
-                      {nextDeadline && (
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
-                          <div className="flex items-center gap-2">
-                            <div className="p-1.5 rounded bg-primary/20">
-                              <CalendarDays className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground">
-                                Próximo Prazo
-                              </p>
-                              <p className="text-sm font-bold text-primary">
-                                {format(nextDeadline, "PPP", { locale: ptBR })}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">Faltam</p>
-                            <p className="text-lg font-bold text-primary">
-                              {Math.ceil(
-                                (nextDeadline.getTime() - new Date().getTime()) /
-                                  (1000 * 60 * 60 * 24)
-                              )}d
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                    </div>
-
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Datas Importantes</CardTitle>
-                    <CardDescription>
-                      Datas de vencimento dos objetivos
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex justify-center">
-                    <Calendar
-                      mode="multiple"
-                      selected={objectiveDueDates}
-                      locale={ptBR}
-                      className="p-0"
-                      classNames={{
-                        day_selected:
-                          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                      }}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-
-      <AlertDialog
+      <ConfirmDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso irá deletar
-              permanentemente o projeto <strong>{project.title}</strong> e todos
-              os seus objetivos.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteProject}>
-              Continuar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="Excluir projeto?"
+        objectName={project.title}
+        confirmLabel="Excluir"
+        onConfirm={handleDeleteProject}
+        description={
+          <>
+            Excluir <strong>{project.title}</strong>? Esta ação não pode ser
+            desfeita e removerá todos os objetivos do projeto.
+          </>
+        }
+      />
 
-      <AlertDialog
+      <ConfirmDialog
         open={objectiveToDelete !== null}
-        onOpenChange={(open) => !open && setObjectiveToDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Deletar objetivo?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Você tem certeza que quer deletar o objetivo:{" "}
-              <strong>
-                "
-                {objectiveToDelete !== null && project
-                  ? project.objectives[objectiveToDelete]?.title
-                  : ""}
-                "
-              </strong>
-              ? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteObjective}>
-              Deletar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onOpenChange={(open) => {
+          if (!open) setObjectiveToDelete(null);
+        }}
+        title="Excluir objetivo?"
+        objectName={objectiveToDeleteData?.title ?? ""}
+        confirmLabel="Excluir"
+        onConfirm={handleDeleteObjective}
+        description={
+          <>
+            Excluir <strong>{objectiveToDeleteData?.title}</strong>? Esta ação
+            não pode ser desfeita.
+          </>
+        }
+      />
 
       <Dialog
         open={isEditObjectiveDialogOpen}
@@ -891,32 +747,34 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
           <form onSubmit={handleSubmitEditObjective}>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right">
+                <Label htmlFor="objective-title" className="text-right">
                   Título
                 </Label>
                 <Input
-                  id="title"
+                  id="objective-title"
                   value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
+                  onChange={(event) => setEditTitle(event.target.value)}
                   className="col-span-3"
                   disabled={isSubmittingEdit}
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="dueDate" className="text-right">
+                <Label htmlFor="objective-due-date" className="text-right">
                   Vencimento
                 </Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
-                      variant={"outline"}
+                      id="objective-due-date"
+                      type="button"
+                      variant="outline"
                       className={cn(
                         "col-span-3 justify-start text-left font-normal",
                         !editDueDate && "text-muted-foreground"
                       )}
                       disabled={isSubmittingEdit}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-2 h-4 w-4" aria-hidden />
                       {editDueDate ? (
                         format(editDueDate, "PPP", { locale: ptBR })
                       ) : (
@@ -924,8 +782,6 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
                       )}
                     </Button>
                   </PopoverTrigger>
-                  {/* A9 (P0.3): o botão vazio absolute foi removido; limpar a
-                      data virou um botão com texto dentro do PopoverContent. */}
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
@@ -947,7 +803,8 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
                         </Button>
                       </div>
                     )}
-                  </PopoverContent>                </Popover>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <DialogFooter>
@@ -962,7 +819,10 @@ const { pendingCount, concludedCount, objectiveDueDates, overdueTasks, upcomingT
               </DialogClose>
               <Button type="submit" disabled={isSubmittingEdit}>
                 {isSubmittingEdit && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2
+                    className="mr-2 h-4 w-4 animate-spin"
+                    aria-hidden
+                  />
                 )}
                 Salvar
               </Button>

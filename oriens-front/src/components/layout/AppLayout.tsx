@@ -38,7 +38,9 @@ export function AppLayout() {
     <SidebarProjectsContext.Provider value={contextValue}>
       <SidebarProvider>
         <AppSidebar projectsVersion={projectsVersion} />
-        <SidebarInset>
+        {/* `overflow-x-clip` garante que nenhuma página role na horizontal;
+            grades largas rolam dentro do próprio container (SPEC §11.2). */}
+        <SidebarInset className="min-w-0 overflow-x-clip">
           <AppHeader />
           {/* Loading e erro das páginas acontecem dentro deste Outlet,
               nunca substituindo o shell (SPEC §10.2). */}

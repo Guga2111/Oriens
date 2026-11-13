@@ -6,30 +6,12 @@ export enum Priority {
 
 export enum Status {
   PENDING = "PENDING",
+  ON_DOING = "ON_DOING",
   CONCLUDED = "CONCLUDED"
 }
 
-export const PriorityLabels: Record<Priority, string> = {
-  [Priority.LOW]: "Baixa",
-  [Priority.MEDIUM]: "Média",
-  [Priority.HIGH]: "Alta"
-};
-
-export const StatusLabels: Record<Status, string> = {
-  [Status.PENDING]: "Pendente",
-  [Status.CONCLUDED]: "Concluída"
-};
-
-export const PriorityColors: Record<Priority, string> = {
-  [Priority.LOW]: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  [Priority.MEDIUM]: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-  [Priority.HIGH]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-};
-
-export const StatusColors: Record<Status, string> = {
-  [Status.PENDING]: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
-  [Status.CONCLUDED]: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-};
+export type TaskPriority = `${Priority}`;
+export type TaskStatus = `${Status}`;
 
 export interface LocationDTO {
   address?: string;
@@ -37,36 +19,20 @@ export interface LocationDTO {
   longitude?: number;
 }
 
-export interface TaskDTO {
+export interface Task {
   id: number;
   title: string;
   description?: string;
-  startTime: string; 
-  dueDate: string; 
+  /** `HH:mm:ss` — comparado como string, sem parse de fuso. */
+  startTime: string;
+  /** `yyyy-MM-dd` — data local, sem `toISOString`. */
+  dueDate: string;
   completedAt?: string;
-  priority: Priority;
-  status: Status;
-  createdAt: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  createdAt?: string;
   location?: LocationDTO;
 }
 
-export interface ProjectDTO {
-  id: number;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  color?: string;
-  favorite: boolean;
-  archived?: boolean;
-  lastAccessed?: string;
-  progress: number;
-  totalObjectives: number;
-  objectives: ObjectiveDTO[];
-}
+export type TaskDTO = Task;
 
-export interface ObjectiveDTO {
-  title: string;
-  dueDate?: string;
-  status: Status;
-  completed: boolean;
-}

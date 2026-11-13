@@ -15,5 +15,5 @@ export async function login(page: Page): Promise<void> {
   await page.locator("#login-password").fill(requireEnv("E2E_PASSWORD"));
   await page.getByRole("button", { name: "Entrar" }).click();
   await page.waitForURL("**/tasks");
-  await expect(page.getByRole("heading", { level: 3, name: "Manhã" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Manhã" })).toBeVisible();
 }

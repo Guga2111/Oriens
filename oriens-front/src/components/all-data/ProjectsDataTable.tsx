@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Search, X, Star, Archive, MoreVertical, StarOff } from "lucide-react";
+import {
+  Search,
+  X,
+  Star,
+  Archive,
+  MoreVertical,
+  StarOff,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -15,13 +24,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "@/components/ui/pagination";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ProjectDTO } from "@/types/task";
+import { ProjectDTO } from "@/types/project";
 import { cn } from "@/lib/utils";
 
 export interface ProjectsFilters {
@@ -62,6 +82,8 @@ export function ProjectsDataTable({
   const currentPage = pagination.page;
   const totalPages = pagination.totalPages;
   const totalElements = pagination.totalElements;
+  const firstItem = totalElements === 0 ? 0 : currentPage * pageSize + 1;
+  const lastItem = Math.min((currentPage + 1) * pageSize, totalElements);
 
   const clearFilters = () => {
     setSearchInput("");
@@ -81,20 +103,16 @@ export function ProjectsDataTable({
     onFilterChange({ searchQuery: searchInput });
   };
 
-  const handlePageChange = (newPage: number) => {
-    onPageChange(newPage);
-  };
-
   const hasActiveFilters =
     filters.includeArchived || filters.searchQuery !== "";
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-medium">Todos os Projetos</CardTitle>
+        <CardTitle className="text-lg font-medium">Todos os projetos</CardTitle>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 pt-4 items-start sm:items-center flex-wrap">
+        <div className="flex flex-col items-start gap-4 pt-4 sm:flex-row sm:flex-wrap sm:items-center">
           {/* Toggle Archived */}
           <div className="flex items-center space-x-2">
             <Switch
@@ -106,29 +124,31 @@ export function ProjectsDataTable({
             />
             <Label
               htmlFor="include-archived"
-              className="text-sm cursor-pointer"
+              className="cursor-pointer text-sm"
             >
               Mostrar arquivados
             </Label>
           </div>
 
           {/* Search */}
-          <div className="relative flex-1 flex items-center gap-0 min-w-[200px]">
+          <div className="relative flex min-w-[200px] flex-1 items-center gap-0">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Buscar por título"
+                aria-label="Buscar por título"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
-                className="pl-9 rounded-r-none border-r-0"
+                className="rounded-r-none border-r-0 pl-9"
               />
             </div>
             <Button
               variant="outline"
               size="icon"
               onClick={handleSearchClick}
-              className="rounded-l-none border-l h-10 w-10 shrink-0"
+              aria-label="Buscar"
+              className="h-10 w-10 shrink-0 rounded-l-none border-l"
             >
               <Search className="h-4 w-4" />
             </Button>
@@ -137,7 +157,7 @@ export function ProjectsDataTable({
           {/* Clear Filters */}
           {hasActiveFilters && (
             <Button variant="outline" onClick={clearFilters}>
-              <X className="h-4 w-4 mr-2" />
+              <X className="mr-2 h-4 w-4" />
               Limpar
             </Button>
           )}
@@ -146,30 +166,45 @@ export function ProjectsDataTable({
 
       <CardContent>
         {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <p className="py-8 text-center text-muted-foreground">
             Carregando...
-          </div>
+          </p>
         ) : projects.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            {hasActiveFilters
-              ? "Nenhum resultado encontrado. Ajuste os filtros."
-              : "Nenhum projeto encontrado."}
-          </div>
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>
+                {hasActiveFilters
+                  ? "Nenhum resultado encontrado"
+                  : "Nenhum projeto encontrado"}
+              </EmptyTitle>
+              <EmptyDescription>
+                {hasActiveFilters
+                  ? "Ajuste os filtros para ver mais resultados."
+                  : "Os projetos criados aparecerão aqui."}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <>
-            {/* Table */}
-            <div className="border rounded-lg overflow-x-auto">
+            {/* Até o P2 a tabela rola dentro deste container (SPEC §11.7). */}
+            <div className="overflow-x-auto rounded-lg border">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="min-w-[200px]">Título</TableHead>
-                    <TableHead className="w-[250px]">Descrição</TableHead>
+                    {/* Abaixo de xl a tabela cabe sem a descrição; no mobile
+                        ela ainda rola dentro do container (SPEC §11.7). */}
+                    <TableHead className="hidden w-[250px] xl:table-cell">
+                      Descrição
+                    </TableHead>
                     <TableHead className="w-[180px]">Progresso</TableHead>
                     <TableHead className="w-[100px]">Status</TableHead>
                     <TableHead className="w-[80px] text-center">
                       Favorito
                     </TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="w-[50px]">
+                      <span className="sr-only">Ações</span>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -179,14 +214,15 @@ export function ProjectsDataTable({
                         <div className="flex items-center gap-2">
                           {project.color && (
                             <div
-                              className="w-3 h-3 rounded-full shrink-0"
+                              className="h-3 w-3 shrink-0 rounded-full"
                               style={{ backgroundColor: project.color }}
+                              aria-hidden
                             />
                           )}
                           {project.title}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden xl:table-cell">
                         <span className="line-clamp-2 text-muted-foreground">
                           {project.description || "-"}
                         </span>
@@ -197,7 +233,7 @@ export function ProjectsDataTable({
                             value={project.progress}
                             className="h-2 flex-1"
                           />
-                          <span className="text-sm text-muted-foreground w-10">
+                          <span className="w-10 text-right text-sm tabular-nums text-muted-foreground">
                             {project.progress}%
                           </span>
                         </div>
@@ -209,17 +245,21 @@ export function ProjectsDataTable({
                             Arquivado
                           </Badge>
                         ) : (
-                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-0">
-                            Ativo
-                          </Badge>
+                          <Badge variant="positive">Ativo</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-center">
                         <Star
-                          className={cn(
-                            "h-5 w-5 mx-auto",
+                          role="img"
+                          aria-label={
                             project.favorite
-                              ? "fill-yellow-400 text-yellow-400"
+                              ? `Favorito: ${project.title}`
+                              : `Não favorito: ${project.title}`
+                          }
+                          className={cn(
+                            "mx-auto h-5 w-5",
+                            project.favorite
+                              ? "fill-primary text-primary"
                               : "text-muted-foreground"
                           )}
                         />
@@ -227,7 +267,11 @@ export function ProjectsDataTable({
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button
+                              variant="ghost"
+                              className="h-8 w-8 p-0"
+                              aria-label={`Ações de ${project.title}`}
+                            >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -239,7 +283,7 @@ export function ProjectsDataTable({
                               {project.favorite ? (
                                 <>
                                   <StarOff className="mr-2 h-4 w-4" />
-                                  <span>Remover Favorito</span>
+                                  <span>Remover favorito</span>
                                 </>
                               ) : (
                                 <>
@@ -274,38 +318,45 @@ export function ProjectsDataTable({
               </Table>
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4">
+            {totalElements > 0 && (
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Mostrando {currentPage * pageSize + 1} a{" "}
-                  {Math.min((currentPage + 1) * pageSize, totalElements)} de{" "}
-                  {totalElements} projetos
+                  Mostrando {firstItem} a {lastItem} de {totalElements}{" "}
+                  {totalElements === 1 ? "projeto" : "projetos"}
                 </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      handlePageChange(Math.max(0, currentPage - 1))
-                    }
-                    disabled={currentPage === 0}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      handlePageChange(
-                        Math.min(totalPages - 1, currentPage + 1)
-                      )
-                    }
-                    disabled={currentPage === totalPages - 1}
-                  >
-                    Próxima
-                  </Button>
-                </div>
+                <Pagination className="mx-0 w-full justify-center sm:w-auto sm:justify-end">
+                  <PaginationContent className="flex-wrap justify-center">
+                    <PaginationItem>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onPageChange(currentPage - 1)}
+                        disabled={currentPage === 0}
+                        aria-label="Página anterior"
+                      >
+                        <ChevronLeft className="h-4 w-4 sm:mr-1" aria-hidden />
+                        <span className="hidden sm:inline">Anterior</span>
+                      </Button>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <span className="whitespace-nowrap px-2 text-sm tabular-nums text-muted-foreground">
+                        Página {currentPage + 1} de {Math.max(totalPages, 1)}
+                      </span>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onPageChange(currentPage + 1)}
+                        disabled={currentPage >= totalPages - 1}
+                        aria-label="Próxima página"
+                      >
+                        <span className="hidden sm:inline">Próxima</span>
+                        <ChevronRight className="h-4 w-4 sm:ml-1" aria-hidden />
+                      </Button>
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
           </>

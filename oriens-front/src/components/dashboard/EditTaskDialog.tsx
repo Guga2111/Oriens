@@ -13,16 +13,8 @@ import { ptBR } from "date-fns/locale";
 import apiClient from "@/services/api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-
-interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  startTime: string;
-  dueDate: string;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
-  status: 'PENDING' | 'ON_DOING' | 'CONCLUDED';
-}
+import { PRIORITY } from "@/lib/labels";
+import type { Task, TaskPriority } from "@/types/task";
 
 interface EditTaskDialogProps {
   task: Task;
@@ -36,7 +28,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onTaskUpdated }: Edit
   const [description, setDescription] = useState(task.description || "");
   const [dueDate, setDueDate] = useState<Date | undefined>(parseISO(task.dueDate));
   const [startTime, setStartTime] = useState(task.startTime.substring(0, 5));
-  const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>(task.priority);
+  const [priority, setPriority] = useState<TaskPriority>(task.priority);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -122,14 +114,16 @@ export function EditTaskDialog({ task, open, onOpenChange, onTaskUpdated }: Edit
           </div>
           <div className="grid gap-2">
             <Label htmlFor="priority">Prioridade</Label>
-            <Select value={priority} onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH') => setPriority(value)} required>
+            <Select value={priority} onValueChange={(value: TaskPriority) => setPriority(value)} required>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a prioridade" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="LOW">Baixa</SelectItem>
-                <SelectItem value="MEDIUM">Média</SelectItem>
-                <SelectItem value="HIGH">Alta</SelectItem>
+                {Object.entries(PRIORITY).map(([value, config]) => (
+                  <SelectItem key={value} value={value}>
+                    {config.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
