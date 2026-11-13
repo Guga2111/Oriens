@@ -36,7 +36,3 @@ export interface Task {
 
 export type TaskDTO = Task;
 
-// Reexportado para consumidores ainda não migrados; a definição única vive em
-// `types/project.ts` (SPEC §10.3/P1.4).
-export type { ObjectiveDTO, ProjectDTO } from "./project";
-
