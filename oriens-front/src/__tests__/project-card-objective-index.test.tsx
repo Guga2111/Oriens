@@ -103,7 +103,7 @@ describe("ProjectCard — endereçamento de objetivo pelo índice original", () 
     renderCard();
 
     expect(screen.getByText("33%")).toBeInTheDocument();
-    expect(screen.getByText("1 de 4 objetivos")).toBeInTheDocument();
+    expect(screen.getByText("1 de 4 objetivos concluídos")).toBeInTheDocument();
   });
 
   it("não reserva placeholder quando o projeto não tem imagem", () => {

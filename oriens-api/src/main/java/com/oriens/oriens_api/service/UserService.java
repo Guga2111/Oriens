@@ -9,6 +9,7 @@ import java.util.List;
 public interface UserService {
 
     User getUser (Long id);
+    User updatePhoneNumber(Long id, String phoneNumber);
     User getUser(String email);
 
     UserPreferencesDTO getUserPreferences (Long id);

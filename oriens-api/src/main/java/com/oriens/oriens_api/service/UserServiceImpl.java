@@ -29,6 +29,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User updatePhoneNumber(Long id, String phoneNumber) {
+        User user = unwrapUser(userRepository.findById(id), id);
+        user.setPhoneNumber(phoneNumber);
+        return userRepository.save(user);
+    }
+
+    @Override
     public User getUser(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));

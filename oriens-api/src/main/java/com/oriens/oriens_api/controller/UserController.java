@@ -31,6 +31,18 @@ public class UserController {
         return new ResponseEntity<>(userService.getUser(id), HttpStatus.OK);
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<User> updatePhoneNumber(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        if (!body.containsKey("phoneNumber")) {
+            return ResponseEntity.badRequest().build();
+        }
+        Object value = body.get("phoneNumber");
+        if (value != null && (!(value instanceof String phone) || !phone.matches("\\+[1-9][0-9]{1,14}"))) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(userService.updatePhoneNumber(id, (String) value));
+    }
+
     @GetMapping
     public ResponseEntity<User> getUserByEmail (@RequestParam String email) {
         return new ResponseEntity<>(userService.getUser(email), HttpStatus.OK);

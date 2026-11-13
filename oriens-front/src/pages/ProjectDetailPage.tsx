@@ -9,7 +9,6 @@ import {
   Pencil,
   Plus,
   Star,
-  Target,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -60,6 +59,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import {
   Popover,
@@ -67,6 +67,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSidebarProjects } from "@/components/layout/AppLayout";
@@ -353,7 +354,7 @@ export default function ProjectDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 md:p-8">
+      <div className="mx-auto w-full max-w-[1264px] p-4 tabular-nums md:p-8">
         <Skeleton className="mb-3 h-4 w-48" />
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
@@ -365,9 +366,9 @@ export default function ProjectDetailPage() {
             <Skeleton className="h-10 w-10 rounded-full" />
           </div>
         </div>
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <Skeleton className="h-96 rounded-lg lg:col-span-2" />
-          <div className="space-y-6">
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <Skeleton className="h-80 rounded-lg" />
+          <div className="flex flex-col gap-6">
             <Skeleton className="h-44 rounded-lg" />
             <Skeleton className="h-72 rounded-lg" />
           </div>
@@ -378,7 +379,7 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="p-6 md:p-8">
+      <div className="mx-auto w-full max-w-[1264px] p-4 tabular-nums md:p-8">
         <Empty>
           <EmptyHeader>
             <EmptyTitle>Projeto não encontrado</EmptyTitle>
@@ -403,7 +404,7 @@ export default function ProjectDetailPage() {
 
   return (
     <>
-      <div className="p-6 md:p-8">
+      <div className="mx-auto w-full max-w-[1264px] p-4 tabular-nums md:p-8">
         <Breadcrumb className="mb-3">
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -420,19 +421,21 @@ export default function ProjectDetailPage() {
 
         <PageHeader
           title={
-            <span className="flex flex-wrap items-center gap-3">
+            <span className="flex items-start gap-3">
               <span
                 aria-hidden
                 className={cn(
-                  "h-2 w-2 shrink-0 rounded-full",
+                  "mt-3 size-2 shrink-0 rounded-full",
                   !project.color && "bg-muted-foreground"
                 )}
                 style={
                   project.color ? { backgroundColor: project.color } : undefined
                 }
               />
-              {project.title}
-              {project.archived && <Badge variant="outline">Arquivado</Badge>}
+              <span className="min-w-0 break-words">
+                {project.title}
+                {project.archived && <Badge variant="outline" className="ml-2">Arquivado</Badge>}
+              </span>
             </span>
           }
           description={project.description}
@@ -494,49 +497,57 @@ export default function ProjectDetailPage() {
           }
         />
 
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            <Card>
-              <CardHeader className="p-5 pb-3">
-                <CardTitle className="text-base">Objetivos</CardTitle>
+        {/* Desktop: 856px + 24px gutter + 320px rail = 1200px of content. */}
+        <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <section aria-labelledby="project-objectives" className="min-w-0">
+            <Card className="shadow-none">
+              <CardHeader className="p-5 pb-4">
+                <CardTitle className="text-base">
+                  <h2 id="project-objectives">Objetivos</h2>
+                </CardTitle>
                 <CardDescription>
-                  Acompanhe aqui todas as entregas do projeto.
+                  {stats.pending.length} {stats.pending.length === 1 ? "objetivo pendente" : "objetivos pendentes"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-5 pt-0">
-                <form
-                  onSubmit={handleAddObjective}
-                  className="flex flex-col gap-2 sm:flex-row"
-                >
-                  <Input
-                    placeholder="Adicionar novo objetivo..."
-                    value={newObjectiveTitle}
-                    onChange={(event) =>
-                      setNewObjectiveTitle(event.target.value)
-                    }
-                    disabled={isSubmittingObjective}
-                    aria-label="Novo objetivo"
-                  />
-                  <Button
-                    type="submit"
-                    disabled={
-                      isSubmittingObjective || !newObjectiveTitle.trim()
-                    }
-                  >
-                    {isSubmittingObjective ? (
-                      <Loader2
-                        className="mr-2 h-4 w-4 animate-spin"
-                        aria-hidden
+                <form onSubmit={handleAddObjective}>
+                  <FieldGroup>
+                    <Field orientation="horizontal" className="flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+                      <FieldLabel htmlFor="new-objective" className="sr-only">Novo objetivo</FieldLabel>
+                      <Input
+                        id="new-objective"
+                        placeholder="Qual é o próximo objetivo?"
+                        value={newObjectiveTitle}
+                        onChange={(event) =>
+                          setNewObjectiveTitle(event.target.value)
+                        }
+                        disabled={isSubmittingObjective}
+                        aria-label="Novo objetivo"
                       />
-                    ) : (
-                      <Plus className="mr-2 h-4 w-4" aria-hidden />
-                    )}
-                    Adicionar
-                  </Button>
+                      <Button
+                        type="submit"
+                        className="shrink-0"
+                        disabled={
+                          isSubmittingObjective || !newObjectiveTitle.trim()
+                        }
+                      >
+                        {isSubmittingObjective ? (
+                          <Loader2
+                            className="animate-spin"
+                            data-icon="inline-start"
+                            aria-hidden
+                          />
+                        ) : (
+                          <Plus data-icon="inline-start" aria-hidden />
+                        )}
+                        Adicionar
+                      </Button>
+                    </Field>
+                  </FieldGroup>
                 </form>
 
                 <Tabs defaultValue="pending" className="mt-4">
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList variant="line" aria-label="Status dos objetivos" className="w-full">
                     <TabsTrigger value="pending">
                       A fazer ({stats.pending.length})
                     </TabsTrigger>
@@ -547,11 +558,18 @@ export default function ProjectDetailPage() {
 
                   <TabsContent value="pending" className="mt-4">
                     {stats.pending.length === 0 ? (
-                      <p className="p-4 text-center text-sm text-muted-foreground">
-                        Nenhum objetivo pendente.
-                      </p>
+                      <Empty className="py-8">
+                        <EmptyHeader>
+                          <EmptyTitle>Nenhum objetivo pendente</EmptyTitle>
+                          <EmptyDescription>
+                            {project.objectives.length === 0
+                              ? "Adicione o primeiro objetivo para começar."
+                              : "Todos os objetivos deste projeto foram concluídos."}
+                          </EmptyDescription>
+                        </EmptyHeader>
+                      </Empty>
                     ) : (
-                      <ul className="space-y-1">
+                      <ul className="flex flex-col gap-2" aria-label="Objetivos pendentes">
                         {stats.pending.map(({ objective, index }) => (
                           <ObjectiveItem
                             key={`${index}-${objective.title}`}
@@ -569,11 +587,14 @@ export default function ProjectDetailPage() {
 
                   <TabsContent value="concluded" className="mt-4">
                     {stats.concluded.length === 0 ? (
-                      <p className="p-4 text-center text-sm text-muted-foreground">
-                        Nenhum objetivo concluído ainda.
-                      </p>
+                      <Empty className="py-8">
+                        <EmptyHeader>
+                          <EmptyTitle>Nenhum objetivo concluído ainda</EmptyTitle>
+                          <EmptyDescription>Os objetivos concluídos aparecerão aqui.</EmptyDescription>
+                        </EmptyHeader>
+                      </Empty>
                     ) : (
-                      <ul className="space-y-1">
+                      <ul className="flex flex-col gap-2" aria-label="Objetivos concluídos">
                         {stats.concluded.map(({ objective, index }) => (
                           <ObjectiveItem
                             key={`${index}-${objective.title}`}
@@ -591,18 +612,20 @@ export default function ProjectDetailPage() {
                 </Tabs>
               </CardContent>
             </Card>
-          </div>
+          </section>
 
-          <aside className="space-y-6 lg:col-span-1">
-            <Card>
+          <aside aria-label="Informações do projeto" className="flex min-w-0 flex-col gap-6">
+            <Card className="shadow-none">
               <CardHeader className="p-5 pb-3">
-                <CardTitle className="text-base">Resumo</CardTitle>
+                <CardTitle className="text-base">
+                  <h2>Resumo</h2>
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 p-5 pt-0">
+              <CardContent className="flex flex-col gap-5 p-5 pt-0">
                 <div>
-                  <div className="mb-2 flex items-center justify-between gap-2 text-sm">
-                    <span className="text-muted-foreground">Progresso</span>
-                    <span className="font-medium tabular-nums">
+                  <div className="mb-3 flex items-baseline justify-between gap-2">
+                    <span className="text-sm text-muted-foreground">Progresso</span>
+                    <span className="text-3xl font-normal tabular-nums">
                       {project.progress}%
                     </span>
                   </div>
@@ -611,41 +634,43 @@ export default function ProjectDetailPage() {
                     className="h-2"
                     aria-label={`Progresso: ${project.progress}%`}
                   />
-                  <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Target className="h-3.5 w-3.5" aria-hidden />
+                  <p className="mt-2 text-xs text-muted-foreground">
                     {stats.concluded.length} de {project.objectives.length}{" "}
-                    {project.objectives.length === 1 ? "objetivo" : "objetivos"}
+                    {project.objectives.length === 1 ? "objetivo concluído" : "objetivos concluídos"}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between gap-2 text-sm">
-                  <span className="text-muted-foreground">Próximo prazo</span>
-                  <span className="text-right font-medium">
-                    {stats.nextDeadline
-                      ? `${formatDue(stats.nextDeadline)} · ${formatDueDistance(
-                          stats.nextDeadline
-                        )}`
-                      : "—"}
-                  </span>
-                </div>
+                <dl className="flex flex-col gap-3 text-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-muted-foreground">Próximo prazo</dt>
+                    <dd className="text-right tabular-nums">
+                      {stats.nextDeadline
+                        ? <>
+                            <span>{formatDue(stats.nextDeadline)}</span>
+                            <span className="mt-0.5 block text-xs text-muted-foreground">{formatDueDistance(stats.nextDeadline)}</span>
+                          </>
+                        : "—"}
+                    </dd>
+                  </div>
 
-                <div className="flex items-center justify-between gap-2 text-sm">
-                  <span className="text-muted-foreground">Vencidos</span>
-                  <span
-                    className={cn(
-                      "font-medium tabular-nums",
-                      stats.overdue > 0 && "text-negative"
-                    )}
-                  >
-                    {stats.overdue}
-                  </span>
-                </div>
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <dt className="text-muted-foreground">Vencidos</dt>
+                    <dd
+                      className={cn(
+                        "tabular-nums",
+                        stats.overdue > 0 && "text-negative"
+                      )}
+                    >
+                      {stats.overdue}
+                    </dd>
+                  </div>
+                </dl>
               </CardContent>
-            </Card>
-
-            <Card>
+              <Separator />
               <CardHeader className="p-5 pb-3">
-                <CardTitle className="text-base">Calendário</CardTitle>
+                <CardTitle className="text-base">
+                  <h2>Calendário</h2>
+                </CardTitle>
                 <CardDescription>
                   Datas de vencimento dos objetivos
                 </CardDescription>
@@ -657,26 +682,32 @@ export default function ProjectDetailPage() {
                   locale={ptBR}
                   className="w-full p-0"
                   classNames={{
-                    caption_label:
-                      "text-xs font-medium xl:text-sm",
+                    months: "flex w-full flex-col",
+                    month: "flex w-full flex-col gap-3",
+                    caption: "relative flex h-10 items-center justify-center",
+                    caption_label: "text-sm font-medium",
                     table: "w-full border-collapse",
                     head_row: "flex w-full",
                     head_cell:
-                      "w-full flex-1 text-muted-foreground rounded-md font-normal text-[0.7rem] xl:text-[0.8rem]",
+                      "min-w-0 flex-1 text-center text-xs font-normal text-muted-foreground",
                     row: "flex w-full mt-2",
-                    cell: "h-9 flex-1 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-                    day: "h-9 w-full rounded-md p-0 font-normal hover:bg-accent hover:text-accent-foreground aria-selected:opacity-100",
+                    cell: "relative h-10 min-w-0 flex-1 p-0 text-center text-sm focus-within:relative focus-within:z-20",
+                    day: "h-10 w-full rounded-md p-0 font-normal hover:bg-accent hover:text-accent-foreground aria-selected:opacity-100",
+                  }}
+                  labels={{
+                    labelPrevious: () => "Mês anterior",
+                    labelNext: () => "Próximo mês",
                   }}
                 />
               </CardContent>
             </Card>
 
             {project.imageUrl && (
-              <Card>
-                <CardContent className="p-4">
+              <Card className="overflow-hidden shadow-none">
+                <CardContent className="p-0">
                   <AspectRatio
                     ratio={16 / 9}
-                    className="overflow-hidden rounded-md border bg-muted"
+                    className="overflow-hidden bg-muted"
                   >
                     <img
                       src={project.imageUrl}

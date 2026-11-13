@@ -44,7 +44,7 @@ export function AppLayout() {
           <AppHeader />
           {/* Loading e erro das páginas acontecem dentro deste Outlet,
               nunca substituindo o shell (SPEC §10.2). */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto [&>div]:mx-auto [&>div]:w-full [&>div]:px-4 [&>div]:md:px-6 [&>div]:lg:px-8 [&>div>div]:mx-auto">
             <Outlet />
           </div>
         </SidebarInset>

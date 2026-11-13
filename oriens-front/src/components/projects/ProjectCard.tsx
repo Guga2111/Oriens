@@ -3,16 +3,15 @@ import { Link } from "react-router-dom";
 import {
   Archive,
   ArchiveRestore,
+  ArrowUpRight,
   MoreHorizontal,
   Pencil,
   Star,
-  Target,
   Trash2,
   UploadCloud,
 } from "lucide-react";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -180,35 +179,31 @@ export function ProjectCard({
   };
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="p-5 pb-3">
-        {project.imageUrl && (
-          <AspectRatio
-            ratio={16 / 9}
-            className="mb-4 overflow-hidden rounded-md border bg-muted"
-          >
-            <img
-              src={project.imageUrl}
-              alt={project.title}
-              className="h-full w-full object-cover"
-            />
-          </AspectRatio>
-        )}
-
+    <Card className="flex flex-col shadow-none">
+      {project.imageUrl && (
+        <div className="mx-5 mt-5 h-36 overflow-hidden rounded-md bg-muted">
+          <img
+            src={project.imageUrl}
+            alt={project.title}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      )}
+      <CardHeader className="p-5 pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
               <span
                 aria-hidden
                 className={cn(
-                  "h-2 w-2 shrink-0 rounded-full",
+                  "mt-2 size-2 shrink-0 rounded-full",
                   !project.color && "bg-muted-foreground"
                 )}
                 style={
                   project.color ? { backgroundColor: project.color } : undefined
                 }
               />
-              <h2 className="min-w-0 text-base font-semibold leading-6">
+              <h2 className="min-w-0 text-lg font-semibold leading-6">
                 <Link
                   to={`/tasks/project/${project.id}`}
                   className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 max-md:inline-flex max-md:min-h-10 max-md:items-center"
@@ -294,7 +289,10 @@ export function ProjectCard({
       <CardContent className="flex flex-1 flex-col p-5 pt-0">
         <div>
           <div className="mb-2 flex items-center justify-between gap-2 text-sm">
-            <span className="text-muted-foreground">Progresso</span>
+            <span className="text-muted-foreground">
+              {objectivesCountLabel(completedObjectivesCount, project.objectives.length)}
+              {" "}{project.objectives.length === 1 ? "concluído" : "concluídos"}
+            </span>
             <span className="tabular-nums">{project.progress}%</span>
           </div>
           <Progress
@@ -302,17 +300,10 @@ export function ProjectCard({
             className="h-2"
             aria-label={`Progresso: ${project.progress}%`}
           />
-          <p className="mt-2 text-xs text-muted-foreground">
-            {objectivesCountLabel(
-              completedObjectivesCount,
-              project.objectives.length
-            )}
-          </p>
         </div>
 
-        <div className="mt-4 flex-1">
+        <div className="mt-5 flex-1">
           <h3 className="mb-2 flex items-center gap-2 text-sm font-medium">
-            <Target className="h-4 w-4 text-primary" aria-hidden />
             Próximos objetivos
           </h3>
 
@@ -333,14 +324,16 @@ export function ProjectCard({
               ))}
             </ul>
           )}
-
-          {hasMoreObjectives && (
-            <Button asChild variant="link" className="mt-1 h-auto p-0">
-              <Link to={`/tasks/project/${project.id}`}>Ver todos</Link>
-            </Button>
-          )}
         </div>
       </CardContent>
+      <CardFooter className="justify-end px-5 pb-4 pt-0">
+        <Button asChild variant="ghost" size="sm">
+          <Link to={`/tasks/project/${project.id}`}>
+            {hasMoreObjectives ? "Ver todos os objetivos" : "Ver projeto"}
+            <ArrowUpRight aria-hidden />
+          </Link>
+        </Button>
+      </CardFooter>
 
       <input
         type="file"

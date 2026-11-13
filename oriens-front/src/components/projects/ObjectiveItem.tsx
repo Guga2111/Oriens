@@ -55,11 +55,11 @@ export function ObjectiveItem({
   const hasMenu = !!onEdit || !!onDelete;
 
   return (
-    <li className="flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted/50">
+    <li className="flex items-start gap-2 rounded-lg px-1 py-1 transition-colors hover:bg-muted/50">
       <Button
         variant="ghost"
         size="icon"
-        className="mt-0.5 h-10 w-10 shrink-0 rounded-full md:h-7 md:w-7"
+        className="size-10 shrink-0 rounded-full md:size-8"
         onClick={() => onToggleStatus(index)}
         disabled={isUpdating}
         aria-pressed={isConcluded}
@@ -78,10 +78,10 @@ export function ObjectiveItem({
         )}
       </Button>
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 py-2 md:py-1.5">
         <p
           className={cn(
-            "text-sm font-medium leading-5",
+            "break-words text-sm font-medium leading-5",
             isConcluded && "line-through text-muted-foreground"
           )}
         >
