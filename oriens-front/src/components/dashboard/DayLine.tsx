@@ -27,7 +27,8 @@ interface DayLineProps {
 /**
  * Faixa de 06h a 24h com uma marca por tarefa (SPEC §11.1). Cada marca é um
  * `<button>` que rola até a linha da tarefa e a foca. A linha "agora" só
- * aparece quando a data é a de hoje; abaixo de 640 px a faixa fica oculta.
+ * aparece quando a data é a de hoje. Abaixo de 640 px vira uma faixa compacta
+ * de 40 px, só com marcas e a linha "agora" (SPEC §11.1).
  */
 export function DayLine({ tasks, date }: DayLineProps) {
   const isToday = isSameDay(date, new Date());
@@ -58,7 +59,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
     <div
       role="list"
       aria-label="Linha do dia"
-      className="relative mt-6 hidden h-16 overflow-hidden rounded-lg border bg-card sm:block"
+      className="relative mt-6 h-10 overflow-hidden rounded-lg border bg-card sm:h-16"
     >
       <div aria-hidden className="absolute inset-0 grid grid-cols-3">
         <div className="bg-muted/40" />
@@ -68,7 +69,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-1 grid grid-cols-3 text-center text-[11px] uppercase tracking-wide text-muted-foreground"
+        className="pointer-events-none absolute inset-x-0 top-1 hidden grid-cols-3 text-center text-[11px] uppercase tracking-wide text-muted-foreground sm:grid"
       >
         <span>Manhã</span>
         <span>Tarde</span>
@@ -77,7 +78,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-1 flex justify-between px-2 text-[11px] tabular-nums text-muted-foreground"
+        className="pointer-events-none absolute inset-x-0 bottom-1 hidden justify-between px-2 text-[11px] tabular-nums text-muted-foreground sm:flex"
       >
         <span>06</span>
         <span>12</span>
@@ -97,7 +98,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
           <button
             key={task.id}
             type="button"
-            className="absolute top-1/2 z-10 flex h-6 w-6 items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="absolute top-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-6 sm:w-6"
             style={{
               left: `${position}%`,
               transform:
@@ -135,7 +136,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
           />
           <span
             aria-hidden
-            className="absolute top-0 z-20 -translate-x-1/2 rounded bg-card px-1 text-[10px] font-medium text-foreground"
+            className="absolute top-0 z-20 hidden -translate-x-1/2 rounded bg-card px-1 text-xs font-medium text-foreground sm:block"
             style={{ left: `${Math.min(94, Math.max(6, nowPosition))}%` }}
           >
             agora

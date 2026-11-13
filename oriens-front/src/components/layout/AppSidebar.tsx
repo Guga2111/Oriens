@@ -173,7 +173,12 @@ export function AppSidebar({ projectsVersion = 0 }: AppSidebarProps) {
 
   const renderNavItem = (item: NavItem) => (
     <SidebarMenuItem key={item.title}>
-      <SidebarMenuButton asChild isActive={isActive(item)} tooltip={item.title}>
+      <SidebarMenuButton
+        asChild
+        isActive={isActive(item)}
+        tooltip={item.title}
+        className="max-md:h-10"
+      >
         <NavLink to={item.url} end={!item.isActive}>
           <item.icon />
           <span>{item.title}</span>

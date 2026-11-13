@@ -2,14 +2,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ResponsiveDialog } from '@/components/common/ResponsiveDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -132,16 +125,29 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
   const selectedTag = tags.find(tag => tag.id?.toString() === tagId);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Nova Entrada</DialogTitle>
-          <DialogDescription>
-            Adicione uma nova receita ou despesa financeira.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Nova Entrada"
+      description="Adicione uma nova receita ou despesa financeira."
+      className="sm:max-w-[500px]"
+      footer={
+        <>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+          >
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmit} disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Criar Entrada
+          </Button>
+        </>
+      }
+    >
+        <div className="space-y-4">
           {/* Valor */}
           <div className="space-y-2">
             <Label htmlFor="amount">
@@ -339,21 +345,6 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
             )}
           </div>
         </div>
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-          >
-            Cancelar
-          </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Criar Entrada
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

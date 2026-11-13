@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/common/ResponsiveDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -91,15 +91,20 @@ export function CreateTaskDialog({ open, onOpenChange, onTaskCreated, defaultDat
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Criar Nova Tarefa</DialogTitle>
-          <DialogDescription>
-            Preencha os detalhes abaixo para adicionar uma nova tarefa ao seu dia.
-          </DialogDescription>
-        </DialogHeader>
-        <form id="create-task-form" onSubmit={handleSubmit} className="grid gap-4 py-4">
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Criar Nova Tarefa"
+      description="Preencha os detalhes abaixo para adicionar uma nova tarefa ao seu dia."
+      className="sm:max-w-[425px]"
+      footer={
+        <Button type="submit" form="create-task-form" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Salvar Tarefa
+        </Button>
+      }
+    >
+      <form id="create-task-form" onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="title">Título</Label>
             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Ex: Reunião de alinhamento semanal" />
@@ -154,13 +159,6 @@ export function CreateTaskDialog({ open, onOpenChange, onTaskCreated, defaultDat
             </Select>
           </div>
         </form>
-        <DialogFooter>
-          <Button type="submit" form="create-task-form" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Salvar Tarefa
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

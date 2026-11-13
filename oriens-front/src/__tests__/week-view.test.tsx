@@ -86,4 +86,23 @@ describe("WeekView — grade semanal", () => {
     expect(screen.getByText("Tarefa da semana")).toBeInTheDocument();
     expect(screen.getAllByText("Sem tarefas")).toHaveLength(6);
   });
+
+  it("abaixo de 1024 vira agenda vertical com TaskRow (SPEC §11.2)", () => {
+    const originalWidth = window.innerWidth;
+    window.innerWidth = 390;
+
+    try {
+      renderWeek();
+
+      expect(
+        screen.getByRole("region", { name: "Agenda semanal" })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("checkbox", { name: /Concluir Tarefa da semana/ })
+      ).toBeInTheDocument();
+      expect(screen.getAllByText("Sem tarefas")).toHaveLength(6);
+    } finally {
+      window.innerWidth = originalWidth;
+    }
+  });
 });

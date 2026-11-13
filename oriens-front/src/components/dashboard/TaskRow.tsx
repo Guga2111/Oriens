@@ -99,6 +99,7 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
     >
       <div className="-m-2 flex h-10 w-10 shrink-0 items-center justify-center">
         <Checkbox
+          className="relative after:absolute after:-inset-3 after:content-['']"
           checked={isConcluded ? true : isOnDoing ? "indeterminate" : false}
           onCheckedChange={handleToggle}
           disabled={isUpdating}
@@ -164,7 +165,7 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-10 w-10 md:h-8 md:w-8"
             aria-label={`Ações da tarefa ${task.title}`}
             disabled={isUpdating}
           >

@@ -67,7 +67,7 @@ export function TaskSection({
       ) : (
         <div className="flex items-center gap-3 py-3 text-sm text-muted-foreground">
           <span>{emptyLabel}</span>
-          <Button variant="ghost" size="sm" onClick={onAddTask}>
+          <Button variant="ghost" size="sm" className="max-md:h-10" onClick={onAddTask}>
             Adicionar
           </Button>
         </div>

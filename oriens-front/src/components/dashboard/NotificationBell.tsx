@@ -116,7 +116,7 @@ const handleMarkAllAsRead = async () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
+        <Button variant="outline" size="icon" className="relative h-10 w-10">
           <Bell className="h-5 w-5" />
           {hasUnread && (
             <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-primary" />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveDialog } from "@/components/common/ResponsiveDialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -117,15 +117,20 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[525px]">
-        <DialogHeader className="px-1">
-          <DialogTitle>{isEditMode ? "Editar Projeto" : "Criar Novo Projeto"}</DialogTitle>
-          <DialogDescription>
-            Preencha os detalhes abaixo.
-          </DialogDescription>
-        </DialogHeader>
-        <form id="project-form" onSubmit={handleSubmit} className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto px-1">
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEditMode ? "Editar Projeto" : "Criar Novo Projeto"}
+      description="Preencha os detalhes abaixo."
+      className="sm:max-w-[525px]"
+      footer={
+        <Button type="submit" form="project-form" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isEditMode ? "Salvar Alterações" : "Criar Projeto"}
+        </Button>
+      }
+    >
+        <form id="project-form" onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="title">Título do Projeto</Label>
             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -168,13 +173,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
             </Button>
           </div>
         </form>
-        <DialogFooter>
-          <Button type="submit" form="project-form" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEditMode ? "Salvar Alterações" : "Criar Projeto"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }
