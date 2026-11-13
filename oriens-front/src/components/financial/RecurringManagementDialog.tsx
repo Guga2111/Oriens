@@ -25,6 +25,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { EntryDTO, TagDTO, RecurrencePatternLabels } from '@/types/financial';
 import { getRecurringEntries, deleteEntry } from '@/services/financialService';
+import { FieldError } from '@/components/ui/field';
+import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 interface RecurringManagementDialogProps {
@@ -46,6 +48,7 @@ export function RecurringManagementDialog({
 }: RecurringManagementDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [recurringEntries, setRecurringEntries] = useState<EntryDTO[]>([]);
+  const [error, setError] = useState('');
   const [deletingEntry, setDeletingEntry] = useState<EntryDTO | null>(null);
 
   useEffect(() => {
@@ -55,14 +58,13 @@ export function RecurringManagementDialog({
   }, [open, userId]);
 
   const loadRecurringEntries = async () => {
+    setError('');
     setIsLoading(true);
     try {
       const entries = await getRecurringEntries(userId);
       setRecurringEntries(entries);
     } catch (error) {
-      toast.error('Erro ao carregar recorrencias', {
-        description: 'Nao foi possivel carregar as entradas recorrentes.',
-      });
+      setError('Não foi possível carregar as entradas recorrentes.');
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +73,7 @@ export function RecurringManagementDialog({
   const handleDelete = async () => {
     if (!deletingEntry) return;
 
+    setError('');
     setIsLoading(true);
     try {
       await deleteEntry(userId, deletingEntry.id!);
@@ -81,9 +84,7 @@ export function RecurringManagementDialog({
       await loadRecurringEntries();
       onEntriesChange();
     } catch (error) {
-      toast.error('Erro ao excluir recorrencia', {
-        description: error.response?.data?.message || 'Ocorreu um erro ao excluir a entrada.',
-      });
+      setError('Não foi possível excluir a entrada recorrente. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
@@ -98,12 +99,6 @@ export function RecurringManagementDialog({
     return tags.find(tag => tag.id === tagId);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(Math.abs(value));
-  };
 
   return (
     <>
@@ -118,6 +113,7 @@ export function RecurringManagementDialog({
 
           <ScrollArea className="max-h-[60vh] pr-4">
             <div className="space-y-4 py-4">
+              {error && <FieldError>{error}</FieldError>}
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -150,7 +146,7 @@ export function RecurringManagementDialog({
                                 isExpense ? 'text-red-500' : 'text-green-500'
                               )}
                             >
-                              {isExpense ? '-' : '+'} {formatCurrency(entry.amount)}
+                              {isExpense ? '-' : '+'} {formatCurrency(Math.abs(entry.amount))}
                             </span>
                             {tag && (
                               <Badge style={{ backgroundColor: tag.color }}>
@@ -181,6 +177,7 @@ export function RecurringManagementDialog({
                           <Button
                             size="icon"
                             variant="ghost"
+                            aria-label={`Editar recorrência ${entry.description || "entrada"}`}
                             onClick={() => handleEdit(entry)}
                             disabled={isLoading}
                           >
@@ -189,6 +186,7 @@ export function RecurringManagementDialog({
                           <Button
                             size="icon"
                             variant="ghost"
+                            aria-label={`Excluir recorrência ${entry.description || "entrada"}`}
                             onClick={() => setDeletingEntry(entry)}
                             disabled={isLoading}
                           >
@@ -214,10 +212,11 @@ export function RecurringManagementDialog({
               automaticamente nao serao afetadas, mas novas entradas nao serao mais criadas.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {error && <FieldError>{error}</FieldError>}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
+              onClick={(event) => { event.preventDefault(); void handleDelete(); }}
               disabled={isLoading}
               className="bg-red-500 hover:bg-red-600"
             >

@@ -7,11 +7,14 @@ type PlaceResult = google.maps.places.PlaceResult;
 type PlacesServiceStatus = google.maps.places.PlacesServiceStatus;
 
 interface LocationInputProps {
+  id?: string;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
   isLoaded: boolean;
   onPlaceSelect: (place: { address: string; latitude: number; longitude: number; }) => void;
 }
 
-export function LocationInput({ isLoaded, onPlaceSelect }: LocationInputProps) {
+export function LocationInput({ isLoaded, onPlaceSelect, ...inputProps }: LocationInputProps) {
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<AutocompletePrediction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,12 +81,13 @@ export function LocationInput({ isLoaded, onPlaceSelect }: LocationInputProps) {
   };
 
   if (!isLoaded) {
-    return <Input disabled placeholder="Carregando mapa..." />;
+    return <Input {...inputProps} disabled placeholder="Carregando mapa..." />;
   }
 
   return (
     <div className="relative">
       <Input
+        {...inputProps}
         type="text"
         value={inputValue}
         onChange={handleInputChange}

@@ -19,7 +19,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { isAxiosError } from 'axios';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -114,9 +115,9 @@ export function TagManagementDialog({
       await loadTags();
       onTagsChange();
     } catch (error) {
-      toast.error('Erro ao criar tag', {
-        description: error.response?.data?.message || 'Ocorreu um erro ao criar a tag.',
-      });
+      setFormErrors({ submit: isAxiosError(error) && error.response?.status === 403
+        ? 'Você não tem permissão para criar tags. Tente novamente quando o serviço estiver disponível.'
+        : 'Não foi possível criar a tag. Tente novamente.' });
     } finally {
       setIsLoading(false);
     }
@@ -135,9 +136,7 @@ export function TagManagementDialog({
       await loadTags();
       onTagsChange();
     } catch (error) {
-      toast.error('Erro ao atualizar tag', {
-        description: error.response?.data?.message || 'Ocorreu um erro ao atualizar a tag.',
-      });
+      setFormErrors({ submit: 'Não foi possível atualizar a tag. Tente novamente.' });
     } finally {
       setIsLoading(false);
     }
@@ -165,6 +164,7 @@ export function TagManagementDialog({
   };
 
   const startEdit = (tag: TagDTO) => {
+    setFormErrors({});
     setEditingTag(tag);
     setFormName(tag.name);
     setFormColor(tag.color);
@@ -172,6 +172,7 @@ export function TagManagementDialog({
   };
 
   const startCreate = () => {
+    setFormErrors({});
     setIsCreating(true);
     setEditingTag(null);
     setFormName('');
@@ -243,26 +244,30 @@ export function TagManagementDialog({
                 {/* Form de Criar/Editar */}
                 {(isCreating || editingTag) && (
                   <div className="p-4 border rounded-lg mb-3 space-y-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="tag-name">Nome</Label>
+                    <Field data-invalid={Boolean(formErrors.name)}>
+                      <FieldLabel htmlFor="tag-name">Nome</FieldLabel>
                       <Input
                         id="tag-name"
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
-                        className={cn(formErrors.name && 'border-red-500')}
+                        className={cn(formErrors.name && 'border-destructive')}
+                        aria-invalid={Boolean(formErrors.name)}
+                        aria-describedby={formErrors.name ? 'tag-name-error' : undefined}
                         placeholder="Nome da tag"
                       />
                       {formErrors.name && (
-                        <p className="text-xs text-red-500">{formErrors.name}</p>
+                        <FieldError id="tag-name-error">{formErrors.name}</FieldError>
                       )}
-                    </div>
+                    </Field>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="tag-color">Cor</Label>
+                    <Field data-invalid={Boolean(formErrors.color)}>
+                      <FieldLabel htmlFor="tag-color">Cor</FieldLabel>
                       <div className="flex gap-2">
                         <Input
                           id="tag-color"
                           type="color"
+                          aria-invalid={Boolean(formErrors.color)}
+                          aria-describedby={formErrors.color ? "tag-color-error" : undefined}
                           value={formColor}
                           onChange={(e) => setFormColor(e.target.value)}
                           className="w-20 h-10"
@@ -270,14 +275,18 @@ export function TagManagementDialog({
                         <Input
                           value={formColor}
                           onChange={(e) => setFormColor(e.target.value)}
-                          className={cn('flex-1', formErrors.color && 'border-red-500')}
+                          className={cn('min-w-0 flex-1', formErrors.color && 'border-destructive')}
+                          aria-label="Código da cor"
+                          aria-invalid={Boolean(formErrors.color)}
+                          aria-describedby={formErrors.color ? 'tag-color-error' : undefined}
                           placeholder="#000000"
                         />
                       </div>
                       {formErrors.color && (
-                        <p className="text-xs text-red-500">{formErrors.color}</p>
+                        <FieldError id="tag-color-error">{formErrors.color}</FieldError>
                       )}
-                    </div>
+                    </Field>
+                    {formErrors.submit && <FieldError>{formErrors.submit}</FieldError>}
 
                     <div className="flex gap-2">
                       <Button
@@ -320,6 +329,7 @@ export function TagManagementDialog({
                           <Button
                             size="icon"
                             variant="ghost"
+                            aria-label={`Editar tag ${tag.name}`}
                             onClick={() => startEdit(tag)}
                             disabled={isLoading}
                           >
@@ -328,6 +338,7 @@ export function TagManagementDialog({
                           <Button
                             size="icon"
                             variant="ghost"
+                            aria-label={`Excluir tag ${tag.name}`}
                             onClick={() => setDeletingTag(tag)}
                             disabled={isLoading}
                           >
