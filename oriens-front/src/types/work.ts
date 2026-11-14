@@ -57,3 +57,23 @@ export type TaskCreation = Omit<TaskPatch, 'version' | 'targetProjectVersion' | 
 export interface ProjectTotals { totalProjects: number; activeProjects: number; favoriteProjects: number; archivedProjects: number }
 export interface WeeklyResponse { startDate: string; endDate: string; timezone: string; completedTasks: number; totalTasks: number }
 export type SidebarProject = Pick<WorkProject, 'id' | 'title' | 'color' | 'mode' | 'favorite' | 'archived' | 'lastAccessed' | 'version'>;
+
+export interface ProjectCreation {
+  title: string; mode: WorkProject['mode']; description?: string | null; color?: string | null;
+  objectives?: { title: string; dueDate: string | null }[];
+}
+export interface DeletionPreview { projectVersion: number; objectiveCount: number; columnCount: number; taskCount: number }
+export type ProjectWrite =
+  | { action: 'create'; body: ProjectCreation; key: string }
+  | { action: 'metadata'; id: number; body: { version: number; title: string; description: string | null; color: string | null } }
+  | { action: 'convert'; id: number; version: number }
+  | { action: 'delete'; id: number; version: number }
+  | { action: 'picture'; id: number; version: number; file: File }
+  | { action: 'objective-create'; id: number; body: { projectVersion: number; title: string; dueDate: string | null }; key: string }
+  | { action: 'objective-patch'; id: number; objectiveId: number; body: { version: number; title?: string; dueDate?: string | null; status?: WorkObjective['status'] } }
+  | { action: 'objective-delete'; id: number; objective: WorkObjective; projectVersion: number }
+  | { action: 'column-create'; id: number; body: { projectVersion: number; name: string; kind: TaskStatus }; key: string }
+  | { action: 'column-patch'; id: number; columnId: number; body: { projectVersion: number; version: number; name: string; kind: TaskStatus } }
+  | { action: 'column-order'; id: number; body: { projectVersion: number; columnIds: number[] } }
+  | { action: 'defaults'; id: number; body: { projectVersion: number; pendingColumnId: number; completedColumnId: number } }
+  | { action: 'column-remove'; id: number; columnId: number; body: { projectVersion: number; targetColumnId?: number; replacementPendingColumnId?: number; replacementCompletedColumnId?: number } };

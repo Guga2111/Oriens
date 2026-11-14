@@ -1,0 +1,26 @@
+TASTESKILL · INSPECT   http://127.0.0.1:4183/tasks/project/10?tab=objectives&theme=light
+
+MEASURED (first viewport listed)
+  hero headline   "Site pessoal"  2 words · 1 line(s) · 24px (1.7vw) · Inter 600 · tracking 0em · leading 1.33
+  @768px          1 line(s) · 24px
+  @390px          1 line(s) · 24px
+  typefaces       Inter 100%
+  sizes in use    12 / 14 / 16 / 18 / 24 px   body 14px / 1.43
+  colour          page #f7f4ed · sections #f7f4ed #fcfcf8 · button #eeebe1
+  page            1.3 screens · 110 words · 0 images · hero media none
+  headings        0 · longest 0 line(s) · median - words
+
+WARN — fix, or be able to defend
+  [icon-chips] @1440px (+768, 390)  4 icons sit in tinted squares or circles.
+      → This is the commonest tell of a generated dashboard. Drop the tinted square: a KPI is a label and a number; an icon, if it helps, is plain and in the text colour.
+
+LOOK AT THE RENDER — open these with your image viewer / Read tool before saying anything about quality:
+  desktop 1440px  docs/screenshots/projects-refactor/p4/final/objectives-light/desktop-fold.jpg
+                  docs/screenshots/projects-refactor/p4/final/objectives-light/desktop-page-01.jpg
+  tablet 768px    docs/screenshots/projects-refactor/p4/final/objectives-light/tablet-fold.jpg
+                  docs/screenshots/projects-refactor/p4/final/objectives-light/tablet-page-01.jpg
+  mobile 390px    docs/screenshots/projects-refactor/p4/final/objectives-light/mobile-fold.jpg
+                  docs/screenshots/projects-refactor/p4/final/objectives-light/mobile-page-01.jpg
+
+report: docs/screenshots/projects-refactor/p4/final/objectives-light/report.json
+RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md.

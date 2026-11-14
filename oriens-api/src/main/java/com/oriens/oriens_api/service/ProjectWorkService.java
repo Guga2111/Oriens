@@ -273,7 +273,8 @@ public class ProjectWorkService {
         boolean structural = transfer || command.has("columnId") || command.has("status") || command.has("beforeTaskId");
         if (originalProjectId != null) version(locked.get(originalProjectId).getVersion(), command.getProjectVersion());
         if (structural) {
-            if (transfer && target != null) version(target.getVersion(), command.getTargetProjectVersion());
+            if (transfer && target != null) version(target.getVersion(), originalProjectId == null
+                ? command.getProjectVersion() : command.getTargetProjectVersion());
         }
         if (transfer) {
             task.setProjectId(targetProjectId);

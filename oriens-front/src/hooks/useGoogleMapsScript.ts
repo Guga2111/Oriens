@@ -17,6 +17,8 @@ export function useGoogleMapsScript(options: UseGoogleMapsScriptOptions) {
       return;
     }
 
+    if (!options.apiKey) return;
+
     const existingScript = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
     if (existingScript) {
       const handleLoad = () => setIsLoaded(true);

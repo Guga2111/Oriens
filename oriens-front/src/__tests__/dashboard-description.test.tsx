@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react";
+import { renderWork as render } from './work-fixtures';
+import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardPage } from "@/pages/DashboardPage";
 import apiClient from "@/services/api";

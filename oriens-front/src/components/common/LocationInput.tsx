@@ -85,13 +85,12 @@ export function LocationInput({ isLoaded, onPlaceSelect, ...inputProps }: Locati
   }
 
   return (
-    <div className="relative">
+    <div className="relative" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setSuggestions([]); }}>
       <Input
         {...inputProps}
         type="text"
         value={inputValue}
         onChange={handleInputChange}
-        onBlur={() => setTimeout(() => setSuggestions([]), 200)}
         placeholder="Digite um endereço..."
         disabled={isLoading}
       />
@@ -103,7 +102,8 @@ export function LocationInput({ isLoaded, onPlaceSelect, ...inputProps }: Locati
             <button
               key={suggestion.place_id}
               type="button"
-              onMouseDown={() => handleSuggestionClick(suggestion.place_id)}
+              onMouseDown={event => event.preventDefault()}
+              onClick={() => handleSuggestionClick(suggestion.place_id)}
               className="w-full text-left p-2 hover:bg-muted text-sm"
             >
               {suggestion.description}

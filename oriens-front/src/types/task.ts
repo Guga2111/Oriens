@@ -29,6 +29,7 @@ export interface Task {
   plannedDate?: string | null;
   projectId?: number | null;
   version?: number;
+  project?: { id: number; title: string; archived: boolean; version: number } | null;
   /** `yyyy-MM-dd` — data local, sem `toISOString`. */
   dueDate: string | null;
   completedAt?: string;

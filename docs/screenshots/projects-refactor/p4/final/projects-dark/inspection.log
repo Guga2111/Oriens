@@ -1,0 +1,26 @@
+TASTESKILL · INSPECT   http://127.0.0.1:4183/projects?theme=dark
+
+MEASURED (first viewport listed)
+  hero headline   "Projetos"  1 words · 1 line(s) · 24px (1.7vw) · Inter 600 · tracking 0em · leading 1.33
+  @768px          1 line(s) · 24px
+  @390px          1 line(s) · 24px
+  typefaces       Inter 100%
+  sizes in use    12 / 14 / 18 / 24 px   body 14px / 1.43
+  colour          page #24181a · sections #24181a · button #24181a
+  page            1 screens · 115 words · 0 images · hero media none
+  headings        0 · longest 0 line(s) · median - words
+
+WARN — fix, or be able to defend
+  [panel-void] @1440px  1 card(s) hold a blank band inside: 52px in "Aprender fotografia".
+      → A card stretches to its neighbour only when it has content to fill. Keep a legend or a note directly under its chart (only an action or a total may sit at a stretched card's foot), let a short card keep its own height (align-items: start), and let a filtered block shrink to its rows.
+
+LOOK AT THE RENDER — open these with your image viewer / Read tool before saying anything about quality:
+  desktop 1440px  docs/screenshots/projects-refactor/p4/final/projects-dark/desktop-fold.jpg
+                  docs/screenshots/projects-refactor/p4/final/projects-dark/desktop-page-01.jpg
+  tablet 768px    docs/screenshots/projects-refactor/p4/final/projects-dark/tablet-fold.jpg
+                  docs/screenshots/projects-refactor/p4/final/projects-dark/tablet-page-01.jpg
+  mobile 390px    docs/screenshots/projects-refactor/p4/final/projects-dark/mobile-fold.jpg
+                  docs/screenshots/projects-refactor/p4/final/projects-dark/mobile-page-01.jpg
+
+report: docs/screenshots/projects-refactor/p4/final/projects-dark/report.json
+RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md.

@@ -41,6 +41,11 @@ class ObserverStub {
 vi.stubGlobal("ResizeObserver", ObserverStub);
 vi.stubGlobal("IntersectionObserver", ObserverStub);
 
+// Radix Select uses pointer capture, which jsdom does not implement.
+Element.prototype.hasPointerCapture = () => false;
+Element.prototype.setPointerCapture = () => {};
+Element.prototype.releasePointerCapture = () => {};
+
 // jsdom não implementa scrollIntoView.
 Element.prototype.scrollIntoView = () => {};
 

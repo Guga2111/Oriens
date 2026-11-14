@@ -117,6 +117,23 @@ class WorkApiPostgresTest {
             .startTime(time == null ? null : LocalTime.parse(time)).status(status)
             .completedAt(status == com.oriens.oriens_api.entity.enums.Status.CONCLUDED ? LocalDate.of(2026,11,13) : null).build()));
     }
+    @Test void p4AttachStandaloneUsesDestinationProjectVersionAndTransfersRequireBoth() throws Exception {
+        JsonNode p = project("DEVELOPMENT"), destination = project("DEVELOPMENT"), t = task((JsonNode) null);
+        long id = t.path("id").asLong();
+        String attach = "{\"version\":"+t.path("version")+",\"projectId\":"+p.path("id")
+            +",\"projectVersion\":"+p.path("version")+",\"columnId\":"+p.path("defaultPendingColumnId")+"}";
+        JsonNode linked = body(send("PATCH", "/task/"+id, attach, null, token, 200)).path("task");
+        assertThat(linked.path("projectId")).isEqualTo(p.path("id"));
+        assertThat(linked.path("plannedDate")).isEqualTo(t.path("plannedDate"));
+        assertThat(linked.path("dueDate")).isEqualTo(t.path("dueDate"));
+        String transfer = "{\"version\":"+linked.path("version")+",\"projectVersion\":"+project(p.path("id").asLong()).path("version")
+            +",\"projectId\":"+destination.path("id")+",\"columnId\":"+destination.path("defaultPendingColumnId");
+        send("PATCH", "/task/"+id, transfer+"}", null, token, 428);
+        JsonNode moved = body(send("PATCH", "/task/"+id, transfer+",\"targetProjectVersion\":"+destination.path("version")+"}", null, token, 200)).path("task");
+        assertThat(moved.path("projectId")).isEqualTo(destination.path("id"));
+        assertThat(moved.path("id")).isEqualTo(t.path("id"));
+    }
+
     @Test void p3DayPartitionsInRecifeWithoutDuplicatesAndRangeUsesPlan() throws Exception {
         var pending = com.oriens.oriens_api.entity.enums.Status.PENDING;
         var today = fixtureTask("Hoje e vencida","2026-11-13","2026-11-01",null,pending);

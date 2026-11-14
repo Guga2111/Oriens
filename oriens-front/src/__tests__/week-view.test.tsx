@@ -1,4 +1,6 @@
-import { render, screen } from "@testing-library/react";
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7 }) }));
+import { renderWork as render } from './work-fixtures';
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { addDays, format, isSameDay, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";

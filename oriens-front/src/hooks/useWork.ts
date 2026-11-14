@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query';
 import { productNow } from '@/lib/product-time';
 import { getDashboardData } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -6,7 +6,7 @@ import { taskService } from '@/services/taskService';
 import { projectService, type BoardFilters } from '@/services/projectService';
 import type { TaskFilters } from '@/services/taskService';
 import type { ProjectFilters } from '@/services/projectService';
-import type { TaskPatch, TaskCreation, TaskMutation, TaskDeletion, WorkTask, WorkProject } from '@/types/work';
+import type { TaskPatch, TaskCreation, TaskMutation, TaskDeletion, WorkTask, WorkProject, ProjectWrite, SidebarProject } from '@/types/work';
 
 export const workKey = (user: number | null, family: string, ...params: unknown[]) => ['work', user, family, ...params] as const;
 export function useWorkStatistics() {
@@ -51,7 +51,7 @@ export function useWorkProjects(filters: ProjectFilters) {
 }
 export function useWorkProject(id: number) {
   const { userId } = useAuth();
-  return useQuery({ queryKey: workKey(userId, 'projects/detail', id), enabled: userId !== null,
+  return useQuery({ queryKey: workKey(userId, 'projects/detail', id), enabled: userId !== null && id > 0,
     queryFn: ({ signal }) => projectService.project(id, signal) });
 }
 export function useTaskDetail(id: number) {
@@ -61,12 +61,12 @@ export function useTaskDetail(id: number) {
 }
 export function useProjectBoard(id: number, filters: BoardFilters = {}) {
   const { userId } = useAuth();
-  return useQuery({ queryKey: workKey(userId, 'projects/board', id, filters), enabled: userId !== null,
+  return useQuery({ queryKey: workKey(userId, 'projects/board', id, filters), enabled: userId !== null && id > 0,
     queryFn: ({ signal }) => projectService.board(id, filters, signal) });
 }
 export function usePlanningCount(date: string, exclude?: number) {
   const { userId } = useAuth();
-  return useQuery({ queryKey: workKey(userId, 'planning/count', date, exclude), enabled: userId !== null,
+  return useQuery({ queryKey: workKey(userId, 'planning/count', date, exclude), enabled: userId !== null && Boolean(date),
     queryFn: ({ signal }) => taskService.count(userId!, date, exclude, signal) });
 }
 
@@ -78,7 +78,7 @@ export function taskAffectsKey(key: QueryKey, user: number, result: TaskMutation
     case 'tasks/day': return key[3] === today || dates.includes(key[3] as string);
     case 'tasks/week': return dates.some(d => d >= (key[3] as string) && d <= (key[4] as string));
     case 'planning/count': return dates.includes(key[3] as string);
-    case 'tasks/all': case 'projects/list': case 'statistics': return true;
+    case 'tasks/all': case 'projects/list': case 'projects/sidebar': case 'statistics': return true;
     case 'projects/detail': case 'projects/board': case 'projects/objectives':
       return result.affectedProjectIds.includes(key[3] as number);
     default: return false;
@@ -120,7 +120,7 @@ export function useProjectFlags() {
   const { userId } = useAuth();
   const client = useQueryClient();
   return useMutation({ retry: false,
-    mutationFn: async ({ project, field, value }: { project: WorkProject; field: 'favorite' | 'archive'; value: boolean }) => {
+    mutationFn: async ({ project, field, value }: { project: WorkProject | SidebarProject; field: 'favorite' | 'archive'; value: boolean }) => {
       if (userId === null) throw new Error('Sessão necessária.');
       const result = await projectService.projectFlag(project, field, value);
       client.setQueryData(workKey(userId, 'projects/detail', result.id), result);
@@ -138,4 +138,38 @@ export function useProjectFlags() {
       }
     },
   });
+}
+
+export function useProjectPages() {
+  const { userId } = useAuth();
+  return useInfiniteQuery({ queryKey: workKey(userId, 'projects/list', 'pages'), enabled: userId !== null,
+    initialPageParam: 0, queryFn: ({ pageParam, signal }) => projectService.projects(userId!, { page: pageParam, size: 6 }, signal),
+    getNextPageParam: page => page.number + 1 < page.totalPages ? page.number + 1 : undefined });
+}
+export function useDeletionPreview(id: number) {
+  const { userId } = useAuth();
+  return useQuery({ queryKey: workKey(userId, 'projects/deletion-preview', id), enabled: userId !== null && id > 0,
+    staleTime: 0, queryFn: ({ signal }) => projectService.preview(id, signal) });
+}
+export function useProjectWrites() {
+  const { userId } = useAuth();
+  const client = useQueryClient();
+  return useMutation({ retry: false, mutationFn: async (command: ProjectWrite) => {
+    if (userId === null) throw new Error('Sessão necessária.');
+    const result = await projectService.write(userId, command);
+    const id = command.action === 'create' ? (result ? result.id : undefined) : command.id;
+    if (result) client.setQueryData(workKey(userId, 'projects/detail', result.id), result);
+    if (command.action === 'delete') client.removeQueries({ queryKey: workKey(userId, 'projects/detail', id) });
+    try {
+      await client.invalidateQueries({ predicate: q => {
+        const k = q.queryKey;
+        if (k[0] !== 'work' || k[1] !== userId) return false;
+        if (['projects/list', 'projects/sidebar', 'statistics'].includes(k[2] as string)) return true;
+        if ((k[2] as string).startsWith('projects/')) return k[3] === id && command.action !== 'delete';
+        // Structural changes can update projections, links and states without changing planned dates.
+        return command.action !== 'create' && ((k[2] as string).startsWith('tasks/') || k[2] === 'planning/count');
+      } }, { throwOnError: true });
+      return { result, refreshFailed: false };
+    } catch { return { result, refreshFailed: true }; }
+  } });
 }

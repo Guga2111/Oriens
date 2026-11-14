@@ -1,148 +1,111 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import ProjectDetailPage from "@/pages/ProjectDetailPage";
-import type { ProjectDTO } from "@/types/project";
-import apiClient from "@/services/api";
-
-vi.mock("@/services/api", () => ({
-  default: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
-
-vi.mock("@/context/AuthContext", () => ({
-  useAuth: () => ({
-    isAuthenticated: true,
-    userEmail: "teste@oriens.test",
-    username: "Teste",
-    userId: 1,
-    profileImageUrl: null,
-    token: "token-fake",
-    role: "USER",
-    isLoading: false,
-    login: vi.fn(),
-    logout: vi.fn(),
-    updateProfileImage: vi.fn(),
-  }),
-}));
-
-vi.mock("@/context/SettingsContext", () => ({
-  useSettings: () => ({
-    preferences: { theme: "light", sound: false, notifications: false },
-    updatePreference: vi.fn(),
-    isUpdating: false,
-  }),
-}));
-
-vi.mock("@/hooks/useSound", () => ({
-  useSound: () => vi.fn(),
-}));
-
-const project: ProjectDTO = {
-  id: 5,
-  title: "Projeto A9",
-  progress: 0,
-  totalObjectives: 1,
-  favorite: false,
-  archived: false,
-  objectives: [
-    {
-      title: "Objetivo com vencimento",
-      status: "PENDING",
-      dueDate: "2026-11-15T00:00:00.000Z",
-    },
-  ],
-};
-
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, expect, it, vi } from 'vitest';
+import { TaskEditor } from '@/components/tasks/TaskEditor';
+import { ProjectBoard } from '@/components/projects/ProjectBoard';
+import { BoardSettings } from '@/components/projects/BoardSettings';
+import { CreateProjectDialog } from '@/components/projects/CreateProjectDialog';
+import api from '@/services/api';
+import { project, task, board, renderWork, pageOf } from './work-fixtures';
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7 }) }));
+vi.mock('@/hooks/useGoogleMapsScript', () => ({ useGoogleMapsScript: () => ({ isLoaded: false }) }));
+vi.mock('@/services/api', () => ({ default: { get: vi.fn(), patch: vi.fn(), post: vi.fn(), put: vi.fn() } }));
 beforeEach(() => {
-  vi.mocked(apiClient.get).mockImplementation(((url: string) => {
-    if (url === "/project/5") {
-      return Promise.resolve({ data: project });
-    }
-    if (url.includes("/summary/weekly-counts")) {
-      return Promise.resolve({ data: { completedTasks: 0, totalTasks: 0 } });
-    }
-    if (url.includes("/sidebar")) {
-      return Promise.resolve({ data: [] });
-    }
-    if (url === "/user/1") {
-      return Promise.resolve({ data: { phoneNumber: null } });
-    }
-    return Promise.resolve({ data: [] });
-  }) as typeof apiClient.get);
+  vi.mocked(api.get).mockImplementation(async url => ({ data: String(url).endsWith('board') ? board : String(url).includes('/project/user/') ? pageOf([project]) : project }));
+  vi.mocked(api.post).mockResolvedValue({ data: { task, affectedProjectIds: [9], previousPlannedDate: null, plannedDate: null } });
+  vi.mocked(api.patch).mockResolvedValue({ data: { task, affectedProjectIds: [9], previousPlannedDate: null, plannedDate: null } });
+});
+it('cria simples por padrão, sem objetivo obrigatório e com chave de idempotência', async () => {
+  renderWork(<CreateProjectDialog open onOpenChange={vi.fn()} onSuccess={vi.fn()} />);
+  expect(screen.getByRole('radio', { name: /Simples/ })).toHaveAttribute('aria-checked', 'true');
+  await userEvent.type(screen.getByLabelText('Título do Projeto'), 'Viagem');
+  await userEvent.click(screen.getByRole('button', { name: 'Criar Projeto' }));
+  await waitFor(() => expect(api.post).toHaveBeenCalledWith('/project/user/7', { title: 'Viagem', description: null, color: null, mode: 'SIMPLE', objectives: [] }, { headers: { 'Idempotency-Key': expect.any(String) } }));
+});
+it('cria tarefa pelo objetivo sem datas artificiais; vínculo pode ser removido', async () => {
+  renderWork(<TaskEditor open onOpenChange={vi.fn()} projectId={9} objectiveId={81} />);
+  await screen.findByText('Estado ao salvar: A fazer');
+  await userEvent.type(screen.getByLabelText('Título'), 'Montar formulário');
+  await userEvent.click(screen.getByRole('combobox', { name: 'Objetivo da tarefa' }));
+  await userEvent.click(screen.getByRole('option', { name: 'Sem objetivo' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  await waitFor(() => expect(api.post).toHaveBeenCalledWith('/task/user/7', expect.objectContaining({ objectiveId: null, columnId: 11, projectId: 9, projectVersion: 4, plannedDate: null, startTime: null, dueDate: null, priority: 'MEDIUM' }), expect.any(Object)));
+});
+it('timeout reenvia exatamente o mesmo payload e chave, preservando o rascunho', async () => {
+  vi.mocked(api.post).mockRejectedValueOnce(new Error('timeout'));
+  renderWork(<TaskEditor open onOpenChange={vi.fn()} />);
+  await userEvent.type(screen.getByLabelText('Título'), 'Telefonar');
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  expect(await screen.findByText(/Confirmação indisponível/)).toBeInTheDocument();
+  expect(screen.getByLabelText('Título')).toBeDisabled();
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  await waitFor(() => expect(api.post).toHaveBeenCalledTimes(2));
+  expect(vi.mocked(api.post).mock.calls[1]).toEqual(vi.mocked(api.post).mock.calls[0]);
+});
+it('editor preserva estado e prazo ao retirar planejamento; conflito mantém rascunho', async () => {
+  vi.mocked(api.patch).mockRejectedValue({ isAxiosError: true, response: { status: 409 } });
+  renderWork(<TaskEditor open onOpenChange={vi.fn()} task={{ ...task, plannedDate: '2026-11-14', startTime: '09:00:00', dueDate: '2026-11-20' }} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Retirar planejamento' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  expect(await screen.findByText(/Os dados mudaram/)).toBeInTheDocument();
+  expect(screen.getByLabelText('Título')).toHaveValue(task.title);
+  expect(api.patch).toHaveBeenCalledWith('/task/42', expect.objectContaining({ version: 2, projectVersion: 4, plannedDate: null, startTime: null, dueDate: '2026-11-20' }));
+  expect(vi.mocked(api.patch).mock.calls[0][1]).not.toHaveProperty('status');
+  expect(vi.mocked(api.patch).mock.calls[0][1]).not.toHaveProperty('columnId');
+});
+it('troca de projeto exige coluna explícita e remove objetivo com aviso', async () => {
+  const other = { ...project, id: 10, title: 'Livro', version: 6 };
+  vi.mocked(api.get).mockImplementation(async url => ({ data: String(url).includes('/user/') ? pageOf([project, other]) : String(url).endsWith('/board') ? { ...board, columns: board.columns.map(c => ({ ...c, id: c.id + 10, projectId: 10 })) } : String(url) === '/project/10' ? other : project }));
+  renderWork(<TaskEditor open onOpenChange={vi.fn()} task={task} />);
+  await userEvent.click(screen.getByRole('combobox', { name: 'Projeto da tarefa' }));
+  await userEvent.click(await screen.findByRole('option', { name: 'Livro' }));
+  expect(await screen.findByText(/O objetivo anterior foi removido/)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  expect(await screen.findByText('Escolha uma coluna válida no projeto de destino.')).toBeInTheDocument();
+  expect(api.patch).not.toHaveBeenCalled();
+  await userEvent.click(screen.getByRole('combobox', { name: 'Coluna de destino' }));
+  await userEvent.click(screen.getByRole('option', { name: 'Fazendo · Em andamento' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', expect.objectContaining({ projectId: 10, objectiveId: null, columnId: 22, projectVersion: 4, targetProjectVersion: 6 })));
+});
+it('mover pelo menu usa o mesmo PATCH, e filtros retiram reordenação oculta', async () => {
+  renderWork(<ProjectBoard pendingColumnId={11} board={{ ...board, filtered: true }} onEdit={vi.fn()} onAdd={vi.fn()} onObjective={vi.fn()} />);
+  await userEvent.click(screen.getByRole('button', { name: `Ações da tarefa ${task.title}` }));
+  expect(screen.queryByRole('menuitem', { name: 'Mover acima' })).toBeNull();
+  await userEvent.click(screen.getByRole('menuitem', { name: 'Concluídas · Concluída' }));
+  await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', { version: 2, projectVersion: 4, columnId: 13, beforeTaskId: null }));
+});
+it('configuração bloqueia mudar significado de coluna ocupada', async () => {
+  renderWork(<BoardSettings onReload={async () => board} project={project} board={board} onClose={vi.fn()} />);
+  await userEvent.click(screen.getAllByRole('button', { name: 'Renomear / significado' })[0]);
+  expect(screen.getByRole('combobox', { name: 'Significado da coluna' })).toBeDisabled();
 });
 
-function renderPage() {
-  return render(
-    <MemoryRouter initialEntries={["/tasks/project/5"]}>
-      <Routes>
-        <Route path="/tasks/project/:id" element={<ProjectDetailPage />} />
-      </Routes>
-    </MemoryRouter>
-  );
-}
-
-// A9 (P0.3): asteriscos literais na exclusão e botão vazio absoluto
-// "Limpar data" fora do PopoverContent.
-describe("ProjectDetailPage — A9 diálogos", () => {
-  it("exibe o título do projeto em <strong> na confirmação de exclusão, sem **", async () => {
-    const user = userEvent.setup();
-    renderPage();
-
-    await screen.findByText("Objetivo com vencimento");
-
-    await user.click(screen.getByRole("button", { name: "Ações do projeto" }));
-    await user.click(await screen.findByRole("menuitem", { name: "Excluir" }));
-
-    const dialog = await screen.findByRole("alertdialog");
-    const strong = dialog.querySelector("strong");
-    expect(strong).not.toBeNull();
-    expect(strong?.textContent).toBe("Projeto A9");
-    expect(dialog.textContent).not.toContain("**");
-  });
-
-  it("não tem botão vazio absoluto e oferece 'Limpar data' dentro do PopoverContent", async () => {
-    const user = userEvent.setup();
-    renderPage();
-
-    await screen.findByText("Objetivo com vencimento");
-
-    // Abre o diálogo de editar objetivo pelo menu da linha do objetivo.
-    await user.click(
-      screen.getByRole("button", {
-        name: "Ações do objetivo: Objetivo com vencimento",
-      })
-    );
-    await user.click(await screen.findByRole("menuitem", { name: "Editar" }));
-
-    await screen.findByText("Editar Objetivo");
-
-    // Regressão A9: nenhum botão absoluto vazio no diálogo.
-    expect(document.querySelector("button.absolute.right-12")).toBeNull();
-
-    // O gatilho do calendário abre o PopoverContent com a opção de limpar.
-    const dateTrigger = Array.from(
-      document.querySelectorAll("button")
-    ).find(
-      (button) =>
-        button.textContent?.includes("2026") ||
-        button.textContent?.includes("Escolha uma data")
-    );
-    expect(dateTrigger).toBeDefined();
-    await user.click(dateTrigger as HTMLElement);
-
-    const clearButton = await screen.findByRole("button", { name: "Limpar data" });
-    await user.click(clearButton);
-
-    await waitFor(() =>
-      expect(screen.queryByRole("button", { name: "Limpar data" })).toBeNull()
-    );
-    expect(screen.getByText("Escolha uma data")).toBeInTheDocument();
-  });
+it('remover coluna ocupada usa total geral e mostra o novo estado antes de confirmar', async () => {
+  renderWork(<BoardSettings onReload={async () => board} project={project} board={{ ...board, filtered: true, columns: board.columns.map(c => c.id === 11 ? { ...c, visibleCount: 0 } : c) }} onClose={vi.fn()} />);
+  await userEvent.click(screen.getAllByRole('button', { name: 'Excluir coluna' })[0]);
+  expect(screen.getByText(/1 tarefas serão movidas/)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Confirmar exclusão da coluna' })).toBeDisabled();
+  await userEvent.click(screen.getByRole('combobox', { name: 'Destino das tarefas' }));
+  await userEvent.click(screen.getByRole('option', { name: 'Concluídas · Concluída' }));
+  expect(screen.getByText('Estado resultante das tarefas: Concluída')).toBeInTheDocument();
+  // This is the last PENDING/default column. A completed destination cannot substitute for it.
+  expect(screen.getByRole('button', { name: 'Confirmar exclusão da coluna' })).toBeDisabled();
+  expect(api.post).not.toHaveBeenCalled();
+});
+it('reordenação de coluna envia todos os IDs, inclusive colunas sem tarefas', async () => {
+  vi.mocked(api.put).mockResolvedValue({ data: {} });
+  renderWork(<BoardSettings onReload={async () => board} project={project} board={board} onClose={vi.fn()} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Mover coluna A fazer para a direita' }));
+  await waitFor(() => expect(api.put).toHaveBeenCalledWith('/project/9/columns/order', { projectVersion: 4, columnIds: [12, 11, 13] }));
+});
+it('cancelar rascunho pede descarte e nenhuma escrita acontece', async () => {
+  const close = vi.fn();
+  renderWork(<TaskEditor open onOpenChange={close} />);
+  await userEvent.type(screen.getByLabelText('Título'), 'Rascunho');
+  await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+  expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Descartar' }));
+  expect(close).toHaveBeenCalledWith(false);
+  expect(api.post).not.toHaveBeenCalled();
 });

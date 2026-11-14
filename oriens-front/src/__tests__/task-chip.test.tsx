@@ -1,4 +1,6 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7 }) }));
+import { renderWork as render } from './work-fixtures';
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TaskChip } from "@/components/dashboard/TaskChip";
@@ -20,6 +22,7 @@ vi.mock("@/hooks/useSound", () => ({
 }));
 
 const longTitleTask: Task = {
+  version: 2,
   id: 7,
   title: "Revisar pull request de requisições urgentíssimas do sprint",
   startTime: "09:00:00",
@@ -35,7 +38,8 @@ function renderChip(overrides: Partial<Task> = {}) {
 }
 
 beforeEach(() => {
-  vi.mocked(apiClient.put).mockResolvedValue({ data: longTitleTask } as never);
+  vi.mocked(apiClient.delete).mockResolvedValue({ data: { id: 7, affectedProjectIds: [], previousPlannedDate: null } } as never);
+  vi.mocked(apiClient.patch).mockResolvedValue({ data: { task: longTitleTask, affectedProjectIds: [], previousPlannedDate: null, plannedDate: null } } as never);
 });
 
 describe("TaskChip — visão semanal", () => {
@@ -51,7 +55,7 @@ describe("TaskChip — visão semanal", () => {
     expect(screen.getByText("Média")).toHaveClass("sr-only");
   });
 
-  it("conclui pelo checkbox enviando o objeto inteiro", async () => {
+  it("conclui pelo checkbox enviando PATCH versionado", async () => {
     const user = userEvent.setup();
     renderChip();
 
@@ -62,8 +66,8 @@ describe("TaskChip — visão semanal", () => {
     );
 
     await waitFor(() =>
-      expect(apiClient.put).toHaveBeenCalledWith("/task/7", {
-        ...longTitleTask,
+      expect(apiClient.patch).toHaveBeenCalledWith("/task/7", {
+        version: 2,
         status: "CONCLUDED",
       })
     );
@@ -95,8 +99,8 @@ describe("TaskChip — visão semanal", () => {
     );
 
     await waitFor(() =>
-      expect(apiClient.put).toHaveBeenCalledWith("/task/7", {
-        ...longTitleTask,
+      expect(apiClient.patch).toHaveBeenCalledWith("/task/7", {
+        version: 2,
         status: "ON_DOING",
       })
     );
@@ -119,7 +123,7 @@ describe("TaskChip — visão semanal", () => {
     await user.click(within(dialog).getByRole("button", { name: "Excluir" }));
 
     await waitFor(() =>
-      expect(apiClient.delete).toHaveBeenCalledWith("/task/7")
+      expect(apiClient.delete).toHaveBeenCalledWith("/task/7", { headers: { 'If-Match': '"2"' } })
     );
   });
 });

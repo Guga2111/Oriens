@@ -20,7 +20,8 @@ import { LocationMap } from "@/components/dashboard/LocationMap";
 import { useSound } from "@/hooks/useSound";
 import { PRIORITY, TASK_STATUS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
-import apiClient from "@/services/api";
+import { useTaskActions } from "@/hooks/useTaskActions";
+import { WorkFeedback } from "@/components/common/WorkFeedback";
 import type { Task, TaskStatus } from "@/types/task";
 import { toast } from "sonner";
 
@@ -36,6 +37,7 @@ interface TaskRowProps {
  * definido pelo menu "⋯" (D9).
  */
 export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
+  const actions = useTaskActions();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -51,8 +53,7 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
   const updateStatus = async (newStatus: TaskStatus) => {
     setIsUpdating(true);
     try {
-      // Contrato atual: PUT recebe a tarefa inteira.
-      await apiClient.put(`/task/${task.id}`, { ...task, status: newStatus });
+      await actions.status(task, newStatus);
 
       if (newStatus === "CONCLUDED") {
         setAnnouncement(`Tarefa concluída: ${task.title}`);
@@ -80,14 +81,16 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
 
   const handleDelete = async () => {
     try {
-      await apiClient.delete(`/task/${task.id}`);
+      await actions.remove(task);
       setAnnouncement(`Tarefa excluída: ${task.title}`);
       onUpdate();
+      return true;
     } catch (error) {
       console.error("Falha ao excluir tarefa: ", error);
       toast.error("Erro", {
         description: "Não foi possível excluir a tarefa.",
       });
+      return false;
     }
   };
 
@@ -190,9 +193,9 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
               Voltar para a fazer
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem onSelect={() => void updateStatus("ON_DOING")}>
+            <DropdownMenuItem onSelect={() => task.projectId ? onEdit(task) : void updateStatus("ON_DOING")}>
               <Play className="mr-2 h-4 w-4" aria-hidden />
-              Marcar como em andamento
+              {task.projectId ? "Mover para…" : "Marcar como em andamento"}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
@@ -228,7 +231,8 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
         )}
       </Dialog>
 
-      <ConfirmDialog
+      <WorkFeedback error={actions.error} />
+      <ConfirmDialog error={actions.error}
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         title="Excluir tarefa?"

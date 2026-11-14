@@ -1,0 +1,15 @@
+{
+  "baseCommit": "e141a0c938b6e51898eb0f23bd60e7439059928f",
+  "timezone": "America/Recife",
+  "syntheticData": true,
+  "files": {
+    "index.html": "22275dc2bd8e1ad195da722db1adf508e841e60787df848ccd70491aec0b5428",
+    "oriens-tasks-screen.png": "6243540e20133de07ffde6de2f9608f5f0b1c08c91ea62d31ea7009aa5a9e6aa",
+    "concluding-sound.wav": "7a5c0b2fb7f7cf77f6b3d36e9e165176a0b2f463c6ff3e6f3c133eda7fc945a1",
+    "robots.txt": "a3d27b3ca5ce32341fa9f96f01169b521b1657c05d1860c45d1e53a6258e9e8b",
+    "favicon.svg": "93c59c2cb06834776779280625ce574947d8be6d5c7ceb4c2c7604f46ad48635",
+    "placeholder.svg": "64badf7aabda0b9630b87020ffb6095cb858ccbcf66b355c2aa08b1063954d3b",
+    "assets/index-Beylz8Yz.css": "bf9f7f0ed893be031accd01793a3675a8ad0ea64babf434fb324f70be253fa72",
+    "assets/index-DLY0HfAx.js": "00eaac398a20dea3eee82ebe1dc91cbe9963fdfba472a25f940bf144ce2080de"
+  }
+}

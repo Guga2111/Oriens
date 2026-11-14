@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { renderWork as render } from './work-fixtures';
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import { CreateTaskDialog } from "@/components/dashboard/CreateTaskDialog";
@@ -13,7 +14,7 @@ import type { Task } from "@/types/task";
 
 vi.mock("@/context/AuthContext", () => ({ useAuth: () => ({ userId: 7 }) }));
 vi.mock("@/hooks/useGoogleMapsScript", () => ({ useGoogleMapsScript: () => ({ isLoaded: false }) }));
-vi.mock("@/services/api", () => ({ default: { post: vi.fn(), put: vi.fn() } }));
+vi.mock("@/services/api", () => ({ default: { get: vi.fn().mockResolvedValue({ data: { content: [] } }), post: vi.fn(), put: vi.fn(), patch: vi.fn() } }));
 vi.mock("@/services/financialService", () => ({
   getDefaultTags: vi.fn(), getCustomTags: vi.fn(), createTag: vi.fn(),
   updateTag: vi.fn(), deleteTag: vi.fn(), createEntry: vi.fn(), updateEntry: vi.fn(),
@@ -29,19 +30,19 @@ beforeEach(() => {
 
 it("nova tarefa associa os erros aos campos e impede envio inválido", async () => {
   render(<CreateTaskDialog {...callbacks} onTaskCreated={vi.fn()} />);
-  await userEvent.click(screen.getByRole("button", { name: "Salvar Tarefa" }));
+  await userEvent.click(screen.getByRole("button", { name: "Salvar tarefa" }));
   expect(screen.getByLabelText("Título")).toHaveAttribute("aria-invalid", "true");
   expect(screen.getByLabelText("Título")).toHaveAccessibleDescription("Informe o título da tarefa.");
-  expect(screen.getByRole("button", { name: "Data" })).toHaveAccessibleDescription("Escolha a data da tarefa.");
   expect(apiClient.post).not.toHaveBeenCalled();
 });
 
-it("edição de tarefa mantém status e payload completo e mostra falha inline", async () => {
-  vi.mocked(apiClient.put).mockRejectedValueOnce(new Error("offline"));
+it("edição carrega snapshot atual e falha de PATCH permanece inline", async () => {
+  vi.mocked(apiClient.get).mockImplementation(async url => ({ data: String(url) === '/task/1' ? { ...task, plannedDate: "2026-11-13", version: 2, projectId: null, project: null, objectiveId: null, columnId: null } : { content: [] } }));
+  vi.mocked(apiClient.patch).mockRejectedValueOnce(new Error('offline'));
   render(<EditTaskDialog {...callbacks} task={task} onTaskUpdated={vi.fn()} />);
-  await userEvent.click(screen.getByRole("button", { name: "Salvar Alterações" }));
-  await waitFor(() => expect(apiClient.put).toHaveBeenCalledWith("/task/1", task));
-  expect(await screen.findByRole("alert")).toHaveTextContent("Não foi possível salvar");
+  await userEvent.click(await screen.findByRole('button', { name: 'Salvar tarefa' }));
+  await waitFor(() => expect(apiClient.patch).toHaveBeenCalledWith('/task/1', expect.objectContaining({ version: 2, title: task.title })));
+  expect((await screen.findAllByRole('alert')).some(el => el.textContent?.includes('Não foi possível salvar'))).toBe(true);
 });
 
 it.each(["create", "edit"])("entrada %s expõe validação inline de valor e tag", async (mode) => {

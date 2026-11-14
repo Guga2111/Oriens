@@ -9,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { WorkFeedback } from "./WorkFeedback";
 import { Loader2 } from "lucide-react";
 
 interface ConfirmDialogProps {
@@ -21,8 +22,9 @@ interface ConfirmDialogProps {
   /** Rótulo da ação destrutiva (ex.: "Excluir"). */
   confirmLabel: string;
   /** Executa a ação; pode ser assíncrono — o botão fica em carregamento. */
-  onConfirm: () => void | Promise<void>;
+  onConfirm: () => void | boolean | Promise<void | boolean>;
   description?: ReactNode;
+  error?: unknown;
 }
 
 /**
@@ -38,14 +40,19 @@ export function ConfirmDialog({
   confirmLabel,
   onConfirm,
   description,
+  error,
 }: ConfirmDialogProps) {
+  const [failure, setFailure] = useState<unknown>(null);
   const [isConfirming, setIsConfirming] = useState(false);
 
   const handleConfirm = async () => {
     setIsConfirming(true);
+    setFailure(null);
     try {
-      await onConfirm();
-      onOpenChange(false);
+      const result = await onConfirm();
+      if (result !== false) onOpenChange(false);
+    } catch (error) {
+      setFailure(error);
     } finally {
       setIsConfirming(false);
     }
@@ -71,6 +78,7 @@ export function ConfirmDialog({
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <WorkFeedback error={error || failure} />
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isConfirming}>Cancelar</AlertDialogCancel>
           <AlertDialogAction

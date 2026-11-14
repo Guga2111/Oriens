@@ -32,7 +32,7 @@ import {
   Home,
 } from "lucide-react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -47,14 +47,9 @@ import { OriensLogo } from "@/components/common/OriensLogo";
 import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/context/SettingsContext";
 import apiClient from "@/services/api";
+import { useProjectFlags, useWorkSidebar } from "@/hooks/useWork";
+import { WorkFeedback } from "@/components/common/WorkFeedback";
 import { toast } from "sonner";
-
-interface ProjectSidebarDTO {
-  id: number;
-  title: string;
-  color?: string;
-  favorite: boolean;
-}
 
 interface NavItem {
   title: string;
@@ -95,8 +90,10 @@ export function AppSidebar({ projectsVersion = 0 }: AppSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [projects, setProjects] = useState<ProjectSidebarDTO[]>([]);
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+  const sidebar = useWorkSidebar();
+  const flags = useProjectFlags();
+  const projects = sidebar.data ?? [];
+  const isLoadingProjects = sidebar.isPending;
 
   const isActive = (item: NavItem) =>
     item.isActive ? item.isActive(location.pathname) : location.pathname === item.url;
@@ -106,44 +103,12 @@ export function AppSidebar({ projectsVersion = 0 }: AppSidebarProps) {
     setOpenMobile(false);
   }, [location.pathname, setOpenMobile]);
 
-  useEffect(() => {
-    const fetchSidebarProjects = async () => {      if (!userId) return;
+  const { refetch } = sidebar;
+  useEffect(() => { if (projectsVersion > 0) void refetch(); }, [projectsVersion, refetch]);
 
-      setIsLoadingProjects(true);
-      try {
-        const response = await apiClient.get<ProjectSidebarDTO[]>(
-          `/project/user/${userId}/sidebar`
-        );
-        setProjects(response.data);
-      } catch (error) {
-        console.error("Erro ao buscar projetos para a sidebar:", error);
-        toast.error("Não foi possível carregar seus projetos.");
-      } finally {
-        setIsLoadingProjects(false);
-      }
-    };
-
-    fetchSidebarProjects();
-  }, [userId, projectsVersion]);
-
-  const handleToggleFavorite = async (projectId: number) => {
-    try {
-      const response = await apiClient.patch<ProjectSidebarDTO>(
-        `/project/${projectId}/favorite`
-      );
-      const updatedProject = response.data;
-
-      setProjects((currentProjects) =>
-        currentProjects.map((p) => (p.id === updatedProject.id ? updatedProject : p))
-      );
-
-      toast.success(
-        updatedProject.favorite ? "Projeto favoritado!" : "Projeto desfavoritado."
-      );
-    } catch (error) {
-      console.error("Erro ao favoritar projeto na sidebar:", error);
-      toast.error("Não foi possível atualizar o projeto.");
-    }
+  const handleToggleFavorite = (projectId: number) => {
+    const project = projects.find(p => p.id === projectId);
+    if (project) flags.mutate({ project, field: 'favorite', value: !project.favorite });
   };
 
   const handleToggleTheme = async () => {
@@ -207,8 +172,9 @@ export function AppSidebar({ projectsVersion = 0 }: AppSidebarProps) {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Favoritos</SidebarGroupLabel>
+          <SidebarGroupLabel>Projetos recentes</SidebarGroupLabel>
           <SidebarGroupContent>
+            <WorkFeedback error={sidebar.error || flags.error} retry={() => void sidebar.refetch()} />
             <SidebarMenu>
               {isLoadingProjects ? (
                 <div className="flex items-center justify-center p-4">
@@ -238,6 +204,7 @@ export function AppSidebar({ projectsVersion = 0 }: AppSidebarProps) {
                           : `Favoritar ${project.title}`
                       }
                       aria-pressed={project.favorite}
+                      disabled={flags.isPending}
                       onClick={() => handleToggleFavorite(project.id)}
                     >
                       <Star

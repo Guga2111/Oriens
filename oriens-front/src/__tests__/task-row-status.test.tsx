@@ -1,4 +1,6 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7 }) }));
+import { renderWork as render } from './work-fixtures';
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TaskRow } from "@/components/dashboard/TaskRow";
@@ -20,6 +22,7 @@ vi.mock("@/hooks/useSound", () => ({
 }));
 
 const task: Task = {
+  version: 2,
   id: 42,
   title: "Tarefa de caracterização",
   description: "descrição",
@@ -44,12 +47,12 @@ function rowFor(title: string): HTMLElement {
 }
 
 beforeEach(() => {
-  vi.mocked(apiClient.put).mockResolvedValue({ data: task } as never);
-  vi.mocked(apiClient.delete).mockResolvedValue({ data: undefined } as never);
+  vi.mocked(apiClient.patch).mockResolvedValue({ data: { task, affectedProjectIds: [], previousPlannedDate: null, plannedDate: null } } as never);
+  vi.mocked(apiClient.delete).mockResolvedValue({ data: { id: 42, affectedProjectIds: [], previousPlannedDate: null } } as never);
 });
 
 describe("TaskRow — ciclo de status (D9)", () => {
-  it("PENDING → CONCLUDED envia o objeto inteiro no PUT", async () => {
+  it("PENDING → CONCLUDED envia PATCH versionado", async () => {
     const user = userEvent.setup();
     const { onUpdate } = renderRow();
 
@@ -60,8 +63,8 @@ describe("TaskRow — ciclo de status (D9)", () => {
     );
 
     await waitFor(() =>
-      expect(apiClient.put).toHaveBeenCalledWith("/task/42", {
-        ...task,
+      expect(apiClient.patch).toHaveBeenCalledWith("/task/42", {
+        version: 2,
         status: "CONCLUDED",
       })
     );
@@ -81,8 +84,8 @@ describe("TaskRow — ciclo de status (D9)", () => {
     await user.click(checkbox);
 
     await waitFor(() =>
-      expect(apiClient.put).toHaveBeenCalledWith("/task/42", {
-        ...task,
+      expect(apiClient.patch).toHaveBeenCalledWith("/task/42", {
+        version: 2,
         status: "CONCLUDED",
       })
     );
@@ -99,8 +102,8 @@ describe("TaskRow — ciclo de status (D9)", () => {
     );
 
     await waitFor(() =>
-      expect(apiClient.put).toHaveBeenCalledWith("/task/42", {
-        ...task,
+      expect(apiClient.patch).toHaveBeenCalledWith("/task/42", {
+        version: 2,
         status: "PENDING",
       })
     );
@@ -120,8 +123,8 @@ describe("TaskRow — ciclo de status (D9)", () => {
     );
 
     await waitFor(() =>
-      expect(apiClient.put).toHaveBeenCalledWith("/task/42", {
-        ...task,
+      expect(apiClient.patch).toHaveBeenCalledWith("/task/42", {
+        version: 2,
         status: "ON_DOING",
       })
     );
@@ -142,8 +145,8 @@ describe("TaskRow — ciclo de status (D9)", () => {
     );
 
     await waitFor(() =>
-      expect(apiClient.put).toHaveBeenCalledWith("/task/42", {
-        ...task,
+      expect(apiClient.patch).toHaveBeenCalledWith("/task/42", {
+        version: 2,
         status: "PENDING",
       })
     );
@@ -169,7 +172,7 @@ describe("TaskRow — ciclo de status (D9)", () => {
     await user.click(within(dialog).getByRole("button", { name: "Excluir" }));
 
     await waitFor(() =>
-      expect(apiClient.delete).toHaveBeenCalledWith("/task/42")
+      expect(apiClient.delete).toHaveBeenCalledWith("/task/42", { headers: { 'If-Match': '"2"' } })
     );
     expect(onUpdate).toHaveBeenCalled();
   });

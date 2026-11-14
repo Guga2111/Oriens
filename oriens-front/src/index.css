@@ -69,6 +69,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     /* §9.1 — escuro */
     --background: 350 18% 12%;
     --background-brand: 350 18% 12%;
