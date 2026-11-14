@@ -30,6 +30,8 @@ export interface Task {
   projectId?: number | null;
   version?: number;
   project?: { id: number; title: string; archived: boolean; version: number } | null;
+  objective?: { id: number; title: string } | null;
+  column?: { id: number; name: string; kind: TaskStatus } | null;
   /** `yyyy-MM-dd` — data local, sem `toISOString`. */
   dueDate: string | null;
   completedAt?: string;

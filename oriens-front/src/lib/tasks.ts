@@ -40,6 +40,14 @@ export const TASK_PERIODS: readonly TaskPeriod[] = [
   },
 ];
 
+const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+export function compareTaskPriority(a: Task, b: Task) {
+  return priorityOrder[a.priority] - priorityOrder[b.priority] || a.id - b.id;
+}
+export function compareTaskTime(a: Task, b: Task) {
+  return (a.startTime ?? '24:00:00').localeCompare(b.startTime ?? '24:00:00') || compareTaskPriority(a, b);
+}
+
 export function getTasksForPeriod(
   tasks: Task[],
   start: string,
@@ -47,7 +55,7 @@ export function getTasksForPeriod(
 ): Task[] {
   return tasks
     .filter((task) => task.startTime != null && task.startTime >= start && task.startTime <= end)
-    .sort((a, b) => (a.startTime ?? "24:00:00").localeCompare(b.startTime ?? "24:00:00"));
+    .sort(compareTaskTime);
 }
 
 export function groupTasksByPeriod(
@@ -60,7 +68,7 @@ export function groupTasksByPeriod(
 }
 
 function sortByStartTime(tasks: Task[]): Task[] {
-  return [...tasks].sort((a, b) => (a.startTime ?? "24:00:00").localeCompare(b.startTime ?? "24:00:00"));
+  return [...tasks].sort(compareTaskTime);
 }
 
 /**

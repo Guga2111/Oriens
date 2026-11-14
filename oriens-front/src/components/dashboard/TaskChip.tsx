@@ -1,3 +1,5 @@
+import { TaskContext } from './TaskContext';
+import { TaskPlanningMenu } from './TaskPlanningMenu';
 import { useState } from "react";
 import { MoreHorizontal, Pencil, Play, Trash2, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,6 +72,13 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
     }
   };
 
+  const plan = async (today: boolean) => {
+    setIsUpdating(true);
+    try { await actions.planning(task, today); onUpdate(); }
+    catch { /* The local feedback retains the row and offers a refresh. */ }
+    finally { setIsUpdating(false); }
+  };
+
   const handleDelete = async () => {
     try {
       await actions.remove(task);
@@ -138,7 +147,8 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="max-sm:[&_[role=menuitem]]:min-h-11">
+            <TaskPlanningMenu task={task} onEdit={onEdit} onPlan={today => void plan(today)} />
             <DropdownMenuItem onSelect={() => onEdit(task)}>
               <Pencil className="mr-2 h-4 w-4" aria-hidden />
               Editar
@@ -165,11 +175,12 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
         </DropdownMenu>
       </div>
 
+      <TaskContext task={task} compact />
       <span className="sr-only" aria-live="polite">
         {announcement}
       </span>
 
-      <WorkFeedback error={actions.error} />
+      <WorkFeedback error={actions.error} retry={() => void actions.refresh(task)} />
       <ConfirmDialog error={actions.error}
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}

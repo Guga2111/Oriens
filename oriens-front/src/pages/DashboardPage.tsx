@@ -9,9 +9,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { CreateTaskDialog } from "@/components/dashboard/CreateTaskDialog";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import apiClient from "@/services/api";
+import { useMemo, useRef, useState } from "react";
+import { useTaskDay, useTaskWeek } from "@/hooks/useWork";
 import {
   format,
   subDays,
@@ -29,87 +28,68 @@ import { TaskSection } from "@/components/dashboard/TaskSection";
 import { DayLine } from "@/components/dashboard/DayLine";
 import { PageHeader } from "@/components/common/PageHeader";
 import { describeDay, describeWeek, groupTasksByPeriod } from "@/lib/tasks";
+import { useSearchParams } from 'react-router-dom';
+import { validCalendarDate } from '@/lib/work-form';
+import { productDate } from '@/lib/product-time';
+import { useProductToday } from '@/hooks/useProductToday';
+import { compareTaskPriority } from '@/lib/tasks';
 import type { Task } from "@/types/task";
 
 export function DashboardPage() {
-  const { userId } = useAuth();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const today = useProductToday();
+  const [search, setSearch] = useSearchParams();
+  const rawDate = search.get('date');
+  const selectedDate = rawDate && validCalendarDate(rawDate) ? productDate(rawDate) : null;
+  const currentDate = selectedDate ?? productDate(today);
+  const [completedOpen, setCompletedOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const setSelectedDate = (date: Date | null) => setSearch(previous => { if (date) previous.set('date', format(date, 'yyyy-MM-dd')); else previous.delete('date'); return previous; });
+  const setCurrentDate = (date: Date) => { setCompletedOpen(false); setSelectedDate(date); };
+  const viewMode = search.get('view') === 'week' ? 'week' : 'day';
+  const setViewMode = (view: 'day' | 'week') => setSearch(previous => { previous.set('view', view); return previous; });
 
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [createTaskDefaults, setCreateTaskDefaults] = useState<{
     date: Date;
     startTime?: string;
-  }>({ date: new Date() });
-  const [viewMode, setViewMode] = useState<"day" | "week">("day");
+  }>({ date: productDate(today) });
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
-  const hasLoaded = useRef(false);
-
-  const fetchTasks = useCallback(async () => {
-    if (!userId) return;
-
-    // Troca de data/visão mantém os dados anteriores e mostra o spinner no
-    // PageHeader; só o carregamento inicial usa skeletons (SPEC §11.1).
-    if (hasLoaded.current) {
-      setIsRefreshing(true);
-    } else {
-      setIsInitialLoading(true);
-    }
-    setError(null);
-
-    try {
-      let response;
-
-      if (viewMode === "day") {
-        const formattedDate = format(currentDate, "yyyy-MM-dd");
-        response = await apiClient.get(
-          `/task/user/${userId}?date=${formattedDate}`
-        );
-      } else {
-        const weekStart = startOfWeek(currentDate, { locale: ptBR });
-        const weekEnd = endOfWeek(currentDate, { locale: ptBR });
-
-        response = await apiClient.get(
-          `/task/user/${userId}/range?startDate=${format(
-            weekStart,
-            "yyyy-MM-dd"
-          )}&endDate=${format(weekEnd, "yyyy-MM-dd")}`
-        );
-      }
-
-      setTasks(response.data);
-      hasLoaded.current = true;
-    } catch (fetchError) {
-      console.error("Falha ao buscar tarefas: ", fetchError);
-      setError("Não foi possível carregar suas tarefas.");
-    } finally {
-      setIsInitialLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [userId, currentDate, viewMode]);
-
-  useEffect(() => {
-    void fetchTasks();
-  }, [fetchTasks]);
+  const weekStart = startOfWeek(currentDate, { locale: ptBR });
+  const weekEnd = endOfWeek(currentDate, { locale: ptBR });
+  const day = useTaskDay(format(currentDate, "yyyy-MM-dd"), viewMode === "day");
+  const week = useTaskWeek(
+    format(weekStart, "yyyy-MM-dd"),
+    format(weekEnd, "yyyy-MM-dd"),
+    viewMode === "week"
+  );
+  const query = viewMode === "day" ? day : week;
+  const tasks = useMemo(() => viewMode === "day"
+    ? [...(day.data?.planned ?? []), ...(day.data?.completed ?? [])]
+    : week.data?.tasks ?? [], [viewMode, day.data, week.data]);
+  const isInitialLoading = query.isPending;
+  const isRefreshing = query.isFetching && !query.isPending;
+  const error = query.isError ? "Não foi possível carregar suas tarefas." : null;
+  const fetchTasks = () => { void query.refetch(); };
+  const afterWrite = () => {
+    // Writes already own refetching. Restore a stable focus target if the row left its list.
+    requestAnimationFrame(() => {
+      if (document.activeElement === document.body) contentRef.current?.focus();
+    });
+  };
 
   const openCreateTask = (date: Date = currentDate, startTime?: string) => {
     setCreateTaskDefaults({ date, startTime });
     setIsCreateTaskOpen(true);
   };
 
-  const periods = useMemo(() => groupTasksByPeriod(tasks), [tasks]);
+  const periods = useMemo(() => groupTasksByPeriod(day.data?.planned ?? []), [day.data?.planned]);
 
-  const isToday = isSameDay(currentDate, new Date());
+  const isToday = isSameDay(currentDate, productDate(today));
   const longDate = format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR });
   const longDateCapitalized =
     longDate.charAt(0).toUpperCase() + longDate.slice(1);
   const title = isToday ? "Hoje" : longDateCapitalized;
-  const weekStart = startOfWeek(currentDate, { locale: ptBR });
-  const weekEnd = endOfWeek(currentDate, { locale: ptBR });
   const meta =
     viewMode === "week"
       ? `Semana de ${format(weekStart, "d 'de' MMMM", { locale: ptBR })} a ${format(
@@ -129,9 +109,10 @@ export function DashboardPage() {
 
   return (
     <>
-      <div className="p-6 md:p-8">
-        <div className="max-w-[1280px]">
+      <div className="planning-screen p-4 sm:p-6 md:p-8">
+        <div className="mx-auto max-w-[1280px]">
           <PageHeader
+            className="md:flex-col lg:flex-row"
             title={title}
             description={description}
             meta={meta}
@@ -169,7 +150,7 @@ export function DashboardPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentDate(new Date())}
+                    onClick={() => { setSelectedDate(null); setCompletedOpen(false); }}
                   >
                     Hoje
                   </Button>
@@ -203,7 +184,7 @@ export function DashboardPage() {
           />
 
           {viewMode === "day" && !isInitialLoading && (
-            <DayLine tasks={tasks} date={currentDate} />
+            <DayLine tasks={completedOpen ? tasks : day.data?.planned ?? []} date={currentDate} />
           )}
 
           {error && (
@@ -225,10 +206,13 @@ export function DashboardPage() {
 
           {viewMode === "day" ? (
             <div
-              className="mt-6 space-y-8"
+              ref={contentRef} tabIndex={-1} aria-label="Planejamento do dia"
+              className="mt-6 space-y-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-busy={isRefreshing}
               aria-live="polite"
             >
+              <h2 className="text-lg font-semibold">{isToday ? 'Planejado para hoje' : 'Planejado para este dia'}</h2>
+              <TaskSection title="Sem horário" emptyLabel="Nenhuma tarefa sem horário." tasks={[...(day.data?.planned ?? [])].filter(t => !t.startTime).sort(compareTaskPriority)} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onAddTask={() => openCreateTask()} isLoading={isInitialLoading} />
               {periods.map((period) => (
                 <TaskSection
                   key={period.id}
@@ -236,15 +220,24 @@ export function DashboardPage() {
                   timeRange={period.range}
                   emptyLabel={period.emptyLabel}
                   tasks={period.tasks}
-                  onUpdateTasks={fetchTasks}
+                  onUpdateTasks={afterWrite}
                   onEditTask={setEditingTask}
                   onAddTask={() => openCreateTask(currentDate)}
                   isLoading={isInitialLoading}
                 />
               ))}
+              <section aria-label="Concluídas">
+                <h2><Button variant="ghost" className="max-sm:min-h-11" aria-expanded={completedOpen} aria-controls="completed-tasks" onClick={() => setCompletedOpen(value => !value)}>Concluídas ({day.data?.completed.length ?? 0}) {completedOpen ? '▴' : '▾'}</Button></h2>
+                {completedOpen && <div id="completed-tasks"><TaskSection title="Tarefas concluídas" emptyLabel="Nenhuma tarefa concluída neste dia." tasks={day.data?.completed ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} /></div>}
+              </section>
+              {isToday && <>
+                <TaskSection title="Pendentes de dias anteriores" timeRange="Planejamento anterior preservado até você reagendar." emptyLabel="Nenhuma pendência de dias anteriores." tasks={day.data?.previousPlans ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} isLoading={isInitialLoading} />
+                <TaskSection title="Prazos que precisam de atenção" timeRange="Prazo final hoje ou ultrapassado; o planejamento não muda." emptyLabel="Nenhum prazo precisando de atenção." tasks={day.data?.deadlineAttention ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} isLoading={isInitialLoading} />
+              </>}
             </div>
           ) : (
-            <div className="mt-6" aria-busy={isRefreshing}>
+            <div ref={contentRef} tabIndex={-1} className="mt-6 space-y-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Planejamento da semana" aria-busy={isRefreshing}>
+              <Button variant="link" onClick={() => { setSearch({}); setCompletedOpen(false); }}>Revisar pendências em Hoje</Button>
               {isInitialLoading ? (
                 <div className="grid grid-cols-7 gap-4">
                   {Array.from({ length: 7 }).map((_, index) => (
@@ -255,11 +248,11 @@ export function DashboardPage() {
                 <WeekView
                   tasks={tasks}
                   currentDate={currentDate}
-                  onUpdateTasks={fetchTasks}
+                  onUpdateTasks={afterWrite}
                   onEditTask={setEditingTask}
                   onSelectDay={(date) => {
-                    setCurrentDate(date);
-                    setViewMode("day");
+                    setCompletedOpen(false);
+                    setSearch({ date: format(date, 'yyyy-MM-dd'), view: 'day' });
                   }}
                 />
               )}
@@ -271,7 +264,7 @@ export function DashboardPage() {
       <CreateTaskDialog
         open={isCreateTaskOpen}
         onOpenChange={setIsCreateTaskOpen}
-        onTaskCreated={fetchTasks}
+        onTaskCreated={afterWrite}
         defaultDate={createTaskDefaults.date}
         defaultStartTime={createTaskDefaults.startTime}
       />
@@ -280,7 +273,7 @@ export function DashboardPage() {
           task={editingTask}
           open={!!editingTask}
           onOpenChange={() => setEditingTask(null)}
-          onTaskUpdated={fetchTasks}
+          onTaskUpdated={afterWrite}
         />
       )}
     </>

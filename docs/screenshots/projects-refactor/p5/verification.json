@@ -1,0 +1,23 @@
+{
+  "frontend": {
+    "testFiles": 22,
+    "tests": 94,
+    "failures": 0,
+    "finalWeekRegression": {
+      "files": 2,
+      "tests": 10,
+      "failures": 0
+    }
+  },
+  "postgres": {
+    "tests": "13",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0"
+  },
+  "liveBrowserTest": "p5BrowserRoundTripAgainstDisposablePostgres",
+  "typescript": "pass",
+  "eslintChangedFiles": "pass",
+  "productionBuild": "pass",
+  "diffCheck": "pass"
+}

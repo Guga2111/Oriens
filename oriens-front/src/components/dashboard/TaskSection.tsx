@@ -5,12 +5,12 @@ import type { Task } from "@/types/task";
 
 interface TaskSectionProps {
   title: string;
-  timeRange: string;
+  timeRange?: string;
   emptyLabel: string;
   tasks: Task[];
   onUpdateTasks: () => void;
   onEditTask: (task: Task) => void;
-  onAddTask: () => void;
+  onAddTask?: () => void;
   isLoading?: boolean;
 }
 
@@ -29,9 +29,6 @@ export function TaskSection({
   isLoading = false,
 }: TaskSectionProps) {
   const headingId = `period-${title.toLowerCase()}`;
-  const concludedCount = tasks.filter(
-    (task) => task.status === "CONCLUDED"
-  ).length;
 
   return (
     <section aria-labelledby={headingId}>
@@ -42,8 +39,8 @@ export function TaskSection({
           </h2>
           <p className="text-xs text-muted-foreground">{timeRange}</p>
         </div>
-        <p className="text-sm font-medium tabular-nums text-muted-foreground">
-          {concludedCount} de {tasks.length}
+        <p className="shrink-0 whitespace-nowrap text-sm font-medium tabular-nums text-muted-foreground">
+          {tasks.length} {tasks.length === 1 ? 'tarefa' : 'tarefas'}
         </p>
       </div>
 
@@ -67,9 +64,9 @@ export function TaskSection({
       ) : (
         <div className="flex items-center gap-3 py-3 text-sm text-muted-foreground">
           <span>{emptyLabel}</span>
-          <Button variant="ghost" size="sm" className="max-md:h-10" onClick={onAddTask}>
+          {onAddTask && <Button variant="ghost" size="sm" className="max-md:h-11" onClick={onAddTask}>
             Adicionar
-          </Button>
+          </Button>}
         </div>
       )}
     </section>

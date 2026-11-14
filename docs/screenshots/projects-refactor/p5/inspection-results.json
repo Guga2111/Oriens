@@ -1,0 +1,30 @@
+[
+  {
+    "name": "week",
+    "theme": "light",
+    "url": "http://127.0.0.1:4185/tasks?view=week&theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 3 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "day",
+    "theme": "light",
+    "url": "http://127.0.0.1:4185/tasks?theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "day",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4185/tasks?theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "week",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4185/tasks?view=week&theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  }
+]

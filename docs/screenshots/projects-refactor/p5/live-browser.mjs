@@ -1,0 +1,47 @@
+// Called by WorkApiPostgresTest. All work requests reach its real HTTP/JWT/JPA/PostgreSQL stack.
+import { chromium } from '../../../../oriens-front/node_modules/playwright/index.mjs';
+import assert from 'node:assert/strict';
+const [base, projectId, taskId, standaloneId] = process.argv.slice(2);
+const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_PATH || '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser' });
+try {
+ const page = await browser.newPage({viewport:{width:390,height:844},timezoneId:'Pacific/Auckland',reducedMotion:'reduce'});
+ await page.clock.setFixedTime(new Date('2026-11-13T12:00:00Z'));
+ const response = path => page.waitForResponse(r=>r.url().endsWith(path)&&r.request().method()==='PATCH');
+ await page.goto(`${base}/tasks/project/${projectId}`);
+ await page.getByRole('button',{name:'Integração P5',exact:true}).click();
+ await page.getByLabel('Dia planejado',{exact:true}).fill('2026-11-13');
+ await page.getByLabel('Horário (opcional)',{exact:true}).fill('09:00');
+ await page.getByLabel('Prazo final (opcional)',{exact:true}).fill('2026-11-20');
+ const planning=response(`/task/${taskId}`);
+ await page.getByRole('button',{name:'Salvar tarefa',exact:true}).click();
+ assert.equal((await planning).status(),200);
+ await page.getByRole('dialog').waitFor({state:'hidden'});
+ await page.getByRole('button',{name:'Alternar menu de navegação',exact:true}).click();
+ await page.getByRole('link',{name:'Hoje',exact:true}).click();
+ const row=page.locator(`#task-row-${taskId}`);
+ await row.getByText('Integração P5',{exact:true}).waitFor();
+ assert.equal(await page.getByText('Integração P5',{exact:true}).count(),1);
+ await page.getByRole('button',{name:/09:00, Integração P5/}).click();
+ assert.equal(await row.evaluate(el=>document.activeElement===el),true);
+ await row.getByRole('button',{name:'Ações da tarefa Integração P5'}).click();
+ await page.getByRole('menuitem',{name:'Editar',exact:true}).click();
+ await page.getByLabel('Descrição (opcional)',{exact:true}).fill('Descrição salva em Hoje');
+ const edit=response(`/task/${taskId}`);await page.getByRole('button',{name:'Salvar tarefa',exact:true}).click();assert.equal((await edit).status(),200);
+ await page.getByRole('dialog').waitFor({state:'hidden'});
+ const complete=response(`/task/${taskId}`);await row.getByRole('checkbox').click();const completed=await (await complete).json();
+ assert.equal(completed.task.column.kind,'CONCLUDED');assert.equal(completed.task.completedAt,'2026-11-13');
+ await page.getByRole('button',{name:'Concluídas (1)'}).click();await page.locator(`#task-row-${taskId}`).waitFor();
+ await page.locator(`#task-row-${taskId}`).getByRole('link',{name:'Site pessoal',exact:true}).click();
+ await page.getByRole('combobox',{name:'Coluna do quadro'}).click();await page.getByRole('option',{name:/^Concluídas/}).click();
+ await page.getByRole('button',{name:'Integração P5',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Ações da tarefa Integração P5'}).click();
+ const reopen=response(`/task/${taskId}`);await page.getByRole('menuitem',{name:'A fazer · A fazer',exact:true}).click();const reopened=await (await reopen).json();
+ assert.equal(reopened.task.completedAt,null);assert.equal(reopened.task.status,'PENDING');
+ assert.equal(reopened.task.description,'Descrição salva em Hoje');assert.equal(reopened.task.dueDate,'2026-11-20');
+ await page.getByRole('button',{name:'Alternar menu de navegação',exact:true}).click();
+ await page.getByRole('link',{name:'Hoje',exact:true}).click();await page.locator(`#task-row-${taskId}`).getByRole('checkbox').waitFor();
+ assert.equal(await page.locator(`#task-row-${taskId}`).getByRole('checkbox').isChecked(),false);
+ const standalone=page.locator(`#task-row-${standaloneId}`);await standalone.waitFor();
+ const finish=response(`/task/${standaloneId}`);await standalone.getByRole('checkbox').click();assert.equal((await finish).status(),200);
+ console.log('PASS P5 live: board planning → Today same ID → description/completion → board → reopen → Today; standalone; keyboard timeline; real HTTP/JWT/PostgreSQL.');
+} finally { await browser.close(); }

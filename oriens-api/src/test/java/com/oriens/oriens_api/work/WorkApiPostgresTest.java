@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /** Real JWT filter, MVC binding, principal lookup, transaction services and baseline PostgreSQL. */
-@SpringBootTest(classes=WorkApiPostgresTest.App.class, properties={
+@SpringBootTest(classes=WorkApiPostgresTest.App.class, webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={
     "spring.datasource.url=${P2_JDBC_URL}", "spring.datasource.username=postgres", "spring.datasource.password=",
     "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.open-in-view=false", "spring.jpa.show-sql=false",
     "spring.jpa.properties.hibernate.jdbc.time_zone=UTC", "spring.task.scheduling.enabled=false"
@@ -58,6 +58,7 @@ class WorkApiPostgresTest {
     @Autowired NotificationServiceImpl notificationService;
     @Autowired NotificationRepository notifications;
     @MockBean FileStorageProjectService files;
+    @org.springframework.boot.test.web.server.LocalServerPort int httpPort;
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired UserRepository users;
@@ -117,6 +118,33 @@ class WorkApiPostgresTest {
             .startTime(time == null ? null : LocalTime.parse(time)).status(status)
             .completedAt(status == com.oriens.oriens_api.entity.enums.Status.CONCLUDED ? LocalDate.of(2026,11,13) : null).build()));
     }
+    @Test @EnabledIfEnvironmentVariable(named="P5_BROWSER_PROOF", matches="1")
+    void p5BrowserRoundTripAgainstDisposablePostgres() throws Exception {
+        java.nio.file.Path repo = java.nio.file.Path.of("..").toAbsolutePath().normalize();
+        // Explicit --browser requires a production build rather than silently skipping it.
+        assertThat(repo.resolve("oriens-front/dist/index.html")).exists();
+        JsonNode p = project("DEVELOPMENT");
+        JsonNode t = body(send("POST", "/task/user/"+owner, "{\"title\":\"Integração P5\",\"projectId\":"+p.path("id")+",\"projectVersion\":"+p.path("version")+"}", UUID.randomUUID().toString(), token, 201)).path("task");
+        JsonNode standalone = task((JsonNode) null);
+        String browserToken = JWT.create().withSubject(users.findById(owner).orElseThrow().getEmail())
+            .withClaim("userId", owner).withClaim("username", "Demonstração").withClaim("role", "USER")
+            .withExpiresAt(new Date(System.currentTimeMillis()+120000)).sign(Algorithm.HMAC512(SecurityConstants.SECRET_KEY));
+        var command = new ProcessBuilder("node", "docs/screenshots/projects-refactor/p5/fixture-server.mjs", "oriens-front/dist", "4187").directory(repo.toFile()).redirectErrorStream(true);
+        command.environment().put("QA_API_ORIGIN", "http://127.0.0.1:"+httpPort);
+        command.environment().put("QA_TOKEN", browserToken);
+        Process server = command.start();
+        try {
+            String ready = new java.io.BufferedReader(new java.io.InputStreamReader(server.getInputStream())).readLine();
+            assertThat(ready).contains("Synthetic QA build");
+            Process browser = new ProcessBuilder("node", "docs/screenshots/projects-refactor/p5/live-browser.mjs", "http://127.0.0.1:4187", p.path("id").asText(), t.path("id").asText(), standalone.path("id").asText())
+                .directory(repo.toFile()).inheritIO().start();
+            try {
+                assertThat(browser.waitFor(90, TimeUnit.SECONDS)).isTrue();
+                assertThat(browser.exitValue()).isZero();
+            } finally { if (browser.isAlive()) browser.destroyForcibly(); }
+        } finally { server.destroyForcibly(); server.waitFor(); }
+    }
+
     @Test void p4AttachStandaloneUsesDestinationProjectVersionAndTransfersRequireBoth() throws Exception {
         JsonNode p = project("DEVELOPMENT"), destination = project("DEVELOPMENT"), t = task((JsonNode) null);
         long id = t.path("id").asLong();

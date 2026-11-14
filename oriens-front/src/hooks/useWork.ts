@@ -29,14 +29,14 @@ export function useWeeklySummary(start: string, end: string) {
   return useQuery({ queryKey: workKey(userId, 'tasks/week', start, end, 'summary'), enabled: userId !== null,
     queryFn: ({ signal }) => taskService.weeklySummary(userId!, start, end, signal) });
 }
-export function useTaskDay(date: string) {
+export function useTaskDay(date: string, enabled = true) {
   const { userId } = useAuth();
-  return useQuery({ queryKey: workKey(userId, 'tasks/day', date), enabled: userId !== null,
+  return useQuery({ queryKey: workKey(userId, 'tasks/day', date), enabled: userId !== null && enabled,
     queryFn: ({ signal }) => taskService.day(userId!, date, signal) });
 }
-export function useTaskWeek(start: string, end: string) {
+export function useTaskWeek(start: string, end: string, enabled = true) {
   const { userId } = useAuth();
-  return useQuery({ queryKey: workKey(userId, 'tasks/week', start, end), enabled: userId !== null,
+  return useQuery({ queryKey: workKey(userId, 'tasks/week', start, end), enabled: userId !== null && enabled,
     queryFn: ({ signal }) => taskService.week(userId!, start, end, signal) });
 }
 export function useAllTasks(filters: TaskFilters) {

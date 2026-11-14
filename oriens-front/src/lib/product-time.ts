@@ -8,3 +8,9 @@ export function productNow(now = new Date()) {
   return { date: `${value('year')}-${value('month')}-${value('day')}`,
     time: `${value('hour')}:${value('minute')}:${value('second')}` };
 }
+
+/** A calendar date carrier for date-fns; never converts a stored day through UTC. */
+export function productDate(date = productNow().date) {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}

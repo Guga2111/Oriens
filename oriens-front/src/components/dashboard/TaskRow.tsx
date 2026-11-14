@@ -1,3 +1,5 @@
+import { TaskContext } from './TaskContext';
+import { TaskPlanningMenu } from './TaskPlanningMenu';
 import { useState } from "react";
 import { Clock, MapPin, MoreHorizontal, Pencil, Play, Trash2, Undo2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +20,7 @@ import {
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { LocationMap } from "@/components/dashboard/LocationMap";
 import { useSound } from "@/hooks/useSound";
-import { PRIORITY, TASK_STATUS } from "@/lib/labels";
+import { PRIORITY } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { useTaskActions } from "@/hooks/useTaskActions";
 import { WorkFeedback } from "@/components/common/WorkFeedback";
@@ -48,7 +50,6 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
   const isConcluded = task.status === "CONCLUDED";
   const isOnDoing = task.status === "ON_DOING";
   const priority = PRIORITY[task.priority];
-  const status = TASK_STATUS[task.status];
 
   const updateStatus = async (newStatus: TaskStatus) => {
     setIsUpdating(true);
@@ -79,6 +80,13 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
     void updateStatus(isConcluded ? "PENDING" : "CONCLUDED");
   };
 
+  const plan = async (today: boolean) => {
+    setIsUpdating(true);
+    try { await actions.planning(task, today); onUpdate(); }
+    catch { /* The local feedback retains the row and offers a refresh. */ }
+    finally { setIsUpdating(false); }
+  };
+
   const handleDelete = async () => {
     try {
       await actions.remove(task);
@@ -98,11 +106,11 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
     <li
       id={`task-row-${task.id}`}
       tabIndex={-1}
-      className="grid grid-cols-[auto_3.5rem_minmax(0,1fr)_auto_auto] items-start gap-3 border-b px-2 py-3 last:border-b-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+      className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 border-b px-2 py-3 last:border-b-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
     >
       <div className="-m-2 flex h-10 w-10 shrink-0 items-center justify-center">
         <Checkbox
-          className="task-completion"
+          className="task-completion after:-inset-[14px]"
           checked={isConcluded ? true : isOnDoing ? "indeterminate" : false}
           onCheckedChange={handleToggle}
           aria-busy={isUpdating}
@@ -115,16 +123,11 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
         />
       </div>
 
-      <span className="flex items-center gap-1 pt-2 text-sm tabular-nums text-muted-foreground">
-        <Clock className="h-3 w-3 shrink-0" aria-hidden />
-        {(task.startTime?.slice(0, 5) ?? "Sem horário")}
-      </span>
-
       <div className="min-w-0">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <p
             className={cn(
-              "min-w-0 truncate font-medium",
+              "min-w-0 break-words font-medium",
               isConcluded && "text-muted-foreground line-through"
             )}
             title={task.title}
@@ -133,6 +136,12 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
           </p>
           {isOnDoing && <Badge variant="warning">Em andamento</Badge>}
         </div>
+
+        <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1 tabular-nums"><Clock className="h-3 w-3" aria-hidden />{task.startTime?.slice(0, 5) ?? 'Sem horário'}</span>
+          <Badge variant={priority.badge}>{priority.label}</Badge>
+        </div>
+        <TaskContext task={task} />
 
         {task.description && (
           <p
@@ -160,23 +169,20 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
         )}
       </div>
 
-      <Badge variant={priority.badge} className="mt-1">
-        {priority.label}
-      </Badge>
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 md:h-8 md:w-8"
+            className="h-11 w-11 md:h-8 md:w-8"
             aria-label={`Ações da tarefa ${task.title}`}
             disabled={isUpdating}
           >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="max-sm:[&_[role=menuitem]]:min-h-11">
+            <TaskPlanningMenu task={task} onEdit={onEdit} onPlan={today => void plan(today)} />
           <DropdownMenuItem onSelect={() => onEdit(task)}>
             <Pencil className="mr-2 h-4 w-4" aria-hidden />
             Editar
@@ -231,7 +237,7 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
         )}
       </Dialog>
 
-      <WorkFeedback error={actions.error} />
+      <WorkFeedback error={actions.error} retry={() => void actions.refresh(task)} />
       <ConfirmDialog error={actions.error}
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}

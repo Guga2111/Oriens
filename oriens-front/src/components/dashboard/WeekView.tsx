@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { TaskChip } from "@/components/dashboard/TaskChip";
@@ -5,6 +6,9 @@ import { TaskRow } from "@/components/dashboard/TaskRow";
 import { Badge } from "@/components/ui/badge";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
+import { compareTaskTime } from "@/lib/tasks";
+import { useProductToday } from "@/hooks/useProductToday";
+import { productDate } from "@/lib/product-time";
 import type { Task } from "@/types/task";
 
 interface WeekViewProps {
@@ -38,21 +42,32 @@ export function WeekView({
   onSelectDay,
 }: WeekViewProps) {
   const weekStart = startOfWeek(currentDate, { locale: ptBR });
-  const today = new Date();
+  const today = productDate(useProductToday());
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const weekRef = useRef<HTMLDivElement>(null);
+  const selectedDay = format(currentDate, 'yyyy-MM-dd');
+  useEffect(() => {
+    const region = weekRef.current;
+    const selected = region?.querySelector<HTMLElement>(`[data-day="${selectedDay}"]`);
+    if (!region || !selected) return;
+    // Keep the selected day in view without scrolling the page or resetting manual scroll on refetch.
+    const frame = region.getBoundingClientRect(); const day = selected.getBoundingClientRect();
+    if (day.right > frame.right) region.scrollLeft += day.right - frame.right;
+    else if (day.left < frame.left) region.scrollLeft -= frame.left - day.left;
+  }, [selectedDay, isDesktop]);
 
   const getTasksForDay = (day: Date) => {
     const formattedDay = format(day, "yyyy-MM-dd");
     return tasks
       .filter((task) => task.plannedDate === formattedDay && task.status !== "CANCELLED")
-      .sort((a, b) => (a.startTime ?? "24:00:00").localeCompare(b.startTime ?? "24:00:00"));
+      .sort(compareTaskTime);
   };
 
   const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
 
   if (!isDesktop) {
     return (
-      <div role="region" aria-label="Agenda semanal" className="flex flex-col gap-6">
+      <div role="region" aria-label="Agenda semanal" className="flex flex-col gap-3">
         {days.map((day) => {
           const dayTasks = getTasksForDay(day);
           const isToday = isSameDay(day, today);
@@ -70,16 +85,17 @@ export function WeekView({
                     onClick={() => onSelectDay(day)}
                     aria-label={`Ver ${fullDate}`}
                     aria-current={isToday ? "date" : undefined}
-                    className="rounded-sm text-left hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="min-h-11 rounded-sm text-left hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     {shortWeekday(day)}, {format(day, "d")}
                   </button>
                 </h2>
                 {isToday && <Badge variant="warning">Hoje</Badge>}
+                {dayTasks.length === 0 && <span className="ml-auto text-sm text-muted-foreground">Sem tarefas</span>}
               </div>
 
               {dayTasks.length > 0 ? (
-                <ul className="mt-2 divide-y rounded-lg border bg-card">
+                <ul className="mt-2 divide-y rounded-lg border border-border/50 bg-card">
                   {dayTasks.map((task) => (
                     <TaskRow
                       key={task.id}
@@ -89,11 +105,7 @@ export function WeekView({
                     />
                   ))}
                 </ul>
-              ) : (
-                <p className="py-3 text-sm text-muted-foreground">
-                  Sem tarefas
-                </p>
-              )}
+              ) : null}
             </section>
           );
         })}
@@ -103,12 +115,13 @@ export function WeekView({
 
   return (
     <div
+      ref={weekRef}
       role="region"
       aria-label="Grade semanal"
       tabIndex={0}
       className="overflow-x-auto rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="min-w-[980px]">
+      <div className="min-w-[1400px]">
         <div className="grid grid-cols-7 gap-3">
           {days.map((day) => {
             const dayTasks = getTasksForDay(day);
@@ -126,6 +139,7 @@ export function WeekView({
                 <button
                   type="button"
                   onClick={() => onSelectDay(day)}
+                  data-day={format(day, 'yyyy-MM-dd')}
                   aria-label={`Ver ${fullDate}`}
                   aria-current={isToday ? "date" : undefined}
                   className={cn(

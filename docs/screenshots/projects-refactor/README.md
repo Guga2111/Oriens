@@ -277,3 +277,101 @@ editor e telefone; a área cinza das folhas do inspetor é externa ao produto.
 Limites: navegador com API sintética, API real em teste PostgreSQL separado,
 sem prova ponta a ponta do produto completo ou busca externa Google Maps com
 credenciais reais. Hoje/semana e liberação operacional continuam P5/P6.
+
+## P5 — Hoje integrado
+
+Mantidos Horizonte, Inter, creme/bordô, editorial-greeting, seed **275775847**,
+keep palette,type. Nenhum redraw. Pergunta: **o que está planejado e o que preciso
+replanejar ou concluir?** Ideia: o mesmo ID de tarefa do quadro se torna a linha
+do planejamento diário, com prazo independente. O elemento interativo é a faixa
+do dia que leva à tarefa; as marcas coincidentes abrem os IDs correspondentes.
+
+Inventário: tarefa com/sem horário; três períodos; objetivo opcional; coluna
+canônica; tarefa avulsa; prazo hoje/ultrapassado; planejamento futuro; pendência
+anterior; concluída recolhida; cancelada fora do trabalho ativo; projeto arquivado;
+mesmo relógio de Recife. Os blocos respondem, nessa ordem: planejado hoje, em que
+período, o que foi concluído, o que ficou de outro dia e qual prazo exige atenção.
+
+### Artefatos e reprodução
+
+- [Antes](p5/before/report.json): captura da árvore local encontrada, já com as
+  leituras DayResponse/RangeResponse em andamento. Mesmo dataset sintético do depois;
+  a ausência de Sem horário/recuperação era o comportamento dessa composição.
+- [Fixture isolada](p5/fixture-server.mjs): nove tarefas ilustrativas em memória;
+  nenhuma entra no produto. Três planejadas ativas hoje, uma concluída hoje, uma
+  pendência anterior, duas em atenção, uma sem datas e uma cancelada. Um objetivo
+  e uma tarefa têm títulos longos. O total da lista planejada é quatro, não nove.
+- [Interações/capturas](p5/check-browser.mjs) e [resultados](p5/browser-results.json).
+- [Gate final](p5/inspection-results.json): dia/semana, claro/escuro, três larguras;
+  relatórios e todas as capturas ficam em `p5/final/`.
+- [Jornada real](p5/live-browser.mjs): acionada pelo WorkApiPostgresTest em HTTP
+  aleatório com PostgreSQL descartável. Sem usar globalSetup nem banco da aplicação.
+- [Build](p5/build.json): hashes dos arquivos finais de produção.
+
+```bash
+VITE_API_BASE_URL=/api npm --prefix oriens-front run build
+node docs/screenshots/projects-refactor/p5/fixture-server.mjs oriens-front/dist 4185
+# Em outro terminal; executar interações antes da inspeção, mantendo a fixture estável:
+node docs/screenshots/projects-refactor/p5/check-browser.mjs
+node docs/screenshots/projects-refactor/p5/inspect-all.mjs
+python3 oriens-api/ops/projects-refactor/test_p2.py --browser
+```
+
+O modo live da fixture encaminha somente task/project à API descartável. JWT de
+QA é efêmero e fornecido por ambiente pelo teste; nenhum token real é armazenado
+nos artefatos. Perfil/preferências/notificações do shell continuam sintéticos.
+
+### Crítica APP SCREENS
+
+ROUND 1
+Seen in one second: Hoje e faixa preservados; contexto completo, porém linha apertada no tablet.
+Idea (one sentence): o mesmo trabalho do quadro ocupa a linha diária sem duplicar tarefa.
+Live thing: marcas por horário e menu com foco na linha.
+Layout words by section: título=ações / faixa=períodos / planejamento=listas / recuperação=listas.
+Scores: design 7 · usability 7 · creativity 7 · content 8 → overall 7.1.
+Caps applied: regras APP SCREENS; sem pisos de imagens ou entrance motion.
+Top three problems (most visible first), each with the screenshot it shows in and the fix:
+1. day-light/tablet-fold: hora/identidade/prioridade comprimem a linha; concentrar metadados abaixo do título.
+2. day-light/desktop-fold: agora encosta em Manhã; levar o rótulo à base da faixa.
+3. week-light/desktop-fold: contexto só usa o centro estreito do cartão; usar sua largura inteira.
+
+ROUND 2
+Seen in one second: dia legível; semana ainda longa e cartões estreitos.
+Idea (one sentence): planejamento e prazo continuam independentes em cada superfície.
+Live thing: conclusão retira a linha da lista ativa e a mantém na seção recolhida.
+Layout words by section: dia=linhas / semana=colunas ou agenda / atenção=linhas com motivo.
+Scores: design 7.3 · usability 7.5 · creativity 7 · content 8 → overall 7.4.
+Caps applied: regras APP SCREENS.
+Top three problems (most visible first), each with the screenshot it shows in and the fix:
+1. week-light/desktop-page-01: campos quebram palavra a palavra; ampliar largura mínima das colunas e tirar a data planejada redundante com o cabeçalho do dia.
+2. week-light/mobile-page-01: seis dias vazios empurram sábado; pôr Sem tarefas ao lado do dia e compactar espaçamento.
+3. day-light/mobile-page-01: contagem quebra em duas linhas; reservar sua largura.
+
+ROUND 3
+Seen in one second: Hoje mostra trabalho e motivo; semana preserva calendário com rolagem interna.
+Idea (one sentence): o ID persistente conecta quadro, horário e linha diária; prazo não vira agenda.
+Live thing: menu de marcas coincidentes, planejamento e conclusão confirmados pelo servidor.
+Layout words by section: título=ações / faixa=tempo / dia=grupos / concluídas=disclosure / semana=agenda ou colunas.
+Scores: design 7.5 · usability 8 · creativity 7 · content 8 → overall 7.6.
+Caps applied: regras APP SCREENS; sem métricas/imagens decorativas inventadas.
+Top three problems (most visible first), each with the screenshot it shows in and the fix:
+1. week-light/desktop-fold: semana quase vazia gera um campo vazio real. A grade passa a manter o dia selecionado visível na rolagem interna, sem preencher os dias vazios com tarefas de atenção ou dados inventados.
+2. tablet-fold: shell existente ainda ocupa 256px em 768px. A lista foi adaptada ao espaço; mudança global do breakpoint do shell fica para P6.
+3. week-light: bordas dos cartões existentes continuam mais fortes que a recomendação; ressalva abaixo.
+
+### Gate e ressalvas
+
+Zero FAIL nas quatro inspeções finais (12 combinações). Dia claro/escuro: um WARN
+icon-chips, dos três controles neutros do shell. São botões reais de navegação,
+não ícones decorativos de métricas. Semana clara: hero-void, heavy-borders e
+icon-chips; escura: hero-void e icon-chips. O vazio corresponde aos dias sem tarefa;
+não é preenchido artificialmente. As bordas de TaskChip são as divisórias do
+sistema Horizonte, ~1,45:1; permanecem um ponto de refinamento visual para P6.
+Exceção de paleta limitada a palette-cream, exigida pela SPEC. Nenhuma dispensa de
+contraste, foco ou legibilidade. Lint: 0 FAIL, um WARN referente a “06” na régua real,
+que é dado de horário obrigatório, não numeração decorativa.
+
+As capturas fold/page de todos os relatórios finais foram abertas. Sem imagens ou
+clips externos, sem créditos a acrescentar e sem dados de exemplo no produto.
+Os dados sintéticos são exclusivos dos testes; não há conteúdo de prova a trocar
+no lançamento. P6 ainda cobre a inspeção global e a liberação operacional.

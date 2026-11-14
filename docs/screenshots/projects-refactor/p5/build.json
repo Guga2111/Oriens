@@ -1,0 +1,15 @@
+{
+  "gitHead": "5d2417c8a9c3f18e5aa5113414968a341baa4134",
+  "workingTree": "P5 sobre altera\u00e7\u00f5es locais preservadas",
+  "build": "VITE_API_BASE_URL=/api npm --prefix oriens-front run build",
+  "files": {
+    "assets/index-8Qk0s-kK.css": "21f15e6ffb6288109d80e7bf27abf4a620ed10c942ce7011785f7c673ecf3c8c",
+    "assets/index-BELoQC4h.js": "dd2a4078e6530cbc17cfbebd4c98b0ff79ecd031cf795b475f20b0943ad0f3be",
+    "concluding-sound.wav": "7a5c0b2fb7f7cf77f6b3d36e9e165176a0b2f463c6ff3e6f3c133eda7fc945a1",
+    "favicon.svg": "93c59c2cb06834776779280625ce574947d8be6d5c7ceb4c2c7604f46ad48635",
+    "index.html": "138d1df5fbd1e2080c0b5871968ac22b9b881a675a0577fe27effc8306c00780",
+    "oriens-tasks-screen.png": "6243540e20133de07ffde6de2f9608f5f0b1c08c91ea62d31ea7009aa5a9e6aa",
+    "placeholder.svg": "64badf7aabda0b9630b87020ffb6095cb858ccbcf66b355c2aa08b1063954d3b",
+    "robots.txt": "a3d27b3ca5ce32341fa9f96f01169b521b1657c05d1860c45d1e53a6258e9e8b"
+  }
+}

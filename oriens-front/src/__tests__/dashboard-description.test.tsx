@@ -47,8 +47,13 @@ function task(overrides: Partial<Task> & Pick<Task, "id" | "title">): Task {
 
 function mockTasks(tasks: Task[]) {
   vi.mocked(apiClient.get).mockImplementation(((url: string) => {
-    if (url.startsWith("/task/user/1?")) {
-      return Promise.resolve({ data: tasks });
+    if (url === "/task/user/1") {
+      return Promise.resolve({ data: {
+        date: '2026-11-14', timezone: 'America/Recife',
+        planned: tasks.filter(t => t.status !== 'CONCLUDED'),
+        completed: tasks.filter(t => t.status === 'CONCLUDED'),
+        previousPlans: [], deadlineAttention: [],
+      } });
     }
     return Promise.resolve({ data: [] });
   }) as typeof apiClient.get);

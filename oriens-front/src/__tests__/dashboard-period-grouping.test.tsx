@@ -56,8 +56,13 @@ function sectionContainer(title: "Manhã" | "Tarde" | "Noite"): HTMLElement {
 
 beforeEach(() => {
   vi.mocked(apiClient.get).mockImplementation(((url: string) => {
-    if (url.startsWith("/task/user/1?")) {
-      return Promise.resolve({ data: tasks });
+    if (url === "/task/user/1") {
+      return Promise.resolve({ data: {
+        date: '2026-11-14', timezone: 'America/Recife',
+        planned: tasks.filter(t => t.status !== 'CONCLUDED'),
+        completed: tasks.filter(t => t.status === 'CONCLUDED'),
+        previousPlans: [], deadlineAttention: [],
+      } });
     }
     return Promise.resolve({ data: [] });
   }) as typeof apiClient.get);
@@ -66,7 +71,7 @@ beforeEach(() => {
 describe("DashboardPage — agrupamento de tarefas por período", () => {
   it("respeita as fronteiras 11:59:59/12:00:00 e 17:59:59/18:00:00", async () => {
     render(<DashboardPage />);
-    await screen.findByRole("heading", { level: 2, name: "Manhã" });
+    await screen.findByText(/0 de 6 concluídas/);
 
     const manha = sectionContainer("Manhã");
     const tarde = sectionContainer("Tarde");
@@ -88,13 +93,13 @@ describe("DashboardPage — agrupamento de tarefas por período", () => {
     expect(within(noite).queryByText("Fim da tarde")).toBeNull();
   });
 
-  it("mostra a contagem de concluídas por seção no formato N de M", async () => {
+  it("mostra a quantidade de tarefas ativas em cada período", async () => {
     render(<DashboardPage />);
-    await screen.findByRole("heading", { level: 2, name: "Manhã" });
+    await screen.findByText(/0 de 6 concluídas/);
 
     for (const title of ["Manhã", "Tarde", "Noite"] as const) {
       expect(
-        within(sectionContainer(title)).getByText("0 de 2")
+        within(sectionContainer(title)).getByText("2 tarefas")
       ).toBeInTheDocument();
     }
   });

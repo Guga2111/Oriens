@@ -17,6 +17,9 @@ import db
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--browser', action='store_true', help='Also run P5 against the production frontend; needs installed Chrome/Brave and Node dependencies')
+    options = parser.parse_args()
     api = Path(__file__).resolve().parents[2]
     name = 'oriens-p2-' + uuid.uuid4().hex[:12]
     subprocess.run(['docker', 'run', '--detach', '--name', name,
@@ -40,6 +43,8 @@ def main():
         endpoint = subprocess.check_output(['docker', 'port', name, '5432'], text=True).strip()
         port = endpoint.rsplit(':', 1)[1]
         env = dict(os.environ, P2_JDBC_URL=f'jdbc:postgresql://127.0.0.1:{port}/oriens_p2_proof')
+        if options.browser:
+            env['P5_BROWSER_PROOF'] = '1'
         subprocess.run(['mvn', '-q', '-Dtest=WorkApiPostgresTest', 'test'], cwd=api, env=env, check=True)
         # Verify JPA validate and every mutation left the sealed SQL catalog unchanged.
         with contextlib.redirect_stdout(io.StringIO()):

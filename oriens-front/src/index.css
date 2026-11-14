@@ -157,3 +157,8 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Planning keeps thumb-sized actions without enlarging the checkbox's visual mark. */
+@media (max-width: 639px) {
+  .planning-screen button:not([role="checkbox"]) { min-height: 44px; min-width: 44px; }
+}

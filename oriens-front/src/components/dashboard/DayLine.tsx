@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { productNow } from "@/lib/product-time";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { TASK_STATUS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/types/task";
@@ -32,14 +33,14 @@ interface DayLineProps {
  * de 40 px, só com marcas e a linha "agora" (SPEC §11.1).
  */
 export function DayLine({ tasks, date }: DayLineProps) {
+  const selectedTask = useRef<number | null>(null);
   const [now, setNow] = useState(() => productNow());
   const isToday = format(date, "yyyy-MM-dd") === now.date;
 
   useEffect(() => {
-    if (!isToday) return;
     const interval = window.setInterval(() => setNow(productNow()), 60_000);
     return () => window.clearInterval(interval);
-  }, [isToday]);
+  }, []);
 
   const nowMinutes = timeToMinutes(now.time);
   const nowPosition =
@@ -61,7 +62,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
     <div
       role="list"
       aria-label="Linha do dia"
-      className="relative mt-6 h-10 overflow-hidden rounded-lg border bg-card sm:h-16"
+      className="relative mt-6 h-11 overflow-hidden rounded-lg border bg-card sm:h-16"
     >
       <div aria-hidden className="absolute inset-0 grid grid-cols-3">
         <div className="bg-muted/40" />
@@ -71,7 +72,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-1 hidden grid-cols-3 text-center text-[11px] uppercase tracking-wide text-muted-foreground sm:grid"
+        className="pointer-events-none absolute inset-x-0 top-1 hidden grid-cols-3 text-center text-xs text-muted-foreground sm:grid"
       >
         <span>Manhã</span>
         <span>Tarde</span>
@@ -80,7 +81,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-1 hidden justify-between px-2 text-[11px] tabular-nums text-muted-foreground sm:flex"
+        className="pointer-events-none absolute inset-x-0 bottom-1 hidden justify-between px-2 text-xs tabular-nums text-muted-foreground sm:flex"
       >
         <span>06</span>
         <span>12</span>
@@ -88,57 +89,34 @@ export function DayLine({ tasks, date }: DayLineProps) {
         <span>24</span>
       </div>
 
-      {tasks.filter(task => task.startTime && task.status !== "CANCELLED").map((task) => {
-        const position = positionFor(task.startTime);
-        const beforeSix = timeToMinutes(task.startTime) < DAY_START_MINUTES;
-        const status = TASK_STATUS[task.status];
-        const timeLabel = beforeSix
-          ? `≤06, ${task.startTime.slice(0, 5)}`
-          : task.startTime.slice(0, 5);
-
-        return (
-          <button
-            key={task.id}
-            type="button"
-            className="absolute top-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-6 sm:w-6"
-            style={{
-              left: `${position}%`,
-              transform:
-                position === 0
-                  ? "translate(0, -50%)"
-                  : position === 100
-                    ? "translate(-100%, -50%)"
-                    : "translate(-50%, -50%)",
-            }}
-            aria-label={`${timeLabel}, ${task.title}, ${status.label.toLowerCase()}`}
-            title={`${timeLabel} · ${task.title}`}
-            onClick={() => focusTask(task.id)}
-          >
-            <span
-              aria-hidden
-              className={cn(
-                "h-4 w-1 rounded-full",
-                task.status === "CONCLUDED"
-                  ? "bg-primary"
-                  : task.status === "ON_DOING"
-                    ? "bg-now"
-                    : "bg-foreground/40"
-              )}
-            />
-          </button>
-        );
+      {Object.entries(tasks.filter(t => t.startTime && t.status !== 'CANCELLED').reduce<Record<string, Task[]>>((groups, task) => {
+        // The clamped pre-06 range is one position too, so its targets must share a menu.
+        const key = timeToMinutes(task.startTime!) <= DAY_START_MINUTES ? '06:00' : task.startTime!.slice(0, 5);
+        (groups[key] ??= []).push(task); return groups;
+      }, {})).map(([minute, group]) => {
+        const position = positionFor(minute);
+        const task = group[0];
+        const label = (t: Task) => `${t.startTime!.slice(0, 5)}, ${t.title}, ${TASK_STATUS[t.status].label.toLowerCase()}`;
+        const marker = <button type="button" className="absolute top-1/2 z-10 flex h-11 min-w-11 items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          style={{ left: `${position}%`, transform: position === 0 ? 'translate(0, -50%)' : position === 100 ? 'translate(-100%, -50%)' : 'translate(-50%, -50%)' }}
+          aria-label={group.length > 1 ? `${minute}, ${group.length} tarefas` : label(task)} title={group.map(label).join(' · ')}
+          onClick={group.length === 1 ? () => focusTask(task.id) : undefined}>
+          <span aria-hidden className={cn('h-4 w-1 rounded-full', task.status === 'CONCLUDED' ? 'bg-primary' : task.status === 'ON_DOING' ? 'bg-now' : 'bg-foreground/40')} />
+          {group.length > 1 && <span className="ml-1 text-xs tabular-nums">{group.length}</span>}
+        </button>;
+        return group.length === 1 ? <span key={minute}>{marker}</span> : <DropdownMenu key={minute}><DropdownMenuTrigger asChild>{marker}</DropdownMenuTrigger><DropdownMenuContent className="max-sm:[&_[role=menuitem]]:min-h-11" onCloseAutoFocus={e => { if (selectedTask.current !== null) { e.preventDefault(); focusTask(selectedTask.current); selectedTask.current = null; } }}>{group.map(t => <DropdownMenuItem key={t.id} onSelect={() => { selectedTask.current = t.id; }}>{label(t)}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>;
       })}
 
       {nowPosition !== null && (
         <>
           <div
             aria-hidden
-            className="absolute inset-y-0 z-20 w-0.5 bg-now"
+            className="pointer-events-none absolute inset-y-0 z-20 w-0.5 bg-now"
             style={{ left: `${nowPosition}%` }}
           />
           <span
             aria-hidden
-            className="absolute top-0 z-20 hidden -translate-x-1/2 rounded bg-card px-1 text-xs font-medium text-foreground sm:block"
+            className="pointer-events-none absolute bottom-0 z-20 hidden -translate-x-1/2 rounded bg-card px-1 text-xs font-medium text-foreground sm:block"
             style={{ left: `${Math.min(94, Math.max(6, nowPosition))}%` }}
           >
             agora
