@@ -74,7 +74,9 @@ class ProjectWorkPostgresTest {
         return service.createTask(owner, new CreateTask("Ação", null, p == null ? null : p.getId(),
                 p == null ? null : current(p).getVersion(), objective, null, plan, time, due, null, null));
     }
-    PatchTask patch(Task task) { PatchTask p = new PatchTask(); p.setVersion(task.getVersion()); return p; }
+    PatchTask patch(Task task) { PatchTask p = new PatchTask(); p.setVersion(task.getVersion());
+        if (task.getProjectId() != null) p.setProjectVersion(projects.findById(task.getProjectId()).orElseThrow().getVersion());
+        return p; }
     PatchTask move(Task t, Project p, Long column) {
         PatchTask patch = patch(t); patch.setProjectVersion(current(p).getVersion()); patch.setColumnId(column); return patch;
     }

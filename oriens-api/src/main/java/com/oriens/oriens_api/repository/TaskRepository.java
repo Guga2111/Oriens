@@ -17,6 +17,9 @@ import java.time.LocalTime;
 import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
+    long countByProjectIdAndColumnId(Long projectId, Long columnId);
+    long countByObjectiveId(Long objectiveId);
+    long countByProjectId(Long projectId);
     java.util.Optional<Task> findByIdAndUserId(Long id, Long ownerId);
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from Task t where t.id = :id and t.user.id = :ownerId")

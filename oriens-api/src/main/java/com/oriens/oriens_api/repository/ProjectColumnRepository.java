@@ -3,5 +3,6 @@ import com.oriens.oriens_api.entity.ProjectColumn;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 public interface ProjectColumnRepository extends JpaRepository<ProjectColumn, Long> {
+    long countByProjectId(Long projectId);
     List<ProjectColumn> findByProjectIdOrderByPositionAscIdAsc(Long projectId);
 }

@@ -16,9 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class StatisticsController {
 
     private final StatisticsService statisticsService;
+    private final com.oriens.oriens_api.security.WorkOwner owner;
 
     @GetMapping("/user/{userId}/dashboard")
-    public ResponseEntity<StatisticsDashboardDTO> getStatistics (@PathVariable Long userId) {
-        return new ResponseEntity<>(statisticsService.getDashboardData(userId), HttpStatus.OK);
+    public ResponseEntity<StatisticsDashboardDTO> getStatistics (org.springframework.security.core.Authentication auth, @PathVariable Long userId) {
+        return new ResponseEntity<>(statisticsService.getDashboardData(owner.matching(auth, userId)), HttpStatus.OK);
     }
 }

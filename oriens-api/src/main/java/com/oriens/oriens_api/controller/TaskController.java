@@ -1,98 +1,108 @@
 package com.oriens.oriens_api.controller;
 
 import com.oriens.oriens_api.entity.Task;
-import com.oriens.oriens_api.entity.dto.TaskDTO;
-import com.oriens.oriens_api.entity.dto.TaskResponseDTO;
 import com.oriens.oriens_api.entity.dto.WeeklySummaryDTO;
-import com.oriens.oriens_api.entity.enums.Priority;
-import com.oriens.oriens_api.entity.enums.Status;
-import com.oriens.oriens_api.service.TaskServiceImpl;
-import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import com.oriens.oriens_api.entity.dto.work.*;
+import com.oriens.oriens_api.entity.dto.work.WorkCommands.*;
+import com.oriens.oriens_api.entity.dto.work.WorkResponses.*;
+import com.oriens.oriens_api.entity.enums.*;
+import com.oriens.oriens_api.repository.*;
+import com.oriens.oriens_api.security.WorkOwner;
+import com.oriens.oriens_api.service.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
 
-@AllArgsConstructor
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/task")
+@Transactional
 public class TaskController {
-
-    private final TaskServiceImpl taskService;
+    private final ProjectWorkService work;
+    private final WorkReadService read;
+    private final WorkCreationService creation;
+    private final WorkOwner owner;
+    private final TaskRepository tasks;
+    private final UserRepository users;
+    private final TaskServiceImpl legacyReads;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById (@PathVariable Long id) {
-        return new ResponseEntity<>(taskService.getTask(id), HttpStatus.OK);
+    @Transactional(readOnly = true)
+    public ResponseEntity<TaskView> get(Authentication auth, @PathVariable Long id) {
+        TaskView result = read.taskView(owner.id(auth), id); return WorkHttp.ok(result, result.version());
     }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Task>> getTasksForUserByDueDate (
-            @PathVariable Long userId,
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)LocalDate date
-            ) {
-        return new ResponseEntity<>(taskService.getTasksForUserByDueDate(userId, date), HttpStatus.OK);
-    }
-
-    @GetMapping("/user/{userId}/range")
-    public ResponseEntity<List<Task>> getTasksForUserByDateRange(
-            @PathVariable Long userId,
-            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-
-        List<Task> tasks = taskService.getTasksForUserByDateRange(userId, startDate, endDate);
-        return new ResponseEntity<>(tasks, HttpStatus.OK);
-    }
-
-    @GetMapping("/user/{userId}/summary/weekly-counts")
-    public ResponseEntity<WeeklySummaryDTO> getCountTasksWeeklySummary (@PathVariable Long userId) {
-        return new ResponseEntity<>(taskService.retrieveDoneTasksAndTasksNumbersByDateRange(userId), HttpStatus.OK);
-    }
-
     @PostMapping("/user/{userId}")
-    public ResponseEntity<Task> createTask (@PathVariable Long userId, @RequestBody TaskDTO taskDTO) {
-        return new ResponseEntity<>(taskService.createTask(taskDTO, userId), HttpStatus.CREATED);
+    public ResponseEntity<Object> create(Authentication auth, @PathVariable Long userId,
+            @RequestHeader(value="Idempotency-Key", required=false) String key, @RequestBody CreateTask command) {
+        Long user = owner.matching(auth, userId);
+        return WorkHttp.created(creation.create(user, "task:create", key, command, () -> {
+            Task t = work.createTask(user, command);
+            TaskView result = read.view(user, t);
+            TaskMutation response = new TaskMutation(result, ids(null, t.getProjectId()), null, t.getPlannedDate());
+            return new WorkCreationService.Created(response, t.getVersion(), t.getId());
+        }, id -> tasks.findByIdAndUserId(id, user).isPresent()));
     }
-
-    @PutMapping("/{taskId}")
-    public ResponseEntity<Task> updateTask (@PathVariable Long taskId, @RequestBody Task taskDetails) {
-        return new ResponseEntity<>(taskService.updateTask(taskId, taskDetails), HttpStatus.OK);
+    @PatchMapping("/{id}")
+    public ResponseEntity<TaskMutation> patch(Authentication auth, @PathVariable Long id,
+            @RequestHeader(value="If-Match", required=false) String match, @RequestBody PatchTask command) {
+        Long user = owner.id(auth); WorkHttp.agree(match, command.getVersion());
+        Task before = read.task(user, id); Long project = before.getProjectId(); LocalDate planned = before.getPlannedDate();
+        Task after = work.patchTask(user, id, command);
+        TaskMutation result = new TaskMutation(read.view(user, after), ids(project, after.getProjectId()), planned, after.getPlannedDate());
+        return WorkHttp.ok(result, after.getVersion());
     }
-
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask (@PathVariable Long id) {
-        taskService.deleteTask(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    public ResponseEntity<TaskDeletion> delete(Authentication auth, @PathVariable Long id,
+            @RequestHeader(value="If-Match", required=false) String match, @RequestHeader(value="X-Project-Version", required=false) Long projectVersion) {
+        Long user = owner.id(auth); TaskView before = read.taskView(user, id);
+        work.deleteTask(user, id, WorkHttp.version(match), projectVersion);
+        return ResponseEntity.ok(new TaskDeletion(id, ids(null, before.projectId()), before.plannedDate()));
     }
+    @PutMapping("/{id}") public void retiredPut() { throw WorkHttp.retired(); }
 
+    // P2 secures existing collection reads and their projections. Agenda semantics move in P3.
+    @GetMapping("/user/{userId}")
+    @Transactional(readOnly = true)
+    public List<TaskView> day(Authentication auth, @PathVariable Long userId,
+            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate date) {
+        Long user = owner.matching(auth, userId);
+        return tasks.findByUserAndDueDate(users.findById(user).orElseThrow(), date).stream().map(t -> read.view(user, t)).toList();
+    }
+    @GetMapping("/user/{userId}/range")
+    @Transactional(readOnly = true)
+    public List<TaskView> range(Authentication auth, @PathVariable Long userId,
+            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Long user = owner.matching(auth, userId);
+        return tasks.findByUserAndDueDateBetweenOrderByDueDateAscStartTimeAsc(users.findById(user).orElseThrow(), startDate, endDate)
+            .stream().map(t -> read.view(user, t)).toList();
+    }
     @GetMapping("/user/{userId}/all")
-    public ResponseEntity<Page<TaskResponseDTO>> getAllTasksPaginated(
-            @PathVariable Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "dueDate") String sortBy,
-            @RequestParam(defaultValue = "DESC") String direction,
-            @RequestParam(required = false) Status status,
-            @RequestParam(required = false) Priority priority,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
-    ) {
-        Sort.Direction sortDirection = direction.equalsIgnoreCase("ASC")
-                ? Sort.Direction.ASC
-                : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-
-        Page<TaskResponseDTO> tasks = taskService.getAllTasksPaginated(
-                userId, status, priority, search, startDate, endDate, pageable
-        );
-
-        return ResponseEntity.ok(tasks);
+    @Transactional(readOnly = true)
+    public Page<TaskView> all(Authentication auth, @PathVariable Long userId,
+            @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size,
+            @RequestParam(defaultValue="dueDate") String sortBy, @RequestParam(defaultValue="DESC") Sort.Direction direction,
+            @RequestParam(required=false) Status status, @RequestParam(required=false) Priority priority,
+            @RequestParam(required=false) String search,
+            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        Long user = owner.matching(auth, userId);
+        return tasks.findAllFiltered(user, status, priority, search, startDate, endDate,
+            WorkPagination.of(page,size,sortBy,direction,"id","title","dueDate","plannedDate","startTime","priority","status","createdAt"))
+            .map(t -> read.view(user, t));
+    }
+    @GetMapping("/user/{userId}/summary/weekly-counts")
+    @Transactional(readOnly = true)
+    public WeeklySummaryDTO weekly(Authentication auth, @PathVariable Long userId) {
+        return legacyReads.retrieveDoneTasksAndTasksNumbersByDateRange(owner.matching(auth, userId));
+    }
+    private static List<Long> ids(Long first, Long second) {
+        return java.util.stream.Stream.of(first, second).filter(Objects::nonNull).distinct().sorted().toList();
     }
 }

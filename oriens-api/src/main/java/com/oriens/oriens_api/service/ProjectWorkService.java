@@ -59,6 +59,19 @@ public class ProjectWorkService {
         return project;
     }
 
+    public Project setFavorite(Long ownerId, Long id, Long expected, Boolean value) {
+        Project p = project(ownerId, id); version(p.getVersion(), expected);
+        p.setFavorite(require(value, "favorite")); em.flush(); return p;
+    }
+    public Project setArchived(Long ownerId, Long id, Long expected, Boolean value) {
+        Project p = project(ownerId, id); version(p.getVersion(), expected);
+        p.setArchived(require(value, "archived")); em.flush(); return p;
+    }
+    public Project setImage(Long ownerId, Long id, Long expected, String url) {
+        Project p = project(ownerId, id); version(p.getVersion(), expected);
+        p.setImageUrl(url); em.flush(); return p;
+    }
+
     public Project convertProject(Long ownerId, Long id, Long expectedVersion, ProjectMode mode) {
         Project project = project(ownerId, id);
         version(project.getVersion(), expectedVersion);
@@ -177,6 +190,11 @@ public class ProjectWorkService {
         return project;
     }
 
+    public Project removeColumn(Long ownerId, Long projectId, Long id, RemoveColumn command) {
+        Project p = development(ownerId, projectId);
+        return removeColumn(ownerId, projectId, id, column(p, id).getVersion(), command);
+    }
+
     public Project removeColumn(Long ownerId, Long projectId, Long id, Long columnVersion, RemoveColumn command) {
         Project project = development(ownerId, projectId);
         version(project.getVersion(), command.projectVersion());
@@ -253,8 +271,8 @@ public class ProjectWorkService {
         Project target = targetProjectId == null ? null : locked.get(targetProjectId);
         if (target != null && target.getMode() != ProjectMode.DEVELOPMENT) invalid("projectId", "O projeto precisa ser Desenvolvimento.");
         boolean structural = transfer || command.has("columnId") || command.has("status") || command.has("beforeTaskId");
+        if (originalProjectId != null) version(locked.get(originalProjectId).getVersion(), command.getProjectVersion());
         if (structural) {
-            if (originalProjectId != null) version(locked.get(originalProjectId).getVersion(), command.getProjectVersion());
             if (transfer && target != null) version(target.getVersion(), command.getTargetProjectVersion());
         }
         if (transfer) {

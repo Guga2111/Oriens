@@ -1,6 +1,6 @@
 # Contratos P0 de Projetos
 
-Contrato da próxima versão, **ainda não exposto pela API atual**. Fonte de produto:
+Contrato da próxima versão: **escritas/segurança implementadas em P2; leituras agregadas pendentes em P3; sem liberação em produção**. Fonte de produto:
 [SPEC](../plans/2026-11-13-projects-refactor-spec.md), seções 4–11.
 [Tipos de transporte](projects-v2.ts) fixam os DTOs; não importar entidades JPA no transporte.
 P1 implementa persistência; P2 implementa escritas/segurança; P3 implementa leituras.
@@ -115,8 +115,9 @@ Repetição deve consultar recibo antes de rejeitar projectVersion que a própri
 No conflito de chave simultânea, reler recibo após rollback/retry transacional limitado, sem repetir
 efeitos fora do banco. Não guardar tokens, entidades User ou dados de autenticação no recibo.
 
-TTL de replay: 24 horas; persistir `expiresAt >= createdAt + 24 h`. P2 implementa limpeza após
-expiração, com nenhum retry automático de criação incerta após essa janela. Recibo expirado ainda
+TTL de replay: 24 horas; persistir `expiresAt >= createdAt + 24 h`. P2 limpa o corpo de resposta expirado em job horário e mantém marca mínima da chave
+para impedir recriação por retry incerto depois da limpeza. Não há retry automático
+de criação incerta após essa janela. Recibo expirado ainda
 presente retorna 410. Cliente mantém a mesma chave/payload até resolver a tentativa; nova chave
 somente para nova intenção explícita. P0 fixa a tabela, não inicia job de limpeza.
 

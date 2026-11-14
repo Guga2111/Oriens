@@ -15,6 +15,10 @@ public interface ProjectRepository extends org.springframework.data.jpa.reposito
     @Query("select p from Project p where p.id = :id and p.user.id = :ownerId")
     java.util.Optional<Project> lockOwned(@Param("id") Long id, @Param("ownerId") Long ownerId);
 
+    @Query("select p from Project p where p.user.id = :owner and p.archived = false order by p.favorite desc, p.lastAccessed desc nulls last")
+    List<Project> findSidebarByOwner(@Param("owner") Long owner);
+    java.util.Optional<Project> findByIdAndUserId(Long id, Long ownerId);
+
     Page<Project> findByUserIdAndArchived(Long userId, Boolean archived, Pageable pageable);
 
     List<Project> findByUserId (Long userId);

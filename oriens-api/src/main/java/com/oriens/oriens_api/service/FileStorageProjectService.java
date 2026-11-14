@@ -22,8 +22,16 @@ public class FileStorageProjectService {
         Files.createDirectories(this.fileStorageLocation);
     }
 
+    public void discard(String filename) throws IOException {
+        Path file = fileStorageLocation.resolve(filename).normalize();
+        if (!file.getParent().equals(fileStorageLocation)) throw new IOException("Invalid path");
+        Files.deleteIfExists(file);
+    }
+
     public String storeFile (MultipartFile file, Long userId) throws IOException {
-        String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
+        if (file.isEmpty() || file.getSize() > 5 * 1024 * 1024)
+            throw new com.oriens.oriens_api.exception.WorkDomainException("DOMAIN_VIOLATION", "projectImage", "Envie uma imagem de até 5 MB.");
+        String originalFileName = StringUtils.cleanPath(file.getOriginalFilename() == null ? "" : file.getOriginalFilename());
 
         String fileExtension = "";
 
@@ -33,6 +41,9 @@ public class FileStorageProjectService {
 
         }
 
+        fileExtension = fileExtension.toLowerCase(java.util.Locale.ROOT);
+        if (!java.util.Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp").contains(fileExtension))
+            throw new com.oriens.oriens_api.exception.WorkDomainException("DOMAIN_VIOLATION", "projectImage", "Use JPG, PNG, GIF ou WebP.");
         String fileName = userId + "_" + UUID.randomUUID().toString() + fileExtension;
 
         Path targetLocation = this.fileStorageLocation.resolve(fileName);

@@ -51,6 +51,13 @@ public class SecurityConfig {
 
 
                         .anyRequest().authenticated())
+                .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, failure) -> {
+                    response.setStatus(401);
+                    response.setContentType("application/json");
+                    String requestId = java.util.UUID.randomUUID().toString();
+                    response.setHeader("X-Request-Id", requestId);
+                    response.getWriter().write("{\"code\":\"UNAUTHENTICATED\",\"message\":\"Entre novamente para continuar.\",\"fieldErrors\":[],\"requestId\":\"" + requestId + "\"}");
+                }))
                 .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
                 .addFilter(authenticationFilter)
                 .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class)
