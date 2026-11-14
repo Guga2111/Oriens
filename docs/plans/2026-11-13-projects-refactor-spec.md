@@ -1,6 +1,6 @@
 # Projetos — SPEC executável e plano de execução
 
-Data: 2026-11-13. Status: design aprovado; implementação não iniciada.
+Data: 2026-11-13. Status: design aprovado; P0 implementada ([evidências](2026-11-13-projects-refactor-p0.md)); P1–P6 pendentes.
 
 Design e decisões aprovadas: [2026-11-13-projects-refactor-design.md](2026-11-13-projects-refactor-design.md). Esta SPEC substitui decisões anteriores apenas no escopo descrito. Os planos históricos permanecem intactos.
 
