@@ -52,7 +52,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ProjectDTO } from "@/types/project";
+import type { WorkProject as ProjectDTO } from "@/types/work";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 
@@ -90,7 +90,7 @@ export function ProjectsDataTable({
 }: ProjectsDataTableProps) {
   const [searchInput, setSearchInput] = useState(filters.searchQuery);
   const pageSize = 20;
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const currentPage = pagination.page;
   const totalPages = pagination.totalPages;
@@ -226,7 +226,7 @@ export function ProjectsDataTable({
   );
 
   return (
-    <Card>
+    <Card className="border-border/60 shadow-none">
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-lg font-medium">Todos os projetos</CardTitle>
@@ -297,7 +297,7 @@ export function ProjectsDataTable({
         ) : (
           <>
             {/* Abaixo de 768 a tabela vira lista de 2 linhas (SPEC §11.7). */}
-            <div className="hidden overflow-x-auto rounded-lg border md:block">
+            <div className="hidden overflow-x-auto rounded-lg border lg:block">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -307,7 +307,7 @@ export function ProjectsDataTable({
                     <TableHead className="hidden w-[250px] xl:table-cell">
                       Descrição
                     </TableHead>
-                    <TableHead className="w-[180px]">Progresso</TableHead>
+                    <TableHead className="w-[180px]">Objetivos e tarefas</TableHead>
                     <TableHead className="w-[100px]">Status</TableHead>
                     <TableHead className="w-[80px] text-center">
                       Favorito
@@ -338,15 +338,7 @@ export function ProjectsDataTable({
                         </span>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Progress
-                            value={project.progress}
-                            className="h-2 flex-1"
-                          />
-                          <span className="w-10 text-right text-sm tabular-nums text-muted-foreground">
-                            {project.progress}%
-                          </span>
-                        </div>
+                        <ProjectCounts project={project} />
                       </TableCell>
                       <TableCell>
                         {project.archived ? (
@@ -383,7 +375,7 @@ export function ProjectsDataTable({
 
             <ul
               aria-label="Lista de projetos"
-              className="divide-y rounded-lg border md:hidden"
+              className="divide-y divide-border/60 rounded-lg border border-border/60 lg:hidden"
             >
               {projects.map((project) => (
                 <li key={project.id} className="flex flex-col gap-2 p-3">
@@ -417,12 +409,7 @@ export function ProjectsDataTable({
                     />
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <Progress value={project.progress} className="h-2 w-16" />
-                      <span className="text-xs tabular-nums text-muted-foreground">
-                        {project.progress}%
-                      </span>
-                    </div>
+                    <ProjectCounts project={project} />
                     <div className="flex items-center gap-1">
                       {project.archived ? (
                         <Badge variant="secondary" className="gap-1">
@@ -488,4 +475,14 @@ export function ProjectsDataTable({
       </CardContent>
     </Card>
   );
+}
+
+function ProjectCounts({ project }: { project: ProjectDTO }) {
+  const s = project.summary;
+  return <div className="text-sm tabular-nums">
+    <p>{s.totalObjectives ? `${s.completedObjectives}/${s.totalObjectives} objetivos` : "Nenhum objetivo definido"}</p>
+    {project.mode === "DEVELOPMENT" && <p className="text-muted-foreground">
+      {s.nonCancelledTasks ? `${s.completedTasks}/${s.nonCancelledTasks} tarefas` : "Nenhuma tarefa ativa"} · {s.cancelledTasks} {s.cancelledTasks === 1 ? "cancelada" : "canceladas"}
+    </p>}
+  </div>;
 }

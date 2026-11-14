@@ -44,8 +44,8 @@ export function WeekView({
   const getTasksForDay = (day: Date) => {
     const formattedDay = format(day, "yyyy-MM-dd");
     return tasks
-      .filter((task) => task.dueDate === formattedDay)
-      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+      .filter((task) => task.plannedDate === formattedDay && task.status !== "CANCELLED")
+      .sort((a, b) => (a.startTime ?? "24:00:00").localeCompare(b.startTime ?? "24:00:00"));
   };
 
   const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));

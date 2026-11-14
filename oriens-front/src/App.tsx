@@ -1,6 +1,6 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SignLoginPage from "./pages/SignLoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -21,7 +21,7 @@ import { useEffect } from "react";
 import FinancialPage from "./pages/FinancialPage";
 import AllDataPage from "./pages/AllDataPage";
 
-const queryClient = new QueryClient();
+import { queryClient } from "@/lib/query-client";
 
 const App = () => {
 

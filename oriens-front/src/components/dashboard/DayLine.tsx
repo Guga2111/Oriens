@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { isSameDay } from "date-fns";
+import { format } from "date-fns";
+import { productNow } from "@/lib/product-time";
 import { TASK_STATUS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/types/task";
@@ -31,16 +32,16 @@ interface DayLineProps {
  * de 40 px, só com marcas e a linha "agora" (SPEC §11.1).
  */
 export function DayLine({ tasks, date }: DayLineProps) {
-  const isToday = isSameDay(date, new Date());
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState(() => productNow());
+  const isToday = format(date, "yyyy-MM-dd") === now.date;
 
   useEffect(() => {
     if (!isToday) return;
-    const interval = window.setInterval(() => setNow(new Date()), 60_000);
+    const interval = window.setInterval(() => setNow(productNow()), 60_000);
     return () => window.clearInterval(interval);
   }, [isToday]);
 
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const nowMinutes = timeToMinutes(now.time);
   const nowPosition =
     isToday && nowMinutes >= DAY_START_MINUTES && nowMinutes <= DAY_END_MINUTES
       ? ((nowMinutes - DAY_START_MINUTES) /
@@ -87,7 +88,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
         <span>24</span>
       </div>
 
-      {tasks.map((task) => {
+      {tasks.filter(task => task.startTime && task.status !== "CANCELLED").map((task) => {
         const position = positionFor(task.startTime);
         const beforeSix = timeToMinutes(task.startTime) < DAY_START_MINUTES;
         const status = TASK_STATUS[task.status];

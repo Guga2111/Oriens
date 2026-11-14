@@ -1,3 +1,4 @@
+import { ProjectFilter } from "./ProjectFilter";
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import {
@@ -64,6 +65,8 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { PRIORITY, TASK_STATUS } from "@/lib/labels";
 
 export interface TasksFilters {
+  dateField?: "plannedDate" | "dueDate";
+  projectId?: number;
   status: string;
   priority: string;
   searchQuery: string;
@@ -94,7 +97,7 @@ export function TasksDataTable({
 }: TasksDataTableProps) {
   const [searchInput, setSearchInput] = useState(filters.searchQuery);
   const pageSize = 20;
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const currentPage = pagination.page;
   const totalPages = pagination.totalPages;
@@ -106,6 +109,8 @@ export function TasksDataTable({
   const clearFilters = () => {
     setSearchInput("");
     onFilterChange({
+      dateField: "plannedDate",
+      projectId: undefined,
       status: "all",
       priority: "all",
       searchQuery: "",
@@ -125,6 +130,7 @@ export function TasksDataTable({
   };
 
   const hasActiveFilters =
+    filters.projectId !== undefined ||
     filters.status !== "all" ||
     filters.priority !== "all" ||
     filters.searchQuery !== "" ||
@@ -132,6 +138,7 @@ export function TasksDataTable({
     filters.endDate !== undefined;
 
   const activeFilterCount =
+    (filters.projectId !== undefined ? 1 : 0) +
     (filters.status !== "all" ? 1 : 0) +
     (filters.priority !== "all" ? 1 : 0) +
     (filters.searchQuery !== "" ? 1 : 0) +
@@ -145,12 +152,17 @@ export function TasksDataTable({
 
   const filtersPanel = (
     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <Select value={filters.dateField ?? "plannedDate"} onValueChange={(value: "plannedDate" | "dueDate") => onFilterChange({ dateField: value })}>
+          <SelectTrigger className="w-full sm:w-[200px]" aria-label="Campo de data"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="plannedDate">Planejada para</SelectItem><SelectItem value="dueDate">Prazo final</SelectItem></SelectContent>
+        </Select>
+        <ProjectFilter value={filters.projectId} onChange={projectId => onFilterChange({ projectId })} />
         {/* Status Filter */}
         <Select
           value={filters.status}
           onValueChange={(value) => onFilterChange({ status: value })}
         >
-          <SelectTrigger className="w-full sm:w-[180px]" aria-label="Status">
+          <SelectTrigger className="w-full sm:w-[200px]" aria-label="Status">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -161,6 +173,7 @@ export function TasksDataTable({
             <SelectItem value={Status.ON_DOING}>
               {TASK_STATUS.ON_DOING.label}
             </SelectItem>
+            <SelectItem value={Status.CANCELLED}>{TASK_STATUS.CANCELLED.label}</SelectItem>
             <SelectItem value={Status.CONCLUDED}>
               {TASK_STATUS.CONCLUDED.label}
             </SelectItem>
@@ -173,7 +186,7 @@ export function TasksDataTable({
           onValueChange={(value) => onFilterChange({ priority: value })}
         >
           <SelectTrigger
-            className="w-full sm:w-[180px]"
+            className="w-full sm:w-[200px]"
             aria-label="Prioridade"
           >
             <SelectValue placeholder="Prioridade" />
@@ -287,7 +300,7 @@ export function TasksDataTable({
   );
 
   return (
-    <Card>
+    <Card className="border-border/60 shadow-none">
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-lg font-medium">Todas as tarefas</CardTitle>
@@ -357,18 +370,14 @@ export function TasksDataTable({
           </Empty>
         ) : (
           <>
-            {/* Abaixo de 768 a tabela vira lista de 2 linhas (SPEC §11.7). */}
-            <div className="hidden overflow-x-auto rounded-lg border md:block">
+            {/* Até tablet, os campos seguem em linhas sem comprimir a identidade. */}
+            <div className="hidden overflow-x-auto rounded-lg border lg:block">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="min-w-[200px]">Título</TableHead>
-                    {/* Abaixo de xl a tabela cabe sem a descrição; no mobile
-                        ela ainda rola dentro do container (SPEC §11.7). */}
-                    <TableHead className="hidden w-[200px] xl:table-cell">
-                      Descrição
-                    </TableHead>
-                    <TableHead className="w-[120px] text-right">Data</TableHead>
+                    <TableHead className="w-[120px] text-right">Planejada para</TableHead>
+                    <TableHead className="w-[120px] text-right">Prazo final</TableHead>
                     <TableHead className="w-[80px] text-right">
                       Horário
                     </TableHead>
@@ -381,11 +390,10 @@ export function TasksDataTable({
                     <TableRow key={task.id}>
                       <TableCell className="font-medium">
                         {task.title}
+                        {task.description && <p className="line-clamp-2 text-sm font-normal text-muted-foreground">{task.description}</p>}
                       </TableCell>
-                      <TableCell className="hidden xl:table-cell">
-                        <span className="line-clamp-2 text-muted-foreground">
-                          {task.description || "-"}
-                        </span>
+                      <TableCell className="text-right tabular-nums">
+                        {task.plannedDate ? format(parseISO(task.plannedDate), "dd/MM/yyyy") : "—"}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
                         {task.dueDate
@@ -413,13 +421,13 @@ export function TasksDataTable({
 
             <ul
               aria-label="Lista de tarefas"
-              className="divide-y rounded-lg border md:hidden"
+              className="divide-y divide-border/60 rounded-lg border border-border/60 lg:hidden"
             >
               {tasks.map((task) => (
                 <li key={task.id} className="flex flex-col gap-1 p-3">
-                  <div className="flex min-w-0 items-center gap-2">
+                  <div className="flex min-w-0 items-start gap-2">
                     <span
-                      className="truncate text-sm font-medium"
+                      className="min-w-0 flex-1 break-words text-sm font-medium"
                       title={task.title}
                     >
                       {task.title}
@@ -431,12 +439,12 @@ export function TasksDataTable({
                       {TASK_STATUS[task.status].label}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs tabular-nums text-muted-foreground">
-                      {task.dueDate
+                      Planejada para {task.plannedDate ? format(parseISO(task.plannedDate), "dd/MM/yyyy") : "—"} · Prazo final {task.dueDate
                         ? format(parseISO(task.dueDate), "dd/MM/yyyy")
                         : "-"}{" "}
-                      · {formatTime(task.startTime)}
+                      · {task.startTime ? formatTime(task.startTime) : "Sem horário"}
                     </span>
                     <Badge variant={PRIORITY[task.priority].badge}>
                       {PRIORITY[task.priority].label}

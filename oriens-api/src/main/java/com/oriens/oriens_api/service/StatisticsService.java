@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StatisticsService {
 
+    private final java.time.Clock clock;
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
 
@@ -47,17 +48,19 @@ public class StatisticsService {
     }
 
     private KpiDataDTO getCompletedTasksInActualMonth (Long userId) {
-        YearMonth actualMonth = YearMonth.now();
+        YearMonth actualMonth = YearMonth.from(today());
         YearMonth previousMonth = actualMonth.minusMonths(1);
 
         long tasksThisMonth = taskRepository.countCompletedTasksInDateRange(userId, actualMonth.atDay(1), actualMonth.atEndOfMonth());
         long tasksLastMonth = taskRepository.countCompletedTasksInDateRange(userId, previousMonth.atDay(1), previousMonth.atEndOfMonth());
 
-        double change = calculatePercentageChange(tasksLastMonth, tasksThisMonth);
+        Double change = calculatePercentageChange(tasksLastMonth, tasksThisMonth);
         int tasksConcluded = (int) tasksThisMonth;
         String description = "Ritmo normal";
 
-        if (change > 0) {
+        if (change == null) {
+            description = "Primeiras conclusões neste mês";
+        } else if (change > 0) {
             description = "Ritmo forte este mês";
         } else if (change < 0) {
             description = "Ritmo fraco este mês";
@@ -74,15 +77,15 @@ public class StatisticsService {
 
     private KpiDataDTO getActualWeekProductivePercentage (Long userId) {
 
-        LocalDate now = LocalDate.now();
+        LocalDate now = today();
         LocalDate startOfThisWeek = now.minusDays(now.getDayOfWeek().getValue() - 1);
         LocalDate startOfLastWeek = startOfThisWeek.minusWeeks(1);
 
-        long completedThisWeek = taskRepository.countCompletedTasksInDateRange(userId, startOfThisWeek, now);
-        long totalDueThisWeek = taskRepository.countTotalTasksInDateRange(userId, startOfThisWeek, now.plusDays(1));
+        long completedThisWeek = taskRepository.countCompletedPlanned(userId, startOfThisWeek, now);
+        long totalDueThisWeek = taskRepository.countTotalTasksInDateRange(userId, startOfThisWeek, now);
         double rateThisWeek = (totalDueThisWeek == 0) ? 0 : ((double) completedThisWeek / totalDueThisWeek) * 100;
 
-        long completedLastWeek = taskRepository.countCompletedTasksInDateRange(userId, startOfLastWeek, startOfThisWeek.minusDays(1));
+        long completedLastWeek = taskRepository.countCompletedPlanned(userId, startOfLastWeek, startOfThisWeek.minusDays(1));
         long totalDueLastWeek = taskRepository.countTotalTasksInDateRange(userId, startOfLastWeek, startOfThisWeek.minusDays(1));
         double rateLastWeek = (totalDueLastWeek == 0) ? 0 : ((double) completedLastWeek / totalDueLastWeek) * 100;
 
@@ -99,7 +102,7 @@ public class StatisticsService {
                 .value((int) rateThisWeek)
                 .change(change)
                 .description(description)
-                .additionalDescription("Média da última semana")
+                .additionalDescription("Concluídas / planejadas de " + startOfThisWeek + " a " + now)
                 .build();
     }
 
@@ -117,34 +120,19 @@ public class StatisticsService {
 
     private KpiDataDTO getOverdueTasksKpi (Long userId) {
 
-        YearMonth actualMonth = YearMonth.now();
-        YearMonth previousMonth = actualMonth.minusMonths(1);
-
-        long overdueTaskThisMonth = taskRepository.countOverdueTasksInDateRange(userId, actualMonth.atDay(1), actualMonth.atEndOfMonth());
-        long overdueTaskLastMonth = taskRepository.countOverdueTasksInDateRange(userId, previousMonth.atDay(1), previousMonth.atEndOfMonth());
-
-        double change = calculatePercentageChange(overdueTaskLastMonth, overdueTaskThisMonth);
-        String description = "Tranquilo nas pendências";
-        String additionalDescription = "Ritmo mantido";
-
-        if (change > 0) {
-            description = "Melhora de " + change + "% nas pendências";
-            additionalDescription = "Continue com o ritmo assim";
-        } else if (change < 0) {
-            description = "Piora de " + change + "% nas pendências";
-            additionalDescription = "Resolva para manter o ritmo";
-        }
+        LocalDate today = today();
+        long overdue = taskRepository.countOverdueTasksInDateRange(userId, LocalDate.of(1, 1, 1), today.minusDays(1));
 
         return KpiDataDTO.builder()
-                .value((int) overdueTaskThisMonth)
-                .change(change)
-                .description(description)
-                .additionalDescription(additionalDescription)
+                .value((int) overdue)
+                .change(null)
+                .description("Prazos ultrapassados em tarefas abertas")
+                .additionalDescription("Prazo final anterior a " + today)
                 .build();
     }
 
     private ChartDTO buildChartDTO (Long userId) {
-        LocalDate startDate = LocalDate.now().minusYears(1);
+        LocalDate startDate = today().minusYears(1);
 
         List<Object[]> rawChartData =
                 taskRepository.findTasksCompletedByDay(userId, startDate);
@@ -161,9 +149,13 @@ public class StatisticsService {
                 .build();
     }
 
-    private double calculatePercentageChange(long oldValue, long newValue) {
+    private LocalDate today() {
+        return LocalDate.now(clock.withZone(com.oriens.oriens_api.configuration.ProductClockConfiguration.ZONE));
+    }
+
+    private Double calculatePercentageChange(long oldValue, long newValue) {
         if (oldValue == 0) {
-            return (newValue > 0) ? 100.0 : 0.0;
+            return (newValue > 0) ? null : 0.0;
         }
         return ((double) (newValue - oldValue) / oldValue) * 100.0;
     }

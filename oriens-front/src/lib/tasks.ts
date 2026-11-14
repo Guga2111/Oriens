@@ -46,8 +46,8 @@ export function getTasksForPeriod(
   end: string
 ): Task[] {
   return tasks
-    .filter((task) => task.startTime >= start && task.startTime <= end)
-    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    .filter((task) => task.startTime != null && task.startTime >= start && task.startTime <= end)
+    .sort((a, b) => (a.startTime ?? "24:00:00").localeCompare(b.startTime ?? "24:00:00"));
 }
 
 export function groupTasksByPeriod(
@@ -60,7 +60,7 @@ export function groupTasksByPeriod(
 }
 
 function sortByStartTime(tasks: Task[]): Task[] {
-  return [...tasks].sort((a, b) => a.startTime.localeCompare(b.startTime));
+  return [...tasks].sort((a, b) => (a.startTime ?? "24:00:00").localeCompare(b.startTime ?? "24:00:00"));
 }
 
 /**
@@ -68,6 +68,7 @@ function sortByStartTime(tasks: Task[]): Task[] {
  * alimenta as seções (fonte única, SPEC §11.1).
  */
 export function describeDay(tasks: Task[]): string {
+  tasks = tasks.filter(task => task.status !== "CANCELLED");
   if (tasks.length === 0) return "Nenhuma tarefa";
 
   const concluded = tasks.filter((task) => task.status === "CONCLUDED").length;
@@ -79,11 +80,11 @@ export function describeDay(tasks: Task[]): string {
   }
 
   const next = sortByStartTime(
-    tasks.filter((task) => task.status !== "CONCLUDED")
+    tasks.filter((task) => task.status !== "CONCLUDED" && task.status !== "CANCELLED")
   )[0];
 
   if (next) {
-    parts.push(`próxima às ${next.startTime.slice(0, 5)} — ${next.title}`);
+    parts.push(next.startTime ? `próxima às ${next.startTime.slice(0, 5)} — ${next.title}` : `sem horário — ${next.title}`);
   } else {
     parts.push("Tudo concluído");
   }
@@ -93,6 +94,7 @@ export function describeDay(tasks: Task[]): string {
 
 /** Descrição da visão semanal (SPEC §11.2). */
 export function describeWeek(tasks: Task[]): string {
+  tasks = tasks.filter(task => task.status !== "CANCELLED");
   if (tasks.length === 0) return "Nenhuma tarefa nesta semana";
 
   const concluded = tasks.filter((task) => task.status === "CONCLUDED").length;

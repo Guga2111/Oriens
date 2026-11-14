@@ -1,5 +1,6 @@
 import { DashboardData } from '@/types/statistics';
 import axios from 'axios';
+import { assertWorkIdentity } from '@/lib/work-identity';
 
 const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -22,10 +23,15 @@ apiClient.interceptors.request.use(
     }
 );
 
-export const getDashboardData = async (userId: string | number): Promise<DashboardData> => {
+apiClient.interceptors.response.use(response => {
+    if (/^\/(task|project)\//.test(response.config.url ?? '')) assertWorkIdentity(response.data);
+    return response;
+});
+
+export const getDashboardData = async (userId: string | number, signal?: AbortSignal): Promise<DashboardData> => {
     try {
         const response = await apiClient.get<DashboardData>(
-            `/statistics/user/${userId}/dashboard`
+            `/statistics/user/${userId}/dashboard`, { signal }
         );
         return response.data;
     } catch (error) {

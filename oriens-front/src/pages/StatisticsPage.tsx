@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { PageHeader } from "@/components/common/PageHeader";
 import {
   KpiStrip,
@@ -14,9 +14,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { getDashboardData } from "@/services/api";
-import { DashboardData } from "@/types/statistics";
-import { useAuth } from "@/context/AuthContext";
+import { useWorkStatistics } from "@/hooks/useWork";
 
 const tasksChartConfig = {
   completed: {
@@ -26,39 +24,10 @@ const tasksChartConfig = {
 } satisfies ChartConfig;
 
 export function StatisticsPage() {
-  const { userId, isLoading: isAuthLoading } = useAuth();
-
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadData = useCallback(async () => {
-    if (!userId) return;
-
-    setIsLoading(true);
-    try {
-      const fetchedData = await getDashboardData(userId);
-      setData(fetchedData);
-      setError(null);
-    } catch (err) {
-      console.error(err);
-      setError("Falha ao carregar as estatísticas.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    if (isAuthLoading) return;
-
-    if (!userId) {
-      setError("Usuário não autenticado.");
-      setIsLoading(false);
-      return;
-    }
-
-    void loadData();
-  }, [isAuthLoading, userId, loadData]);
+  const statistics = useWorkStatistics();
+  const { data, isPending: isLoading } = statistics;
+  const error = statistics.isError ? "Falha ao carregar as estatísticas." : null;
+  const loadData = statistics.refetch;
 
   const kpiItems = useMemo<KpiStripItem[]>(() => {
     if (!data) return [];
@@ -75,7 +44,7 @@ export function StatisticsPage() {
         additionalDescription: kpis.completedTasks.additionalDescription,
       },
       {
-        label: "Taxa de produtividade (semanal)",
+        label: "Conclusão das tarefas planejadas",
         value: `${kpis.productivityRate.value}%`,
         change: kpis.productivityRate.change,
         goodDirection: "up",
@@ -91,7 +60,7 @@ export function StatisticsPage() {
         additionalDescription: kpis.activeProjects.additionalDescription,
       },
       {
-        label: "Tarefas atrasadas",
+        label: "Prazos ultrapassados",
         value: kpis.overdueTasks.value.toString(),
         change: kpis.overdueTasks.change,
         goodDirection: "down",
@@ -108,6 +77,10 @@ export function StatisticsPage() {
       <PageHeader title="Estatísticas" />
 
       <div className="mt-6 flex flex-col gap-6">
+        {statistics.isError && data && <div role="alert" className="text-sm">
+          Não foi possível atualizar as estatísticas.
+          <Button variant="link" onClick={() => void loadData()}>Tentar novamente</Button>
+        </div>}
         {showError ? (
           <Empty>
             <EmptyHeader>

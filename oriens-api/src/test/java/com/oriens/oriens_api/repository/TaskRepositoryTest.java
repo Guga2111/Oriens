@@ -42,15 +42,15 @@ class TaskRepositoryTest {
         entityManager.persist(user2);
     }
 
-    // =================================================================
-    // FIX: Overloaded helper methods to ensure startTime is never null
-    // =================================================================
+    // These fixtures schedule a task on the supplied day; deadlines can diverge in each test.
 
     private Task createTask(String title, User user, LocalDate dueDate, LocalTime startTime, Status status) {
         Task task = new Task();
         task.setTitle(title);
         task.setUser(user);
         task.setDueDate(dueDate);
+        task.setPlannedDate(dueDate);
+        if (status == Status.CONCLUDED) task.setCompletedAt(dueDate);
         task.setStartTime(startTime);
         task.setStatus(status);
         return entityManager.persist(task);
@@ -139,8 +139,8 @@ class TaskRepositoryTest {
         LocalDate startDate = LocalDate.of(2025, 10, 13);
         LocalDate endDate = LocalDate.of(2025, 10, 17);
 
-        createTask("User1 Concluded 1", user1, startDate, Status.CONCLUDED);
-        createTask("User1 Concluded 2", user1, endDate, Status.CONCLUDED);
+        createTask("User1 Concluded 1", user1, startDate, Status.CONCLUDED).setDueDate(endDate.plusMonths(1));
+        createTask("User1 Concluded 2", user1, endDate, Status.CONCLUDED).setPlannedDate(startDate.minusMonths(1));
         createTask("User1 Pending", user1, startDate.plusDays(1), Status.PENDING);
         createTask("User2 Concluded", user2, startDate, Status.CONCLUDED);
 
@@ -155,7 +155,8 @@ class TaskRepositoryTest {
         LocalDate endDate = LocalDate.of(2025, 10, 17);
 
         createTask("User1 Concluded", user1, startDate, Status.CONCLUDED);
-        createTask("User1 Pending", user1, endDate, Status.PENDING);
+        createTask("User1 Pending", user1, endDate, Status.PENDING).setDueDate(endDate.plusMonths(1));
+        createTask("User1 Cancelled", user1, startDate, Status.CANCELLED);
         createTask("User1 Out of Range", user1, endDate.plusDays(1), Status.PENDING);
         createTask("User2 In Range", user2, startDate, Status.CONCLUDED);
 

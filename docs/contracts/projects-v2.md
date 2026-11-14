@@ -1,6 +1,6 @@
 # Contratos P0 de Projetos
 
-Contrato da próxima versão: **escritas/segurança implementadas em P2; leituras agregadas pendentes em P3; sem liberação em produção**. Fonte de produto:
+Contrato da próxima versão: **escritas/segurança implementadas em P2; leituras agregadas implementadas em P3; sem liberação em produção**. Fonte de produto:
 [SPEC](../plans/2026-11-13-projects-refactor-spec.md), seções 4–11.
 [Tipos de transporte](projects-v2.ts) fixam os DTOs; não importar entidades JPA no transporte.
 P1 implementa persistência; P2 implementa escritas/segurança; P3 implementa leituras.
@@ -142,3 +142,16 @@ Backend é dono de estado, completedAt e invariantes. Concluir novamente não mu
 editar título/prazo nunca conclui. Planejamento após prazo é aviso salvável. Hoje segue a partição
 exclusiva da SPEC §5; outros dias têm previousPlans/deadlineAttention vazios. Semana usa domingo–sábado,
 sempre com intervalo explícito. Nenhuma leitura altera planejamento, nem materializa tarefa duplicada.
+
+## Precisões aditivas P3
+
+Board mantém o envelope P0 (columns, tasks, total, visible); acrescenta filtered,
+e o filtro open=true permite a ação aprovada de escolher entre tarefas abertas
+sem planejamento. Objective no detalhe acrescenta nonCancelledTasks,
+completedTasks e cancelledTasks; null em simples/retorno de mutação sem agregado.
+Nenhuma contagem conclui objetivo automaticamente.
+
+GET /project/user/{userId}/summary devolve totalProjects, activeProjects,
+favoriteProjects (ativos) e archivedProjects, fora da paginação. Resumo semanal
+retorna startDate/endDate/timezone, completedTasks e totalTasks do mesmo conjunto
+planejado, sem canceladas; aceita intervalo explícito e default domingo–sábado.

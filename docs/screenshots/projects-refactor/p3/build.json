@@ -1,0 +1,10 @@
+{
+  "baseCommit": "593b7cb190621940c012a2ea38f28d18fb3b6d7d",
+  "command": "npm run build",
+  "mode": "production",
+  "sha256": {
+    "index.html": "5914021f130918276f05d2124e1d82f6d7d5e52246a48730daf48b8d7a86abdc",
+    "assets/index-BffY_rY5.js": "22173505ce1503bd6f39356c9ef12b4f16b602f7eb80687a172f331059e2ab61",
+    "assets/index-Czn66v3X.css": "3bdb082ebc35e4d547b7c9d9f0ec997077bde49dcb5f31484f4a3d2615cc25e4"
+  }
+}

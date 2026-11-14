@@ -1,4 +1,4 @@
-/** P0 frozen wire contracts. Not live endpoints until P2/P3. SPEC §§4–11. */
+/** P0 frozen wire contracts. Implemented in P2/P3; release still depends on P4–P6. SPEC §§4–11. */
 export type Id = number; // positive integral JSON number; reject unsafe integers at client boundary
 export type Version = number; // integral >= 0; never synthesized by client
 export type DateOnly = string; // strict real Gregorian YYYY-MM-DD, no UTC conversion
@@ -18,6 +18,7 @@ export interface Location {
 export interface Objective {
   id: Id; projectId: Id; title: string; dueDate: DateOnly | null;
   status: ObjectiveStatus; position: number; version: Version;
+  nonCancelledTasks?: number | null; completedTasks?: number | null; cancelledTasks?: number | null;
 }
 export interface Column {
   id: Id; projectId: Id; name: string; kind: Status; position: number; version: Version;
@@ -61,7 +62,7 @@ export interface TaskCounts {
 export interface Board {
   projectId: Id; projectVersion: Version;
   columns: (Column & { totalCount: number; visibleCount: number })[];
-  tasks: Task[]; total: TaskCounts; visible: TaskCounts;
+  tasks: Task[]; total: TaskCounts; visible: TaskCounts; filtered?: boolean;
 }
 export interface Day {
   date: DateOnly; timezone: typeof timezone;
@@ -142,7 +143,7 @@ export interface PatchTask {
   priority?: Priority; location?: Location | null; beforeTaskId?: Id | null;
 }
 export interface BoardFilters {
-  objectiveId?: Id; planning?: 'today' | 'unscheduled'; overdue?: boolean;
+  objectiveId?: Id; planning?: 'today' | 'unscheduled'; overdue?: boolean; open?: boolean;
 }
 export interface TaskFilters {
   page?: number; size?: number; search?: string; status?: Status; projectId?: Id;

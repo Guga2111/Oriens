@@ -11,6 +11,7 @@ export const PRIORITY = {
 export const TASK_STATUS = {
   PENDING: { label: "A fazer", badge: "outline" },
   ON_DOING: { label: "Em andamento", badge: "warning" },
+  CANCELLED: { label: "Cancelada", badge: "secondary" },
   CONCLUDED: { label: "Concluída", badge: "positive" },
 } as const satisfies Record<TaskStatus, { label: string; badge: string }>;
 

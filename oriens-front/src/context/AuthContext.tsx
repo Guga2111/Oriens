@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { queryClient } from '@/lib/query-client';
 import apiClient from '@/services/api';
 import { jwtDecode } from 'jwt-decode'; 
 
@@ -76,6 +77,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [token]);
 
   const login = async (token: string) => {
+    queryClient.clear();
     localStorage.setItem('authToken', token);
     const decodedToken: DecodedToken = jwtDecode(token);
 
@@ -93,6 +95,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = () => {
+    queryClient.clear();
     localStorage.removeItem('authToken');
     localStorage.removeItem('oriens-user-preferences');
     localStorage.setItem('oriens-theme', 'light');

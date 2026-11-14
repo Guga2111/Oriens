@@ -114,7 +114,7 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
 
       <span className="flex items-center gap-1 pt-2 text-sm tabular-nums text-muted-foreground">
         <Clock className="h-3 w-3 shrink-0" aria-hidden />
-        {task.startTime.slice(0, 5)}
+        {(task.startTime?.slice(0, 5) ?? "Sem horário")}
       </span>
 
       <div className="min-w-0">

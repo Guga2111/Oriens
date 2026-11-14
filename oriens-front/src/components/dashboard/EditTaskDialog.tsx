@@ -37,8 +37,8 @@ interface EditTaskDialogProps {
 export function EditTaskDialog({ task, open, onOpenChange, onTaskUpdated }: EditTaskDialogProps) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
-  const [dueDate, setDueDate] = useState<Date | undefined>(parseISO(task.dueDate));
-  const [startTime, setStartTime] = useState(task.startTime.substring(0, 5));
+  const [dueDate, setDueDate] = useState<Date | undefined>((task.dueDate ? parseISO(task.dueDate) : undefined));
+  const [startTime, setStartTime] = useState((task.startTime?.substring(0, 5) ?? ""));
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -46,8 +46,8 @@ export function EditTaskDialog({ task, open, onOpenChange, onTaskUpdated }: Edit
   useEffect(() => {
     setTitle(task.title);
     setDescription(task.description || "");
-    setDueDate(parseISO(task.dueDate));
-    setStartTime(task.startTime.substring(0, 5));
+    setDueDate((task.dueDate ? parseISO(task.dueDate) : undefined));
+    setStartTime((task.startTime?.substring(0, 5) ?? ""));
     setPriority(task.priority);
   }, [task]);
 

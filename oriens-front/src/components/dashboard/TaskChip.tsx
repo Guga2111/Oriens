@@ -103,7 +103,7 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="text-xs tabular-nums text-muted-foreground">
-              {task.startTime.slice(0, 5)}
+              {(task.startTime?.slice(0, 5) ?? "Sem horário")}
             </span>
             <span
               aria-hidden

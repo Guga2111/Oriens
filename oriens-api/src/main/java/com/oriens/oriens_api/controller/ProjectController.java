@@ -43,8 +43,20 @@ public class ProjectController {
             @RequestParam(defaultValue="id") String sortBy, @RequestParam(defaultValue="DESC") Sort.Direction direction,
             @RequestParam(defaultValue="false") boolean includeArchived, @RequestParam(required=false) String search) {
         Long user = owner.matching(auth, userId);
-        return projects.findAllFiltered(user, includeArchived, search, WorkPagination.of(page, size, sortBy, direction,
-            "id", "title", "lastAccessed", "favorite", "archived")).map(p -> ProjectView.of(p, false));
+        Page<Project> result = projects.findAllFiltered(user, includeArchived, search, WorkPagination.of(page, size, sortBy, direction,
+            "id", "title", "lastAccessed", "favorite", "archived"));
+        return new PageImpl<>(read.projectViews(user, result.getContent(), false), result.getPageable(), result.getTotalElements());
+    }
+    @GetMapping("/user/{userId}/summary")
+    public ProjectTotals summary(Authentication auth, @PathVariable Long userId) {
+        return read.totals(owner.matching(auth, userId));
+    }
+    @GetMapping("/{id}/board")
+    public ResponseEntity<BoardResponse> board(Authentication auth, @PathVariable Long id,
+            @RequestParam(required=false) Long objectiveId, @RequestParam(required=false) String planning,
+            @RequestParam(defaultValue="false") boolean overdue, @RequestParam(defaultValue="false") boolean open) {
+        BoardResponse result = read.board(owner.id(auth), id, objectiveId, planning, overdue, open);
+        return WorkHttp.ok(result, result.projectVersion());
     }
     @GetMapping("/user/{userId}/sidebar")
     @Transactional(readOnly = true)
@@ -63,7 +75,7 @@ public class ProjectController {
         Long user = owner.matching(auth, userId);
         return WorkHttp.created(creation.create(user, "project:create", key, command, () -> {
             Project p = work.createProject(user, command);
-            ProjectView result = ProjectView.of(p, true); return new WorkCreationService.Created(result, result.version(), p.getId());
+            ProjectView result = read.projectView(user, p.getId()); return new WorkCreationService.Created(result, result.version(), p.getId());
         }, id -> projects.findByIdAndUserId(id, user).isPresent()));
     }
     @PatchMapping("/{id}")
@@ -176,5 +188,5 @@ public class ProjectController {
     private ResponseEntity<BoardConfigMutation> config(Long user, Long id) {
         BoardConfigMutation result = read.config(user, id); return WorkHttp.ok(result, result.projectVersion());
     }
-    private ResponseEntity<ProjectView> project(Project p) { return WorkHttp.ok(ProjectView.of(p, true), p.getVersion()); }
+    private ResponseEntity<ProjectView> project(Project p) { return WorkHttp.ok(read.projectView(p.getUser().getId(), p.getId()), p.getVersion()); }
 }

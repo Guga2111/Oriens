@@ -29,8 +29,6 @@ public class TaskController {
     private final WorkCreationService creation;
     private final WorkOwner owner;
     private final TaskRepository tasks;
-    private final UserRepository users;
-    private final TaskServiceImpl legacyReads;
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
@@ -66,22 +64,25 @@ public class TaskController {
     }
     @PutMapping("/{id}") public void retiredPut() { throw WorkHttp.retired(); }
 
-    // P2 secures existing collection reads and their projections. Agenda semantics move in P3.
     @GetMapping("/user/{userId}")
     @Transactional(readOnly = true)
-    public List<TaskView> day(Authentication auth, @PathVariable Long userId,
+    public DayResponse day(Authentication auth, @PathVariable Long userId,
             @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate date) {
-        Long user = owner.matching(auth, userId);
-        return tasks.findByUserAndDueDate(users.findById(user).orElseThrow(), date).stream().map(t -> read.view(user, t)).toList();
+        return read.day(owner.matching(auth, userId), date);
     }
     @GetMapping("/user/{userId}/range")
     @Transactional(readOnly = true)
-    public List<TaskView> range(Authentication auth, @PathVariable Long userId,
+    public RangeResponse range(Authentication auth, @PathVariable Long userId,
             @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        Long user = owner.matching(auth, userId);
-        return tasks.findByUserAndDueDateBetweenOrderByDueDateAscStartTimeAsc(users.findById(user).orElseThrow(), startDate, endDate)
-            .stream().map(t -> read.view(user, t)).toList();
+        return read.range(owner.matching(auth, userId), startDate, endDate);
+    }
+    @GetMapping("/user/{userId}/planning-count")
+    @Transactional(readOnly = true)
+    public PlanningCount planningCount(Authentication auth, @PathVariable Long userId,
+            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required=false) Long excludeTaskId) {
+        return read.planningCount(owner.matching(auth, userId), date, excludeTaskId);
     }
     @GetMapping("/user/{userId}/all")
     @Transactional(readOnly = true)
@@ -90,17 +91,28 @@ public class TaskController {
             @RequestParam(defaultValue="dueDate") String sortBy, @RequestParam(defaultValue="DESC") Sort.Direction direction,
             @RequestParam(required=false) Status status, @RequestParam(required=false) Priority priority,
             @RequestParam(required=false) String search,
+            @RequestParam(required=false) Long projectId, @RequestParam(required=false) String dateField,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate endDate) {
         Long user = owner.matching(auth, userId);
-        return tasks.findAllFiltered(user, status, priority, search, startDate, endDate,
+        WorkReadService.interval(startDate, endDate);
+        if ((startDate != null || endDate != null) && dateField == null)
+            throw new com.oriens.oriens_api.exception.WorkDomainException("INVALID_REQUEST", "dateField", "Informe qual data filtrar.");
+        if (dateField != null && !Set.of("plannedDate", "dueDate").contains(dateField))
+            throw new com.oriens.oriens_api.exception.WorkDomainException("INVALID_REQUEST", "dateField", "Campo de data inválido.");
+        if (dateField == null) dateField = "plannedDate";
+        if (projectId != null) read.project(user, projectId);
+        Page<Task> result = tasks.findWorkFiltered(user, projectId, status, priority, search, dateField, startDate, endDate,
             WorkPagination.of(page,size,sortBy,direction,"id","title","dueDate","plannedDate","startTime","priority","status","createdAt"))
-            .map(t -> read.view(user, t));
+            ;
+        return new PageImpl<>(read.views(user, result.getContent()), result.getPageable(), result.getTotalElements());
     }
     @GetMapping("/user/{userId}/summary/weekly-counts")
     @Transactional(readOnly = true)
-    public WeeklySummaryDTO weekly(Authentication auth, @PathVariable Long userId) {
-        return legacyReads.retrieveDoneTasksAndTasksNumbersByDateRange(owner.matching(auth, userId));
+    public WeeklyResponse weekly(Authentication auth, @PathVariable Long userId,
+            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return read.weekly(owner.matching(auth, userId), startDate, endDate);
     }
     private static List<Long> ids(Long first, Long second) {
         return java.util.stream.Stream.of(first, second).filter(Objects::nonNull).distinct().sorted().toList();

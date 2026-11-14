@@ -30,6 +30,7 @@ const task: Task = {
   id: 11,
   title: "Tarefa da semana",
   startTime: "09:00:00",
+  plannedDate: format(today, "yyyy-MM-dd"),
   dueDate: format(today, "yyyy-MM-dd"),
   priority: "LOW",
   status: "PENDING",

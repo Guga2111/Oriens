@@ -7,7 +7,8 @@ export enum Priority {
 export enum Status {
   PENDING = "PENDING",
   ON_DOING = "ON_DOING",
-  CONCLUDED = "CONCLUDED"
+  CONCLUDED = "CONCLUDED",
+  CANCELLED = "CANCELLED"
 }
 
 export type TaskPriority = `${Priority}`;
@@ -24,9 +25,12 @@ export interface Task {
   title: string;
   description?: string;
   /** `HH:mm:ss` — comparado como string, sem parse de fuso. */
-  startTime: string;
+  startTime: string | null;
+  plannedDate?: string | null;
+  projectId?: number | null;
+  version?: number;
   /** `yyyy-MM-dd` — data local, sem `toISOString`. */
-  dueDate: string;
+  dueDate: string | null;
   completedAt?: string;
   priority: TaskPriority;
   status: TaskStatus;

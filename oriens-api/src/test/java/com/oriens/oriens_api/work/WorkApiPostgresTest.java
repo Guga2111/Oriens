@@ -46,14 +46,17 @@ class WorkApiPostgresTest {
     @EnableJpaRepositories(basePackageClasses=ProjectRepository.class)
     @Import({ProjectController.class, TaskController.class, StatisticsController.class, WorkExceptionHandler.class,
         WorkRequestBodyAdvice.class, WorkOwner.class, WorkReadService.class, WorkCreationService.class,
-        ProjectWorkService.class, SecurityConfig.class})
+        ProjectWorkService.class, StatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, SecurityConfig.class})
     static class App {
         @Bean Clock clock() { return Clock.fixed(Instant.parse("2026-11-14T02:30:00Z"), ZoneOffset.UTC); }
     }
     @MockBean CustomAuthManager authManager;
     @MockBean UserServiceImpl userService;
     @MockBean TaskServiceImpl legacy;
-    @MockBean StatisticsService statistics;
+    @Autowired StatisticsService statistics;
+    @Autowired TaskReminderService reminders;
+    @Autowired NotificationServiceImpl notificationService;
+    @Autowired NotificationRepository notifications;
     @MockBean FileStorageProjectService files;
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
@@ -104,6 +107,96 @@ class WorkApiPostgresTest {
         return "\"version\":"+t.path("version")+(p==null ? "" : ",\"projectVersion\":"+project(p.path("id").asLong()).path("version"));
     }
 
+
+    JsonNode getJson(String url) throws Exception {
+        return body(mvc.perform(get(url).header("Authorization",token)).andExpect(status().isOk()).andReturn());
+    }
+    Task fixtureTask(String name, String plan, String due, String time, com.oriens.oriens_api.entity.enums.Status status) {
+        return tx(() -> tasks.saveAndFlush(Task.builder().user(users.findById(owner).orElseThrow()).title(name)
+            .plannedDate(plan == null ? null : LocalDate.parse(plan)).dueDate(due == null ? null : LocalDate.parse(due))
+            .startTime(time == null ? null : LocalTime.parse(time)).status(status)
+            .completedAt(status == com.oriens.oriens_api.entity.enums.Status.CONCLUDED ? LocalDate.of(2026,11,13) : null).build()));
+    }
+    @Test void p3DayPartitionsInRecifeWithoutDuplicatesAndRangeUsesPlan() throws Exception {
+        var pending = com.oriens.oriens_api.entity.enums.Status.PENDING;
+        var today = fixtureTask("Hoje e vencida","2026-11-13","2026-11-01",null,pending);
+        var previous = fixtureTask("Ontem sem prazo","2026-11-12",null,"09:00:00",pending);
+        var future = fixtureTask("Prazo hoje e plano futuro","2026-11-20","2026-11-13",null,pending);
+        fixtureTask("Sem datas",null,null,null,pending);
+        fixtureTask("Cancelada","2026-11-13","2026-11-01",null,com.oriens.oriens_api.entity.enums.Status.CANCELLED);
+        fixtureTask("Feita hoje","2026-11-13",null,null,com.oriens.oriens_api.entity.enums.Status.CONCLUDED);
+        fixtureTask("Feita sem plano",null,null,null,com.oriens.oriens_api.entity.enums.Status.CONCLUDED);
+        JsonNode day = getJson("/task/user/"+owner+"?date=2026-11-13");
+        assertThat(day.path("timezone").asText()).isEqualTo("America/Recife");
+        assertThat(day.path("planned").size()).isEqualTo(1);
+        assertThat(day.path("planned").get(0).path("id").asLong()).isEqualTo(today.getId());
+        assertThat(day.path("previousPlans").get(0).path("id").asLong()).isEqualTo(previous.getId());
+        assertThat(day.path("deadlineAttention").get(0).path("id").asLong()).isEqualTo(future.getId());
+        assertThat(day.path("completed").size()).isEqualTo(1);
+        JsonNode otherDay = getJson("/task/user/"+owner+"?date=2026-11-20");
+        assertThat(otherDay.path("previousPlans").size()).isZero();
+        assertThat(otherDay.path("deadlineAttention").size()).isZero();
+        assertThat(otherDay.path("planned").get(0).path("id").asLong()).isEqualTo(future.getId());
+        JsonNode range = getJson("/task/user/"+owner+"/range?startDate=2026-11-13&endDate=2026-11-20");
+        assertThat(range.path("tasks").size()).isEqualTo(3);
+        assertThat(getJson("/task/user/"+owner+"/planning-count?date=2026-11-13&excludeTaskId="+today.getId()).path("activeCount").asInt()).isZero();
+        assertThat(getJson("/task/user/"+owner+"/planning-count?date=2026-11-13").path("completedCount").asInt()).isEqualTo(1);
+        mvc.perform(get("/task/user/"+owner+"/range?startDate=2026-11-20&endDate=2026-11-13").header("Authorization",token)).andExpect(status().isBadRequest());
+        for (String path : List.of("/task/user/"+owner+"?date=2026-11-13", "/task/user/"+owner+"/planning-count?date=2026-11-13", "/project/user/"+owner+"/summary"))
+            mvc.perform(get(path).header("Authorization",other)).andExpect(status().isNotFound());
+    }
+    @Test void p3BoardSummariesFiltersAndAllDataHaveHonestCounts() throws Exception {
+        JsonNode p = project("DEVELOPMENT"), t = task(p);
+        long id = p.path("id").asLong();
+        mvc.perform(get("/project/"+id+"/board").header("Authorization",token))
+            .andExpect(header().string("ETag", "\"" + project(id).path("version").asLong() + "\""));
+        mvc.perform(get("/task/user/"+owner+"/all?startDate=2026-11-13").header("Authorization",token)).andExpect(status().isBadRequest());
+        JsonNode board = getJson("/project/"+id+"/board?planning=today&open=true");
+        assertThat(board.path("visible").path("totalTasks").asInt()).isEqualTo(1);
+        assertThat(board.path("total").path("totalTasks").asInt()).isEqualTo(1);
+        assertThat(board.path("tasks").get(0).path("id")).isEqualTo(t.path("id"));
+        assertThat(getJson("/project/"+id+"/board?planning=unscheduled").path("visible").path("totalTasks").asInt()).isZero();
+        assertThat(project(id).path("summary").path("plannedTodayCount").asInt()).isEqualTo(1);
+        assertThat(project(id).path("summary").path("nextPlannedTask").path("id")).isEqualTo(t.path("id"));
+        JsonNode simple = project("SIMPLE");
+        assertThat(simple.path("summary").path("totalTasks").isNull()).isTrue();
+        assertThat(simple.path("summary").path("totalObjectives").asInt()).isZero();
+        assertThat(getJson("/task/user/"+owner+"/all?projectId="+id+"&dateField=dueDate&startDate=2026-11-20&endDate=2026-11-20").path("totalElements").asInt()).isEqualTo(1);
+        assertThat(getJson("/task/user/"+owner+"/all?dateField=plannedDate&startDate=2026-11-20").path("totalElements").asInt()).isZero();
+        mvc.perform(get("/task/user/"+owner+"/all?dateField=createdAt").header("Authorization",token)).andExpect(status().isBadRequest());
+        mvc.perform(get("/project/"+id+"/board").header("Authorization",other)).andExpect(status().isNotFound());
+        assertThat(getJson("/task/user/"+owner+"/summary/weekly-counts").path("startDate").asText()).isEqualTo("2026-11-08");
+        assertThat(getJson("/project/user/"+owner+"/summary").path("totalProjects").asInt()).isEqualTo(2);
+    }
+    @Test void p3RemindersUsePlanningAcrossMidnightAndRecheckTerminalStates() {
+        var pending = com.oriens.oriens_api.entity.enums.Status.PENDING;
+        var doing = com.oriens.oriens_api.entity.enums.Status.ON_DOING;
+        // Fixed instant is 23:30 in Recife, despite already being the next UTC day.
+        var soon = fixtureTask("Início", "2026-11-13", null, "23:40:00", doing);
+        var noTime = fixtureTask("Sem horário", "2026-11-13", "2026-11-20", null, pending);
+        var lostPlan = fixtureTask("Só planejamento perdido", "2026-11-01", null, "09:00:00", pending);
+        var overdue = fixtureTask("Prazo ultrapassado", null, "2026-11-12", null, doing);
+        long before = notifications.count();
+        reminders.emit(soon.getId(), false); reminders.emit(soon.getId(), false);
+        reminders.emit(noTime.getId(), false); reminders.emit(lostPlan.getId(), true);
+        reminders.emit(overdue.getId(), true); reminders.emit(overdue.getId(), true);
+        assertThat(notifications.count() - before).isEqualTo(2);
+        assertThat(tasks.findById(soon.getId()).orElseThrow().isReminderSent()).isTrue();
+        var cancelled = fixtureTask("Cancelada", "2026-11-13", "2026-11-12", "23:40:00", com.oriens.oriens_api.entity.enums.Status.CANCELLED);
+        reminders.emit(cancelled.getId(), false); reminders.emit(cancelled.getId(), true);
+        assertThat(notifications.count() - before).isEqualTo(2);
+        var midnight = fixtureTask("Depois da meia-noite", "2026-11-14", null, "00:05:00", pending);
+        var boundary = new TaskReminderService(tasks, notificationService,
+            Clock.fixed(Instant.parse("2026-11-14T02:55:00Z"), ZoneOffset.UTC));
+        tx(() -> { boundary.emit(midnight.getId(), false); boundary.emit(midnight.getId(), false); return null; });
+        assertThat(notifications.count() - before).isEqualTo(3);
+        fixtureTask("Concluída sem prazo neste mês", "2026-10-01", "2027-01-01", null,
+            com.oriens.oriens_api.entity.enums.Status.CONCLUDED);
+        var kpi = statistics.getDashboardData(owner).getKpi().getKpis();
+        assertThat(kpi.get("completedTasks").getValue()).isEqualTo(1);
+        assertThat(kpi.get("productivityRate").getValue()).isZero();
+        assertThat(kpi.get("overdueTasks").getValue()).isEqualTo(1);
+    }
     @Test void unauthenticatedExpiredAndCrossOwnerRequestsNeverDisclosePersonalData() throws Exception {
         mvc.perform(get("/project/user/1")).andExpect(status().isUnauthorized()).andExpect(jsonPath("$.code").value("UNAUTHENTICATED")).andExpect(jsonPath("$.requestId").isString());
         mvc.perform(get("/task/user/1/all").header("Authorization","Bearer invalid")).andExpect(status().isUnauthorized());

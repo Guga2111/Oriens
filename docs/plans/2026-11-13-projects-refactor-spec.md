@@ -1,6 +1,6 @@
 # Projetos — SPEC executável e plano de execução
 
-Data: 2026-11-13. Status: design aprovado; P0 implementada ([evidências](2026-11-13-projects-refactor-p0.md)); P1 implementada ([evidências](2026-11-13-projects-refactor-p1.md)); P2 implementada ([evidências](2026-11-13-projects-refactor-p2.md)); P3–P6 pendentes.
+Data: 2026-11-13. Status: design aprovado; P0 implementada ([evidências](2026-11-13-projects-refactor-p0.md)); P1 implementada ([evidências](2026-11-13-projects-refactor-p1.md)); P2 implementada ([evidências](2026-11-13-projects-refactor-p2.md)); P3 implementada ([evidências](2026-11-13-projects-refactor-p3.md)); P4–P6 pendentes.
 
 Design e decisões aprovadas: [2026-11-13-projects-refactor-design.md](2026-11-13-projects-refactor-design.md). Esta SPEC substitui decisões anteriores apenas no escopo descrito. Os planos históricos permanecem intactos.
 

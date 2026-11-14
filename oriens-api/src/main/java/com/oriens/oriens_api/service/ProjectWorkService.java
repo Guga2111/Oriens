@@ -326,6 +326,9 @@ public class ProjectWorkService {
         validatePlanning(task);
         if (!Objects.equals(previousPlan, task.getPlannedDate()) || !Objects.equals(previousTime, task.getStartTime())) task.setReminderSent(false);
         if (!Objects.equals(previousDue, task.getDueDate())) task.setOverdueNotificationSent(false);
+        if (task.getStatus() == Status.CONCLUDED || task.getStatus() == Status.CANCELLED) {
+            task.setReminderSent(true); task.setOverdueNotificationSent(true);
+        }
         if (structural && originalProjectId != null && (transfer || !Objects.equals(oldColumnId, task.getColumnId()))) {
             positions(columnTasks(locked.get(originalProjectId), oldColumnId).stream().filter(t -> !t.getId().equals(id)).toList());
         }
