@@ -17,6 +17,14 @@ import java.time.LocalTime;
 import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
+    java.util.Optional<Task> findByIdAndUserId(Long id, Long ownerId);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select t from Task t where t.id = :id and t.user.id = :ownerId")
+    java.util.Optional<Task> lockOwned(@Param("id") Long id, @Param("ownerId") Long ownerId);
+    List<Task> findByProjectIdOrderByPositionAscIdAsc(Long projectId);
+    List<Task> findByProjectIdAndColumnIdOrderByPositionAscIdAsc(Long projectId, Long columnId);
+    List<Task> findByObjectiveId(Long objectiveId);
+
     List<Task> findByUserAndDueDate(User user, LocalDate dueDate);
     List<Task> findByUserAndDueDateBetweenOrderByDueDateAscStartTimeAsc(User user, LocalDate startDate, LocalDate endDate);
 

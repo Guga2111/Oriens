@@ -4,8 +4,8 @@ import com.oriens.oriens_api.entity.Project;
 import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.entity.dto.ObjectiveStatusUpdateDTO;
 import com.oriens.oriens_api.entity.dto.ProjectDTO;
-import com.oriens.oriens_api.entity.embeddable.Objective;
-import com.oriens.oriens_api.entity.enums.Status;
+import com.oriens.oriens_api.entity.Objective;
+import com.oriens.oriens_api.entity.enums.ObjectiveStatus;
 import com.oriens.oriens_api.exception.AccessUnauthorizedException;
 import com.oriens.oriens_api.exception.ProjectNotFoundException;
 import com.oriens.oriens_api.exception.UserNotFoundException;
@@ -134,7 +134,6 @@ public class ProjectServiceImpl implements ProjectService {
 
         Objective objective = objectives.get(objectiveIndex);
         objective.setStatus(statusUpdateDTO.getStatus());
-        objective.setCompleted(!objective.isCompleted());
 
         Project updatedProject = projectRepository.save(project);
 
@@ -156,7 +155,6 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         Objective objective = objectives.get(objectiveIndex);
-        objective.setCompleted(!objective.isCompleted());
         objective.setTitle(objectiveEntry.getTitle());
         objective.setDueDate(objectiveEntry.getDueDate());
 
@@ -202,7 +200,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new ProjectNotFoundException(id));
 
-        objective.setStatus(Status.PENDING);
+        objective.setStatus(ObjectiveStatus.PENDING);
 
         project.getObjectives().add(objective);
 

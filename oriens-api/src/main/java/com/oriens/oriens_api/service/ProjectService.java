@@ -4,7 +4,7 @@ import com.oriens.oriens_api.entity.Project;
 import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.entity.dto.ObjectiveStatusUpdateDTO;
 import com.oriens.oriens_api.entity.dto.ProjectDTO;
-import com.oriens.oriens_api.entity.embeddable.Objective;
+import com.oriens.oriens_api.entity.Objective;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

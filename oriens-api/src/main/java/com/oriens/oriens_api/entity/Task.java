@@ -10,7 +10,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -26,13 +25,13 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", nullable = false, length = 200)
     private String title;
 
-    @Column(name = "description")
+    @Column(name = "description", length = 10000)
     private String description;
 
-    @Column(name = "start_time", nullable = false)
+    @Column(name = "start_time")
     private LocalTime startTime;
 
     @Column(name = "due_date")
@@ -42,12 +41,12 @@ public class Task {
     private LocalDate completedAt; // atribuir completedAt a regra de negocio de task
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "priority")
-    private Priority priority;
+    @Column(name = "priority", nullable = false)
+    @Builder.Default private Priority priority = Priority.MEDIUM;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private Status status;
+    @Column(name = "status", nullable = false)
+    @Builder.Default private Status status = Status.PENDING;
 
     @Column(name = "reminder_sent", nullable = false)
     private boolean reminderSent = false;
@@ -57,7 +56,16 @@ public class Task {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
+
+    @Version @Column(nullable = false) private long version;
+    private LocalDate plannedDate;
+    // Scalar IDs mirror the composite owner/project/status FKs in the sealed SQL baseline.
+    // No cascades: lifecycle operations explicitly detach tasks in the domain service.
+    private Long projectId;
+    private Long objectiveId;
+    private Long columnId;
+    private Integer position;
 
     @Embedded
     private Location location;

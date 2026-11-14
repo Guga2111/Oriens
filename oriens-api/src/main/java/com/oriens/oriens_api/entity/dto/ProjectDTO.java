@@ -1,6 +1,6 @@
 package com.oriens.oriens_api.entity.dto;
 
-import com.oriens.oriens_api.entity.embeddable.Objective;
+import com.oriens.oriens_api.entity.Objective;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

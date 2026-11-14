@@ -6,7 +6,7 @@ import com.oriens.oriens_api.entity.enums.Status;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.LocalTime;
 
 @Data
@@ -22,6 +22,6 @@ public class TaskResponseDTO {
     private LocalDate completedAt;
     private Priority priority;
     private Status status;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     private Location location;
 }

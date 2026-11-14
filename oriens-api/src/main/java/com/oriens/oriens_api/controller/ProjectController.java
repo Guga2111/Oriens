@@ -3,7 +3,7 @@ package com.oriens.oriens_api.controller;
 import com.oriens.oriens_api.entity.Project;
 import com.oriens.oriens_api.entity.dto.ObjectiveStatusUpdateDTO;
 import com.oriens.oriens_api.entity.dto.ProjectDTO;
-import com.oriens.oriens_api.entity.embeddable.Objective;
+import com.oriens.oriens_api.entity.Objective;
 import com.oriens.oriens_api.service.FileStorageProjectService;
 import com.oriens.oriens_api.service.ProjectServiceImpl;
 import lombok.AllArgsConstructor;
