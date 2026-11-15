@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class WorkReadService {
     private final Clock clock;
+    private final TaskLabelService taskLabels;
     private final ProjectRepository projects;
     private final TaskRepository tasks;
     private final ObjectiveRepository objectives;
@@ -42,6 +43,7 @@ public class WorkReadService {
             .stream().collect(Collectors.toMap(Objective::getId, Function.identity()));
         Map<Long, ProjectColumn> cs = columns.findAllById(source.stream().map(Task::getColumnId).filter(Objects::nonNull).distinct().toList())
             .stream().collect(Collectors.toMap(ProjectColumn::getId, Function.identity()));
+        Map<Long, List<LabelView>> labels = taskLabels.forTasks(owner, source.stream().map(Task::getId).toList());
         return source.stream().map(t -> {
             if (!t.getUser().getId().equals(owner)) throw missing();
             Project p = ps.get(t.getProjectId());
@@ -50,7 +52,7 @@ public class WorkReadService {
             return new TaskView(t.getId(), owner, t.getTitle(), t.getDescription(), t.getProjectId(), t.getObjectiveId(), t.getColumnId(),
                 t.getPosition(), t.getPlannedDate(), t.getStartTime(), t.getDueDate(), t.getPriority(), t.getStatus(), t.getCompletedAt(),
                 t.getCreatedAt(), t.getLocation(), t.getVersion(), p == null ? null : new ProjectLink(p.getId(), p.getTitle(), p.getArchived(), p.getVersion()),
-                o == null ? null : new ObjectiveLink(o.getId(), o.getTitle()), c == null ? null : new ColumnLink(c.getId(), c.getName(), c.getKind()));
+                o == null ? null : new ObjectiveLink(o.getId(), o.getTitle()), c == null ? null : new ColumnLink(c.getId(), c.getName(), c.getKind()), labels.getOrDefault(t.getId(), List.of()));
         }).toList();
     }
     private LocalDate today() { return LocalDate.now(clock.withZone(ProductClockConfiguration.ZONE)); }

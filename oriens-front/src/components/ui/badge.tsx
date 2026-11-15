@@ -12,6 +12,13 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
+        "label-red": "border-transparent bg-label-red text-label-red-foreground",
+        "label-orange": "border-transparent bg-label-orange text-label-orange-foreground",
+        "label-yellow": "border-transparent bg-label-yellow text-label-yellow-foreground",
+        "label-green": "border-transparent bg-label-green text-label-green-foreground",
+        "label-blue": "border-transparent bg-label-blue text-label-blue-foreground",
+        "label-gray": "border-transparent bg-label-gray text-label-gray-foreground",
+
         // Tokens §9.1: texto em background (adaptativo) mantém ≥4.5 nos 2 temas.
         negative: "border-transparent bg-negative text-background hover:bg-negative/80",
         // §9.1 não define cor de warning: composto com --now (tinta + borda).

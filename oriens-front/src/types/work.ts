@@ -1,6 +1,8 @@
+import type { TaskLabel } from './task-label';
 import type { LocationDTO, TaskPriority, TaskStatus } from './task';
 
 export interface WorkTask {
+  labels?: TaskLabel[];
   id: number; userId: number; title: string; description: string | null;
   projectId: number | null; objectiveId: number | null; columnId: number | null; position: number | null;
   plannedDate: string | null; startTime: string | null; dueDate: string | null; completedAt: string | null;
@@ -47,6 +49,7 @@ export interface TaskMutation {
 }
 export interface TaskDeletion { id: number; affectedProjectIds: number[]; previousPlannedDate: string | null }
 export interface TaskPatch {
+  labelIds?: number[];
   version: number; projectVersion?: number; targetProjectVersion?: number;
   title?: string; description?: string | null; projectId?: number | null; objectiveId?: number | null;
   columnId?: number; status?: TaskStatus; plannedDate?: string | null; startTime?: string | null;

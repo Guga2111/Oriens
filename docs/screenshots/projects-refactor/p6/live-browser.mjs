@@ -24,7 +24,7 @@ try {
  await page.getByRole('button',{name:'Excluir projeto',exact:true}).click();assert.equal((await deletion).status(),204);
  await page.getByRole('heading',{name:'Projetos',exact:true}).waitFor();
  await page.getByRole('button',{name:'Alternar menu de navegação'}).click();await page.getByRole('link',{name:'Hoje',exact:true}).click();
- await page.getByRole('button',{name:/Concluídas/}).click();await row.waitFor();
+ await row.waitFor();
  assert.equal(await row.getByRole('link',{name:'Site pessoal',exact:true}).count(),0);
  await row.getByText('Integração P5',{exact:true}).waitFor();
  assert.ok(await page.locator('body').evaluate(el=>el.scrollWidth<=innerWidth));

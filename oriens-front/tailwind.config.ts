@@ -27,6 +27,7 @@ export default {
                 ]
   		},
   		colors: {
+            ...Object.fromEntries(['red','orange','yellow','green','blue','gray'].map(color => [`label-${color}`, { DEFAULT: `hsl(var(--label-${color}))`, foreground: `hsl(var(--label-${color}-foreground))` }])),
 			brand: {
 				cream: 'hsl(var(--brand-cream))',
 				burgundy: 'hsl(var(--brand-burgundy))',

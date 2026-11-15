@@ -1,3 +1,4 @@
+import type { TaskLabel } from './task-label';
 export enum Priority {
   LOW = "LOW",
   MEDIUM = "MEDIUM",
@@ -21,6 +22,7 @@ export interface LocationDTO {
 }
 
 export interface Task {
+  labels?: TaskLabel[];
   id: number;
   title: string;
   description?: string;

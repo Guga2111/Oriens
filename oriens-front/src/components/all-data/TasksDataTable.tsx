@@ -1,3 +1,4 @@
+import { TaskLabels } from '@/components/tasks/TaskLabels';
 import { ProjectFilter } from "./ProjectFilter";
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
@@ -390,6 +391,7 @@ export function TasksDataTable({
                     <TableRow key={task.id}>
                       <TableCell className="font-medium">
                         {task.title}
+                        <TaskLabels labels={task.labels} />
                         {task.description && <p className="line-clamp-2 text-sm font-normal text-muted-foreground">{task.description}</p>}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
@@ -439,6 +441,7 @@ export function TasksDataTable({
                       {TASK_STATUS[task.status].label}
                     </Badge>
                   </div>
+                  <TaskLabels labels={task.labels} />
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-xs tabular-nums text-muted-foreground">
                       Planejada para {task.plannedDate ? format(parseISO(task.plannedDate), "dd/MM/yyyy") : "—"} · Prazo final {task.dueDate

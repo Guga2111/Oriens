@@ -14,11 +14,13 @@ import time
 import uuid
 
 import db
+import task_labels
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--browser', action='store_true', help='Also run P5 against the production frontend; needs installed Chrome/Brave and Node dependencies')
+    parser.add_argument('--labels-browser', action='store_true', help='Run the task-label browser round trip against the disposable API')
     options = parser.parse_args()
     api = Path(__file__).resolve().parents[2]
     name = 'oriens-p2-' + uuid.uuid4().hex[:12]
@@ -40,16 +42,19 @@ def main():
         args.database = 'oriens_p2_proof'
         with contextlib.redirect_stdout(io.StringIO()):
             db.apply(db.Database(args))
+            task_labels.apply(db.Database(args))
         endpoint = subprocess.check_output(['docker', 'port', name, '5432'], text=True).strip()
         port = endpoint.rsplit(':', 1)[1]
         env = dict(os.environ, P2_JDBC_URL=f'jdbc:postgresql://127.0.0.1:{port}/oriens_p2_proof')
+        if options.labels_browser:
+            env['LABEL_BROWSER_PROOF'] = '1'
         if options.browser:
             env['P5_BROWSER_PROOF'] = '1'
         subprocess.run(['mvn', '-q', '-Dtest=WorkApiPostgresTest', 'test'], cwd=api, env=env, check=True)
         # Verify JPA validate and every mutation left the sealed SQL catalog unchanged.
         with contextlib.redirect_stdout(io.StringIO()):
-            db.apply(db.Database(args))
-        print('P2 PostgreSQL/JPA proof passed; baseline catalog seal unchanged.')
+            task_labels.apply(db.Database(args))
+        print('P2 PostgreSQL/JPA proof passed; task-label revision catalog seal unchanged.')
     finally:
         subprocess.run(['docker', 'rm', '--force', name], check=True)
 

@@ -9,7 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAd
 import java.lang.reflect.Type;
 import java.io.IOException;
 
-@ControllerAdvice(assignableTypes = {ProjectController.class, TaskController.class, StatisticsController.class})
+@ControllerAdvice(assignableTypes = {ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class})
 public class WorkRequestBodyAdvice extends RequestBodyAdviceAdapter {
     private final ObjectMapper strict;
     public WorkRequestBodyAdvice(ObjectMapper mapper) {

@@ -1,0 +1,28 @@
+TASTESKILL · INSPECT   http://127.0.0.1:4201/tasks/project/10?qa=label-editor&theme=light
+
+MEASURED (first viewport listed)
+  hero headline   "Site pessoal"  2 words · 1 line(s) · 24px (1.7vw) · Inter 600 · tracking 0em · leading 1.33
+  @768px          1 line(s) · 24px
+  @390px          1 line(s) · 24px
+  typefaces       Inter 100%
+  sizes in use    12 / 14 / 16 / 18 / 24 px   body 14px / 1.43
+  colour          page #f6f4ec · sections #f6f4ec · button #f6f4ec
+  page            1.6 screens · 366 words · 0 images · hero media none
+  headings        0 · longest 0 line(s) · median - words
+
+WARN — fix, or be able to defend
+  [heavy-borders] @1440px (+768, 390)  8 panel borders are dark against their ground: #dbd1c5 on #fdfcf9 (1.47:1) | #dbd1c5 on #fdfcf9 (1.47:1) | #dbd1c5 on #fdfcf9 (1.47:1)
+      → A panel border is a whisper: about 1.1–1.3:1 against its ground on a light screen (#e5e7eb–#ededed on white), and about 1.2–1.5:1 on a dark one (#1a1a1a on #000, #2e2e2e on #111). Darker lines turn the screen into a grid of boxes; keep the stronger line for controls.
+  [ragged-row] @1440px (+768)  4 pair(s) of cards in one row end at different heights (by 44px, 65px, 44px).
+      → Cards that share a row share a bottom edge: balance them by their content (the same number of rows, a block of similar height beside it), or stack them. In testing, ragged rows were marked down every time.
+
+LOOK AT THE RENDER — open these with your image viewer / Read tool before saying anything about quality:
+  desktop 1440px  docs/screenshots/task-labels/inspect/editor-light/desktop-fold.jpg
+                  docs/screenshots/task-labels/inspect/editor-light/desktop-page-01.jpg
+  tablet 768px    docs/screenshots/task-labels/inspect/editor-light/tablet-fold.jpg
+                  docs/screenshots/task-labels/inspect/editor-light/tablet-page-01.jpg
+  mobile 390px    docs/screenshots/task-labels/inspect/editor-light/mobile-fold.jpg
+                  docs/screenshots/task-labels/inspect/editor-light/mobile-page-01.jpg
+
+report: docs/screenshots/task-labels/inspect/editor-light/report.json
+RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md.

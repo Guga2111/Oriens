@@ -1232,3 +1232,30 @@ na semana e ausência de dependência para drag-and-drop.
   de drag-and-drop; ambas são dados dinâmicos, não valores de design locais.
 
 [Decisões e prova desta revisão](../plans/2026-11-15-projects-visual-polish.md).
+
+
+## 22. Etiquetas de tarefas por conta — 2026-11-15
+
+- Catálogo independente das tags financeiras, reutilizável entre projetos e tarefas
+  avulsas. Seleção múltipla no editor, até 20 por tarefa; exibição com o mesmo
+  componente de Badge no quadro, dia, semana e lista de dados.
+- Nome e cor sempre juntos; seis variantes semânticas do Badge, com tokens próprios
+  para claro/escuro em index.css. Não depender somente da cor nem permitir CSS livre.
+- Popover com busca, Checkbox e ScrollArea. Cada etiqueta tem ação contextual de
+  edição. Criar/editar acontece em formulário shadcn; excluir usa confirmação e
+  informa o alcance sobre todas as tarefas da conta.
+- A seleção só é persistida com Salvar tarefa. Criar/renomear/excluir no catálogo é
+  global e independente do rascunho. Um formulário em portal deve interromper seu
+  evento submit antes de alcançar o formulário pai; salvar etiqueta não salva tarefa.
+- Remover etiqueta desta tarefa é diferente de excluir etiqueta da conta. Exclusão
+  global confirmada remove a seleção correspondente também do baseline do rascunho,
+  sem criar falso aviso de descarte nem avançar silenciosamente a versão da tarefa.
+  Outros campos não salvos e conflitos continuam preservados.
+- Ao abrir um diálogo a partir de um popover, impedir que o fechamento do popover
+  roube o foco do diálogo. Drawer usa autofocus da plataforma para equivalência com
+  Dialog: o foco entra no conteúdo aberto e continua visível pelo teclado.
+- FieldSet deve permitir redução de largura (`min-w-0`); textos de etiquetas
+  quebram dentro do Badge. Testar nomes no limite aceito, inclusive sem espaços,
+  para evitar recorte silencioso dentro de ScrollArea ou overflow em formulários.
+
+[Desenho e prova](../plans/2026-11-15-task-labels-design.md).

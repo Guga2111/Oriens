@@ -8,6 +8,7 @@ import java.util.List;
 /** P0 write contracts. ownerId is supplied by the trusted caller, never by these bodies. */
 public final class WorkCommands {
     private WorkCommands() {}
+    public record LabelInput(String name, TaskLabelColor color) {}
     public record NewObjective(String title, LocalDate dueDate) {}
     public record CreateProject(String title, ProjectMode mode, String description, String color,
                                 List<NewObjective> objectives) {}
@@ -19,5 +20,5 @@ public final class WorkCommands {
                                Long replacementPendingColumnId, Long replacementCompletedColumnId) {}
     public record CreateTask(String title, String description, Long projectId, Long projectVersion,
                              Long objectiveId, Long columnId, LocalDate plannedDate, LocalTime startTime,
-                             LocalDate dueDate, Priority priority, Location location) {}
+                             LocalDate dueDate, Priority priority, Location location, List<Long> labelIds) {}
 }

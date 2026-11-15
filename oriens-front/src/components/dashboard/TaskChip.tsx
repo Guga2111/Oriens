@@ -1,3 +1,4 @@
+import { TaskLabels } from '@/components/tasks/TaskLabels';
 import { TaskContext } from './TaskContext';
 import { TaskPlanningMenu } from './TaskPlanningMenu';
 import { useState } from "react";
@@ -175,6 +176,7 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
         </DropdownMenu>
       </div>
 
+      <TaskLabels labels={task.labels} />
       <TaskContext task={task} compact />
       <span className="sr-only" aria-live="polite">
         {announcement}

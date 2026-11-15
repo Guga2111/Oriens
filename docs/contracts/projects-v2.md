@@ -155,3 +155,40 @@ GET /project/user/{userId}/summary devolve totalProjects, activeProjects,
 favoriteProjects (ativos) e archivedProjects, fora da paginação. Resumo semanal
 retorna startDate/endDate/timezone, completedTasks e totalTasks do mesmo conjunto
 planejado, sem canceladas; aceita intervalo explícito e default domingo–sábado.
+
+
+## Etiquetas por conta — revisão aditiva de 2026-11-15
+
+Catálogo separado das tags financeiras. Cada etiqueta contém `id`, `name`, `color`,
+`version`; todas as rotas exigem autenticação e dono derivado do principal.
+
+| Operação | Rota | Precondição / corpo |
+| --- | --- | --- |
+| Listar | GET /task-labels/user/{userId} | Dono do path igual ao principal |
+| Criar | POST /task-labels/user/{userId} | Idempotency-Key UUID; `{name,color}` |
+| Editar | PUT /task-labels/{id} | If-Match forte da versão; `{name,color}` |
+| Excluir | DELETE /task-labels/{id} | If-Match forte da versão; 204 |
+
+`name`: texto não vazio, normalizado, até 50 caracteres, único na conta sem distinguir
+maiúsculas. `color`: RED, ORANGE, YELLOW, GREEN, BLUE ou GRAY. Cores são chaves da
+paleta acessível, não CSS fornecido pelo cliente. Escritas retornam ETag; versões
+conflitantes retornam 409 e acesso cruzado retorna 404 sem divulgar a etiqueta.
+
+CreateTask e PatchTask aceitam `labelIds`, até 20 IDs positivos distintos e da mesma
+conta da tarefa. Na criação, ausente/null significa []; no PATCH, ausente preserva,
+[] limpa e null é inválido. As projeções TaskView, inclusive agenda, semana, quadro,
+tabela e retorno de mutação, incluem `labels: LabelView[]`, sempre lista (vazia se
+não houver etiquetas). A projeção usa uma consulta em lote para todos os IDs.
+
+Vínculos sobrevivem à movimentação entre projetos, ao virar avulsa e à exclusão do
+projeto. Excluir uma tarefa remove somente seus vínculos, preservando o catálogo.
+Editar a definição atualiza a apresentação em todas as tarefas, sem mudar status,
+datas ou vínculos. Excluir a definição remove seus vínculos globalmente e avança a
+versão de cada tarefa afetada. Não exclui nem replaneja tarefas.
+
+Alterar apenas os vínculos avança a versão da tarefa. Se a mesma escrita também
+altera campos escalares, não há incremento duplicado. PATCH normal preserva as
+precondições de projeto existentes; não muda a versão estrutural do projeto ao
+editar somente etiquetas. Criação preserva recibos legados quando não há etiquetas.
+
+[Procedimento aditivo, rollback e compatibilidade](../../oriens-api/ops/projects-refactor/TASK_LABELS.md).

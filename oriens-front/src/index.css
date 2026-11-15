@@ -26,6 +26,14 @@
     --brand-burgundy: 346.875 71.6418% 26.2745%;
     --brand-yellow: 45.679 99.1837% 51.9608%;
 
+    /* Task labels are data colors; every swatch has its own contrasting text. */
+    --label-red: 0 75% 93%; --label-red-foreground: 0 65% 28%;
+    --label-orange: 24 90% 92%; --label-orange-foreground: 24 80% 25%;
+    --label-yellow: 45 90% 88%; --label-yellow-foreground: 35 75% 22%;
+    --label-green: 145 55% 91%; --label-green-foreground: 150 60% 23%;
+    --label-blue: 210 80% 93%; --label-blue-foreground: 215 70% 28%;
+    --label-gray: 30 10% 90%; --label-gray-foreground: 30 10% 28%;
+
     /* §9.1 — claro */
     --background: 38 40% 95%;
     --background-brand: var(--brand-cream);
@@ -80,6 +88,13 @@
 
   .dark {
     color-scheme: dark;
+    --label-red: 0 35% 24%; --label-red-foreground: 0 90% 86%;
+    --label-orange: 24 40% 23%; --label-orange-foreground: 24 95% 83%;
+    --label-yellow: 42 38% 22%; --label-yellow-foreground: 45 90% 83%;
+    --label-green: 150 30% 21%; --label-green-foreground: 145 65% 80%;
+    --label-blue: 215 35% 25%; --label-blue-foreground: 210 85% 85%;
+    --label-gray: 30 8% 25%; --label-gray-foreground: 30 12% 85%;
+
     /* §9.1 — escuro */
     --background: 350 18% 12%;
     --background-brand: 350 18% 12%;

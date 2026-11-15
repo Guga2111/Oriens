@@ -1,5 +1,7 @@
 # P0 — baseline e procedimento operacional
 
+> Código com etiquetas exige a [evolução aditiva oriens-task-labels-v1](TASK_LABELS.md). Em banco já selado, não repetir a instalação/reset da baseline.
+
 Implementa a P0 da [SPEC](../../../docs/plans/2026-11-13-projects-refactor-spec.md).
 Não é release de P1–P6. Nenhum comando daqui é chamado por build, testes Maven,
 startup, compose ou deploy. Não há reset automático.

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { TaskLabelPicker } from './TaskLabelPicker';
 import { Clock, X } from 'lucide-react';
 import { WorkDatePicker } from '@/components/common/WorkDatePicker';
 import { WorkCombobox } from '@/components/common/WorkCombobox';
@@ -19,7 +20,7 @@ import { validCalendarDate, statusNames } from '@/lib/work-form';
 import type { LocationDTO, TaskPriority } from '@/types/task';
 import type { TaskCreation, TaskPatch, WorkTask } from '@/types/work';
 
-interface Draft { title: string; description: string; projectId: number | null; objectiveId: number | null; columnId: number | null; plannedDate: string; startTime: string; dueDate: string; priority: TaskPriority; location: LocationDTO | null }
+interface Draft { labelIds: number[]; title: string; description: string; projectId: number | null; objectiveId: number | null; columnId: number | null; plannedDate: string; startTime: string; dueDate: string; priority: TaskPriority; location: LocationDTO | null }
 export interface TaskEditorProps {
   open: boolean; onOpenChange: (open: boolean) => void; onSaved?: () => void; task?: WorkTask;
   projectId?: number; objectiveId?: number; columnId?: number; plannedDate?: string; startTime?: string;
@@ -31,7 +32,7 @@ export function TaskEditor(props: TaskEditorProps) {
 }
 function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: TaskEditorProps) {
   const [base, setBase] = useState(task);
-  const initial: Draft = { title: task?.title ?? '', description: task?.description ?? '',
+  const initial: Draft = { labelIds: (task?.labels ?? []).map(label => label.id).sort((a, b) => a - b), title: task?.title ?? '', description: task?.description ?? '',
     projectId: task?.projectId ?? defaults.projectId ?? null, objectiveId: task?.objectiveId ?? defaults.objectiveId ?? null,
     columnId: task?.columnId ?? defaults.columnId ?? null, plannedDate: task?.plannedDate ?? defaults.plannedDate ?? '',
     startTime: (task?.startTime ?? defaults.startTime ?? '').slice(0, 5), dueDate: task?.dueDate ?? '', priority: task?.priority ?? 'MEDIUM', location: task?.location ?? null };
@@ -75,7 +76,7 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
     if (draft.projectId && (!destination || activeProject?.mode !== 'DEVELOPMENT' || targetVersion === null)) { setError('Escolha uma coluna válida no projeto de destino.'); return; }
     const common = { title: draft.title.trim(), description: draft.description.trim() || null,
       plannedDate: draft.plannedDate || null, startTime: draft.startTime ? `${draft.startTime}:00` : null,
-      dueDate: draft.dueDate || null, priority: draft.priority, location: draft.location };
+      labelIds: draft.labelIds, dueDate: draft.dueDate || null, priority: draft.priority, location: draft.location };
     try {
       let result;
       if (base) {
@@ -118,6 +119,7 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
       <FieldGroup className="gap-4">
       <Field data-invalid={!!error}><FieldLabel htmlFor="task-title">Título</FieldLabel><Input id="task-title" value={draft.title} onChange={e => change('title', e.target.value)} maxLength={200} required aria-invalid={!!error} aria-describedby={error ? 'task-validation' : undefined} />{error && <FieldError id="task-validation">{error}</FieldError>}</Field>
       <Field><FieldLabel htmlFor="task-description">Descrição (opcional)</FieldLabel><Textarea id="task-description" value={draft.description} maxLength={10000} onChange={e => change('description', e.target.value)} /></Field>
+      <Field><FieldLabel htmlFor="task-labels">Etiquetas</FieldLabel><TaskLabelPicker value={draft.labelIds} onChange={ids => change('labelIds', ids)} onCatalogDelete={id => setOriginal(previous => { const saved: Draft = JSON.parse(previous); return JSON.stringify({ ...saved, labelIds: saved.labelIds.filter(current => current !== id) }); })} disabled={pending || attempt.uncertain} /></Field>
       </FieldGroup>
       <FieldSet className="gap-3"><FieldLegend>Projeto e objetivo</FieldLegend><FieldGroup className="gap-4">
       <Field><FieldLabel htmlFor="task-project">Projeto</FieldLabel><WorkCombobox id="task-project" search={search} onSearchChange={setSearch} loading={choices.isFetching} label="Projeto da tarefa" value={String(draft.projectId ?? 'none')} options={projectOptions} onChange={v => {

@@ -7,6 +7,7 @@ const port = Number(process.argv[3] || 4177);
 const token = process.env.QA_TOKEN || ['eyJhbGciOiJub25lIn0', Buffer.from(JSON.stringify({ sub:'fixture@example.invalid', userId:1, username:'Demonstração', exp:4102444800 })).toString('base64url'), 'fixture'].join('.');
 const fixtureInstant = new Date().toISOString();
 const date = new Intl.DateTimeFormat('en-CA', {timeZone:'America/Recife',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+let taskLabels = [{id:201,name:'Frontend',color:'BLUE',version:0},{id:202,name:'Pesquisa',color:'YELLOW',version:0}];
 const objectives = [
   {id:81,projectId:10,title:'Receber contatos pelo site',dueDate:'2026-11-20',status:'PENDING',position:0,version:0},
   {id:82,projectId:10,title:'Reunir os trabalhos de pesquisa e desenvolvimento em um portfólio acessível',dueDate:null,status:'PENDING',position:1,version:0},
@@ -32,7 +33,7 @@ tasks.push(...[
  {id:9,title:'Enviar proposta de conteúdo',plannedDate:'2099-01-01',startTime:null,dueDate:'2026-01-01',status:'PENDING',projectId:10,columnId:11,objectiveId:null},
 ].map(t=>({...t,userId:1,description:null,version:0,position:tasks.length,completedAt:null,createdAt:'2026-11-01T12:00:00Z',priority:'MEDIUM',location:null})));
 const counts = rows => ({totalTasks:rows.length,nonCancelledTasks:rows.filter(t=>t.status!=='CANCELLED').length,completedTasks:rows.filter(t=>t.status==='CONCLUDED').length,cancelledTasks:rows.filter(t=>t.status==='CANCELLED').length});
-function taskView(t) { const p=projects.find(p=>p.id===t.projectId); const o=p?.objectives.find(o=>o.id===t.objectiveId); const c=columns.find(c=>c.id===t.columnId); return {...t,project:p?{id:p.id,title:p.title,archived:p.archived,version:p.version}:null,objective:o?{id:o.id,title:o.title}:null,column:c?{id:c.id,name:c.name,kind:c.kind}:null}; }
+function taskView(t) { const p=projects.find(p=>p.id===t.projectId); const o=p?.objectives.find(o=>o.id===t.objectiveId); const c=columns.find(c=>c.id===t.columnId); return {...t,labels:taskLabels.filter(label=>(t.labelIds??[]).includes(label.id)),project:p?{id:p.id,title:p.title,archived:p.archived,version:p.version}:null,objective:o?{id:o.id,title:o.title}:null,column:c?{id:c.id,name:c.name,kind:c.kind}:null}; }
 function projectView(p) {
   const ts=tasks.filter(t=>t.projectId===p.id);const c=counts(ts);const os=p.objectives;
   const active=t=>['PENDING','ON_DOING'].includes(t.status);
@@ -40,12 +41,12 @@ function projectView(p) {
 }
 const page=rows=>({content:rows,number:0,totalPages:1,totalElements:rows.length,last:true});
 let nextId=100;const receipts=new Map();
-const initial = structuredClone({projects,columns,tasks});
+const initial = structuredClone({projects,columns,tasks,taskLabels});
 http.createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost');const u=url.pathname.replace(/^\/api(?=\/)/,'');const method=req.method;
   const send=(value,status=200)=>{res.statusCode=status;res.setHeader('Content-Type','application/json');res.end(JSON.stringify(value));};
   // Optional live mode is used only by WorkApiPostgresTest's disposable PostgreSQL run.
-  if(process.env.QA_API_ORIGIN && /^\/(task|project)(\/|$)/.test(u)) {
+  if(process.env.QA_API_ORIGIN && /^\/(task|task-labels|project)(\/|$)/.test(u)) {
     try { const raw=await new Promise(resolve=>{let data='';req.on('data',b=>data+=b);req.on('end',()=>resolve(data));});
       const response=await fetch(process.env.QA_API_ORIGIN+u+url.search,{method,headers:{authorization:req.headers.authorization||'', 'content-type':'application/json', ...(req.headers['idempotency-key']?{'idempotency-key':req.headers['idempotency-key']}:{}), ...(req.headers['if-match']?{'if-match':req.headers['if-match']}:{}), ...(req.headers['x-project-version']?{'x-project-version':req.headers['x-project-version']}:{})},body:['GET','HEAD'].includes(method)?undefined:raw});
       res.statusCode=response.status;res.setHeader('Content-Type','application/json');res.end(await response.text());return;
@@ -53,7 +54,20 @@ http.createServer(async(req,res)=>{
   }
   const fail=()=>send({code:'VERSION_CONFLICT',message:'Dados desatualizados.',fieldErrors:[]},409);
   let body={};if(!['GET','HEAD'].includes(method)){let raw='';for await(const chunk of req)raw+=chunk;if(raw){try{body=JSON.parse(raw);}catch{return send({message:'Unsupported QA request'},400);}}}
-  if(u==='/__qa/reset'){({projects,columns,tasks}=structuredClone(initial));nextId=100;receipts.clear();return send({reset:true});}
+  if(u==='/__qa/reset'){({projects,columns,tasks,taskLabels}=structuredClone(initial));nextId=100;receipts.clear();return send({reset:true});}
+  if(u==='/task-labels/user/1') {
+    if(method==='GET')return send(taskLabels);
+    if(method==='POST') {
+      const key=req.headers['idempotency-key'];if(!key)return send({},428);if(receipts.has(key))return send(receipts.get(key),201);
+      if(taskLabels.some(l=>l.name.toLowerCase()===body.name.trim().toLowerCase()))return send({message:'Já existe uma etiqueta com este nome.'},400);
+      const label={...body,id:nextId++,version:0};taskLabels.push(label);receipts.set(key,label);return send(label,201);
+    }
+  }
+  const lm=u.match(/^\/task-labels\/(\d+)$/);if(lm){const label=taskLabels.find(l=>l.id===Number(lm[1]));if(!label)return send({},404);
+    if(req.headers['if-match']!==`"${label.version}"`)return fail();
+    if(method==='PUT'){Object.assign(label,body,{version:label.version+1});return send(label);}
+    if(method==='DELETE'){taskLabels=taskLabels.filter(l=>l!==label);tasks=tasks.map(t=>(t.labelIds??[]).includes(label.id)?{...t,labelIds:t.labelIds.filter(id=>id!==label.id),version:t.version+1}:t);return send(null);}
+  }
   if(/^\/user\/\d+$/.test(u))return send({id:1,name:'Demonstração',email:'fixture@example.invalid'});
   if(u.includes('preferences'))return send({notifications:false,sound:false,theme:new URL(req.headers.referer||'http://localhost').searchParams.get('theme')||'light'});
   if(u.startsWith('/notification'))return send([]);
@@ -108,9 +122,14 @@ http.createServer(async(req,res)=>{
     document.addEventListener('DOMContentLoaded',()=>{
       const qa=new URL(location.href).searchParams.get('qa');if(!qa)return;
       const clickText=(text)=>{const el=[...document.querySelectorAll('button,[role=menuitem]')].find(el=>el.textContent.trim()===text);if(el){el.click();return true;}return false;};
-      let opened=false;const timer=setInterval(()=>{
+      let opened=false;let labelStage=0;const timer=setInterval(()=>{
         if(qa==='create'&&clickText('Novo projeto'))clearInterval(timer);
         if(qa==='editor'&&clickText('Nova tarefa'))clearInterval(timer);
+        if(qa==='labels'||qa==='label-editor'){
+          if(labelStage===0&&clickText('Nova tarefa'))labelStage=1;
+          else if(labelStage===1&&clickText('Adicionar etiquetas')){labelStage=2;if(qa==='labels')clearInterval(timer);}
+          else if(labelStage===2&&clickText('Criar etiqueta'))clearInterval(timer);
+        }
         if(qa==='settings'){
           if(!opened){const el=document.querySelector('button[aria-label="Ações do projeto"]');if(el){el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,button:0,pointerType:'mouse'}));opened=true;}}
           else if(clickText('Configurar quadro'))clearInterval(timer);

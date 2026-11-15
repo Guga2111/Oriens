@@ -1,5 +1,7 @@
 # P6 — runbook de liberação coordenada
 
+> Código com etiquetas exige a [evolução aditiva oriens-task-labels-v1](TASK_LABELS.md). Em banco já selado, não repetir a instalação/reset da baseline.
+
 Estado: preparação e ensaios locais; **alvo real não informado, reset não autorizado**.
 Este arquivo não executa comandos. Build, testes e deploy não executam reset.
 Evidências da preparação: [P6](../../../docs/plans/2026-11-13-projects-refactor-p6.md).

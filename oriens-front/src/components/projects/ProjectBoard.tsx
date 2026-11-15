@@ -1,3 +1,4 @@
+import { TaskLabels } from '@/components/tasks/TaskLabels';
 import { useRef, useState } from 'react';
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, closestCorners, pointerWithin, useDroppable, useSensor, useSensors, type CollisionDetection, type DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -129,7 +130,7 @@ function BoardTask({ task, column, columns, tasks, index, filtered, disabled, bu
   task: WorkTask; column: Column; columns: Column[]; tasks: WorkTask[]; index: number; filtered: boolean; disabled: boolean; busy: boolean; mobile: boolean; pendingColumnId: number;
   onEdit: (task: WorkTask) => void; onObjective: (id: number) => void; onDelete: (task: WorkTask) => void; move: Move;
 }) {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: disabled || mobile });
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: disabled || mobile, animateLayoutChanges: () => false });
   const overdue = !!task.dueDate && task.dueDate < productNow().date && ['PENDING', 'ON_DOING'].includes(task.status);
   return <article ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={cn('min-w-0 rounded-md border border-border/50 bg-card p-3', isDragging && 'opacity-40')} aria-busy={busy}>
     <div className="mb-2 flex items-center justify-between gap-2">
@@ -150,6 +151,7 @@ function BoardTask({ task, column, columns, tasks, index, filtered, disabled, bu
         </DropdownMenu>
       </div>
     </div>
+    <TaskLabels labels={task.labels} />
     <Button variant="ghost" className="h-auto min-h-10 w-full justify-start whitespace-normal p-0 text-left" onClick={() => onEdit(task)}>{task.title}</Button>
     {task.objective && <Button variant="link" className="mt-1 h-auto min-h-10 w-full justify-start whitespace-normal px-0 text-left" onClick={() => onObjective(task.objectiveId!)}>{task.objective.title}</Button>}
     <div className="mt-3 flex flex-col gap-2 text-xs text-muted-foreground">

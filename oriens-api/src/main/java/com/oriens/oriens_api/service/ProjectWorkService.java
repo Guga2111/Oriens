@@ -32,6 +32,7 @@ public class ProjectWorkService {
     private final UserRepository users;
     private final EntityManager em;
     private final Clock clock;
+    private final TaskLabelService taskLabels;
 
     public Project createProject(Long ownerId, CreateProject command) {
         require(command.mode(), "mode");
@@ -232,6 +233,7 @@ public class ProjectWorkService {
     }
 
     public Task createTask(Long ownerId, CreateTask command) {
+        taskLabels.lockOwner(ownerId);
         Project project = command.projectId() == null ? null : development(ownerId, command.projectId());
         if (project != null) version(project.getVersion(), command.projectVersion());
         Task task = Task.builder().user(owner(ownerId)).title(title(command.title(), 200, "title"))
@@ -252,11 +254,13 @@ public class ProjectWorkService {
             transition(task, column.getKind());
         }
         tasks.saveAndFlush(task);
+        taskLabels.replace(task, command.labelIds(), null);
         if (project != null) structuralChange(project);
         return task;
     }
 
     public Task patchTask(Long ownerId, Long id, PatchTask command) {
+        taskLabels.lockOwner(ownerId);
         Task snapshot = tasks.findByIdAndUserId(id, ownerId).orElseThrow(ProjectWorkService::notFound);
         Long originalProjectId = snapshot.getProjectId();
         Long targetProjectId = command.has("projectId") ? command.getProjectId() : originalProjectId;
@@ -333,12 +337,14 @@ public class ProjectWorkService {
         if (structural && originalProjectId != null && (transfer || !Objects.equals(oldColumnId, task.getColumnId()))) {
             positions(columnTasks(locked.get(originalProjectId), oldColumnId).stream().filter(t -> !t.getId().equals(id)).toList());
         }
+        if (command.has("labelIds")) taskLabels.replace(task, command.getLabelIds(), command.getVersion());
         em.flush();
         if (structural) for (Project project : locked.values()) structuralChange(project);
         return task;
     }
 
     public void deleteTask(Long ownerId, Long id, Long expectedVersion, Long projectVersion) {
+        taskLabels.lockOwner(ownerId);
         Task snapshot = tasks.findByIdAndUserId(id, ownerId).orElseThrow(ProjectWorkService::notFound);
         Long projectId = snapshot.getProjectId();
         Project project = projectId == null ? null : project(ownerId, projectId);

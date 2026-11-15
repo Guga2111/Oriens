@@ -39,12 +39,15 @@ import static org.assertj.core.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnabledIfEnvironmentVariable(named = "P1_JDBC_URL", matches = "jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_p1_proof")
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-@Import({ProjectWorkService.class, ProjectWorkPostgresTest.FixedClock.class})
+@Import({com.oriens.oriens_api.service.TaskLabelService.class, ProjectWorkService.class, ProjectWorkPostgresTest.FixedClock.class})
 class ProjectWorkPostgresTest {
     @TestConfiguration static class FixedClock {
         @Bean Clock clock() { return Clock.fixed(Instant.parse("2026-11-14T02:30:00Z"), ZoneOffset.UTC); }
     }
     @Autowired ProjectWorkService service;
+    @Autowired com.oriens.oriens_api.service.TaskLabelService taskLabels;
+    @Autowired TaskLabelRepository labelRepository;
+    @Autowired TaskLabelAssignmentRepository labelAssignments;
     @Autowired ProjectRepository projects;
     @Autowired ObjectiveRepository objectives;
     @Autowired ProjectColumnRepository columns;
@@ -72,7 +75,7 @@ class ProjectWorkPostgresTest {
     List<ProjectColumn> board(Project p) { return columns.findByProjectIdOrderByPositionAscIdAsc(p.getId()); }
     Task task(Project p, Long objective, LocalDate plan, LocalTime time, LocalDate due) {
         return service.createTask(owner, new CreateTask("Ação", null, p == null ? null : p.getId(),
-                p == null ? null : current(p).getVersion(), objective, null, plan, time, due, null, null));
+                p == null ? null : current(p).getVersion(), objective, null, plan, time, due, null, null, List.of()));
     }
     PatchTask patch(Task task) { PatchTask p = new PatchTask(); p.setVersion(task.getVersion());
         if (task.getProjectId() != null) p.setProjectVersion(projects.findById(task.getProjectId()).orElseThrow().getVersion());
@@ -334,5 +337,80 @@ class ProjectWorkPostgresTest {
             assertThatThrownBy(() -> second.get(10, TimeUnit.SECONDS)).hasCauseInstanceOf(WorkDomainException.class);
             assertThat(board(project)).extracting(ProjectColumn::getName).contains("Primeira").doesNotContain("Segunda");
         } finally { release.countDown(); executor.shutdownNow(); }
+    }
+
+    @Test void labelsAreOwnedVersionedAndPreservedAcrossTransfers() {
+        TaskLabel red = taskLabels.create(owner, new LabelInput("Urgente", TaskLabelColor.RED));
+        TaskLabel blue = taskLabels.create(owner, new LabelInput("Site", TaskLabelColor.BLUE));
+        TaskLabel foreign = taskLabels.create(stranger, new LabelInput("Privada", TaskLabelColor.GRAY));
+        Task standalone = task(null, null, LocalDate.of(2026,11,13), LocalTime.of(9,37), LocalDate.of(2026,11,20));
+        PatchTask attach = patch(standalone); attach.setLabelIds(List.of(red.getId(), blue.getId()));
+        Task tagged = service.patchTask(owner, standalone.getId(), attach);
+        assertThat(tagged.getVersion()).isEqualTo(standalone.getVersion() + 1);
+        assertThat(tasks.findById(tagged.getId()).orElseThrow().getVersion()).isEqualTo(tagged.getVersion());
+        assertThat(taskLabels.forTasks(owner, List.of(tagged.getId())).get(tagged.getId())).extracting(v -> v.id())
+            .containsExactlyInAnyOrder(red.getId(), blue.getId());
+        PatchTask forbidden = patch(tagged); forbidden.setLabelIds(List.of(foreign.getId()));
+        rejected(() -> service.patchTask(owner, tagged.getId(), forbidden), "NOT_FOUND");
+        PatchTask invalid = patch(tagged); invalid.setLabelIds(null);
+        rejected(() -> service.patchTask(owner, tagged.getId(), invalid), "INVALID_REQUEST");
+        Project project = project(ProjectMode.DEVELOPMENT);
+        PatchTask transfer = patch(tagged); transfer.setProjectId(project.getId()); transfer.setProjectVersion(project.getVersion());
+        Task moved = service.patchTask(owner, tagged.getId(), transfer);
+        assertThat(taskLabels.forTasks(owner, List.of(moved.getId())).get(moved.getId())).hasSize(2);
+        PatchTask partial = patch(moved); partial.setTitle("Renomeada"); partial.setLabelIds(List.of(blue.getId()));
+        Task updated = service.patchTask(owner, moved.getId(), partial);
+        assertThat(updated.getVersion()).isEqualTo(moved.getVersion() + 1);
+        assertThat(taskLabels.forTasks(owner, List.of(updated.getId())).get(updated.getId())).extracting(v -> v.id()).containsExactly(blue.getId());
+        assertThat(updated.getStartTime()).isEqualTo(LocalTime.of(9,37));
+        assertThat(updated.getDueDate()).isEqualTo(LocalDate.of(2026,11,20));
+        service.deleteProject(owner, project.getId(), current(project).getVersion());
+        Task detached = tasks.findById(updated.getId()).orElseThrow();
+        assertThat(detached.getProjectId()).isNull();
+        assertThat(taskLabels.forTasks(owner, List.of(detached.getId())).get(detached.getId())).extracting(v -> v.id()).containsExactly(blue.getId());
+        taskLabels.delete(owner, blue.getId(), blue.getVersion());
+        Task afterDelete = tasks.findById(updated.getId()).orElseThrow();
+        assertThat(afterDelete.getVersion()).isEqualTo(detached.getVersion() + 1);
+        assertThat(afterDelete.getStatus()).isEqualTo(updated.getStatus());
+        assertThat(afterDelete.getPlannedDate()).isEqualTo(updated.getPlannedDate());
+        assertThat(taskLabels.forTasks(owner, List.of(afterDelete.getId()))).isEmpty();
+        rejected(() -> service.patchTask(owner, afterDelete.getId(), patch(detached)), "VERSION_CONFLICT");
+
+    }
+
+    @Test void labelCatalogRejectsForeignDuplicateAndStaleWrites() {
+        TaskLabel label = taskLabels.create(owner, new LabelInput("  Backend  ", TaskLabelColor.GREEN));
+        rejected(() -> taskLabels.create(owner, new LabelInput("backend", TaskLabelColor.RED)), "INVALID_REQUEST");
+        rejected(() -> taskLabels.update(stranger, label.getId(), label.getVersion(), new LabelInput("Outra", TaskLabelColor.BLUE)), "NOT_FOUND");
+        var fresh = taskLabels.update(owner, label.getId(), label.getVersion(), new LabelInput("API", TaskLabelColor.BLUE));
+        assertThat(fresh.version()).isEqualTo(label.getVersion() + 1);
+        rejected(() -> taskLabels.delete(owner, label.getId(), label.getVersion()), "VERSION_CONFLICT");
+        Task withLabels = service.createTask(owner, new CreateTask("Nova", null, null, null, null, null, null, null, null, null, null, List.of(label.getId())));
+        assertThat(taskLabels.forTasks(owner, List.of(withLabels.getId())).get(withLabels.getId())).extracting(v -> v.name()).containsExactly("API");
+        service.deleteTask(owner, withLabels.getId(), withLabels.getVersion(), null);
+        assertThat(labelAssignments.findByTaskIdAndUserId(withLabels.getId(), owner)).isEmpty();
+        assertThat(labelRepository.findById(label.getId())).isPresent();
+    }
+
+    @Test void labelDeletionSerializesWithTaskAssignment() throws Exception {
+        TaskLabel label = taskLabels.create(owner, new LabelInput("Concorrência", TaskLabelColor.ORANGE));
+        Task task = task(null, null, null, null, null);
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        CountDownLatch assigned = new CountDownLatch(1), release = new CountDownLatch(1), deleting = new CountDownLatch(1);
+        try {
+            Future<?> writer = pool.submit(() -> run(() -> {
+                PatchTask command = patch(task); command.setLabelIds(List.of(label.getId()));
+                service.patchTask(owner, task.getId(), command); assigned.countDown();
+                try { if (!release.await(5, TimeUnit.SECONDS)) throw new IllegalStateException("Assignment release timed out"); }
+                catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }
+            }));
+            assertThat(assigned.await(5, TimeUnit.SECONDS)).isTrue();
+            Future<?> removal = pool.submit(() -> { deleting.countDown(); taskLabels.delete(owner, label.getId(), label.getVersion()); });
+            assertThat(deleting.await(5, TimeUnit.SECONDS)).isTrue();
+            assertThatThrownBy(() -> removal.get(150, TimeUnit.MILLISECONDS)).isInstanceOf(TimeoutException.class);
+            release.countDown(); writer.get(5, TimeUnit.SECONDS); removal.get(5, TimeUnit.SECONDS);
+            assertThat(taskLabels.forTasks(owner, List.of(task.getId()))).isEmpty();
+            assertThat(tasks.findById(task.getId()).orElseThrow().getVersion()).isEqualTo(task.getVersion()+2);
+        } finally { release.countDown(); pool.shutdownNow(); }
     }
 }

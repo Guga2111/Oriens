@@ -5,6 +5,9 @@ import com.oriens.oriens_api.entity.embeddable.Location;
 import java.time.*;
 
 public class PatchTask extends PatchFields {
+    private java.util.List<Long> labelIds;
+    public java.util.List<Long> getLabelIds() { return labelIds; }
+    public void setLabelIds(java.util.List<Long> value) { supplied("labelIds"); labelIds = value; }
     private Long version;
     public Long getVersion() { return version; }
     public void setVersion(Long value) { supplied("version"); version = value; }

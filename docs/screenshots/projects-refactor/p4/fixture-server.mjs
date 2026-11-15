@@ -41,6 +41,7 @@ http.createServer(async(req,res)=>{
   const fail=()=>send({code:'VERSION_CONFLICT',message:'Dados desatualizados.',fieldErrors:[]},409);
   let body={};if(!['GET','HEAD'].includes(method)){let raw='';for await(const chunk of req)raw+=chunk;if(raw){try{body=JSON.parse(raw);}catch{return send({message:'Unsupported QA request'},400);}}}
   if(u==='/__qa/reset'){({projects,columns,tasks}=structuredClone(initial));nextId=100;receipts.clear();return send({reset:true});}
+  if(u==='/task-labels/user/1'&&method==='GET')return send([]);
   if(u==='/user/1')return send({id:1,name:'Demonstração',email:'fixture@example.invalid'});
   if(u.includes('preferences'))return send({notifications:false,sound:false,theme:new URL(req.headers.referer||'http://localhost').searchParams.get('theme')||'light'});
   if(u.startsWith('/notification'))return send([]);

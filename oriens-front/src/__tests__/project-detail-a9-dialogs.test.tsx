@@ -11,7 +11,7 @@ vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7 }) }));
 vi.mock('@/hooks/useGoogleMapsScript', () => ({ useGoogleMapsScript: () => ({ isLoaded: false }) }));
 vi.mock('@/services/api', () => ({ default: { get: vi.fn(), patch: vi.fn(), post: vi.fn(), put: vi.fn() } }));
 beforeEach(() => {
-  vi.mocked(api.get).mockImplementation(async url => ({ data: String(url).endsWith('board') ? board : String(url).includes('/project/user/') ? pageOf([project]) : project }));
+  vi.mocked(api.get).mockImplementation(async url => ({ data: String(url).startsWith('/task-labels/') ? [] : String(url).endsWith('board') ? board : String(url).includes('/project/user/') ? pageOf([project]) : project }));
   vi.mocked(api.post).mockResolvedValue({ data: { task, affectedProjectIds: [9], previousPlannedDate: null, plannedDate: null } });
   vi.mocked(api.patch).mockResolvedValue({ data: { task, affectedProjectIds: [9], previousPlannedDate: null, plannedDate: null } });
 });
@@ -55,7 +55,7 @@ it('editor preserva estado e prazo ao retirar planejamento; conflito mantém ras
 });
 it('troca de projeto exige coluna explícita e remove objetivo com aviso', async () => {
   const other = { ...project, id: 10, title: 'Livro', version: 6 };
-  vi.mocked(api.get).mockImplementation(async url => ({ data: String(url).includes('/user/') ? pageOf([project, other]) : String(url).endsWith('/board') ? { ...board, columns: board.columns.map(c => ({ ...c, id: c.id + 10, projectId: 10 })) } : String(url) === '/project/10' ? other : project }));
+  vi.mocked(api.get).mockImplementation(async url => ({ data: String(url).startsWith('/task-labels/') ? [] : String(url).includes('/user/') ? pageOf([project, other]) : String(url).endsWith('/board') ? { ...board, columns: board.columns.map(c => ({ ...c, id: c.id + 10, projectId: 10 })) } : String(url) === '/project/10' ? other : project }));
   renderWork(<TaskEditor open onOpenChange={vi.fn()} task={task} />);
   await userEvent.click(screen.getByRole('combobox', { name: 'Projeto da tarefa' }));
   await userEvent.click(await screen.findByRole('option', { name: 'Livro' }));

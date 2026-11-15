@@ -46,7 +46,7 @@ class WorkApiPostgresTest {
     @EnableJpaRepositories(basePackageClasses=ProjectRepository.class)
     @Import({UserController.class, UserServiceImpl.class, CustomAuthManager.class, ProjectController.class, TaskController.class, StatisticsController.class, WorkExceptionHandler.class,
         WorkRequestBodyAdvice.class, WorkOwner.class, WorkReadService.class, WorkCreationService.class,
-        ProjectWorkService.class, StatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, JwtConfiguration.class, SecurityConfig.class})
+        TaskLabelController.class, TaskLabelService.class, ProjectWorkService.class, StatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, JwtConfiguration.class, SecurityConfig.class})
     static class App {
         @Bean org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder() {
             return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
@@ -457,4 +457,79 @@ class WorkApiPostgresTest {
         send("POST","/project/user/"+owner,"{\"title\":\"Projeto\",\"mode\":\"DEVELOPMENT\"}",key,token,410);
     }
 
+
+    @Test void taskLabelsAreIdempotentOwnedAndVisibleInTaskProjections() throws Exception {
+        String endpoint = "/task-labels/user/" + owner;
+        String key = UUID.randomUUID().toString();
+        String payload = "{\"name\":\"Frontend\",\"color\":\"BLUE\"}";
+        JsonNode label = body(send("POST", endpoint, payload, key, token, 201));
+        assertThat(body(send("POST", endpoint, payload, key, token, 201)).path("id")).isEqualTo(label.path("id"));
+        send("POST", endpoint, "{\"name\":\"Outro\",\"color\":\"BLUE\"}", key, token, 409);
+        send("POST", endpoint, "{\"name\":\"frontend\",\"color\":\"RED\"}", UUID.randomUUID().toString(), token, 400);
+        send("POST", endpoint, "{\"name\":\"Nome\",\"color\":\"INVALID\"}", UUID.randomUUID().toString(), token, 400);
+        mvc.perform(get(endpoint).header("Authorization", other)).andExpect(status().isNotFound());
+        JsonNode foreign = body(send("POST", "/task-labels/user/"+stranger, payload, UUID.randomUUID().toString(), other, 201));
+        send("POST", "/task/user/"+owner, "{\"title\":\"Invasão\",\"labelIds\":["+foreign.path("id")+"]}", UUID.randomUUID().toString(), token, 404);
+        JsonNode t = body(send("POST", "/task/user/"+owner, "{\"title\":\"Etiquetada\",\"plannedDate\":\"2026-11-13\",\"dueDate\":\"2026-11-20\",\"labelIds\":["+label.path("id")+"]}", UUID.randomUUID().toString(), token, 201)).path("task");
+        long id = t.path("id").asLong();
+        assertThat(t.path("labels").get(0).path("name").asText()).isEqualTo("Frontend");
+        assertThat(getJson("/task/user/"+owner+"?date=2026-11-13").path("planned").toString()).contains("Frontend");
+        assertThat(getJson("/task/user/"+owner+"/range?startDate=2026-11-13&endDate=2026-11-13").path("tasks").toString()).contains("Frontend");
+        JsonNode changed = body(mvc.perform(put("/task-labels/"+label.path("id")).header("Authorization", token)
+            .header("If-Match", "\""+label.path("version").asLong()+"\"").contentType("application/json")
+            .content("{\"name\":\"Interface\",\"color\":\"GREEN\"}")).andExpect(status().isOk()).andReturn());
+        assertThat(task(id).path("labels").get(0).path("name").asText()).isEqualTo("Interface");
+        mvc.perform(delete("/task-labels/"+label.path("id")).header("Authorization", token).header("If-Match", "\"0\""))
+            .andExpect(status().isConflict());
+        mvc.perform(delete("/task-labels/"+label.path("id")).header("Authorization", token).header("If-Match", "\""+changed.path("version").asLong()+"\""))
+            .andExpect(status().isNoContent());
+        JsonNode after = task(id);
+        assertThat(after.path("labels").size()).isZero();
+        assertThat(after.path("version").asLong()).isEqualTo(t.path("version").asLong()+1);
+        assertThat(after.path("dueDate")).isEqualTo(t.path("dueDate"));
+        assertThat(after.path("status")).isEqualTo(t.path("status"));
+        send("PATCH", "/task/"+id, "{\"version\":"+t.path("version")+",\"labelIds\":[]}", null, token, 409);
+        send("POST", endpoint, payload, key, token, 410);
+    }
+
+    @Test void labelPatchAdvancesVersionAndLegacyReceiptHashesRemainStable() throws Exception {
+        String key = UUID.randomUUID().toString();
+        JsonNode created = body(send("POST", "/task/user/"+owner, "{\"title\":\"Legado\"}", key, token, 201)).path("task");
+        JsonNode replay = body(send("POST", "/task/user/"+owner, "{\"title\":\"Legado\",\"labelIds\":[]}", key, token, 201)).path("task");
+        assertThat(replay.path("id")).isEqualTo(created.path("id"));
+        Map<String,Object> legacy = new TreeMap<>();
+        for (String field : List.of("description","projectId","projectVersion","objectiveId","columnId","plannedDate","startTime","dueDate","location")) legacy.put(field,null);
+        legacy.put("title","Legado"); legacy.put("priority","MEDIUM");
+        String expected = HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(json.writeValueAsBytes(legacy)));
+        assertThat(receipts.findByUserIdAndOperationAndIdempotencyKey(owner,"task:create",UUID.fromString(key)).orElseThrow().getPayloadSha256()).isEqualTo(expected);
+        JsonNode label = body(send("POST", "/task-labels/user/"+owner, "{\"name\":\"Pesquisa\",\"color\":\"YELLOW\"}", UUID.randomUUID().toString(), token, 201));
+        JsonNode updated = body(send("PATCH", "/task/"+created.path("id"), "{\"version\":"+created.path("version")+",\"labelIds\":["+label.path("id")+"]}", null, token, 200)).path("task");
+        assertThat(updated.path("version").asLong()).isEqualTo(created.path("version").asLong()+1);
+        assertThat(updated.path("labels").size()).isEqualTo(1);
+        send("PATCH", "/task/"+created.path("id"), "{\"version\":"+updated.path("version")+",\"labelIds\":null}", null, token, 400);
+    }
+
+    @Test @EnabledIfEnvironmentVariable(named="LABEL_BROWSER_PROOF", matches="1")
+    void labelsBrowserRoundTripAgainstDisposablePostgres() throws Exception {
+        java.nio.file.Path repo = java.nio.file.Path.of("..").toAbsolutePath().normalize();
+        assertThat(repo.resolve("oriens-front/dist/index.html")).exists();
+        JsonNode project = project("DEVELOPMENT");
+        JsonNode linked = task(project), standalone = task((JsonNode) null);
+        String browserToken = JWT.create().withSubject(users.findById(owner).orElseThrow().getEmail())
+            .withClaim("userId", owner).withClaim("username", "QA").withClaim("role", "USER")
+            .withExpiresAt(new Date(System.currentTimeMillis()+180000)).sign(jwtAlgorithm);
+        var command = new ProcessBuilder("node", "docs/screenshots/projects-refactor/p5/fixture-server.mjs", "oriens-front/dist", "4202").directory(repo.toFile()).redirectErrorStream(true);
+        command.environment().put("QA_API_ORIGIN", "http://127.0.0.1:"+httpPort);
+        command.environment().put("QA_TOKEN", browserToken);
+        Process server = command.start();
+        try {
+            assertThat(new java.io.BufferedReader(new java.io.InputStreamReader(server.getInputStream())).readLine()).contains("Synthetic QA build");
+            Process browser = new ProcessBuilder("node", "docs/screenshots/task-labels/live-browser.mjs", "http://127.0.0.1:4202", project.path("id").asText(), linked.path("id").asText(), standalone.path("id").asText())
+                .directory(repo.toFile()).inheritIO().start();
+            try { assertThat(browser.waitFor(120, TimeUnit.SECONDS)).isTrue(); assertThat(browser.exitValue()).isZero(); }
+            finally { if (browser.isAlive()) browser.destroyForcibly(); }
+            assertThat(task(linked.path("id").asLong()).path("labels").size()).isZero();
+            assertThat(task(standalone.path("id").asLong()).path("labels").size()).isZero();
+        } finally { server.destroyForcibly(); server.waitFor(); }
+    }
 }

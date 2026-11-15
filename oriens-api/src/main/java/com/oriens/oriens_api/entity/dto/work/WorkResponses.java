@@ -39,11 +39,12 @@ public final class WorkResponses {
     public record ProjectLink(Long id, String title, Boolean archived, long version) {}
     public record ObjectiveLink(Long id, String title) {}
     public record ColumnLink(Long id, String name, Status kind) {}
+    public record LabelView(Long id, String name, TaskLabelColor color, long version) {}
     public record TaskView(Long id, Long userId, String title, String description, Long projectId, Long objectiveId,
                            Long columnId, Integer position, LocalDate plannedDate, LocalTime startTime,
                            LocalDate dueDate, Priority priority, Status status, LocalDate completedAt,
                            Instant createdAt, Location location, long version, ProjectLink project,
-                           ObjectiveLink objective, ColumnLink column) {}
+                           ObjectiveLink objective, ColumnLink column, List<LabelView> labels) {}
     public record SidebarProject(Long id, String title, String color, ProjectMode mode, boolean favorite,
                                  Boolean archived, Instant lastAccessed, long version) {
         public static SidebarProject of(Project p) { return new SidebarProject(p.getId(), p.getTitle(), p.getColor(), p.getMode(), p.isFavorite(), p.getArchived(), p.getLastAccessed(), p.getVersion()); }

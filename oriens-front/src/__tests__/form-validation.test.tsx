@@ -14,7 +14,7 @@ import type { Task } from "@/types/task";
 
 vi.mock("@/context/AuthContext", () => ({ useAuth: () => ({ userId: 7 }) }));
 vi.mock("@/hooks/useGoogleMapsScript", () => ({ useGoogleMapsScript: () => ({ isLoaded: false }) }));
-vi.mock("@/services/api", () => ({ default: { get: vi.fn().mockResolvedValue({ data: { content: [] } }), post: vi.fn(), put: vi.fn(), patch: vi.fn() } }));
+vi.mock("@/services/api", () => ({ default: { get: vi.fn().mockImplementation(async url => ({ data: String(url).startsWith('/task-labels/') ? [] : { content: [] } })), post: vi.fn(), put: vi.fn(), patch: vi.fn() } }));
 vi.mock("@/services/financialService", () => ({
   getDefaultTags: vi.fn(), getCustomTags: vi.fn(), createTag: vi.fn(),
   updateTag: vi.fn(), deleteTag: vi.fn(), createEntry: vi.fn(), updateEntry: vi.fn(),
@@ -37,7 +37,7 @@ it("nova tarefa associa os erros aos campos e impede envio inválido", async () 
 });
 
 it("edição carrega snapshot atual e falha de PATCH permanece inline", async () => {
-  vi.mocked(apiClient.get).mockImplementation(async url => ({ data: String(url) === '/task/1' ? { ...task, plannedDate: "2026-11-13", version: 2, projectId: null, project: null, objectiveId: null, columnId: null } : { content: [] } }));
+  vi.mocked(apiClient.get).mockImplementation(async url => ({ data: String(url).startsWith('/task-labels/') ? [] : String(url) === '/task/1' ? { ...task, plannedDate: "2026-11-13", version: 2, projectId: null, project: null, objectiveId: null, columnId: null } : { content: [] } }));
   vi.mocked(apiClient.patch).mockRejectedValueOnce(new Error('offline'));
   render(<EditTaskDialog {...callbacks} task={task} onTaskUpdated={vi.fn()} />);
   await userEvent.click(await screen.findByRole('button', { name: 'Salvar tarefa' }));

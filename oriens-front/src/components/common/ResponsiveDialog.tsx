@@ -48,7 +48,7 @@ export function ResponsiveDialog({
 
   if (isDrawer) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
+      <Drawer open={open} onOpenChange={onOpenChange} autoFocus>
         <DrawerContent className={cn("max-h-dialog outline-none", className)}>
           <DrawerHeader className="shrink-0 text-left">
             <DrawerTitle>{title}</DrawerTitle>

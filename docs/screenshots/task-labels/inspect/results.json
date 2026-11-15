@@ -1,0 +1,30 @@
+[
+  {
+    "theme": "light",
+    "qa": "labels",
+    "name": "picker",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "theme": "light",
+    "qa": "label-editor",
+    "name": "editor",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "theme": "dark",
+    "qa": "label-editor",
+    "name": "editor",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "theme": "dark",
+    "qa": "labels",
+    "name": "picker",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  }
+]

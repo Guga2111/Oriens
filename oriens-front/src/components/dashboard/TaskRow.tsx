@@ -1,3 +1,4 @@
+import { TaskLabels } from '@/components/tasks/TaskLabels';
 import { TaskContext } from './TaskContext';
 import { TaskPlanningMenu } from './TaskPlanningMenu';
 import { useState } from "react";
@@ -137,6 +138,7 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
           {isOnDoing && <Badge variant="warning">Em andamento</Badge>}
         </div>
 
+        <TaskLabels labels={task.labels} />
         <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
           <span className="flex items-center gap-1 tabular-nums"><Clock className="h-3 w-3" aria-hidden />{task.startTime?.slice(0, 5) ?? 'Sem horário'}</span>
           <Badge variant={priority.badge}>{priority.label}</Badge>

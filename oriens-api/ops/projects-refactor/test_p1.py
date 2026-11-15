@@ -14,6 +14,7 @@ import time
 import uuid
 
 import db
+import task_labels
 
 
 def main():
@@ -37,14 +38,15 @@ def main():
         args.database = 'oriens_p1_proof'
         with contextlib.redirect_stdout(io.StringIO()):
             db.apply(db.Database(args))
+            task_labels.apply(db.Database(args))
         endpoint = subprocess.check_output(['docker', 'port', name, '5432'], text=True).strip()
         port = endpoint.rsplit(':', 1)[1]
         env = dict(os.environ, P1_JDBC_URL=f'jdbc:postgresql://127.0.0.1:{port}/oriens_p1_proof')
         subprocess.run(['mvn', '-q', '-Dtest=ProjectWorkPostgresTest', 'test'], cwd=api, env=env, check=True)
         # Verify JPA validate and every mutation left the sealed SQL catalog unchanged.
         with contextlib.redirect_stdout(io.StringIO()):
-            db.apply(db.Database(args))
-        print('P1 PostgreSQL/JPA proof passed; baseline catalog seal unchanged.')
+            task_labels.apply(db.Database(args))
+        print('P1 PostgreSQL/JPA proof passed; task-label revision catalog seal unchanged.')
     finally:
         subprocess.run(['docker', 'rm', '--force', name], check=True)
 

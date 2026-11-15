@@ -9,9 +9,11 @@ try {
  const response = path => page.waitForResponse(r=>r.url().endsWith(path)&&r.request().method()==='PATCH');
  await page.goto(`${base}/tasks/project/${projectId}`);
  await page.getByRole('button',{name:'Integração P5',exact:true}).click();
- await page.getByLabel('Dia planejado',{exact:true}).fill('2026-11-13');
- await page.getByLabel('Horário (opcional)',{exact:true}).fill('09:00');
- await page.getByLabel('Prazo final (opcional)',{exact:true}).fill('2026-11-20');
+ await page.locator('#task-planned').click();
+ await page.locator('button[name=day]:not(.day-outside)').filter({hasText:/^13$/}).click();
+ await page.getByLabel('Horário (HH:mm)',{exact:true}).fill('09:00');
+ await page.locator('#task-due').click();
+ await page.locator('button[name=day]:not(.day-outside)').filter({hasText:/^20$/}).click();
  const planning=response(`/task/${taskId}`);
  await page.getByRole('button',{name:'Salvar tarefa',exact:true}).click();
  assert.equal((await planning).status(),200);
@@ -30,7 +32,7 @@ try {
  await page.getByRole('dialog').waitFor({state:'hidden'});
  const complete=response(`/task/${taskId}`);await row.getByRole('checkbox').click();const completed=await (await complete).json();
  assert.equal(completed.task.column.kind,'CONCLUDED');assert.equal(completed.task.completedAt,'2026-11-13');
- await page.getByRole('button',{name:'Concluídas (1)'}).click();await page.locator(`#task-row-${taskId}`).waitFor();
+ await page.locator(`#task-row-${taskId}`).waitFor();
  await page.locator(`#task-row-${taskId}`).getByRole('link',{name:'Site pessoal',exact:true}).click();
  await page.getByRole('combobox',{name:'Coluna do quadro'}).click();await page.getByRole('option',{name:/^Concluídas/}).click();
  await page.getByRole('button',{name:'Integração P5',exact:true}).waitFor();
@@ -40,7 +42,7 @@ try {
  assert.equal(reopened.task.description,'Descrição salva em Hoje');assert.equal(reopened.task.dueDate,'2026-11-20');
  await page.getByRole('button',{name:'Alternar menu de navegação',exact:true}).click();
  await page.getByRole('link',{name:'Hoje',exact:true}).click();await page.locator(`#task-row-${taskId}`).getByRole('checkbox').waitFor();
- assert.equal(await page.locator(`#task-row-${taskId}`).getByRole('checkbox').isChecked(),false);
+ await page.waitForFunction(id => document.querySelector(`#task-row-${id} [role="checkbox"]`)?.getAttribute('aria-checked') === 'false', taskId);
  const standalone=page.locator(`#task-row-${standaloneId}`);await standalone.waitFor();
  const finish=response(`/task/${standaloneId}`);await standalone.getByRole('checkbox').click();assert.equal((await finish).status(),200);
  console.log('PASS P5 live: board planning → Today same ID → description/completion → board → reopen → Today; standalone; keyboard timeline; real HTTP/JWT/PostgreSQL.');

@@ -67,8 +67,15 @@ public class WorkCreationService {
     private Object normalized(Object payload) {
         if (payload instanceof CreateProject p) return new CreateProject(trim(p.title()), p.mode(), p.description(), p.color(),
             p.objectives() == null ? List.of() : p.objectives().stream().map(o -> o == null ? null : new NewObjective(trim(o.title()), o.dueDate())).toList());
-        if (payload instanceof CreateTask t) return new CreateTask(trim(t.title()), t.description(), t.projectId(), t.projectVersion(), t.objectiveId(), t.columnId(),
-            t.plannedDate(), t.startTime(), t.dueDate(), t.priority() == null ? Priority.MEDIUM : t.priority(), t.location());
+        if (payload instanceof CreateTask t) {
+            List<Long> ids = t.labelIds() == null ? List.of() : t.labelIds().stream().sorted(Comparator.nullsFirst(Comparator.naturalOrder())).toList();
+            ObjectNode normalized = mapper.valueToTree(new CreateTask(trim(t.title()), t.description(), t.projectId(), t.projectVersion(), t.objectiveId(), t.columnId(),
+                t.plannedDate(), t.startTime(), t.dueDate(), t.priority() == null ? Priority.MEDIUM : t.priority(), t.location(), ids));
+            // Preserve the hash of pre-label creation receipts for uncertain retries after upgrade.
+            if (ids.isEmpty()) normalized.remove("labelIds");
+            return normalized;
+        }
+        if (payload instanceof LabelInput l) return new LabelInput(trim(l.name()), l.color());
         if (payload instanceof CreateObjective o) return new CreateObjective(o.projectVersion(), trim(o.title()), o.dueDate());
         if (payload instanceof CreateColumn c) return new CreateColumn(c.projectVersion(), trim(c.name()), c.kind());
         return payload;
