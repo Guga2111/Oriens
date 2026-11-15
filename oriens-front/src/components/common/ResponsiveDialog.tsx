@@ -1,3 +1,4 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ReactNode } from "react";
 import {
   Dialog,
@@ -48,18 +49,16 @@ export function ResponsiveDialog({
   if (isDrawer) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className={cn("max-h-[90dvh]", className)}>
-          <DrawerHeader className="text-left">
+        <DrawerContent className={cn("max-h-dialog outline-none", className)}>
+          <DrawerHeader className="shrink-0 text-left">
             <DrawerTitle>{title}</DrawerTitle>
             {description && (
               <DrawerDescription>{description}</DrawerDescription>
             )}
           </DrawerHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-            {children}
-          </div>
+          <ScrollArea className="min-h-0 flex-1"><div className="px-4 pb-4 pr-6">{children}</div></ScrollArea>
           {footer && (
-            <DrawerFooter className="flex-row justify-end gap-2 border-t">
+            <DrawerFooter className="shrink-0 flex-row justify-end gap-2 border-t">
               {footer}
             </DrawerFooter>
           )}
@@ -71,16 +70,14 @@ export function ResponsiveDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={cn("flex max-h-[90dvh] flex-col overflow-hidden", className)}
+        className={cn("flex max-h-dialog flex-col overflow-hidden", className)}
       >
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 py-4">
-          {children}
-        </div>
-        {footer && <DialogFooter>{footer}</DialogFooter>}
+        <ScrollArea className="-mx-1 min-h-0 flex-1"><div className="px-1 py-2 pr-4">{children}</div></ScrollArea>
+        {footer && <DialogFooter className="shrink-0">{footer}</DialogFooter>}
       </DialogContent>
     </Dialog>
   );

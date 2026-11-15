@@ -15,6 +15,11 @@ export default {
   		}
   	},
   	extend: {
+        maxHeight: { dialog: 'var(--dialog-max-height)' },
+        maxWidth: { 'task-dialog': 'var(--dialog-task-width)', 'project-dialog': 'var(--dialog-project-width)', 'board-dialog': 'var(--dialog-board-width)', work: 'var(--work-content-width)', planning: 'var(--planning-content-width)' },
+        gridTemplateColumns: { 'project-detail': 'var(--project-detail-columns)' },
+        width: { 'board-column': 'var(--board-column-width)', 'popover-trigger': 'var(--radix-popover-trigger-width)' },
+        aspectRatio: { 'project-cover': 'var(--project-cover-ratio)' },
   		fontFamily: {
   			sans: [
   				'Inter',

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+import { WorkDatePicker } from '@/components/common/WorkDatePicker';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,7 +55,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
   }
   return <DraftDialog uncertain={attempt.uncertain} open={open} onOpenChange={onOpenChange} dirty={dirty} busy={write.isPending}
     title={projectToEdit ? 'Editar projeto' : 'Novo projeto'} description="Um contexto para seus objetivos e próximos passos."
-    className="sm:max-w-[560px]" footer={<Button form="project-form" type="submit" disabled={write.isPending}>{write.isPending ? 'Salvando…' : projectToEdit ? 'Salvar alterações' : 'Criar Projeto'}</Button>}>
+    className="sm:max-w-project-dialog" footer={<Button form="project-form" type="submit" disabled={write.isPending}>{write.isPending ? 'Salvando…' : projectToEdit ? 'Salvar alterações' : 'Criar Projeto'}</Button>}>
     <form id="project-form" onSubmit={submit} noValidate>
       <fieldset disabled={write.isPending || attempt.uncertain} className="min-w-0"><FieldGroup>
         {!projectToEdit && <Field><FieldLabel id="project-mode">Modo do projeto</FieldLabel>
@@ -68,10 +70,10 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
         {!projectToEdit && <Field><FieldLabel>Objetivos (opcionais)</FieldLabel>
           {objectives.map((o, i) => <div key={i} className="flex flex-col gap-2 rounded-md border p-3">
             <Input aria-label={`Objetivo ${i + 1}`} value={o.title} maxLength={200} onChange={e => setObjectives(rows => rows.map((r, n) => n === i ? { ...r, title: e.target.value } : r))} />
-            <Input aria-label={`Prazo do objetivo ${i + 1}`} type="date" value={o.dueDate} onChange={e => setObjectives(rows => rows.map((r, n) => n === i ? { ...r, dueDate: e.target.value } : r))} />
-            <Button type="button" variant="ghost" onClick={() => setObjectives(rows => rows.filter((_, n) => n !== i))}>Remover objetivo</Button>
+            <WorkDatePicker label={`Prazo do objetivo ${i + 1}`} value={o.dueDate} onChange={value => setObjectives(rows => rows.map((r, n) => n === i ? { ...r, dueDate: value } : r))} />
+            <Button type="button" variant="ghost" size="sm" className="self-end" onClick={() => setObjectives(rows => rows.filter((_, n) => n !== i))}><Trash2 aria-hidden />Remover objetivo</Button>
           </div>)}
-          <Button type="button" variant="outline" onClick={() => setObjectives(rows => [...rows, { title: '', dueDate: '' }])}>Adicionar objetivo</Button>
+          <Button type="button" variant="outline" onClick={() => setObjectives(rows => [...rows, { title: '', dueDate: '' }])}><Plus aria-hidden />Adicionar objetivo</Button>
         </Field>}
       </FieldGroup></fieldset>
       <div className="mt-4"><WorkFeedback message={notice} /><WorkFeedback error={write.error} retry={projectToEdit ? () => { void current.refetch().then(result => {

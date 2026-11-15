@@ -1,0 +1,93 @@
+[
+  {
+    "name": "simple",
+    "theme": "light",
+    "route": "/tasks/project/20",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "projects",
+    "theme": "light",
+    "route": "/projects",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "create",
+    "theme": "light",
+    "route": "/projects?qa=create",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "board",
+    "theme": "light",
+    "route": "/tasks/project/10",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "objectives",
+    "theme": "light",
+    "route": "/tasks/project/10?tab=objectives",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 0 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "board",
+    "theme": "dark",
+    "route": "/tasks/project/10",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "editor",
+    "theme": "light",
+    "route": "/tasks/project/10?qa=editor",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "editor",
+    "theme": "dark",
+    "route": "/tasks/project/10?qa=editor",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "day",
+    "theme": "light",
+    "route": "/tasks",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "day",
+    "theme": "dark",
+    "route": "/tasks",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "week",
+    "theme": "light",
+    "route": "/tasks?view=week",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 3 WARN \u2014 measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "settings",
+    "theme": "light",
+    "route": "/tasks/project/10?qa=settings",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN"
+  },
+  {
+    "name": "settings",
+    "theme": "dark",
+    "route": "/tasks/project/10?qa=settings",
+    "code": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN"
+  }
+]

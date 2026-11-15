@@ -12,7 +12,8 @@ beforeEach(() => {
 it('exclusão apresenta consequências, exige ciência e envia a versão do preview', async () => {
   vi.mocked(api.delete).mockResolvedValue({});
   renderWork(<ProjectsPage />);
-  await userEvent.click(await screen.findByRole('button', { name: 'Excluir' }));
+  await userEvent.click(await screen.findByRole('button', { name: `Ações do projeto ${project.title}` }));
+  await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }));
   expect(await screen.findByText(/As 5 tarefas serão preservadas/)).toBeInTheDocument();
   const remove = screen.getByRole('button', { name: 'Excluir projeto' });
   expect(remove).toBeDisabled();
@@ -23,7 +24,8 @@ it('exclusão apresenta consequências, exige ciência e envia a versão do prev
 it('conflito preserva a confirmação, exige novo preview e não exclui de novo sozinho', async () => {
   vi.mocked(api.delete).mockRejectedValue({ isAxiosError: true, response: { status: 409 } });
   renderWork(<ProjectsPage />);
-  await userEvent.click(await screen.findByRole('button', { name: 'Excluir' }));
+  await userEvent.click(await screen.findByRole('button', { name: `Ações do projeto ${project.title}` }));
+  await userEvent.click(screen.getByRole('menuitem', { name: 'Excluir' }));
   await screen.findByText(/As 5 tarefas/);
   await userEvent.click(screen.getByRole('checkbox'));
   await userEvent.click(screen.getByRole('button', { name: 'Excluir projeto' }));

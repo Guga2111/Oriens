@@ -95,7 +95,7 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
 
   return (
     <div className="rounded-md border border-border/60 bg-card p-2">
-      <div className="flex items-start gap-1">
+      <div className="flex flex-wrap items-start gap-1">
         <div className="-m-1.5 flex h-8 w-8 shrink-0 items-center justify-center">
           <Checkbox
             checked={isConcluded ? true : isOnDoing ? "indeterminate" : false}
@@ -105,7 +105,7 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
             aria-busy={isUpdating}
             disabled={isUpdating}
             aria-label={
-              isOnDoing
+              isConcluded ? `Reabrir ${task.title}` : isOnDoing
                 ? `Concluir ${task.title} (em andamento)`
                 : `Concluir ${task.title}`
             }
@@ -113,7 +113,7 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
           />
         </div>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 basis-full flex-1 order-last">
           <div className="flex items-center gap-1.5">
             <span className="text-xs tabular-nums text-muted-foreground">
               {(task.startTime?.slice(0, 5) ?? "Sem horário")}
@@ -140,7 +140,7 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="-mr-1 -mt-1 h-6 w-6 shrink-0"
+              className="ml-auto -mr-1 -mt-1 size-8 shrink-0"
               aria-label={`Ações da tarefa ${task.title}`}
                 disabled={isUpdating}
             >

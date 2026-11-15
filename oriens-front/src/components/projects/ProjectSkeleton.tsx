@@ -7,7 +7,7 @@ export function ProjectSkeleton() {
       <CardHeader>
         <Skeleton className="h-40 w-full rounded-md mb-4" />
         <div className="flex justify-between items-start">
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <Skeleton className="h-6 w-48" />
             <Skeleton className="h-4 w-64" />
           </div>
@@ -24,7 +24,7 @@ export function ProjectSkeleton() {
         </div>
         <div>
           <Skeleton className="h-5 w-32 mb-3" />
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
               <Skeleton className="h-5 w-5 rounded-full" />
               <Skeleton className="h-4 w-full" />

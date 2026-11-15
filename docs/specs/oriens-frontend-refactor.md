@@ -1180,3 +1180,55 @@ Escopo (1 commit, "feat(front): WhatsAppConnect"): src/components/settings/Whats
 
 Validação: build, lint, test, E2E conectar → alterar → desconectar; screenshots 1440 e 390.
 ```
+
+## 21. Consistência de projetos e agenda — revisão de 2026-11-15
+
+Decisões aprovadas pelo usuário após P0–P6 de projetos. Esta revisão substitui
+as orientações anteriores conflitantes de conclusão recolhida, rolagem horizontal
+na semana e ausência de dependência para drag-and-drop.
+
+- **shadcn first:** reutilizar os componentes de `components/ui` antes de criar
+  markup interativo. Date picker combina Calendar + Popover; busca de entidades
+  combina Command + Popover; filtros usam Checkbox; expansões usam Collapsible
+  ou Accordion. Não misturar select, checkbox, calendário ou disclosure nativos
+  com equivalentes customizados no mesmo produto.
+- **Foco em controles compostos:** o contorno envolve todo o controle, incluindo
+  seu ícone. No CommandInput, aplicar o foco no contêiner da busca e neutralizar
+  o ring interno do input para evitar bordas duplicadas/deslocadas. Preservar
+  indicação visível de foco e navegação por teclado.
+- **Formulários:** FieldGroup agrupa campos, FieldSet/FieldLegend separam assuntos.
+  Projeto/objetivo/coluna ficam juntos; planejamento e prazo têm significados e
+  rótulos distintos. Distribuir campos relacionados em duas colunas quando houver
+  espaço; no celular, uma coluna. Busca faz parte do seletor, sem campo vazio
+  separado. Manter erros, rascunhos e campos desabilitados durante envio.
+- **Datas:** WorkDatePicker é o controle de calendário compartilhado. Apresenta
+  pt-BR e preserva yyyy-MM-dd sem conversão UTC. Limpar planejamento limpa horário;
+  não altera prazo. Horário aceita HH:mm, inclusive minutos fora de incrementos fixos.
+- **Limpar versus excluir:** valores opcionais preenchidos têm limpeza contextual
+  com ícone e nome acessível. Excluir objetivo/projeto/tarefa usa ícone de lixeira,
+  indicação destrutiva e confirmação existente. Não preencher formulários com
+  botões largos de remoção, especialmente quando não há valor.
+- **Ações:** uma ação principal visível por objeto; ações secundárias em
+  DropdownMenu com ícones Lucide, nomes claros e grupo próprio para destrutivas.
+  A conclusão de objetivo usa Checkbox e continua manual.
+- **Rolagem:** ResponsiveDialog mantém cabeçalho e rodapé fora do ScrollArea;
+  somente o corpo rola. Semana usa grade fluida ou agenda vertical, sem rolagem
+  horizontal. Quadros podem rolar entre colunas dentro de ScrollArea horizontal,
+  sem provocar overflow da página; celular oferece seleção de coluna.
+- **Arraste:** dnd-kit substitui HTML draggable. Handle separado da edição,
+  interação por ponteiro e teclado, anúncios acessíveis e alternativa por menu.
+  Preservar controle de versão, uma movimentação por vez, ordenação por
+  beforeTaskId e proibição de reordenar listas filtradas.
+- **Concluídas:** permanecem junto das planejadas por período/horário no dia,
+  identificadas pelo estado do Checkbox e título riscado. Dia e semana continuam
+  usando plannedDate; completedAt é a data real da conclusão e não redefine agenda.
+- **Capas:** identificação visual consistente no card e cabeçalho do projeto;
+  mesma proporção e recorte responsivo, edição pelo menu contextual. Ausência de
+  capa não gera placeholder decorativo ou área vazia.
+- **Tokens:** cores, raios e dimensões específicas pertencem a `src/index.css`,
+  expostas pelo `tailwind.config.ts`. Usar a escala padrão Tailwind para espaços e
+  tamanhos comuns, sem cores cruas ou dimensões arbitrárias nos componentes de
+  domínio. Exceções: cor escolhida pelo usuário e geometria calculada pelo motor
+  de drag-and-drop; ambas são dados dinâmicos, não valores de design locais.
+
+[Decisões e prova desta revisão](../plans/2026-11-15-projects-visual-polish.md).

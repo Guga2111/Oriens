@@ -1,0 +1,23 @@
+TASTESKILL · INSPECT   http://127.0.0.1:4198/tasks/project/10?tab=objectives&theme=light
+
+MEASURED (first viewport listed)
+  hero headline   "Site pessoal"  2 words · 1 line(s) · 24px (1.7vw) · Inter 600 · tracking 0em · leading 1.33
+  @768px          1 line(s) · 24px
+  @390px          1 line(s) · 24px
+  typefaces       Inter 100%
+  sizes in use    12 / 14 / 16 / 18 / 24 px   body 14px / 1.43
+  colour          page #f6f5ed · sections #f6f5ed #fcfdf9 · button #f6f5ed
+  page            1.1 screens · 95 words · 0 images · hero media none
+  headings        0 · longest 0 line(s) · median - words
+
+FINDINGS  none. Measurements are clean — now judge the pictures.
+LOOK AT THE RENDER — open these with your image viewer / Read tool before saying anything about quality:
+  desktop 1440px  docs/screenshots/projects-polish/final/objectives-light/desktop-fold.jpg
+                  docs/screenshots/projects-polish/final/objectives-light/desktop-page-01.jpg
+  tablet 768px    docs/screenshots/projects-polish/final/objectives-light/tablet-fold.jpg
+                  docs/screenshots/projects-polish/final/objectives-light/tablet-page-01.jpg
+  mobile 390px    docs/screenshots/projects-polish/final/objectives-light/mobile-fold.jpg
+                  docs/screenshots/projects-polish/final/objectives-light/mobile-page-01.jpg
+
+report: docs/screenshots/projects-polish/final/objectives-light/report.json
+RESULT: 0 FAIL, 0 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md.

@@ -41,10 +41,9 @@ export function DashboardPage() {
   const rawDate = search.get('date');
   const selectedDate = rawDate && validCalendarDate(rawDate) ? productDate(rawDate) : null;
   const currentDate = selectedDate ?? productDate(today);
-  const [completedOpen, setCompletedOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const setSelectedDate = (date: Date | null) => setSearch(previous => { if (date) previous.set('date', format(date, 'yyyy-MM-dd')); else previous.delete('date'); return previous; });
-  const setCurrentDate = (date: Date) => { setCompletedOpen(false); setSelectedDate(date); };
+  const setCurrentDate = (date: Date) => { setSelectedDate(date); };
   const viewMode = search.get('view') === 'week' ? 'week' : 'day';
   const setViewMode = (view: 'day' | 'week') => setSearch(previous => { previous.set('view', view); return previous; });
 
@@ -83,7 +82,7 @@ export function DashboardPage() {
     setIsCreateTaskOpen(true);
   };
 
-  const periods = useMemo(() => groupTasksByPeriod(day.data?.planned ?? []), [day.data?.planned]);
+  const periods = useMemo(() => groupTasksByPeriod(tasks), [tasks]);
 
   const isToday = isSameDay(currentDate, productDate(today));
   const longDate = format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR });
@@ -110,7 +109,7 @@ export function DashboardPage() {
   return (
     <>
       <div className="planning-screen p-4 sm:p-6 md:p-8">
-        <div className="mx-auto max-w-[1280px]">
+        <div className="mx-auto max-w-planning">
           <PageHeader
             className="md:flex-col lg:flex-row"
             title={title}
@@ -150,7 +149,7 @@ export function DashboardPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => { setSelectedDate(null); setCompletedOpen(false); }}
+                    onClick={() => { setSelectedDate(null); }}
                   >
                     Hoje
                   </Button>
@@ -184,7 +183,7 @@ export function DashboardPage() {
           />
 
           {viewMode === "day" && !isInitialLoading && (
-            <DayLine tasks={completedOpen ? tasks : day.data?.planned ?? []} date={currentDate} />
+            <DayLine tasks={tasks} date={currentDate} />
           )}
 
           {error && (
@@ -207,12 +206,12 @@ export function DashboardPage() {
           {viewMode === "day" ? (
             <div
               ref={contentRef} tabIndex={-1} aria-label="Planejamento do dia"
-              className="mt-6 space-y-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="mt-6 flex flex-col gap-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-busy={isRefreshing}
               aria-live="polite"
             >
               <h2 className="text-lg font-semibold">{isToday ? 'Planejado para hoje' : 'Planejado para este dia'}</h2>
-              <TaskSection title="Sem horário" emptyLabel="Nenhuma tarefa sem horário." tasks={[...(day.data?.planned ?? [])].filter(t => !t.startTime).sort(compareTaskPriority)} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onAddTask={() => openCreateTask()} isLoading={isInitialLoading} />
+              <TaskSection title="Sem horário" emptyLabel="Nenhuma tarefa sem horário." tasks={[...tasks].filter(t => !t.startTime).sort(compareTaskPriority)} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onAddTask={() => openCreateTask()} isLoading={isInitialLoading} />
               {periods.map((period) => (
                 <TaskSection
                   key={period.id}
@@ -226,18 +225,14 @@ export function DashboardPage() {
                   isLoading={isInitialLoading}
                 />
               ))}
-              <section aria-label="Concluídas">
-                <h2><Button variant="ghost" className="max-sm:min-h-11" aria-expanded={completedOpen} aria-controls="completed-tasks" onClick={() => setCompletedOpen(value => !value)}>Concluídas ({day.data?.completed.length ?? 0}) {completedOpen ? '▴' : '▾'}</Button></h2>
-                {completedOpen && <div id="completed-tasks"><TaskSection title="Tarefas concluídas" emptyLabel="Nenhuma tarefa concluída neste dia." tasks={day.data?.completed ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} /></div>}
-              </section>
               {isToday && <>
                 <TaskSection title="Pendentes de dias anteriores" timeRange="Planejamento anterior preservado até você reagendar." emptyLabel="Nenhuma pendência de dias anteriores." tasks={day.data?.previousPlans ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} isLoading={isInitialLoading} />
                 <TaskSection title="Prazos que precisam de atenção" timeRange="Prazo final hoje ou ultrapassado; o planejamento não muda." emptyLabel="Nenhum prazo precisando de atenção." tasks={day.data?.deadlineAttention ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} isLoading={isInitialLoading} />
               </>}
             </div>
           ) : (
-            <div ref={contentRef} tabIndex={-1} className="mt-6 space-y-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Planejamento da semana" aria-busy={isRefreshing}>
-              <Button variant="link" onClick={() => { setSearch({}); setCompletedOpen(false); }}>Revisar pendências em Hoje</Button>
+            <div ref={contentRef} tabIndex={-1} className="mt-6 flex flex-col gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Planejamento da semana" aria-busy={isRefreshing}>
+              <Button variant="link" onClick={() => { setSearch({}); }}>Revisar pendências em Hoje</Button>
               {isInitialLoading ? (
                 <div className="grid grid-cols-7 gap-4">
                   {Array.from({ length: 7 }).map((_, index) => (
@@ -251,7 +246,6 @@ export function DashboardPage() {
                   onUpdateTasks={afterWrite}
                   onEditTask={setEditingTask}
                   onSelectDay={(date) => {
-                    setCompletedOpen(false);
                     setSearch({ date: format(date, 'yyyy-MM-dd'), view: 'day' });
                   }}
                 />

@@ -1,0 +1,107 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "theme": "light",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    },
+    {
+      "width": 1440,
+      "theme": "dark",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    },
+    {
+      "width": 1024,
+      "theme": "light",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    },
+    {
+      "width": 1024,
+      "theme": "dark",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    },
+    {
+      "width": 360,
+      "theme": "light",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    },
+    {
+      "width": 360,
+      "theme": "dark",
+      "errors": [],
+      "calendar": true,
+      "combobox": true,
+      "scrollArea": true,
+      "completedVisible": true,
+      "weekOverflow": false
+    }
+  ],
+  "pointerDrag": true,
+  "keyboardReorder": true,
+  "filteredMove": true
+}

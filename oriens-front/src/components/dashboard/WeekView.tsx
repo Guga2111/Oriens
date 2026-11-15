@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { TaskChip } from "@/components/dashboard/TaskChip";
@@ -31,7 +30,7 @@ function shortWeekday(day: Date): string {
 
 /**
  * Visão semanal (SPEC §11.2). A partir de 1024 px mantém a grade de 7 colunas
- * que rola dentro do próprio container; abaixo disso vira uma agenda vertical
+ * fluida sem rolagem horizontal; abaixo disso vira uma agenda vertical
  * com os dias como `h2` e as tarefas como `TaskRow`.
  */
 export function WeekView({
@@ -44,18 +43,6 @@ export function WeekView({
   const weekStart = startOfWeek(currentDate, { locale: ptBR });
   const today = productDate(useProductToday());
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const weekRef = useRef<HTMLDivElement>(null);
-  const selectedDay = format(currentDate, 'yyyy-MM-dd');
-  useEffect(() => {
-    const region = weekRef.current;
-    const selected = region?.querySelector<HTMLElement>(`[data-day="${selectedDay}"]`);
-    if (!region || !selected) return;
-    // Keep the selected day in view without scrolling the page or resetting manual scroll on refetch.
-    const frame = region.getBoundingClientRect(); const day = selected.getBoundingClientRect();
-    if (day.right > frame.right) region.scrollLeft += day.right - frame.right;
-    else if (day.left < frame.left) region.scrollLeft -= frame.left - day.left;
-  }, [selectedDay, isDesktop]);
-
   const getTasksForDay = (day: Date) => {
     const formattedDay = format(day, "yyyy-MM-dd");
     return tasks
@@ -115,14 +102,13 @@ export function WeekView({
 
   return (
     <div
-      ref={weekRef}
       role="region"
       aria-label="Grade semanal"
       tabIndex={0}
-      className="overflow-x-auto rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="min-w-[1400px]">
-        <div className="grid grid-cols-7 gap-3">
+      <div className="min-w-0">
+        <div className="grid grid-cols-7 gap-2">
           {days.map((day) => {
             const dayTasks = getTasksForDay(day);
             const isToday = isSameDay(day, today);

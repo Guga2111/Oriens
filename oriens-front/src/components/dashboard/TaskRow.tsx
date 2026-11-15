@@ -116,7 +116,7 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
           aria-busy={isUpdating}
           disabled={isUpdating}
           aria-label={
-            isOnDoing
+            isConcluded ? `Reabrir ${task.title}` : isOnDoing
               ? `Concluir ${task.title} (em andamento)`
               : `Concluir ${task.title}`
           }

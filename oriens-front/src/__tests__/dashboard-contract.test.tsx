@@ -26,9 +26,7 @@ it('consome DayResponse com planejadas/concluídas e RangeResponse com tasks ao 
   renderWork(<DashboardPage />);
   const morning = (await screen.findByRole('heading', { name: 'Manhã' })).closest('section')!;
   expect(await within(morning).findByText('Planejada do dia')).toBeInTheDocument();
-  expect(within(morning).queryByText('Concluída do dia')).not.toBeInTheDocument();
-  expect(screen.queryByText('Concluída do dia')).not.toBeInTheDocument();
-  await userEvent.click(screen.getByRole('button', { name: /Concluídas \(1\)/ }));
+  expect(within(morning).getByText('Concluída do dia')).toHaveClass('line-through');
   expect(await screen.findByText('Concluída do dia')).toBeInTheDocument();
   expect(screen.getByText(/1 de 2 concluídas/)).toBeInTheDocument();
   expect(api.get).not.toHaveBeenCalledWith('/task/user/7/range', expect.anything());

@@ -10,8 +10,9 @@ vi.mock('@/services/api', () => ({ default: { get: vi.fn(), patch: vi.fn(), post
 it('objetivo é editado por ID e versão; limpar prazo não envia status', async () => {
   vi.mocked(api.patch).mockResolvedValue({ data: {} });
   renderWork(<ProjectObjectives project={project} onAddTask={vi.fn()} onEditTask={vi.fn()} />);
-  await userEvent.click(screen.getByRole('button', { name: 'Editar objetivo' }));
-  await userEvent.click(screen.getByRole('button', { name: 'Remover prazo' }));
+  await userEvent.click(screen.getByRole('button', { name: /Ações do objetivo/ }));
+  await userEvent.click(screen.getByRole('menuitem', { name: 'Editar objetivo' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Limpar prazo do objetivo' }));
   await userEvent.click(screen.getByRole('button', { name: 'Salvar objetivo' }));
   await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/project/9/objectives/81', { version: 3, title: 'Receber contatos pelo site', dueDate: null }));
 });

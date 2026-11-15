@@ -97,7 +97,7 @@ describe("TaskRow — ciclo de status (D9)", () => {
 
     await user.click(
       within(rowFor(task.title)).getByRole("checkbox", {
-        name: `Concluir ${task.title}`,
+        name: `Reabrir ${task.title}`,
       })
     );
 

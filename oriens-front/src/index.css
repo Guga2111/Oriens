@@ -11,6 +11,16 @@
   }
 
   :root {
+    /* Geometry shared by work screens. Standard spacing uses the Tailwind scale. */
+    --dialog-max-height: 90dvh;
+    --dialog-task-width: 40rem;
+    --dialog-project-width: 35rem;
+    --dialog-board-width: 42.5rem;
+    --project-detail-columns: minmax(0, 1fr) 20rem;
+    --work-content-width: 100rem;
+    --planning-content-width: 80rem;
+    --board-column-width: 19rem;
+    --project-cover-ratio: 3 / 1;
     /* Marca (inalterada — SPEC §9.1) */
     --brand-cream: 38.4615 90.6977% 91.5686%;
     --brand-burgundy: 346.875 71.6418% 26.2745%;

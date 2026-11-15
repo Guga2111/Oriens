@@ -45,7 +45,7 @@ it('timeout reenvia exatamente o mesmo payload e chave, preservando o rascunho',
 it('editor preserva estado e prazo ao retirar planejamento; conflito mantém rascunho', async () => {
   vi.mocked(api.patch).mockRejectedValue({ isAxiosError: true, response: { status: 409 } });
   renderWork(<TaskEditor open onOpenChange={vi.fn()} task={{ ...task, plannedDate: '2026-11-14', startTime: '09:00:00', dueDate: '2026-11-20' }} />);
-  await userEvent.click(screen.getByRole('button', { name: 'Retirar planejamento' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Limpar dia planejado' }));
   await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
   expect(await screen.findByText(/Os dados mudaram/)).toBeInTheDocument();
   expect(screen.getByLabelText('Título')).toHaveValue(task.title);

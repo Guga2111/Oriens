@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { ResponsiveDialog } from '@/components/common/ResponsiveDialog';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
@@ -16,6 +17,6 @@ export function DeleteProjectDialog({ project, onClose, onDeleted }: { project: 
     {preview.isPending && <p role="status">Consultando consequências…</p>}
     <WorkFeedback error={preview.error || write.error} retry={() => { setAcceptedVersion(null); void preview.refetch(); }} />
     {data && <div className="flex flex-col gap-4 text-sm"><p>Serão removidos {data.objectiveCount} objetivos e {data.columnCount} colunas. As {data.taskCount} tarefas serão preservadas como avulsas, com os mesmos estados e datas. Esta ação não pode ser desfeita.</p>
-      <label className="flex min-h-11 items-center gap-3"><input type="checkbox" checked={acceptedVersion === data.projectVersion} onChange={e => setAcceptedVersion(e.target.checked ? data.projectVersion : null)} />Entendi as consequências para este projeto.</label></div>}
+      <label className="flex min-h-11 items-center gap-3"><Checkbox checked={acceptedVersion === data.projectVersion} disabled={write.isPending || preview.isFetching} onCheckedChange={checked => setAcceptedVersion(checked === true ? data.projectVersion : null)} />Entendi as consequências para este projeto.</label></div>}
   </ResponsiveDialog>;
 }

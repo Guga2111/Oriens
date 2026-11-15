@@ -1,0 +1,15 @@
+{
+  "vitest": {
+    "passed": 94,
+    "failed": 0
+  },
+  "typescript": "passed",
+  "eslint_changed_files": "passed",
+  "production_build": "passed",
+  "diff_check": "passed",
+  "browser_matrix": "browser/results.json",
+  "inspector": "final/results.json",
+  "limitations": [
+    "Synthetic API fixtures; real storage upload and external Maps not exercised."
+  ]
+}

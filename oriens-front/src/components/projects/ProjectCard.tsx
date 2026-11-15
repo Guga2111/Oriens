@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import { ArrowUpRight, MoreHorizontal, Pencil, Star, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Progress } from '@/components/ui/progress';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
 import { useProjectFlags } from '@/hooks/useWork';
@@ -21,7 +22,7 @@ export function ProjectCard({ project, onEdit, onDelete }: {
     development && (s.previousPlansCount ?? 0) > 0 ? `${s.previousPlansCount} planejamentos anteriores` : null,
   ].filter(Boolean).join(' · ');
   return <Card className="flex min-w-0 flex-col border-border/50 shadow-none max-sm:[&_button]:min-h-11 max-sm:[&_a]:min-h-11">
-    {project.imageUrl && <img src={project.imageUrl} alt="" className="h-24 w-full rounded-t-lg object-cover" />}
+    {project.imageUrl && <img src={project.imageUrl} alt="" className="aspect-project-cover w-full rounded-t-lg object-cover" />}
     <CardHeader className="p-5 pb-3"><div className="flex items-start justify-between gap-3"><div className="min-w-0">
       <CardTitle className="break-words text-lg leading-6"><span aria-hidden className="mr-2 inline-block size-2 rounded-full bg-muted-foreground" style={project.color ? { backgroundColor: project.color } : undefined} /><Link to={`/tasks/project/${project.id}`}>{project.title}</Link></CardTitle>
       <p className="mt-1 text-sm text-muted-foreground">{development ? 'Desenvolvimento' : 'Simples'}</p>
@@ -38,6 +39,14 @@ export function ProjectCard({ project, onEdit, onDelete }: {
         {development && !s.nextPlannedTask && <Button asChild variant="link" className="mt-1 h-auto p-0"><Link to={`/tasks/project/${project.id}?planning=unscheduled&open=1`}>Planejar próxima tarefa</Link></Button>}
       </div><WorkFeedback error={flags.error} />{flags.data?.refreshFailed && <WorkFeedback message="Salvo. Recarregue as listas para atualizar os dados." />}
     </CardContent>
-    <CardFooter className="mt-auto flex flex-wrap gap-1 px-5 pb-4"><Button asChild variant="outline"><Link to={`/tasks/project/${project.id}`}>{development ? 'Abrir quadro' : 'Abrir projeto'}</Link></Button><Button variant="ghost" onClick={() => onEdit(project)}>Editar</Button><Button variant="ghost" onClick={() => onDelete(project.id)}>Excluir</Button></CardFooter>
+    <CardFooter className="mt-auto flex items-center justify-between gap-2 px-5 pb-4">
+      <Button asChild variant="outline"><Link to={`/tasks/project/${project.id}`}><ArrowUpRight aria-hidden />{development ? 'Abrir quadro' : 'Abrir projeto'}</Link></Button>
+      <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label={`Ações do projeto ${project.title}`}><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger>
+        <DropdownMenuContent align="end"><DropdownMenuGroup>
+          <DropdownMenuItem onSelect={() => onEdit(project)}><Pencil aria-hidden />Editar</DropdownMenuItem>
+          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => onDelete(project.id)}><Trash2 aria-hidden />Excluir</DropdownMenuItem>
+        </DropdownMenuGroup></DropdownMenuContent>
+      </DropdownMenu>
+    </CardFooter>
   </Card>;
 }

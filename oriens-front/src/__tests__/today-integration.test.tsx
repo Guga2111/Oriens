@@ -33,8 +33,7 @@ it('renderiza as partições autorizadas, contexto arquivado, prazo único e sem
   expect(screen.getByText('Plano anterior')).toBeInTheDocument();
   expect(screen.getByText('Planejada para 01/01/2099')).toBeInTheDocument();
   expect(screen.getByText(/Prazo termina hoje/)).toBeInTheDocument();
-  expect(within(screen.getByRole('list', { name: 'Linha do dia' })).queryByRole('button')).not.toBeInTheDocument();
-  await userEvent.click(screen.getByRole('button', { name: /Concluídas \(1\)/ }));
+  expect(within(screen.getByRole('list', { name: 'Linha do dia' })).getByRole('button', { name: /Feita/ })).toBeInTheDocument();
   expect(await screen.findByText('Feita')).toBeInTheDocument();
   expect(within(screen.getByRole('list', { name: 'Linha do dia' })).getByRole('button', { name: /Feita/ })).toBeInTheDocument();
 });

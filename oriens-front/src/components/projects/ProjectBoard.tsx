@@ -1,7 +1,12 @@
 import { useRef, useState } from 'react';
-import { GripVertical, MoreHorizontal } from 'lucide-react';
+import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, closestCorners, pointerWithin, useDroppable, useSensor, useSensors, type CollisionDetection, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { ArrowDown, ArrowRight, ArrowUp, CalendarDays, Clock, Flag, GripVertical, MoreHorizontal, Pencil, Plus, Trash2, Undo2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { WorkSelect } from '@/components/common/WorkSelect';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
@@ -10,62 +15,94 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { formatDue } from '@/lib/date';
 import { productNow } from '@/lib/product-time';
 import { statusNames } from '@/lib/work-form';
+import { PRIORITY } from '@/lib/labels';
+import { cn } from '@/lib/utils';
 import type { BoardResponse, WorkTask } from '@/types/work';
+
+// Prefer the task under the pointer over its enclosing column. Outside drops cancel.
+const boardCollision: CollisionDetection = args => {
+  if (!args.pointerCoordinates) return closestCorners(args);
+  const hits = pointerWithin(args);
+  const tasks = hits.filter(hit => typeof hit.id === 'number');
+  return tasks.length ? tasks : hits;
+};
+
+type Column = BoardResponse['columns'][number];
+type Move = (task: WorkTask, columnId: number, beforeTaskId?: number | null) => Promise<void>;
 
 export function ProjectBoard({ board, pendingColumnId, onEdit, onAdd, onObjective }: {
   board: BoardResponse; pendingColumnId: number; onEdit: (task: WorkTask) => void; onAdd: (column: number) => void; onObjective: (id: number) => void;
 }) {
-  const writes = useTaskWrites(); const mobile = useMediaQuery('(max-width: 639px)');
+  const writes = useTaskWrites();
+  const mobile = useMediaQuery('(max-width: 639px)');
   const [selected, setSelected] = useState(String(board.columns[0]?.id ?? ''));
   const [deleting, setDeleting] = useState<WorkTask | null>(null);
-  const [announcement, setAnnouncement] = useState(''); const [moving, setMoving] = useState<number | null>(null);
-  const dragged = useRef<WorkTask | null>(null);
+  const [announcement, setAnnouncement] = useState('');
+  const [moving, setMoving] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const movingRef = useRef(false);
   const region = useRef<HTMLDivElement>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   const current = board.columns.some(c => String(c.id) === selected) ? selected : String(board.columns[0]?.id ?? '');
   const columns = mobile ? board.columns.filter(c => String(c.id) === current) : board.columns;
   async function move(task: WorkTask, columnId: number, beforeTaskId: number | null = null) {
+    if (movingRef.current) return;
+    movingRef.current = true;
     setMoving(task.id);
     try {
       const result = await writes.patch.mutateAsync({ id: task.id, body: { version: task.version, projectVersion: board.projectVersion, columnId, beforeTaskId } });
       setAnnouncement(result.refreshFailed ? 'Movimento salvo. Recarregue o quadro para atualizar.' : `Tarefa movida para ${board.columns.find(c => c.id === columnId)?.name}.`);
       if (mobile) setSelected(String(columnId));
       requestAnimationFrame(() => region.current?.focus());
-    } catch { /* Keep the confirmed board and announce error inline. */ } finally { setMoving(null); }
+    } catch { /* Keep the confirmed board and show the mutation error. */ }
+    finally { movingRef.current = false; setMoving(null); }
   }
+  function drop({ active, over }: DragEndEvent) {
+    setActiveId(null);
+    if (!over || active.id === over.id) return;
+    const task = board.tasks.find(t => t.id === active.id);
+    const targetTask = board.tasks.find(t => t.id === over.id);
+    const column = board.columns.find(c => `column-${c.id}` === over.id || c.id === targetTask?.columnId);
+    if (!task || !column) return;
+    if (task.columnId === column.id) {
+      if (board.filtered) return;
+      const rows = board.tasks.filter(t => t.columnId === column.id);
+      const from = rows.findIndex(t => t.id === task.id);
+      const to = targetTask ? rows.findIndex(t => t.id === targetTask.id) : rows.length - 1;
+      if (from === to) return;
+      const reordered = arrayMove(rows, from, to);
+      void move(task, column.id, reordered[to + 1]?.id ?? null);
+    } else {
+      void move(task, column.id, board.filtered ? null : targetTask?.id ?? null);
+    }
+  }
+  const activeTask = board.tasks.find(t => t.id === activeId);
   return <div className="min-w-0 max-sm:[&_button]:min-h-11" ref={region} tabIndex={-1} aria-label="Quadro de tarefas">
-    <WorkFeedback error={writes.patch.error} />{announcement && <p className="mb-3 text-sm" role="status">{announcement}</p>}
+    <WorkFeedback error={writes.patch.error} />
+    <p className="sr-only" role="status">{announcement}</p>
     {board.filtered && <p className="mb-3 text-sm text-muted-foreground">Movimentos entre colunas vão para o final. Reordenação desativada enquanto houver filtros.</p>}
     {mobile && <div className="mb-4"><WorkSelect label="Coluna do quadro" value={current} onChange={setSelected} options={board.columns.map(c => ({ value: String(c.id), label: `${c.name} (${c.visibleCount})` }))} /></div>}
-    <div className="flex min-w-0 gap-4 overflow-x-auto pb-4" aria-label="Colunas do quadro">
-      {columns.map(column => {
-        const tasks = board.tasks.filter(t => t.columnId === column.id);
-        return <section key={column.id} className="flex w-full min-w-0 shrink-0 flex-col gap-3 rounded-lg bg-muted/40 p-3 sm:w-[300px]" aria-labelledby={`column-${column.id}`}
-          onDragOver={e => { if (dragged.current) e.preventDefault(); }} onDrop={e => { e.preventDefault(); const task = dragged.current; dragged.current = null; if (task && (task.columnId !== column.id || !board.filtered)) void move(task, column.id); }}>
-          <div className="flex items-start justify-between gap-2"><h2 id={`column-${column.id}`} className="min-w-0 break-words text-base font-semibold">{column.name}</h2><span className="shrink-0 text-sm tabular-nums">{board.filtered ? `${column.visibleCount} de ${column.totalCount}` : column.totalCount}</span></div>
-          <p className="text-xs text-muted-foreground">{statusNames[column.kind]}</p>
-          {tasks.length === 0 && <p className="py-5 text-sm text-muted-foreground">{board.filtered ? 'Nenhuma tarefa com estes filtros.' : 'Nenhuma tarefa nesta coluna.'}</p>}
-          {tasks.map((task, index) => <article key={task.id} className="min-w-0 rounded-md border bg-card p-3" aria-busy={moving === task.id}
-            onDragOver={e => { if (!board.filtered && dragged.current?.columnId === column.id) { e.preventDefault(); e.stopPropagation(); } }}
-            onDrop={e => { if (!board.filtered && dragged.current?.columnId === column.id) { e.preventDefault(); e.stopPropagation(); const draggedTask = dragged.current; dragged.current = null; if (draggedTask.id !== task.id) void move(draggedTask, column.id, task.id); } }}>
-            <div className="flex items-start gap-1"><Button variant="ghost" className="h-auto min-h-11 min-w-0 flex-1 justify-start whitespace-normal p-0 text-left" onClick={() => onEdit(task)}>{task.title}</Button>
-              {!mobile && <Button variant="ghost" size="icon" draggable disabled={moving !== null} aria-label={`Arrastar ${task.title}`} onDragStart={e => { e.dataTransfer.setData('text/plain', String(task.id)); e.dataTransfer.effectAllowed = 'move'; dragged.current = task; }} onDragEnd={() => { dragged.current = null; }}><GripVertical aria-hidden /></Button>}
-              <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label={`Ações da tarefa ${task.title}`} disabled={moving !== null}><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="max-sm:[&_[role=menuitem]]:min-h-11"><DropdownMenuGroup><DropdownMenuLabel>Mover para…</DropdownMenuLabel>
-                {board.columns.filter(c => c.id !== column.id).map(c => <DropdownMenuItem key={c.id} onSelect={() => void move(task, c.id)}>{c.name} · {statusNames[c.kind]}</DropdownMenuItem>)}
-                {!board.filtered && index > 0 && <DropdownMenuItem onSelect={() => void move(task, column.id, tasks[index - 1].id)}>Mover acima</DropdownMenuItem>}
-                {!board.filtered && index < tasks.length - 1 && <DropdownMenuItem onSelect={() => void move(task, column.id, tasks[index + 2]?.id ?? null)}>Mover abaixo</DropdownMenuItem>}
-                {task.status === 'CANCELLED' && <DropdownMenuItem onSelect={() => { void move(task, pendingColumnId); }}>Reabrir tarefa</DropdownMenuItem>}
-                <DropdownMenuItem onSelect={() => setDeleting(task)}>Excluir tarefa</DropdownMenuItem>
-              </DropdownMenuGroup></DropdownMenuContent></DropdownMenu>
-            </div>
-            {task.objective && <Button variant="link" className="mt-1 h-auto min-h-11 w-full justify-start whitespace-normal px-0 text-left" onClick={() => onObjective(task.objectiveId!)}>{task.objective.title}</Button>}
-            <p className="mt-2 text-sm text-muted-foreground">{task.plannedDate ? `Planejada: ${formatDue(task.plannedDate)}${task.startTime ? ` · ${task.startTime.slice(0, 5)}` : ' · Sem horário'}` : 'Sem planejamento'}</p>
-            {task.dueDate && <p className={task.dueDate < productNow().date && ['PENDING', 'ON_DOING'].includes(task.status) ? "mt-1 text-sm text-negative" : "mt-1 text-sm"}>Prazo: {formatDue(task.dueDate)}{task.dueDate < productNow().date && ['PENDING', 'ON_DOING'].includes(task.status) ? " · Ultrapassado" : ""}</p>}
-            {task.completedAt && <p className="mt-1 text-sm text-muted-foreground">Concluída em {formatDue(task.completedAt)}</p>}
-          </article>)}
-          <Button variant="outline" className="w-full" onClick={() => onAdd(column.id)}>Adicionar tarefa</Button>
-        </section>;
-      })}
-    </div>
+    <DndContext sensors={sensors} collisionDetection={boardCollision} onDragStart={({ active }) => setActiveId(Number(active.id))} onDragEnd={drop} onDragCancel={() => setActiveId(null)}
+      accessibility={{ screenReaderInstructions: { draggable: 'Pressione espaço para pegar a tarefa, use as setas para mover, espaço para soltar ou Escape para cancelar.' },
+        announcements: {
+          onDragStart: ({ active }) => `Arrastando ${board.tasks.find(t => t.id === active.id)?.title}.`,
+          onDragOver: ({ over }) => over ? `Destino: ${board.columns.find(c => `column-${c.id}` === over.id)?.name ?? board.tasks.find(t => t.id === over.id)?.title}.` : 'Fora do quadro.',
+          onDragEnd: () => 'Arraste finalizado.', onDragCancel: () => 'Movimento cancelado.',
+        } }}>
+      <ScrollArea orientation="horizontal" className="w-full">
+        <div className="flex min-w-0 gap-4 pb-4" aria-label="Colunas do quadro">
+          {columns.map(column => <BoardColumn key={column.id} column={column} filtered={board.filtered} disabled={moving !== null} mobile={mobile} onAdd={onAdd}>
+            <SortableContext items={board.tasks.filter(t => t.columnId === column.id).map(t => t.id)} strategy={verticalListSortingStrategy}>
+              {board.tasks.filter(t => t.columnId === column.id).map((task, index, tasks) => <BoardTask key={task.id} task={task} column={column} columns={board.columns} tasks={tasks} index={index} filtered={board.filtered} disabled={moving !== null} busy={moving === task.id} mobile={mobile} pendingColumnId={pendingColumnId} onEdit={onEdit} onObjective={onObjective} onDelete={setDeleting} move={move} />)}
+            </SortableContext>
+          </BoardColumn>)}
+        </div>
+      </ScrollArea>
+      <DragOverlay>{activeTask && <div className="w-board-column rounded-md border bg-card p-4 text-sm font-medium shadow-lg">{activeTask.title}</div>}</DragOverlay>
+    </DndContext>
     <ConfirmDialog open={!!deleting} onOpenChange={open => { if (!open) setDeleting(null); }} title="Excluir tarefa?" objectName={deleting?.title ?? ''} confirmLabel="Excluir tarefa" error={writes.remove.error}
       onConfirm={async () => {
         if (!deleting) return false;
@@ -73,4 +110,52 @@ export function ProjectBoard({ board, pendingColumnId, onEdit, onAdd, onObjectiv
         catch { return false; }
       }} />
   </div>;
+}
+
+function BoardColumn({ column, filtered, disabled, mobile, onAdd, children }: {
+  column: Column; filtered: boolean; disabled: boolean; mobile: boolean; onAdd: (id: number) => void; children: React.ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: `column-${column.id}`, disabled });
+  return <section ref={setNodeRef} className={cn('flex min-w-0 shrink-0 flex-col gap-3 rounded-lg bg-muted/40 p-3', mobile ? 'w-full' : 'w-board-column', isOver && 'ring-2 ring-ring')} aria-labelledby={`column-${column.id}`}>
+    <div className="flex items-center justify-between gap-2"><h2 id={`column-${column.id}`} className="min-w-0 break-words text-base font-semibold">{column.name}</h2><Badge variant="secondary">{filtered ? `${column.visibleCount} de ${column.totalCount}` : column.totalCount}</Badge></div>
+    {column.name !== statusNames[column.kind] && <p className="text-xs text-muted-foreground">{statusNames[column.kind]}</p>}
+    {!column.visibleCount && <p className="py-5 text-sm text-muted-foreground">{filtered ? 'Nenhuma tarefa com estes filtros.' : 'Nenhuma tarefa nesta coluna.'}</p>}
+    {children}
+    <Button variant="ghost" className="w-full justify-start" onClick={() => onAdd(column.id)}><Plus aria-hidden />Adicionar tarefa</Button>
+  </section>;
+}
+
+function BoardTask({ task, column, columns, tasks, index, filtered, disabled, busy, mobile, pendingColumnId, onEdit, onObjective, onDelete, move }: {
+  task: WorkTask; column: Column; columns: Column[]; tasks: WorkTask[]; index: number; filtered: boolean; disabled: boolean; busy: boolean; mobile: boolean; pendingColumnId: number;
+  onEdit: (task: WorkTask) => void; onObjective: (id: number) => void; onDelete: (task: WorkTask) => void; move: Move;
+}) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: disabled || mobile });
+  const overdue = !!task.dueDate && task.dueDate < productNow().date && ['PENDING', 'ON_DOING'].includes(task.status);
+  return <article ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={cn('min-w-0 rounded-md border border-border/50 bg-card p-3', isDragging && 'opacity-40')} aria-busy={busy}>
+    <div className="mb-2 flex items-center justify-between gap-2">
+      <Badge variant={PRIORITY[task.priority].badge}>{PRIORITY[task.priority].label}</Badge>
+      <div className="flex items-center">
+        {!mobile && <Button ref={setActivatorNodeRef} {...attributes} {...listeners} variant="ghost" size="icon" className="touch-none cursor-grab active:cursor-grabbing" disabled={disabled} aria-label={`Arrastar ${task.title}`}><GripVertical aria-hidden /></Button>}
+        <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label={`Ações da tarefa ${task.title}`} disabled={disabled}><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger>
+          <DropdownMenuContent align="end"><DropdownMenuGroup>
+            <DropdownMenuItem onSelect={() => onEdit(task)}><Pencil aria-hidden />Editar tarefa</DropdownMenuItem>
+            <DropdownMenuLabel>Mover para…</DropdownMenuLabel>
+            {columns.filter(c => c.id !== column.id).map(c => <DropdownMenuItem key={c.id} onSelect={() => void move(task, c.id)}><ArrowRight aria-hidden />{c.name} · {statusNames[c.kind]}</DropdownMenuItem>)}
+            {!filtered && index > 0 && <DropdownMenuItem onSelect={() => void move(task, column.id, tasks[index - 1].id)}><ArrowUp aria-hidden />Mover acima</DropdownMenuItem>}
+            {!filtered && index < tasks.length - 1 && <DropdownMenuItem onSelect={() => void move(task, column.id, tasks[index + 2]?.id ?? null)}><ArrowDown aria-hidden />Mover abaixo</DropdownMenuItem>}
+            {task.status === 'CANCELLED' && <DropdownMenuItem onSelect={() => void move(task, pendingColumnId)}><Undo2 aria-hidden />Reabrir tarefa</DropdownMenuItem>}
+          </DropdownMenuGroup><DropdownMenuSeparator /><DropdownMenuGroup>
+            <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => onDelete(task)}><Trash2 aria-hidden />Excluir tarefa</DropdownMenuItem>
+          </DropdownMenuGroup></DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+    <Button variant="ghost" className="h-auto min-h-10 w-full justify-start whitespace-normal p-0 text-left" onClick={() => onEdit(task)}>{task.title}</Button>
+    {task.objective && <Button variant="link" className="mt-1 h-auto min-h-10 w-full justify-start whitespace-normal px-0 text-left" onClick={() => onObjective(task.objectiveId!)}>{task.objective.title}</Button>}
+    <div className="mt-3 flex flex-col gap-2 text-xs text-muted-foreground">
+      <p className="flex items-center gap-2"><CalendarDays className="size-4 shrink-0" aria-hidden />{task.plannedDate ? `Planejada: ${formatDue(task.plannedDate)}` : 'Sem planejamento'}{task.startTime && <><Clock className="size-3 shrink-0" aria-hidden />{task.startTime.slice(0, 5)}</>}</p>
+      {task.dueDate && <p className={cn('flex items-center gap-2', overdue && 'text-negative')}><Flag className="size-4 shrink-0" aria-hidden />Prazo: {formatDue(task.dueDate)}{overdue ? ' · Ultrapassado' : ''}</p>}
+      {task.completedAt && <p>Concluída em {formatDue(task.completedAt)}</p>}
+    </div>
+  </article>;
 }

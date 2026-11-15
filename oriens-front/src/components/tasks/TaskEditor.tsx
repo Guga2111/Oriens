@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { Clock, X } from 'lucide-react';
+import { WorkDatePicker } from '@/components/common/WorkDatePicker';
+import { WorkCombobox } from '@/components/common/WorkCombobox';
 import { toast } from 'sonner';
 import { taskService } from '@/services/taskService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
+import { Field, FieldGroup, FieldLabel, FieldError, FieldSet, FieldLegend, FieldDescription } from '@/components/ui/field';
 import { DraftDialog } from '@/components/common/DraftDialog';
 import { WorkSelect } from '@/components/common/WorkSelect';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
@@ -110,32 +113,40 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
   }
   return <DraftDialog uncertain={attempt.uncertain} open={open} onOpenChange={onOpenChange} dirty={JSON.stringify(draft) !== original} busy={pending}
     title={base ? 'Editar tarefa' : 'Nova tarefa'} description="Planejamento e prazo final são independentes."
-    className="sm:max-w-[640px]" footer={<Button form="task-editor" type="submit" disabled={pending}>{pending ? 'Salvando…' : 'Salvar tarefa'}</Button>}>
-    <form id="task-editor" onSubmit={save} noValidate><fieldset disabled={pending || attempt.uncertain} className="min-w-0"><FieldGroup>
+    className="sm:max-w-task-dialog" footer={<Button form="task-editor" type="submit" disabled={pending}>{pending ? 'Salvando…' : 'Salvar tarefa'}</Button>}>
+    <form id="task-editor" onSubmit={save} noValidate><fieldset disabled={pending || attempt.uncertain} className="min-w-0"><FieldGroup className="gap-6">
+      <FieldGroup className="gap-4">
       <Field data-invalid={!!error}><FieldLabel htmlFor="task-title">Título</FieldLabel><Input id="task-title" value={draft.title} onChange={e => change('title', e.target.value)} maxLength={200} required aria-invalid={!!error} aria-describedby={error ? 'task-validation' : undefined} />{error && <FieldError id="task-validation">{error}</FieldError>}</Field>
       <Field><FieldLabel htmlFor="task-description">Descrição (opcional)</FieldLabel><Textarea id="task-description" value={draft.description} maxLength={10000} onChange={e => change('description', e.target.value)} /></Field>
-      <Field><FieldLabel htmlFor="project-search">Buscar projeto de desenvolvimento</FieldLabel><Input id="project-search" value={search} onChange={e => setSearch(e.target.value)} /><WorkSelect label="Projeto da tarefa" value={String(draft.projectId ?? 'none')} options={projectOptions} onChange={v => {
+      </FieldGroup>
+      <FieldSet className="gap-3"><FieldLegend>Projeto e objetivo</FieldLegend><FieldGroup className="gap-4">
+      <Field><FieldLabel htmlFor="task-project">Projeto</FieldLabel><WorkCombobox id="task-project" search={search} onSearchChange={setSearch} loading={choices.isFetching} label="Projeto da tarefa" value={String(draft.projectId ?? 'none')} options={projectOptions} onChange={v => {
         const next = v === 'none' ? null : Number(v);
         if (next === draft.projectId) return;
         setDraft(d => ({ ...d, projectId: next, objectiveId: null, columnId: null })); setTargetVersion(null);
         setNotice(next ? 'O objetivo anterior foi removido. Escolha a coluna de destino e confira o estado antes de salvar.' : 'A tarefa ficará avulsa, mantendo seu estado. Objetivo e coluna serão removidos.');
       }} /><WorkFeedback error={choices.error} retry={() => void choices.refetch()} />{(choices.data?.totalElements ?? 0) > 100 && <p className="text-sm text-muted-foreground">Refine a busca para encontrar outros projetos.</p>}</Field>
       {draft.projectId && <><WorkFeedback error={project.error || board.error} retry={() => { void project.refetch(); void board.refetch(); }} />
-        <Field><FieldLabel>Objetivo (opcional)</FieldLabel><WorkSelect label="Objetivo da tarefa" disabled={!activeProject} value={String(draft.objectiveId ?? 'none')} options={[{ value: 'none', label: 'Sem objetivo' }, ...(activeProject?.objectives ?? []).map(o => ({ value: String(o.id), label: o.title }))]} onChange={v => change('objectiveId', v === 'none' ? null : Number(v))} /></Field>
+        <FieldGroup className="grid gap-4 sm:grid-cols-2"><Field><FieldLabel>Objetivo (opcional)</FieldLabel><WorkSelect label="Objetivo da tarefa" disabled={!activeProject} value={String(draft.objectiveId ?? 'none')} options={[{ value: 'none', label: 'Sem objetivo' }, ...(activeProject?.objectives ?? []).map(o => ({ value: String(o.id), label: o.title }))]} onChange={v => change('objectiveId', v === 'none' ? null : Number(v))} /></Field>
         <Field><FieldLabel>Coluna de destino</FieldLabel><WorkSelect label="Coluna de destino" value={String(draft.columnId ?? 'none')} options={[{ value: 'none', label: 'Escolha a coluna' }, ...(board.data?.columns ?? []).map(c => ({ value: String(c.id), label: `${c.name} · ${statusNames[c.kind]}` }))]} onChange={v => change('columnId', v === 'none' ? null : Number(v))} />
           {destination && <p className="text-sm">Estado ao salvar: {statusNames[destination.kind]}</p>}
-        </Field></>}
-      <div className="grid min-w-0 gap-4 sm:grid-cols-2"><Field><FieldLabel htmlFor="task-planned">Dia planejado</FieldLabel><Input id="task-planned" type="date" value={draft.plannedDate} onChange={e => setDraft(d => ({ ...d, plannedDate: e.target.value, startTime: e.target.value ? d.startTime : '' }))} /><Button type="button" variant="ghost" onClick={() => setDraft(d => ({ ...d, plannedDate: '', startTime: '' }))}>Retirar planejamento</Button></Field>
-      <Field><FieldLabel htmlFor="task-time">Horário (opcional)</FieldLabel><Input id="task-time" type="time" value={draft.startTime} disabled={!draft.plannedDate} onChange={e => change('startTime', e.target.value)} /><Button type="button" variant="ghost" onClick={() => change('startTime', '')}>Remover horário</Button></Field></div>
-      {draft.plannedDate && <div className="text-sm" role="status">{count.data ? `${count.data.activeCount} outras tarefas ativas planejadas · ${count.data.completedCount} concluídas` : count.isError ? 'Quantidade planejada indisponível. Você pode salvar.' : 'Consultando planejamento…'}</div>}
-      <Field><FieldLabel htmlFor="task-due">Prazo final (opcional)</FieldLabel><Input id="task-due" type="date" value={draft.dueDate} onChange={e => change('dueDate', e.target.value)} /><Button type="button" variant="ghost" onClick={() => change('dueDate', '')}>Remover prazo</Button></Field>
+        </Field></FieldGroup></>}
+      </FieldGroup></FieldSet>
+      <FieldSet className="gap-3"><FieldLegend>Planejamento</FieldLegend><FieldDescription>Quando você pretende fazer esta tarefa.</FieldDescription><FieldGroup className="grid min-w-0 gap-4 sm:grid-cols-2">
+        <Field><FieldLabel htmlFor="task-planned">Dia planejado</FieldLabel><WorkDatePicker id="task-planned" label="Dia planejado" value={draft.plannedDate} onChange={value => setDraft(d => ({ ...d, plannedDate: value, startTime: value ? d.startTime : '' }))} /></Field>
+        <Field><FieldLabel htmlFor="task-time">Horário (HH:mm)</FieldLabel><div className="flex items-center gap-1"><div className="relative min-w-0 flex-1"><Clock aria-hidden className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input id="task-time" type="text" inputMode="numeric" placeholder="Ex.: 09:30" maxLength={5} className="pl-9" value={draft.startTime} disabled={!draft.plannedDate} onChange={e => change('startTime', e.target.value)} /></div>{draft.startTime && <Button type="button" variant="ghost" size="icon" aria-label="Limpar horário" onClick={() => change('startTime', '')}><X aria-hidden /></Button>}</div></Field>
+      </FieldGroup>
+      {draft.plannedDate && <p className="text-sm text-muted-foreground" role="status">{count.data ? `${count.data.activeCount} outras tarefas ativas planejadas · ${count.data.completedCount} concluídas` : count.isError ? 'Quantidade planejada indisponível. Você pode salvar.' : 'Consultando planejamento…'}</p>}
+      </FieldSet>
+      <FieldSet className="gap-3"><FieldLegend>Prazo e detalhes</FieldLegend><FieldGroup className="grid gap-4 sm:grid-cols-2">
+      <Field><FieldLabel htmlFor="task-due">Prazo final (opcional)</FieldLabel><WorkDatePicker id="task-due" label="Prazo final" value={draft.dueDate} onChange={value => change('dueDate', value)} /><FieldDescription>Até quando a tarefa precisa estar pronta.</FieldDescription></Field>
       {draft.plannedDate && draft.dueDate && draft.plannedDate > draft.dueDate && <WorkFeedback message="O dia planejado é posterior ao prazo final. Você pode salvar assim." />}
       <Field><FieldLabel>Prioridade</FieldLabel><WorkSelect label="Prioridade" value={draft.priority} options={[{ value: 'LOW', label: 'Baixa' }, { value: 'MEDIUM', label: 'Média' }, { value: 'HIGH', label: 'Alta' }]} onChange={v => change('priority', v as TaskPriority)} /></Field>
-      <Field><FieldLabel htmlFor="task-address">Localização (opcional)</FieldLabel><Input id="task-address" value={draft.location?.address ?? ''} onChange={e => change('location', e.target.value ? { address: e.target.value } : null)} />
+      <Field className="sm:col-span-2"><FieldLabel htmlFor="task-address">Localização (opcional)</FieldLabel><Input id="task-address" value={draft.location?.address ?? ''} onChange={e => change('location', e.target.value ? { address: e.target.value } : null)} />
         {isLoaded && <LocationInput id="task-place-search" aria-label="Buscar endereço no mapa" isLoaded={isLoaded} onPlaceSelect={v => change('location', v)} />}
         {loadError && <p className="text-sm text-muted-foreground">Busca no mapa indisponível. Você pode informar o endereço acima.</p>}
-        <Button type="button" variant="ghost" onClick={() => change('location', null)}>Remover localização</Button>
+        {draft.location && <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => change('location', null)}><X aria-hidden />Remover localização</Button>}
       </Field>
-    </FieldGroup></fieldset><div className="mt-4 flex flex-col gap-3"><WorkFeedback message={notice} /><WorkFeedback error={writes.patch.error || writes.create.error} retry={() => void reload()} />{attempt.uncertain && <WorkFeedback message="Confirmação indisponível. Reenvie o mesmo pedido pelo botão de salvar; os campos estão preservados." />}</div></form>
+    </FieldGroup></FieldSet></FieldGroup></fieldset><div className="mt-4 flex flex-col gap-3"><WorkFeedback message={notice} /><WorkFeedback error={writes.patch.error || writes.create.error} retry={() => void reload()} />{attempt.uncertain && <WorkFeedback message="Confirmação indisponível. Reenvie o mesmo pedido pelo botão de salvar; os campos estão preservados." />}</div></form>
   </DraftDialog>;
 }
