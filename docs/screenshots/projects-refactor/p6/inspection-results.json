@@ -1,0 +1,128 @@
+[
+  {
+    "name": "projects",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4194/projects?theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "projects",
+    "theme": "light",
+    "url": "http://127.0.0.1:4194/projects?theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "simple",
+    "theme": "light",
+    "url": "http://127.0.0.1:4194/tasks/project/20?theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 3 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "simple",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4194/tasks/project/20?theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 3 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "board",
+    "theme": "light",
+    "url": "http://127.0.0.1:4194/tasks/project/10?theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "board",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4194/tasks/project/10?theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "objectives",
+    "theme": "light",
+    "url": "http://127.0.0.1:4194/tasks/project/10?tab=objectives&theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "create",
+    "theme": "light",
+    "url": "http://127.0.0.1:4194/projects?qa=create&theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "objectives",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4194/tasks/project/10?tab=objectives&theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "create",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4194/projects?qa=create&theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "editor",
+    "theme": "light",
+    "url": "http://127.0.0.1:4194/tasks/project/10?qa=editor&theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "editor",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4194/tasks/project/10?qa=editor&theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "settings",
+    "theme": "light",
+    "url": "http://127.0.0.1:4194/tasks/project/10?qa=settings&theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "settings",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4194/tasks/project/10?qa=settings&theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "day",
+    "theme": "light",
+    "url": "http://127.0.0.1:4196/tasks?theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "day",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4196/tasks?theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "week",
+    "theme": "light",
+    "url": "http://127.0.0.1:4196/tasks?view=week&theme=light",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 3 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  },
+  {
+    "name": "week",
+    "theme": "dark",
+    "url": "http://127.0.0.1:4196/tasks?view=week&theme=dark",
+    "exitCode": 0,
+    "summary": "RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md."
+  }
+]

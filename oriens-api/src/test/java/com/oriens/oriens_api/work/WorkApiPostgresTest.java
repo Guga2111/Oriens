@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Real JWT filter, MVC binding, principal lookup, transaction services and baseline PostgreSQL. */
 @SpringBootTest(classes=WorkApiPostgresTest.App.class, webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={
-    "spring.datasource.url=${P2_JDBC_URL}", "spring.datasource.username=postgres", "spring.datasource.password=",
+    "JWT_SECRET=synthetic-p6-only-not-a-production-secret-0123456789-abcdefghijklmnop", "spring.datasource.url=${P2_JDBC_URL}", "spring.datasource.username=postgres", "spring.datasource.password=",
     "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.open-in-view=false", "spring.jpa.show-sql=false",
     "spring.jpa.properties.hibernate.jdbc.time_zone=UTC", "spring.task.scheduling.enabled=false"
 })
@@ -44,14 +44,16 @@ class WorkApiPostgresTest {
     @Configuration(proxyBeanMethods=false) @org.springframework.boot.test.context.TestComponent @EnableAutoConfiguration
     @EntityScan(basePackageClasses=Project.class)
     @EnableJpaRepositories(basePackageClasses=ProjectRepository.class)
-    @Import({ProjectController.class, TaskController.class, StatisticsController.class, WorkExceptionHandler.class,
+    @Import({UserController.class, UserServiceImpl.class, CustomAuthManager.class, ProjectController.class, TaskController.class, StatisticsController.class, WorkExceptionHandler.class,
         WorkRequestBodyAdvice.class, WorkOwner.class, WorkReadService.class, WorkCreationService.class,
-        ProjectWorkService.class, StatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, SecurityConfig.class})
+        ProjectWorkService.class, StatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, JwtConfiguration.class, SecurityConfig.class})
     static class App {
+        @Bean org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder() {
+            return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+        }
         @Bean Clock clock() { return Clock.fixed(Instant.parse("2026-11-14T02:30:00Z"), ZoneOffset.UTC); }
     }
-    @MockBean CustomAuthManager authManager;
-    @MockBean UserServiceImpl userService;
+    @MockBean FileStorageService profileFiles;
     @MockBean TaskServiceImpl legacy;
     @Autowired StatisticsService statistics;
     @Autowired TaskReminderService reminders;
@@ -59,6 +61,7 @@ class WorkApiPostgresTest {
     @Autowired NotificationRepository notifications;
     @MockBean FileStorageProjectService files;
     @org.springframework.boot.test.web.server.LocalServerPort int httpPort;
+    @Autowired Algorithm jwtAlgorithm;
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired UserRepository users;
@@ -81,7 +84,7 @@ class WorkApiPostgresTest {
     }
     String jwt(User u) {
         return "Bearer " + JWT.create().withSubject(u.getEmail()).withClaim("role", "ADMIN")
-            .withExpiresAt(new Date(System.currentTimeMillis()+60000)).sign(Algorithm.HMAC512(SecurityConstants.SECRET_KEY));
+            .withExpiresAt(new Date(System.currentTimeMillis()+60000)).sign(jwtAlgorithm);
     }
     JsonNode body(MvcResult result) throws Exception { return json.readTree(result.getResponse().getContentAsString()); }
     MvcResult send(String method, String url, String value, String key, String who, int expected) throws Exception {
@@ -128,7 +131,7 @@ class WorkApiPostgresTest {
         JsonNode standalone = task((JsonNode) null);
         String browserToken = JWT.create().withSubject(users.findById(owner).orElseThrow().getEmail())
             .withClaim("userId", owner).withClaim("username", "Demonstração").withClaim("role", "USER")
-            .withExpiresAt(new Date(System.currentTimeMillis()+120000)).sign(Algorithm.HMAC512(SecurityConstants.SECRET_KEY));
+            .withExpiresAt(new Date(System.currentTimeMillis()+120000)).sign(jwtAlgorithm);
         var command = new ProcessBuilder("node", "docs/screenshots/projects-refactor/p5/fixture-server.mjs", "oriens-front/dist", "4187").directory(repo.toFile()).redirectErrorStream(true);
         command.environment().put("QA_API_ORIGIN", "http://127.0.0.1:"+httpPort);
         command.environment().put("QA_TOKEN", browserToken);
@@ -142,7 +145,38 @@ class WorkApiPostgresTest {
                 assertThat(browser.waitFor(90, TimeUnit.SECONDS)).isTrue();
                 assertThat(browser.exitValue()).isZero();
             } finally { if (browser.isAlive()) browser.destroyForcibly(); }
+            Process releaseBrowser = new ProcessBuilder("node", "docs/screenshots/projects-refactor/p6/live-browser.mjs", "http://127.0.0.1:4187", p.path("id").asText(), t.path("id").asText())
+                .directory(repo.toFile()).inheritIO().start();
+            try {
+                assertThat(releaseBrowser.waitFor(90, TimeUnit.SECONDS)).isTrue();
+                assertThat(releaseBrowser.exitValue()).isZero();
+            } finally { if (releaseBrowser.isAlive()) releaseBrowser.destroyForcibly(); }
         } finally { server.destroyForcibly(); server.waitFor(); }
+    }
+
+    @Test void p6RegistrationLoginAndRetiredBootstrap() throws Exception {
+        String email = UUID.randomUUID()+"@example.invalid";
+        mvc.perform(post("/user/register").contentType("application/json").content(
+            "{\"id\":"+owner+",\"name\":\"Primeira conta\",\"email\":\""+email+"\",\"password\":\"synthetic-password\",\"role\":\"ADMIN\"}"))
+            .andExpect(status().isCreated());
+        User registered = users.findByEmail(email).orElseThrow();
+        assertThat(registered.getId()).isNotEqualTo(owner);
+        assertThat(registered.getRole()).isEqualTo(com.oriens.oriens_api.entity.enums.UserRole.USER);
+        assertThat(registered.getPassword()).startsWith("$2").isNotEqualTo("synthetic-password");
+        var login = mvc.perform(post("/authenticate").contentType("application/json").content(
+            "{\"email\":\""+email+"\",\"password\":\"synthetic-password\"}"))
+            .andExpect(status().isOk()).andReturn();
+        String bearer = login.getResponse().getHeader("Authorization");
+        assertThat(bearer).startsWith("Bearer ");
+        send("POST", "/project/user/"+registered.getId(), "{\"title\":\"Primeiro projeto\",\"mode\":\"SIMPLE\"}", UUID.randomUUID().toString(), bearer,201);
+        mvc.perform(post("/authenticate").contentType("application/json").content(
+            "{\"email\":\""+email+"\",\"password\":\"wrong\"}")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/user/init-admin").param("email", email)).andExpect(status().isUnauthorized());
+        mvc.perform(post("/user/init-admin").param("email", email).header("Authorization", bearer)).andExpect(status().isForbidden());
+        assertThat(users.findById(registered.getId()).orElseThrow().getRole()).isEqualTo(com.oriens.oriens_api.entity.enums.UserRole.USER);
+        String retiredKeyToken = JWT.create().withSubject(email).withClaim("role", "ADMIN")
+            .sign(Algorithm.HMAC512("another-synthetic-key-that-is-not-the-configured-application-key-12345"));
+        mvc.perform(get("/project/user/"+registered.getId()).header("Authorization", "Bearer "+retiredKeyToken)).andExpect(status().isUnauthorized());
     }
 
     @Test void p4AttachStandaloneUsesDestinationProjectVersionAndTransfersRequireBoth() throws Exception {

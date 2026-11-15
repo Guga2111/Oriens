@@ -5,6 +5,7 @@ import path from 'node:path';
 const root = path.resolve(process.argv[2] || 'oriens-front/dist');
 const port = Number(process.argv[3] || 4177);
 const token = process.env.QA_TOKEN || ['eyJhbGciOiJub25lIn0', Buffer.from(JSON.stringify({ sub:'fixture@example.invalid', userId:1, username:'Demonstração', exp:4102444800 })).toString('base64url'), 'fixture'].join('.');
+const fixtureInstant = new Date().toISOString();
 const date = new Intl.DateTimeFormat('en-CA', {timeZone:'America/Recife',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 const objectives = [
   {id:81,projectId:10,title:'Receber contatos pelo site',dueDate:'2026-11-20',status:'PENDING',position:0,version:0},
@@ -97,7 +98,13 @@ http.createServer(async(req,res)=>{
   }
   let file=path.resolve(root,'.'+url.pathname);if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||fs.statSync(file).isDirectory())file=path.join(root,'index.html');const ext=path.extname(file);
   res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2'})[ext]||'application/octet-stream');let content=fs.readFileSync(file);
-  if(ext==='.html')content=content.toString().replace('<head>',`<head><script>localStorage.setItem('authToken',${JSON.stringify(token)});localStorage.setItem('oriens-theme',${JSON.stringify(url.searchParams.get('theme')||'light')});
+  if(ext==='.html')content=content.toString().replace('<head>',`<head><script>${process.env.QA_API_ORIGIN ? '' : `{
+      const NativeDate=Date, instant=${JSON.stringify(fixtureInstant)};
+      window.Date=class extends NativeDate {
+        constructor(...args){super(...(args.length?args:[instant]));}
+        static now(){return new NativeDate(instant).getTime();}
+      };
+    }`}localStorage.setItem('authToken',${JSON.stringify(token)});localStorage.setItem('oriens-theme',${JSON.stringify(url.searchParams.get('theme')||'light')});
     document.addEventListener('DOMContentLoaded',()=>{
       const qa=new URL(location.href).searchParams.get('qa');if(!qa)return;
       const clickText=(text)=>{const el=[...document.querySelectorAll('button,[role=menuitem]')].find(el=>el.textContent.trim()===text);if(el){el.click();return true;}return false;};

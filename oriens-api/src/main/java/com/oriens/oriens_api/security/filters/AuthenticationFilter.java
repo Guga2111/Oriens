@@ -26,6 +26,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private CustomAuthManager customAuthManager;
     private UserServiceImpl userService;
+    private Algorithm jwtAlgorithm;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
@@ -55,7 +56,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .withClaim("username", user.getName())
                 .withClaim("role", user.getRole().toString())
                 .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.TOKEN_EXPIRATION))
-                .sign(Algorithm.HMAC512(SecurityConstants.SECRET_KEY));
+                .sign(jwtAlgorithm);
         response.addHeader(SecurityConstants.AUTHORIZATION, SecurityConstants.BEARER + token);
     }
 }

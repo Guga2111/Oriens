@@ -8,6 +8,7 @@ services:
       - "8080:8080"
     restart: always
     environment:
+      JWT_SECRET: ${JWT_SECRET:?Configure JWT_SECRET no ambiente}
       SPRING_PROFILES_ACTIVE: dev
     depends_on:
       - oriens-postgres-dev

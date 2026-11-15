@@ -2,7 +2,8 @@ import { chromium } from '../../../../oriens-front/node_modules/playwright/index
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const base=process.argv[2]||'http://127.0.0.1:4177';
-const out=new URL('./',import.meta.url).pathname;
+const out=process.argv[3] ? new URL(process.argv[3]+'/', 'file://'+process.cwd()+'/').pathname : new URL('./',import.meta.url).pathname;
+fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'});
 const results=[];await fetch(base+'/__qa/reset',{method:'POST'});
 try {

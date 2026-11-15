@@ -30,6 +30,9 @@ class UserServiceImplTest {
     @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private UserServiceImpl userService;
 

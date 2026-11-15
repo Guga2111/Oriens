@@ -4,6 +4,7 @@ services:
     container_name: oriens-api
     restart: unless-stopped
     environment:
+      JWT_SECRET: ${JWT_SECRET:?Configure JWT_SECRET no ambiente}
       SPRING_PROFILES_ACTIVE: prod
       DB_URL: ${DB_URL}
       DB_USER: ${DB_USER}

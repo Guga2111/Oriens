@@ -1,0 +1,28 @@
+TASTESKILL · INSPECT   http://127.0.0.1:4196/tasks?view=week&theme=dark
+
+MEASURED (first viewport listed)
+  hero headline   "Hoje"  1 words · 1 line(s) · 24px (1.7vw) · Inter 600 · tracking 0em · leading 1.33
+  @768px          1 line(s) · 24px
+  @390px          1 line(s) · 24px
+  typefaces       Inter 100%
+  sizes in use    12 / 14 / 18 / 24 px   body 14px / 1.43
+  colour          page #24191b · sections #24191b · button #462a2f
+  page            1.1 screens · 151 words · 0 images · hero media none
+  headings        0 · longest 0 line(s) · median - words
+
+WARN — fix, or be able to defend
+  [hero-void] @1440px  40% of the first screen is one empty block (960×540px at 480,360).
+      → Place the void on purpose or fill it: move the picture, the film or one fact into it, grow the headline to meet it, or shrink the screen to its content. A void reads as placed only when something closes it on the far side and it is the screen's one rest.
+  [icon-chips] @1440px (+768, 390)  3 icons sit in tinted squares or circles.
+      → This is the commonest tell of a generated dashboard. Drop the tinted square: a KPI is a label and a number; an icon, if it helps, is plain and in the text colour.
+
+LOOK AT THE RENDER — open these with your image viewer / Read tool before saying anything about quality:
+  desktop 1440px  docs/screenshots/projects-refactor/p6/final/week-dark/desktop-fold.jpg
+                  docs/screenshots/projects-refactor/p6/final/week-dark/desktop-page-01.jpg
+  tablet 768px    docs/screenshots/projects-refactor/p6/final/week-dark/tablet-fold.jpg
+                  docs/screenshots/projects-refactor/p6/final/week-dark/tablet-page-01.jpg
+  mobile 390px    docs/screenshots/projects-refactor/p6/final/week-dark/mobile-fold.jpg
+                  docs/screenshots/projects-refactor/p6/final/week-dark/mobile-page-01.jpg
+
+report: docs/screenshots/projects-refactor/p6/final/week-dark/report.json
+RESULT: 0 FAIL, 2 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md.

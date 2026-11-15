@@ -164,18 +164,14 @@ Não existe convivência com código antigo no novo banco. P2 deve provar respos
 seguras ao cliente antigo, incluindo POST sem chave/modo e PUT integral. Cache antigo não
 autoriza perder vínculos. Registrar baseline instalada e commit de ambas as aplicações.
 
-Bloqueios encontrados no código atual, a resolver antes da liberação:
+Bloqueios de código resolvidos em P6: JWT_SECRET externa obrigatória e compartilhada
+entre emissão/verificação; startup recusa chave ausente/curta. Cadastro cria somente USER
+com novo ID/hash; init-admin é negado. Perfil prod usa validate, provado em PostgreSQL.
+A primeira conta é criada pelo cadastro comum; promoção administrativa é operação
+restrita de manutenção. A chave real ainda precisa ser provisionada/rotacionada no alvo.
 
-- JWT usa constante em SecurityConstants, ambos filtros a leem. P2 precisa receber uma única
-  chave externa obrigatória (sem fallback), usá-la na emissão/verificação e falhar startup
-  sem ela. P6 provisiona chave inédita no secret store/ambiente e reinicia API, invalidando
-  todos os tokens anteriores. Não armazenar/registrar a chave no runbook ou código.
-- `/user/register` recebe entidade e `/user/init-admin` é público; não tratar fluxo atual como
-  bootstrap seguro. P2 precisa impedir role privilegiada enviada por cadastro e proteger/desabilitar
-  bootstrap público. Para primeira conta, cadastro comum deve criar USER com hash de senha via
-  serviço existente; promoção ADMIN só por operador autenticado em manutenção. Sem senha padrão.
-- Perfil prod usa update e dev usa create. Não mudar agora: são incompatíveis com a baseline
-  futura. Em P1/P6, validate deve ser provado contra PostgreSQL com os mappings novos antes do release.
+Estado e sequência final: [RELEASE.md](RELEASE.md). Registro de autorização, backup e
+restore do alvo real continuam pendentes; o ensaio descartável não os substitui.
 
 Testar cadastro/login, usuário A/B, criação dos dois modos, task sem datas, Hoje/semana, jobs
 sem dados reais e rollback antes de reabrir. Não enviar notificações para usuários reais no ensaio.

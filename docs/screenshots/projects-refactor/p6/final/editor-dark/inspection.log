@@ -1,0 +1,26 @@
+TASTESKILL · INSPECT   http://127.0.0.1:4194/tasks/project/10?qa=editor&theme=dark
+
+MEASURED (first viewport listed)
+  hero headline   "Site pessoal"  2 words · 1 line(s) · 24px (1.7vw) · Inter 600 · tracking 0em · leading 1.33
+  @768px          1 line(s) · 24px
+  @390px          1 line(s) · 24px
+  typefaces       Inter 100%
+  sizes in use    12 / 14 / 16 / 18 / 24 px   body 14px / 1.43
+  colour          page #25181b · sections #25181b · button #25181b
+  page            1.2 screens · 315 words · 0 images · hero media none
+  headings        0 · longest 0 line(s) · median - words
+
+WARN — fix, or be able to defend
+  [ragged-row] @1440px (+768)  6 pair(s) of cards in one row end at different heights (by 48px, 96px, 48px).
+      → Cards that share a row share a bottom edge: balance them by their content (the same number of rows, a block of similar height beside it), or stack them. In testing, ragged rows were marked down every time.
+
+LOOK AT THE RENDER — open these with your image viewer / Read tool before saying anything about quality:
+  desktop 1440px  docs/screenshots/projects-refactor/p6/final/editor-dark/desktop-fold.jpg
+                  docs/screenshots/projects-refactor/p6/final/editor-dark/desktop-page-01.jpg
+  tablet 768px    docs/screenshots/projects-refactor/p6/final/editor-dark/tablet-fold.jpg
+                  docs/screenshots/projects-refactor/p6/final/editor-dark/tablet-page-01.jpg
+  mobile 390px    docs/screenshots/projects-refactor/p6/final/editor-dark/mobile-fold.jpg
+                  docs/screenshots/projects-refactor/p6/final/editor-dark/mobile-page-01.jpg
+
+report: docs/screenshots/projects-refactor/p6/final/editor-dark/report.json
+RESULT: 0 FAIL, 1 WARN — measurements pass. Passing the meter is the floor, not the grade: score the screenshots with references/critique.md.

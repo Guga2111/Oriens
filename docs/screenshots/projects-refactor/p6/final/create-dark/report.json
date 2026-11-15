@@ -1,0 +1,1309 @@
+{
+ "url": "http://127.0.0.1:4194/projects?qa=create&theme=dark",
+ "at": "2026-11-15T11:52:31.697Z",
+ "allow": [
+  "palette-cream",
+  "covered-text",
+  "heavy-shadow"
+ ],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0.73
+   ],
+   "motion": {
+    "elements": 5,
+    "css": 3,
+    "transitions": 0,
+    "scripted": 2,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 900,
+     "screens": 1,
+     "words": 162,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 20,
+     "sections": 1,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Projetos",
+     "words": 1,
+     "chars": 8,
+     "lines": 1,
+     "size": 24,
+     "vw": 1.7,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Projetos",
+     "words": 1,
+     "lines": 1,
+     "size": 24,
+     "font": "Inter"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      12,
+      14,
+      18,
+      24
+     ],
+     "sizeCount": 4,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 5.8
+     },
+     "measureChars": 72,
+     "max": {
+      "size": 24,
+      "vw": 1.7,
+      "font": "Inter",
+      "text": "Projetos"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.11,
+     "smallText": 1
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#25191a",
+     "bodyBgHsl": {
+      "h": 355,
+      "s": 0.19,
+      "l": 0.12
+     },
+     "dark": true,
+     "sectionBgs": [
+      {
+       "color": "#25191a",
+       "top": 0,
+       "hsl": {
+        "h": 355,
+        "s": 0.19,
+        "l": 0.12
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#fceed6",
+       "share": 0.7
+      },
+      {
+       "color": "#c9b9a7",
+       "share": 0.2
+      },
+      {
+       "color": "#f47e71",
+       "share": 0.06
+      },
+      {
+       "color": "#ffeed6",
+       "share": 0.02
+      },
+      {
+       "color": "#731229",
+       "share": 0.02
+      }
+     ],
+     "button": {
+      "bg": "#25191a",
+      "hsl": {
+       "h": 355,
+       "s": 0.19,
+       "l": 0.12
+      },
+      "fg": "#fceed6"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 8,
+     "inHero": 8,
+     "radius": 6,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Projetos",
+      "Novo projeto",
+      "Ativos",
+      "Abrir quadro",
+      "Abrir projeto"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 1,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "input#project-title.flex.h-10 → rgb(36, 25, 27) 0px 0px 0px 2px, rgb(254, 196, 11) 0px 0px 0px 4px, rgba(0, 0, 0"
+     ],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 4,
+     "hairlineSamples": [
+      "div.fixed.inset-y-0 256px",
+      "div.flex.flex-col 255px",
+      "div.flex.flex-col 255px",
+      "header.sticky.top-0 1184px"
+     ],
+     "outlinedBoxes": 4,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 6,
+     "boxRadius": 8,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 3,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 216
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 48,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 900,
+    "margins": {
+     "left": 288,
+     "right": 32
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Projetos",
+      "size": 24,
+      "top": 80,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 288,
+      "n": 1
+     },
+     {
+      "x": 309,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 2,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.12,
+    "voidBox": {
+     "x": 1020,
+     "y": 540,
+     "w": 420,
+     "h": 360
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": true,
+    "ground": "#25191a",
+    "sidebar": {
+     "w": 256,
+     "tag": "div",
+     "links": 13,
+     "share": 0.18
+    },
+    "topbar": {
+     "h": 48
+    },
+    "canvas": {
+     "left": 28,
+     "right": 28
+    },
+    "hero": {
+     "text": "Projetos",
+     "words": 1,
+     "chars": 8,
+     "lines": 1,
+     "size": 24,
+     "vw": 1.7,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 4,
+     "firstScreen": 4,
+     "ragged": [],
+     "voids": [
+      {
+       "gap": 52,
+       "at": 425,
+       "panel": "Aprender fotografia"
+      }
+     ]
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 4,
+     "radii": [
+      [
+       8,
+       4
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 2,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 355,
+       "size": 40,
+       "radius": "6px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.02,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      14,
+      16,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Projetos",
+     "size": 24,
+     "top": 80
+    },
+    "colourShare": 0.005
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.49,
+    0.44
+   ],
+   "motion": {
+    "elements": 5,
+    "css": 3,
+    "transitions": 0,
+    "scripted": 2,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 1206,
+     "screens": 1.2,
+     "words": 142,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 7,
+     "sections": 1,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Projetos",
+     "words": 1,
+     "chars": 8,
+     "lines": 1,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Projetos",
+     "words": 1,
+     "lines": 1,
+     "size": 24,
+     "font": "Inter"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      14,
+      18,
+      24
+     ],
+     "sizeCount": 3,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 5.8
+     },
+     "measureChars": 97,
+     "max": {
+      "size": 24,
+      "vw": 3.1,
+      "font": "Inter",
+      "text": "Projetos"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.13,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#25191a",
+     "bodyBgHsl": {
+      "h": 355,
+      "s": 0.19,
+      "l": 0.12
+     },
+     "dark": true,
+     "sectionBgs": [
+      {
+       "color": "#25191a",
+       "top": 0,
+       "hsl": {
+        "h": 355,
+        "s": 0.19,
+        "l": 0.12
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#fceed6",
+       "share": 0.69
+      },
+      {
+       "color": "#c9b9a7",
+       "share": 0.22
+      },
+      {
+       "color": "#f47e71",
+       "share": 0.06
+      },
+      {
+       "color": "#731229",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#25191a",
+      "hsl": {
+       "h": 355,
+       "s": 0.19,
+       "l": 0.12
+      },
+      "fg": "#fceed6"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 7,
+     "inHero": 6,
+     "radius": 6,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Novo projeto",
+      "Ativos",
+      "Abrir quadro",
+      "Abrir projeto",
+      "Adicionar objetivo"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 1,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "input#project-title.flex.h-10 → rgb(36, 25, 27) 0px 0px 0px 2px, rgb(254, 196, 11) 0px 0px 0px 4px, rgba(0, 0, 0"
+     ],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 1,
+     "hairlineSamples": [
+      "header.sticky.top-0 768px"
+     ],
+     "outlinedBoxes": 4,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 6,
+     "boxRadius": 8,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 48,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 1206,
+    "margins": {
+     "left": 24,
+     "right": 24
+    },
+    "sections": [
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 216,
+      "height": 318,
+      "words": 37,
+      "media": 0,
+      "middle": 230,
+      "heading": null,
+      "left": 45,
+      "right": 45,
+      "textLeft": 45,
+      "textRight": 315,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 558,
+      "height": 282,
+      "words": 20,
+      "media": 0,
+      "middle": 355,
+      "heading": null,
+      "left": 45,
+      "right": 45,
+      "textLeft": 45,
+      "textRight": 440,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 864,
+      "height": 310,
+      "words": 23,
+      "media": 0,
+      "middle": 364,
+      "heading": null,
+      "left": 45,
+      "right": 45,
+      "textLeft": 45,
+      "textRight": 465,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Projetos",
+      "size": 24,
+      "top": 80,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 24,
+      "n": 1
+     },
+     {
+      "x": 45,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 2,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": true,
+    "ground": "#25191a",
+    "sidebar": null,
+    "topbar": {
+     "h": 48
+    },
+    "canvas": {
+     "left": 24,
+     "right": 24
+    },
+    "hero": {
+     "text": "Projetos",
+     "words": 1,
+     "chars": 8,
+     "lines": 1,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 4,
+     "firstScreen": 4,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 4,
+     "radii": [
+      [
+       8,
+       4
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 2,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 355,
+       "size": 40,
+       "radius": "6px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      14,
+      16,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Projetos",
+     "size": 24,
+     "top": 80
+    },
+    "colourShare": 0.007
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.43,
+    0.39
+   ],
+   "motion": {
+    "elements": 5,
+    "css": 3,
+    "transitions": 0,
+    "scripted": 2,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 1286,
+     "screens": 1.5,
+     "words": 141,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 6,
+     "sections": 1,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Projetos",
+     "words": 1,
+     "chars": 8,
+     "lines": 1,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 64,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Projetos",
+     "words": 1,
+     "lines": 1,
+     "size": 24,
+     "font": "Inter"
+    },
+    "headings": [
+     {
+      "text": "Projetos",
+      "words": 1,
+      "chars": 8,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.24,
+      "top": 64,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      14,
+      18,
+      24
+     ],
+     "sizeCount": 3,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 5.8
+     },
+     "measureChars": 45,
+     "max": {
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "text": "Projetos"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.13,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#25191a",
+     "bodyBgHsl": {
+      "h": 355,
+      "s": 0.19,
+      "l": 0.12
+     },
+     "dark": true,
+     "sectionBgs": [
+      {
+       "color": "#25191a",
+       "top": 0,
+       "hsl": {
+        "h": 355,
+        "s": 0.19,
+        "l": 0.12
+       }
+      },
+      {
+       "color": "#302325",
+       "top": 256,
+       "hsl": {
+        "h": 351,
+        "s": 0.16,
+        "l": 0.16
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#fceed6",
+       "share": 0.69
+      },
+      {
+       "color": "#c9b9a7",
+       "share": 0.22
+      },
+      {
+       "color": "#f47e71",
+       "share": 0.06
+      },
+      {
+       "color": "#731229",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#25191a",
+      "hsl": {
+       "h": 355,
+       "s": 0.19,
+       "l": 0.12
+      },
+      "fg": "#fceed6"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 7,
+     "inHero": 5,
+     "radius": 6,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Novo projeto",
+      "Ativos",
+      "Abrir quadro",
+      "Adicionar objetivo",
+      "Criar Projeto"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "header.sticky.top-0 390px",
+      "div.mt-auto.flex 388px"
+     ],
+     "outlinedBoxes": 6,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 8,
+     "boxRadius": 6,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 48,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 1286,
+    "margins": {
+     "left": 16,
+     "right": 32
+    },
+    "sections": [
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 256,
+      "height": 342,
+      "words": 37,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 37,
+      "right": 37,
+      "textLeft": 37,
+      "textRight": 54,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 622,
+      "height": 286,
+      "words": 20,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 37,
+      "right": 37,
+      "textLeft": 37,
+      "textRight": 70,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 932,
+      "height": 338,
+      "words": 23,
+      "media": 0,
+      "middle": 4,
+      "heading": null,
+      "left": 37,
+      "right": 37,
+      "textLeft": 37,
+      "textRight": 95,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Projetos",
+      "size": 24,
+      "top": 64,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 16,
+      "n": 1
+     },
+     {
+      "x": 37,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 2,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": true,
+    "ground": "#25191a",
+    "sidebar": null,
+    "topbar": {
+     "h": 48
+    },
+    "canvas": {
+     "left": 16,
+     "right": 17
+    },
+    "hero": {
+     "text": "Projetos",
+     "words": 1,
+     "chars": 8,
+     "lines": 1,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 64,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 5,
+     "firstScreen": 4,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 5,
+     "radii": [
+      [
+       8,
+       3
+      ],
+      [
+       6,
+       2
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 355,
+       "size": 40,
+       "radius": "6px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      14,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Projetos",
+     "size": 24,
+     "top": 64
+    },
+    "colourShare": 0
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "WARN",
+   "id": "panel-void",
+   "width": 1440,
+   "message": "1 card(s) hold a blank band inside: 52px in \"Aprender fotografia\".",
+   "fix": "A card stretches to its neighbour only when it has content to fill. Keep a legend or a note directly under its chart (only an action or a total may sit at a stretched card's foot), let a short card keep its own height (align-items: start), and let a filtered block shrink to its rows."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/docs/screenshots/projects-refactor/p6/final/create-dark/desktop-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/docs/screenshots/projects-refactor/p6/final/create-dark/desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/docs/screenshots/projects-refactor/p6/final/create-dark/tablet-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/docs/screenshots/projects-refactor/p6/final/create-dark/tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/docs/screenshots/projects-refactor/p6/final/create-dark/mobile-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/docs/screenshots/projects-refactor/p6/final/create-dark/mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

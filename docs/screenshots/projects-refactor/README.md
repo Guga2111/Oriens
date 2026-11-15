@@ -375,3 +375,172 @@ As capturas fold/page de todos os relatórios finais foram abertas. Sem imagens 
 clips externos, sem créditos a acrescentar e sem dados de exemplo no produto.
 Os dados sintéticos são exclusivos dos testes; não há conteúdo de prova a trocar
 no lançamento. P6 ainda cobre a inspeção global e a liberação operacional.
+
+## P6 — inspeção e preparação de liberação
+
+[Entrega P6](../../plans/2026-11-13-projects-refactor-p6.md) ·
+[runbook/checkpoint](../../../oriens-api/ops/projects-refactor/RELEASE.md).
+O release real depende de alvo, autorização destrutiva e backup/restore desse alvo.
+Nenhum banco compartilhado foi resetado e nenhum deploy foi executado.
+
+### Direção, perguntas e escopo visual
+
+Mantidos Horizonte, Inter, creme/bordô, **editorial-greeting, seed 275775847**,
+keep palette,type. Sem redraw: o produto tem design aprovado. A face permanece
+no shell Oriens, na cor dos projetos e nas duas datas independentes; assinatura:
+**o mesmo ID de tarefa se torna cartão do quadro, linha de Hoje e marca da timeline**.
+O elemento interativo continua levando da faixa de horário à tarefa, inclusive
+marcas coincidentes. Sem fotos/clipes externos, créditos ou amostras no produto.
+
+As perguntas das nove telas/estados continuam: Projetos — qual contexto retomar;
+Simples — qual resultado falta; Quadro — qual tarefa executar/mover; Objetivos —
+qual trabalho contribui; Criação — qual modo; Editor — o que/quando/prazo;
+Configuração — onde posicionar; Hoje — o que fazer/replanejar; Semana — quando
+executar. Não houve novo hero, métricas ornamentais ou animações de entrada.
+
+Inventário preservado: projetos simples/desenvolvimento; objetivos manuais com ID;
+sete colunas customizadas; tarefa com/sem objetivo; agenda e prazo independentes;
+com/sem horário; pendência anterior; atenção ao prazo hoje e planejamento futuro;
+concluídas; canceladas; quadros/dias vazios; títulos longos; teclado/toque.
+
+### Evidências e reprodução
+
+- [Manifesto de build e hashes](p6/build.json), [verificação consolidada](p6/verification.json).
+- [Antes de editar](p6/before/report.json): Hoje em build de produção, 14/11.
+- [Matriz final](p6/inspection-results.json) e [script](p6/inspect-all.mjs).
+- [Projetos: roteiro reaproveitado](p4/check-browser.mjs), [resultado P6](p6/projects/browser-results.json).
+- [Hoje/semana: roteiro reaproveitado](p5/check-browser.mjs), [resultado P6](p6/planning/browser-results.json).
+- [Estados/teclado/conflito](p6/check-states.mjs), [resultado](p6/states/results.json).
+- [Jornada real adicional](p6/live-browser.mjs): arquivar → Hoje → concluir →
+  preview/excluir projeto → mesma tarefa avulsa. Invocada por WorkApiPostgresTest,
+  após a jornada P5, em banco descartável com HTTP/JWT/JPA reais.
+
+Reprodução a partir da raiz, com dependências/navegador já instalados:
+
+```bash
+VITE_API_BASE_URL=/api npm --prefix oriens-front run build
+node docs/screenshots/projects-refactor/p4/fixture-server.mjs oriens-front/dist 4194
+# Outro terminal:
+node docs/screenshots/projects-refactor/p5/fixture-server.mjs oriens-front/dist 4196
+# Terceiro terminal; rodar interações antes de inspecionar:
+node docs/screenshots/projects-refactor/p4/check-browser.mjs http://127.0.0.1:4194 docs/screenshots/projects-refactor/p6/projects
+node docs/screenshots/projects-refactor/p5/check-browser.mjs http://127.0.0.1:4196 docs/screenshots/projects-refactor/p6/planning
+node docs/screenshots/projects-refactor/p6/check-states.mjs
+node docs/screenshots/projects-refactor/p6/inspect-all.mjs
+python3 oriens-api/ops/projects-refactor/test_p0.py
+python3 oriens-api/ops/projects-refactor/test_p1.py
+python3 oriens-api/ops/projects-refactor/test_p2.py --browser
+```
+
+As fixtures são exclusivamente locais/em memória, conta Demonstração, email
+example.invalid, sem dados pessoais. P4 tem Site pessoal (6 tarefas), Aprender
+fotografia (2 objetivos) e Ideias para escrever (vazio). P5 acrescenta três tarefas:
+quatro no planejamento de hoje (uma concluída), uma pendência anterior, duas em
+atenção, uma sem datas e uma cancelada. As contagens vêm das linhas. Estados
+adicionais são projeções interceptadas apenas no navegador dessa prova; não alteram
+persistência. Só canceladas também atualiza o resumo do projeto, sem denominador ativo.
+
+A primeira fixture de Hoje permaneceu aberta durante a mudança de 14 para 15/11;
+o roteiro falhou corretamente porque suas tarefas ficaram no dia anterior.
+Foi fixado o relógio sintético à inicialização do servidor (somente modo fixture),
+e Hoje/semana foram recapturados em 15/11. Não se compara data/posição de “agora”
+entre os dias como se fossem regressões. O modo live usa relógio fixo do teste real
+em Recife e dispositivo Pacific/Auckland. Não usar globalSetup contra API compartilhada.
+
+### Antes/depois e gate
+
+| Medida | Antes P6 | Final P6 |
+| --- | --- | --- |
+| Sidebar em 768/1024 | 256 px persistentes | recolhida em Sheet, título acessível e navegação por teclado |
+| Conteúdo de Hoje em 768 | 464 px úteis após margens | 720 px úteis após margens |
+| Header | transparência/backdrop blur | superfície opaca do tema |
+| TaskChip | borda integral do tema | borda com 60% do token |
+| Faixa do dia, períodos e foco | presentes | preservados; clique/teclado e coincidências passando |
+| Editor móvel | rodapé fixo e corpo rolável | preservados, inclusive fim dos campos/configuração |
+| Inspetor APP SCREENS | Hoje: 0 FAIL / 1 WARN | 18 relatórios / 54 combinações: 0 FAIL / 30 WARN agrupados |
+
+O QA de interação cobre **1440/768/390/360/1024 nos dois temas**, sem erros JS
+ou overflow de página nos roteiros. Os gates medem 1440/768/390 em nove estados,
+claro/escuro. Foram abertas e examinadas **todas as capturas finais listadas pelo
+inspetor**, agrupadas em folhas de contato por estado/tema, além de ampliações de
+tablet, telefone e fins roláveis de editor/configuração. As áreas cinza das folhas
+são externas ao produto. O screenshot privado original da timeline não está neste
+checkout; usou-se a referência preservada em P5 e a faixa real atual.
+
+Exceções passadas ao inspetor são delimitadas: palette-cream corresponde à marca
+fixada pela SPEC; covered-text/heavy-shadow somente nos três modais, porque eles
+cobrem o título inerte da página e têm uma superfície flutuante real. Não há
+exceção de contraste, fonte, foco ou overflow.
+
+Todos os WARNs finais foram revistos por região, sem dispensas automáticas:
+
+- **icon-chips**: Hoje/semana e objetivos alertam para controles neutros reais do
+  shell e conclusão manual, com nome/foco/estado, sem ícones decorativos de KPI.
+- **ragged-row**: quadro tem cartões de tarefas com tamanhos de conteúdo distintos;
+  simples tem lista e resumo/calendário com funções diferentes. Editor/configuração
+  também medem a página de fundo com esses mesmos cartões. Forçar alturas iguais
+  criaria vazio sem melhorar a relação entre registros.
+- **tabular**: calendário do simples distribui datas em células fixas; as contagens
+  da tela usam tabular-nums. Não há coluna de valores que precise alinhar decimais.
+- **panel-void**: projetos mantém ações no rodapé entre cards com quantidades de
+  informação diferentes; o vazio do card simples reaparece no fundo da criação.
+  Próximo passo fica junto às contagens, sem ser empurrado artificialmente.
+- **heavy-borders**: claro ainda tem divisórias ~1,45–1,46:1 em cartões do quadro,
+  projetos e linhas semanais. Mantidas como separação do sistema atual, sem sombra
+  adicional; a borda de TaskChip foi suavizada, mas o restante não virou redesign
+  global. Ressalva visual frente ao alvo de 1,3:1, sem dispensar contraste de texto.
+- **hero-void**: semana com quatro tarefas concentradas em domingo tem dias vazios
+  reais. Preservar a geometria do calendário é preferível a inserir trabalho fictício
+  ou repetir atenção nos demais dias. Tablet/telefone usam agenda compacta.
+
+Lint de design: 0 FAIL / 4 WARN no sidebar compartilhado — sombras de variantes
+floating/inset/outline que este shell não usa e transition-all do rail herdado.
+O layout inspecionado não tem sombra de painel em repouso nem vidro no header.
+ESLint: 0 erros, aviso de Fast Refresh porque sidebar exporta componentes e hook.
+Build mantém avisos de bundle grande, Browserslist e classe duration ambígua.
+
+### Crítica final APP SCREENS
+
+ROUND 1 — referência P5 / antes P6
+Seen in one second: Hoje é reconhecível, mas a navegação toma um terço do tablet.
+Idea (one sentence): um ID conecta contexto do projeto à execução sem converter prazo em agenda.
+Live thing: faixa do dia e menus de tarefa com foco/feedback.
+Layout words by section: shell=navegação / título=ações / faixa=tempo / tarefas=grupos.
+Scores: design 7.5 · usability 7.5 · creativity 7 · content 8 → overall 7.5.
+Caps applied: APP SCREENS, sem pisos de imagens/motion.
+Top three problems (most visible first), each with the screenshot it shows in and the fix:
+1. before/tablet-fold: sidebar fixa comprime o trabalho; recolher antes de 1100 px, com hook e CSS coerentes.
+2. before/desktop-fold: header de vidro contraria superfícies planas; usar fundo opaco do tema.
+3. p5/week-light: cartões com contornos fortes; suavizar TaskChip com token existente e explicitar limites do restante.
+
+ROUND 2 — final P6
+Seen in one second: projeto/quadro e planejamento têm prioridade; tablet usa a largura disponível.
+Idea (one sentence): o cartão, a linha do dia e a marca de horário representam o mesmo trabalho confirmado pelo servidor.
+Live thing: mover por menu, planejar, concluir e levar foco da marca à tarefa, sem dependência de drag.
+Layout words by section: projetos=contextos / simples=resultados / quadro=colunas / objetivos=contribuições / editor=datas / Hoje=grupos / semana=calendário.
+Scores: design 7.7 · usability 8 · creativity 7 · content 8 → overall 7.7.
+Caps applied: APP SCREENS; exceções pontuais dos modais e paleta documentadas.
+Top three problems (most visible first), each with the screenshot it shows in and the fix:
+1. final/week-light/desktop-fold: semana com dias vazios continua esparsa; mantida sem preencher dados ou alterar o calendário aprovado.
+2. final/board-light/tablet-fold: sete colunas requerem rolagem interna; preservada identidade das tarefas e alternativa móvel por coluna.
+3. final/editor-light/mobile-fold: o formulário é longo; corpo rola e rodapé Salvar/Cancelar permanece visível, fim inspecionado em projects/editor-bottom-*.
+
+1. **Pergunta:** a região principal contém os contextos, tarefas ou resultados da
+   tela. Nova tarefa/mover/concluir estão junto ao trabalho, sem hero de marketing.
+2. **Geometria:** tablet agora tem medida útil; margens do conteúdo consistentes;
+   quadro/semana rolam internamente; modais mantêm ações e rolagem de formulário.
+3. **Cor:** a marca permanece; estado/prazo têm texto explícito. Header opaco,
+   superfície dos cartões sem novos efeitos. Não se acrescentou paleta de gráficos.
+4. **Contagens:** P4 tem 1/5 tarefas não canceladas e uma cancelada; objetivos 0/2.
+   P5 planeja quatro hoje, uma concluída; recuperação/atenção não aumentam esse total.
+5. **Zeros/ausências:** dia/quadro vazios mantêm estrutura e ação; só canceladas
+   diz Nenhuma tarefa ativa, sem 100%; ausência de hora/prazo não vira valor fictício.
+6. **Rótulos/foco:** duas datas independentes; significados das colunas nomeados;
+   409 mantém rascunho e pede revisão explícita após recarregar. Timeline coincidente
+   leva ao ID correto. Menu recolhido tem título acessível e fecha ao navegar.
+7. **Telefone:** sem overflow horizontal da página em 360/390; uma coluna de quadro;
+   agenda semanal vertical; campos e rodapé acessíveis até o fim da rolagem.
+
+As notas são avaliação visual subjetiva, não métricas de produtividade. Persistem
+as ressalvas listadas; não foram ocultadas do gate. Não há conteúdo de demonstração
+para trocar no lançamento: fixtures, screenshots e falhas simuladas só vivem no QA.

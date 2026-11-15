@@ -27,8 +27,8 @@ public class SecurityConfig {
     private UserServiceImpl userService;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        AuthenticationFilter authenticationFilter = new AuthenticationFilter(customAuthManager, userService);
+    public SecurityFilterChain filterChain(HttpSecurity http, com.auth0.jwt.algorithms.Algorithm jwtAlgorithm) throws Exception {
+        AuthenticationFilter authenticationFilter = new AuthenticationFilter(customAuthManager, userService, jwtAlgorithm);
         authenticationFilter.setFilterProcessesUrl("/authenticate");
 
         http
@@ -44,7 +44,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/user/init-admin").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/user/init-admin").denyAll()
                         // user routes
 
                         // task routes
@@ -60,7 +60,7 @@ public class SecurityConfig {
                 }))
                 .addFilterBefore(new ExceptionHandlerFilter(), AuthenticationFilter.class)
                 .addFilter(authenticationFilter)
-                .addFilterAfter(new JWTAuthorizationFilter(), AuthenticationFilter.class)
+                .addFilterAfter(new JWTAuthorizationFilter(jwtAlgorithm), AuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.headers(headers -> headers.frameOptions(frameOptionsConfig -> frameOptionsConfig.disable()));

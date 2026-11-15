@@ -60,7 +60,12 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<User> saveUser (@RequestBody User user) {
-        userService.saveUser(user);
+        User registration = new User();
+        registration.setName(user.getName());
+        registration.setEmail(user.getEmail());
+        registration.setPassword(user.getPassword());
+        registration.setPhoneNumber(user.getPhoneNumber());
+        userService.saveUser(registration);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -117,34 +122,10 @@ public class UserController {
         }
     }
 
-    // Endpoint para criar primeiro admin (sem autenticação)
+    // Retired: provisioning an administrator is a maintenance operation.
     @PostMapping("/init-admin")
-    public ResponseEntity<?> initFirstAdmin (@RequestParam String email) {
-        try {
-            List<User> users = userService.getUsers();
-            long adminCount = users.stream()
-                    .filter(u -> u.getRole() == UserRole.ADMIN)
-                    .count();
-
-            if (adminCount > 0) {
-                return new ResponseEntity<>("Já existe um administrador no sistema", HttpStatus.CONFLICT);
-            }
-
-            User user = userService.getUser(email);
-            user.setRole(UserRole.ADMIN);
-            userService.updateUserRole(user.getId(), UserRole.ADMIN);
-
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Usuário promovido a administrador com sucesso");
-            response.put("email", user.getEmail());
-            response.put("role", "ADMIN");
-
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Erro ao promover usuário: " + e.getMessage());
-            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<?> initFirstAdmin() {
+        return ResponseEntity.status(HttpStatus.GONE).build();
     }
 
 }

@@ -66,6 +66,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public User saveUser(User user) {
 
+        user.setId(null);
+        user.setRole(UserRole.USER);
+        user.setEmail(user.getEmail().trim().toLowerCase(java.util.Locale.ROOT));
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalStateException("This email already exists!");
         }

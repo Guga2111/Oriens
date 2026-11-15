@@ -94,7 +94,7 @@ export function TaskChip({ task, onUpdate, onEdit }: TaskChipProps) {
   };
 
   return (
-    <div className="rounded-md border bg-card p-2">
+    <div className="rounded-md border border-border/60 bg-card p-2">
       <div className="flex items-start gap-1">
         <div className="-m-1.5 flex h-8 w-8 shrink-0 items-center justify-center">
           <Checkbox

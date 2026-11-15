@@ -22,6 +22,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
+    private final Algorithm jwtAlgorithm;
+
+    public JWTAuthorizationFilter(Algorithm jwtAlgorithm) {
+        this.jwtAlgorithm = jwtAlgorithm;
+    }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -35,7 +41,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         String token = header.replace(SecurityConstants.BEARER, "");
 
         try {
-            DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(SecurityConstants.SECRET_KEY))
+            DecodedJWT decodedJWT = JWT.require(jwtAlgorithm)
                     .build()
                     .verify(token);
 

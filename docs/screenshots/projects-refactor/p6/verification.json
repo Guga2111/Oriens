@@ -1,0 +1,125 @@
+{
+  "at": "2026-11-15T12:01:50.128430+00:00",
+  "scope": "local production builds, synthetic browser fixtures and disposable PostgreSQL only",
+  "vitest": {
+    "files": 22,
+    "passed": 94
+  },
+  "javaSuites": [
+    {
+      "name": "com.oriens.oriens_api.OriensApiApplicationTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.repository.NotificationRepositoryTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.repository.TaskRepositoryTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.repository.UserRepositoryTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.security.JwtConfigurationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.service.NotificationServiceImplTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.service.TaskServiceImplTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.service.UserServiceImplTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.work.ProjectWorkPostgresTest",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.work.WorkApiPostgresTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "javaNote": "General Maven run executed 44 tests and skipped 27 environment-gated PostgreSQL tests. P1 and P2/browser subsequently executed those 27 against their own disposable PostgreSQL; counts here are the latest suite results.",
+  "baselineBackupRestore": {
+    "passed": 11,
+    "target": "own disposable container, never real release database"
+  },
+  "typecheck": "passed tsconfig.app.json",
+  "eslint": {
+    "errors": 0,
+    "warnings": 1,
+    "reason": "react-refresh/only-export-components in shared sidebar"
+  },
+  "designLint": {
+    "failures": 0,
+    "warnings": 4,
+    "reason": "inherited shared sidebar variants and rail; see README"
+  },
+  "inspection": {
+    "reports": 18,
+    "viewportCombinations": 54,
+    "failures": 0,
+    "groupedWarnings": 30,
+    "results": "inspection-results.json"
+  },
+  "browserProjects": "projects/browser-results.json",
+  "browserPlanning": "planning/browser-results.json",
+  "browserStates": "states/results.json",
+  "realBrowserJourneys": [
+    "P5 board/planning/Today/completion/reopen/standalone",
+    "P6 archive/Today/completion/project deletion preview/detached same ID"
+  ],
+  "productionBuilds": {
+    "frontend": "passed",
+    "apiJar": "passed"
+  },
+  "releaseCheckpoint": {
+    "status": "PENDING_REAL_TARGET_AND_EXPLICIT_DESTRUCTIVE_AUTHORIZATION",
+    "deployed": false,
+    "realDatabaseReset": false,
+    "realBackupRestoreVerified": false
+  },
+  "limits": [
+    "No real account data, external maps/upload/email or public infrastructure used",
+    "Private original reference screenshot unavailable in checkout; P5 evidence used",
+    "Visual checks cover requested work screens; not exhaustive Finances/Support redesign"
+  ]
+}
