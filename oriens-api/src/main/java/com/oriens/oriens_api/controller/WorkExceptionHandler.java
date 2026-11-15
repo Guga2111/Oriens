@@ -11,7 +11,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.dao.*;
 import java.util.*;
 
-@RestControllerAdvice(assignableTypes = {ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class})
+@RestControllerAdvice(assignableTypes = {ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, TagController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class WorkExceptionHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WorkExceptionHandler.class);
@@ -43,6 +43,17 @@ public class WorkExceptionHandler {
     public ResponseEntity<Error> conflict(Exception e, HttpServletRequest request) {
         return response(409, "VERSION_CONFLICT", "Os dados mudaram. Recarregue antes de salvar.", null, request);
     }
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<Error> validation(org.springframework.web.bind.MethodArgumentNotValidException e, HttpServletRequest request) {
+        var field=e.getBindingResult().getFieldErrors().stream().findFirst();
+        return response(400,"INVALID_REQUEST",field.map(org.springframework.validation.FieldError::getDefaultMessage).orElse("Verifique os campos."),field.map(org.springframework.validation.FieldError::getField).orElse(null),request);
+    }
+    @ExceptionHandler({com.oriens.oriens_api.exception.BusinessException.class})
+    public ResponseEntity<Error> business(RuntimeException e,HttpServletRequest request) {
+        return response(422,"DOMAIN_VIOLATION",e.getMessage(),null,request);
+    }
+    @ExceptionHandler({com.oriens.oriens_api.exception.EntryNotFoundException.class,com.oriens.oriens_api.exception.TagNotFoundException.class})
+    public ResponseEntity<Error> missing(RuntimeException e,HttpServletRequest request) {return response(404,"NOT_FOUND","Recurso não encontrado.",null,request);}
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Error> internal(Exception e, HttpServletRequest request) {
         return response(500, "INTERNAL_ERROR", "Não foi possível concluir a operação.", null, request);

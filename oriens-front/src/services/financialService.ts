@@ -1,8 +1,14 @@
 import apiClient from './api';
+import { queryClient } from '@/lib/query-client';
+
+function financialChanged(userId: number) {
+  void queryClient.invalidateQueries({ predicate: query => query.queryKey[0] === 'work' && query.queryKey[1] === userId && query.queryKey[2] === 'statistics' && ['finance', 'financial-evidence'].includes(String(query.queryKey[3])) });
+}
 import { EntryDTO, TagDTO, Page } from '@/types/financial';
 
 export const createEntry = async (userId: number, entry: EntryDTO): Promise<EntryDTO> => {
   const response = await apiClient.post(`/financial/user/${userId}/entries`, entry);
+  financialChanged(userId);
   return response.data;
 };
 
@@ -22,19 +28,22 @@ export const getAllEntries = async (
     endDate?: string;
     tagId?: number;
     search?: string;
-  }
+  },
+  signal?: AbortSignal
 ): Promise<Page<EntryDTO>> => {
-  const response = await apiClient.get(`/financial/user/${userId}/entries`, { params });
+  const response = await apiClient.get(`/financial/user/${userId}/entries`, { params, signal });
   return response.data;
 };
 
 export const updateEntry = async (userId: number, entryId: number, entry: EntryDTO): Promise<EntryDTO> => {
   const response = await apiClient.put(`/financial/user/${userId}/entries/${entryId}`, entry);
+  financialChanged(userId);
   return response.data;
 };
 
 export const deleteEntry = async (userId: number, entryId: number): Promise<void> => {
   await apiClient.delete(`/financial/user/${userId}/entries/${entryId}`);
+  financialChanged(userId);
 };
 
 export const countEntries = async (userId: number): Promise<number> => {
@@ -44,6 +53,7 @@ export const countEntries = async (userId: number): Promise<number> => {
 
 export const createTag = async (userId: number, tag: TagDTO): Promise<TagDTO> => {
   const response = await apiClient.post(`/financial/user/${userId}/tags`, tag);
+  financialChanged(userId);
   return response.data;
 };
 
@@ -69,11 +79,13 @@ export const getCustomTags = async (userId: number): Promise<TagDTO[]> => {
 
 export const updateTag = async (userId: number, tagId: number, tag: TagDTO): Promise<TagDTO> => {
   const response = await apiClient.put(`/financial/user/${userId}/tags/${tagId}`, tag);
+  financialChanged(userId);
   return response.data;
 };
 
 export const deleteTag = async (userId: number, tagId: number): Promise<void> => {
   await apiClient.delete(`/financial/user/${userId}/tags/${tagId}`);
+  financialChanged(userId);
 };
 
 export const getRecurringEntries = async (userId: number): Promise<EntryDTO[]> => {

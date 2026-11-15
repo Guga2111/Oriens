@@ -46,7 +46,7 @@ class WorkApiPostgresTest {
     @EnableJpaRepositories(basePackageClasses=ProjectRepository.class)
     @Import({UserController.class, UserServiceImpl.class, CustomAuthManager.class, ProjectController.class, TaskController.class, StatisticsController.class, WorkExceptionHandler.class,
         WorkRequestBodyAdvice.class, WorkOwner.class, WorkReadService.class, WorkCreationService.class,
-        TaskLabelController.class, TaskLabelService.class, ProjectWorkService.class, StatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, JwtConfiguration.class, SecurityConfig.class})
+        TaskLabelController.class, TaskLabelService.class, ProjectWorkService.class, StatisticsService.class, StatisticsReadService.class, FinancialStatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, JwtConfiguration.class, SecurityConfig.class})
     static class App {
         @Bean org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder() {
             return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();

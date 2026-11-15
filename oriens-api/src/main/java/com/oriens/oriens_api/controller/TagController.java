@@ -17,39 +17,47 @@ import java.util.List;
 public class TagController {
 
     private final TagServiceImpl tagService;
+    private final com.oriens.oriens_api.security.WorkOwner owner;
 
     @PostMapping("/user/{userId}/tags")
-    public ResponseEntity<Tag> createTag(@PathVariable Long userId, @Valid @RequestBody TagDTO dto) {
+    public ResponseEntity<Tag> createTag(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @Valid @RequestBody TagDTO dto) {
+        userId = owner.matching(auth,userId);
         return new ResponseEntity<>(tagService.createTag(dto, userId), HttpStatus.CREATED);
     }
 
     @GetMapping("/user/{userId}/tags/{id}")
-    public ResponseEntity<TagDTO> getTag(@PathVariable Long userId, @PathVariable Long id) {
+    public ResponseEntity<TagDTO> getTag(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id) {
+        userId = owner.matching(auth,userId);
         return new ResponseEntity<>(tagService.getTag(id, userId), HttpStatus.OK);
     }
 
     @GetMapping("/user/{userId}/tags")
-    public ResponseEntity<List<TagDTO>> getAllTags(@PathVariable Long userId) {
+    public ResponseEntity<List<TagDTO>> getAllTags(org.springframework.security.core.Authentication auth, @PathVariable Long userId) {
+        userId = owner.matching(auth,userId);
         return new ResponseEntity<>(tagService.getTags(userId), HttpStatus.OK);
     }
 
     @GetMapping("/user/{userId}/tags/default")
-    public ResponseEntity<List<TagDTO>> getDefaultTags(@PathVariable Long userId) {
+    public ResponseEntity<List<TagDTO>> getDefaultTags(org.springframework.security.core.Authentication auth, @PathVariable Long userId) {
+        userId = owner.matching(auth,userId);
         return new ResponseEntity<>(tagService.getDefaultTags(userId), HttpStatus.OK);
     }
 
     @GetMapping("/user/{userId}/tags/custom")
-    public ResponseEntity<List<TagDTO>> getCustomTags(@PathVariable Long userId) {
+    public ResponseEntity<List<TagDTO>> getCustomTags(org.springframework.security.core.Authentication auth, @PathVariable Long userId) {
+        userId = owner.matching(auth,userId);
         return new ResponseEntity<>(tagService.getCustomTags(userId), HttpStatus.OK);
     }
 
     @PutMapping("/user/{userId}/tags/{id}")
-    public ResponseEntity<TagDTO> updateTag(@PathVariable Long userId, @PathVariable Long id, @Valid @RequestBody TagDTO dto) {
+    public ResponseEntity<TagDTO> updateTag(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id, @Valid @RequestBody TagDTO dto) {
+        userId = owner.matching(auth,userId);
         return new ResponseEntity<>(tagService.updateTag(id, userId, dto), HttpStatus.OK);
     }
 
     @DeleteMapping("/user/{userId}/tags/{id}")
-    public ResponseEntity<Void> deleteTag(@PathVariable Long userId, @PathVariable Long id) {
+    public ResponseEntity<Void> deleteTag(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id) {
+        userId = owner.matching(auth,userId);
         tagService.deleteTag(id, userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

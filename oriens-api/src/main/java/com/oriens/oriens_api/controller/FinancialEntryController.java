@@ -23,20 +23,23 @@ import java.util.List;
 public class FinancialEntryController {
 
     private final FinancialEntryServiceImpl financialEntryService;
+    private final com.oriens.oriens_api.security.WorkOwner owner;
 
     @PostMapping("/user/{userId}/entries")
-    public ResponseEntity<EntryDTO> createEntry(@PathVariable Long userId, @Valid @RequestBody EntryDTO dto) {
+    public ResponseEntity<EntryDTO> createEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @Valid @RequestBody EntryDTO dto) {
+        userId = owner.matching(auth,userId);
         return new ResponseEntity<>(financialEntryService.createEntry(dto, userId), HttpStatus.CREATED);
     }
 
     @GetMapping("/user/{userId}/entries/{id}")
-    public ResponseEntity<EntryDTO> getEntry(@PathVariable Long userId, @PathVariable Long id) {
+    public ResponseEntity<EntryDTO> getEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id) {
+        userId = owner.matching(auth,userId);
         return new ResponseEntity<>(financialEntryService.getEntry(id, userId), HttpStatus.OK);
     }
 
     @GetMapping("/user/{userId}/entries")
     public ResponseEntity<Page<EntryDTO>> getAllEntries(
-            @PathVariable Long userId,
+            org.springframework.security.core.Authentication auth, @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "entryDate") String sortBy,
@@ -46,45 +49,41 @@ public class FinancialEntryController {
             @RequestParam(required = false) Long tagId,
             @RequestParam(required = false) String search
     ) {
-        Sort.Direction sortDirection = direction.equalsIgnoreCase("ASC")
-                ? Sort.Direction.ASC
-                : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-
-        Page<EntryDTO> entries;
-
-        if (search != null && !search.isBlank()) {
-            entries = financialEntryService.searchEntriesByDescription(userId, search, pageable);
-        } else if (tagId != null) {
-            entries = financialEntryService.getEntriesByTag(userId, tagId, pageable);
-        } else if (startDate != null && endDate != null) {
-            entries = financialEntryService.getEntriesByPeriod(userId, startDate, endDate, pageable);
-        } else {
-            entries = financialEntryService.getEntries(userId, pageable);
+        userId = owner.matching(auth,userId);
+        com.oriens.oriens_api.service.WorkReadService.interval(startDate,endDate);
+        Sort.Direction sortDirection;
+        try {sortDirection=Sort.Direction.fromString(direction);} catch(IllegalArgumentException e) {
+            throw new com.oriens.oriens_api.exception.WorkDomainException("INVALID_REQUEST","direction","Ordenação inválida.");
         }
+        Pageable pageable=WorkPagination.of(page,size,sortBy,sortDirection,500,"id","entryDate","amount","description","createdAt","updatedAt");
+        Page<EntryDTO> entries=financialEntryService.filtered(userId,startDate,endDate,tagId,search,pageable);
 
         return ResponseEntity.ok(entries);
     }
 
     @PutMapping("/user/{userId}/entries/{id}")
-    public ResponseEntity<EntryDTO> updateEntry(@PathVariable Long userId, @PathVariable Long id, @Valid @RequestBody EntryDTO dto) {
+    public ResponseEntity<EntryDTO> updateEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id, @Valid @RequestBody EntryDTO dto) {
+        userId = owner.matching(auth,userId);
         return new ResponseEntity<>(financialEntryService.updateEntry(id, dto, userId), HttpStatus.OK);
     }
 
     @DeleteMapping("/user/{userId}/entries/{id}")
-    public ResponseEntity<Void> deleteEntry(@PathVariable Long userId, @PathVariable Long id) {
+    public ResponseEntity<Void> deleteEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id) {
+        userId = owner.matching(auth,userId);
         financialEntryService.deleteEntry(id, userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/user/{userId}/entries/count")
-    public ResponseEntity<Long> countEntries(@PathVariable Long userId) {
+    public ResponseEntity<Long> countEntries(org.springframework.security.core.Authentication auth, @PathVariable Long userId) {
+        userId = owner.matching(auth,userId);
         long count = financialEntryService.countUserEntries(userId);
         return new ResponseEntity<>(count, HttpStatus.OK);
     }
 
     @GetMapping("/user/{userId}/entries/recurring")
-    public ResponseEntity<List<EntryDTO>> getRecurringEntries(@PathVariable Long userId) {
+    public ResponseEntity<List<EntryDTO>> getRecurringEntries(org.springframework.security.core.Authentication auth, @PathVariable Long userId) {
+        userId = owner.matching(auth,userId);
         return ResponseEntity.ok(financialEntryService.getRecurringEntries(userId));
     }
 }

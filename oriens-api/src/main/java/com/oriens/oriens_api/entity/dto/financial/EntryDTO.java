@@ -17,8 +17,9 @@ public class EntryDTO {
     private Long id;
 
     @NotNull(message = "Valor é obrigatório")
-    @DecimalMin(value = "-999999999.99", message = "Valor mínimo excedido")
-    @DecimalMax(value = "999999999999.99", message = "Valor máximo excedido")
+    @DecimalMin(value = "-9999999999.99", message = "Valor mínimo excedido")
+    @DecimalMax(value = "9999999999.99", message = "Valor máximo excedido")
+    @Digits(integer=10, fraction=2, message="Use um valor com até duas casas decimais")
     private BigDecimal amount;
 
     @NotNull(message = "Data é obrigatória")
@@ -27,6 +28,7 @@ public class EntryDTO {
     @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
     private String description;
 
+    @NotNull(message="Escolha uma categoria")
     private Long tagId;
 
     @NotNull(message = "Campo 'isRecurring' é obrigatório")

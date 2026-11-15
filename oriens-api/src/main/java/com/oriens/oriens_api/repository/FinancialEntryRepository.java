@@ -15,6 +15,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, Long> {
+    @Query("select e from FinancialEntry e where e.userId=:owner " +
+        "and (cast(:start as date) is null or e.entryDate>=:start) and (cast(:end as date) is null or e.entryDate<=:end) " +
+        "and (:tag is null or e.tag.id=:tag) " +
+        "and (cast(:search as string) is null or lower(e.description) like lower(concat('%',cast(:search as string),'%')))")
+    Page<FinancialEntry> filtered(@Param("owner") Long owner,@Param("start") LocalDate start,@Param("end") LocalDate end,
+        @Param("tag") Long tag,@Param("search") String search,Pageable pageable);
+    boolean existsByParentEntryId(Long parentEntryId);
+    @Query(value="select exists(select 1 from financial_occurrences where parent_entry_id=:parent)",nativeQuery=true)
+    boolean hasOccurrences(@Param("parent") Long parent);
+
+
     Page<FinancialEntry> findByUserId(Long userId, Pageable pageable);
     Optional<FinancialEntry> findByIdAndUserId(Long id, Long userId);
 

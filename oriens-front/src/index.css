@@ -187,3 +187,43 @@
 @media (max-width: 639px) {
   .planning-screen button:not([role="checkbox"]) { min-height: 44px; min-width: 44px; }
 }
+
+/* Statistics: brand tokens, data-only intensity, and a locally scrolling annual grid. */
+.statistics-screen { --activity-cell: 14px; --activity-gap: 3px; font-variant-numeric: tabular-nums; }
+.statistics-screen .text-xs { font-size: 13px; line-height: 1.25rem; }
+.statistics-screen [role="region"] { box-shadow: none; min-width: 0; border-color: hsl(var(--muted)); }
+.statistics-screen [role="region"] > div:first-child h3 { font-size: 1rem; line-height: 1.5rem; }
+.activity-scroll { overflow-x: auto; overscroll-behavior-x: contain; padding: 4px; margin: -4px; }
+.activity-grid, .activity-months { width: max-content; }
+.activity-loading { height: calc(7 * var(--activity-cell) + 7 * var(--activity-gap) + 26px); }
+.activity-months { display: flex; gap: var(--activity-gap); padding-left: 32px; margin-bottom: 6px; font-size: 11px; line-height: 18px; }
+.activity-months > span { width: var(--activity-cell); flex: none; overflow: visible; white-space: nowrap; }
+.activity-weekday-row { display: flex; align-items: center; gap: var(--activity-gap); margin-bottom: var(--activity-gap); }
+.activity-weekday { width: 28px; flex: none; font-size: 11px; color: hsl(var(--muted-foreground)); position: sticky; left: 0; z-index: 1; background: hsl(var(--card)); }
+.activity-cell { width: var(--activity-cell); height: var(--activity-cell); flex: none; border-radius: 3px; background: hsl(var(--muted)); border: 1px solid transparent; }
+.activity-level-0 { background: hsl(var(--muted)); }
+.activity-level-1 { background: hsl(var(--chart-1) / 0.25); }
+.activity-level-2 { background: hsl(var(--chart-1) / 0.45); }
+.activity-level-3 { background: hsl(var(--chart-1) / 0.7); }
+.activity-level-4 { background: hsl(var(--chart-1)); }
+.activity-unknown { border: 1px dotted hsl(var(--muted-foreground)); }
+.activity-future { background: transparent; border: 1px dashed hsl(var(--border)); }
+.activity-selected { outline: 2px solid hsl(var(--foreground)); outline-offset: 1px; }
+.activity-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
+.statistics-screen button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.habit-matrix { overflow-x: auto; overscroll-behavior-x: contain; }
+.habit-matrix table { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 3px; }
+.habit-matrix th { font-weight: 400; font-size: 13px; color: hsl(var(--muted-foreground)); text-align: center; }
+.habit-matrix th:first-child { position: sticky; left: 0; z-index: 1; background: hsl(var(--card)); text-align: left; min-width: 140px; max-width: 180px; }
+.habit-mark { display: flex; width: 22px; height: 22px; align-items: center; justify-content: center; border-radius: 3px; font-size: 12px; background: transparent; color: hsl(var(--muted-foreground)); }
+.habit-DONE { background: hsl(var(--chart-1)); color: hsl(var(--card)); }
+.habit-PENDING { border: 1px solid hsl(var(--chart-1)); }
+.habit-MISSED { background: hsl(var(--muted)); }
+.habit-PAUSED { border: 1px dashed hsl(var(--border)); }
+.habit-OUTSIDE { opacity: 0.5; }
+@media (max-width: 639px) {
+  .statistics-screen { --activity-cell: 44px; --activity-gap: 4px; }
+  .statistics-screen button, .statistics-screen input, .statistics-screen [role="combobox"] { min-height: 44px; min-width: 44px; }
+  .habit-mark { width: 44px; height: 44px; }
+  .activity-months { margin-bottom: 8px; }
+}

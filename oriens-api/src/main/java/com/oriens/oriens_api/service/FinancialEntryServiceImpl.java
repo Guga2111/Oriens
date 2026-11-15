@@ -27,6 +27,8 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
     private final FinancialEntryRepository financialEntryRepository;
     private final TagRepository tagRepository;
     private final FinancialMapper financialMapper;
+    private final java.time.Clock clock;
+    private final org.springframework.jdbc.core.JdbcTemplate db;
 
     @Override
     @Transactional
@@ -43,7 +45,13 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
 
         FinancialEntry entry = financialMapper.toEntity(entryDTO, userId, tag);
         FinancialEntry entrySaved = financialEntryRepository.save(entry);
+        if(Boolean.TRUE.equals(entryDTO.getIsRecurring())) startProcessing(entrySaved.getId());
         return financialMapper.toDTO(entrySaved);
+    }
+
+    public Page<EntryDTO> filtered(Long owner,LocalDate start,LocalDate end,Long tagId,String search,Pageable page) {
+        if(tagId!=null) tagRepository.findByUserIdAndId(owner,tagId).orElseThrow(()->new TagNotFoundException(tagId));
+        return financialEntryRepository.filtered(owner,start,end,tagId,search==null||search.isBlank()?null:search.strip(),page).map(financialMapper::toDTO);
     }
 
     @Override
@@ -99,8 +107,17 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
                     "Edite a entrada recorrente original (ID: " + entry.getParentEntryId() + ")");
         }
 
+        boolean activating=!Boolean.TRUE.equals(entry.getIsRecurring()) && Boolean.TRUE.equals(entryDTO.getIsRecurring());
+        validateRecurrence(entryDTO);
+        if (!tag.getAllowNegative() && entryDTO.getAmount().signum()<0)
+            throw new BusinessException("A categoria não permite despesas.");
+        if (financialEntryRepository.hasOccurrences(entryId)
+                && (!entry.getEntryDate().equals(entryDTO.getEntryDate()) || entry.getRecurrencePattern()!=entryDTO.getRecurrencePattern()
+                    || !Boolean.TRUE.equals(entryDTO.getIsRecurring())))
+            throw new BusinessException("Esta recorrência já possui ocorrências. Preserve início e frequência; use a data final para encerrá-la.");
         financialMapper.updateEntity(entry, entryDTO, tag);
-        FinancialEntry updatedEntry = financialEntryRepository.save(entry);
+        FinancialEntry updatedEntry = financialEntryRepository.saveAndFlush(entry);
+        if(activating) startProcessing(entryId);
 
         return financialMapper.toDTO(updatedEntry);
     }
@@ -111,6 +128,8 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
         FinancialEntry entry = financialEntryRepository.findByIdAndUserId(entryId, userId)
                 .orElseThrow(() -> new EntryNotFoundException(entryId));
 
+        if (financialEntryRepository.hasOccurrences(entryId))
+            throw new BusinessException("Esta recorrência possui ocorrências. Encerre pela data final para preservar os lançamentos.");
         financialEntryRepository.delete(entry);
     }
 
@@ -128,6 +147,9 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
                 .collect(Collectors.toList());
     }
 
+    private void startProcessing(Long entryId) {
+        db.update("update financial_entry set recurrence_started_on=? where id=?",LocalDate.now(clock.withZone(com.oriens.oriens_api.configuration.ProductClockConfiguration.ZONE)),entryId);
+    }
     private void validateRecurrence(EntryDTO entryDTO) {
         // Se isRecurring = true, recurrencePattern é obrigatório
         if (Boolean.TRUE.equals(entryDTO.getIsRecurring())) {

@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "custom range applied only by explicit Apply",
+    "annual navigation independent from global period",
+    "date lookup opens evidence and restores grid focus",
+    "annual forward returns to original window",
+    "financial chart has working textual table",
+    "category expansion preserves all computed totals"
+  ]
+}
