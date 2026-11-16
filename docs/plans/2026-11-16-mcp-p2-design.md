@@ -11,7 +11,7 @@ aprovado pelo usuário nesta conversa em 2026-11-16. Base: `30b4c85`.
   para MCP (descartado por duplicar invariantes).
 - [x] Apresentar desenho e obter aprovação explícita: “aprovo”.
 - [x] Documentar desenho antes da implementação.
-- [ ] Implementar e registrar evidência reproduzível.
+- [x] Implementar e registrar [evidência reproduzível](2026-11-16-mcp-p2-evidence.md).
 
 Aplicado brainstorming prático sob restrições, padrão 7A da skill
 `brainstorming-skill/references/pattern-categories-and-documentation.md`:

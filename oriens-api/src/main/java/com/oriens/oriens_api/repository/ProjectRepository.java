@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface ProjectRepository extends org.springframework.data.jpa.repository.JpaRepository<Project, Long> {
+public interface ProjectRepository extends org.springframework.data.jpa.repository.JpaRepository<Project, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<Project> {
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Project p where p.id = :id and p.user.id = :ownerId")
     java.util.Optional<Project> lockOwned(@Param("id") Long id, @Param("ownerId") Long ownerId);

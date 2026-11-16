@@ -20,6 +20,9 @@ public class McpController {
     @GetMapping("/integrations/mcp/setup")
     public Map<String,Object> setup(@RequestParam String client,Authentication principal){
         owner.id(principal);
+        if(client.equals("other"))return Map.of("client",client,"resource",props.resource(),"issuer",props.base(),
+            "redirectUris",List.of(),"scopes",new TreeSet<>(McpScopes.ALL),"authorizationRequired",true,
+            "registrationRequired",true,"auditRetentionDays",90);
         if(!Set.of("codex","claude-code").contains(client))throw McpStore.invalid("Cliente ainda não registrado neste ambiente.");
         String id=client.equals("codex")?"oriens-codex":"oriens-claude-code";
         return Map.of("client",client,"resource",props.resource(),"issuer",props.base(),"clientId",id,

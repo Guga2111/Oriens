@@ -4,10 +4,21 @@ import { queryClient } from '@/lib/query-client';
 function financialChanged(userId: number) {
   void queryClient.invalidateQueries({ predicate: query => query.queryKey[0] === 'work' && query.queryKey[1] === userId && query.queryKey[2] === 'statistics' && ['finance', 'financial-evidence'].includes(String(query.queryKey[3])) });
 }
-import { EntryDTO, TagDTO, Page } from '@/types/financial';
+import { EntryDTO, FinancialInput, TagDTO, Page } from '@/types/financial';
 
-export const createEntry = async (userId: number, entry: EntryDTO): Promise<EntryDTO> => {
-  const response = await apiClient.post(`/financial/user/${userId}/entries`, entry);
+/** Never spread read-only response fields into a write. Keys are owned by the UI intention. */
+function input(entry: FinancialInput) {
+  return { amount: entry.amount, entryDate: entry.entryDate, description: entry.description ?? null,
+    tagId: entry.tagId, isRecurring: entry.isRecurring ?? false,
+    recurrencePattern: entry.recurrencePattern ?? null, recurrenceEndDate: entry.recurrenceEndDate ?? null };
+}
+function preconditions(key: string, version?: number) {
+  if (!key) throw new Error('A intenção financeira precisa de uma chave de repetição.');
+  if (version !== undefined && (!Number.isSafeInteger(version) || version < 0)) throw new Error('Recarregue o lançamento para obter sua versão.');
+  return { 'Idempotency-Key': key, ...(version !== undefined ? { 'If-Match': `"${version}"` } : {}) };
+}
+export const createEntry = async (userId: number, entry: FinancialInput, key: string): Promise<EntryDTO> => {
+  const response = await apiClient.post(`/financial/user/${userId}/entries`, input(entry), { headers: preconditions(key) });
   financialChanged(userId);
   return response.data;
 };
@@ -35,14 +46,16 @@ export const getAllEntries = async (
   return response.data;
 };
 
-export const updateEntry = async (userId: number, entryId: number, entry: EntryDTO): Promise<EntryDTO> => {
-  const response = await apiClient.put(`/financial/user/${userId}/entries/${entryId}`, entry);
+export const updateEntry = async (userId: number, entryId: number, entry: EntryDTO, key: string): Promise<EntryDTO> => {
+  if (entry.version === undefined) throw new Error('Recarregue o lançamento para obter sua versão.');
+  const response = await apiClient.put(`/financial/user/${userId}/entries/${entryId}`, input(entry), { headers: preconditions(key, entry.version) });
   financialChanged(userId);
   return response.data;
 };
 
-export const deleteEntry = async (userId: number, entryId: number): Promise<void> => {
-  await apiClient.delete(`/financial/user/${userId}/entries/${entryId}`);
+export const deleteEntry = async (userId: number, entryId: number, version: number, key: string): Promise<void> => {
+  if (version === undefined) throw new Error('Recarregue o lançamento para obter sua versão.');
+  await apiClient.delete(`/financial/user/${userId}/entries/${entryId}`, { headers: preconditions(key, version) });
   financialChanged(userId);
 };
 

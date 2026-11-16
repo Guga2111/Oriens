@@ -5,14 +5,14 @@ import { PeriodOverview } from "@/components/financial/PeriodOverview";
 import type { EntryDTO } from "@/types/financial";
 
 const entries: EntryDTO[] = [
-  { id: 1, amount: 1500.5, entryDate: "2026-11-05", tagId: 1 },
-  { id: 2, amount: 500, entryDate: "2026-11-10", tagId: 1 },
-  { id: 3, amount: -700.25, entryDate: "2026-11-12", tagId: 2 },
-  { id: 4, amount: -300.75, entryDate: "2026-11-20", tagId: 2 },
+  { id: 1, version: 0, amount: 1500.5, entryDate: "2026-11-05", tagId: 1 },
+  { id: 2, version: 0, amount: 500, entryDate: "2026-11-10", tagId: 1 },
+  { id: 3, version: 0, amount: -700.25, entryDate: "2026-11-12", tagId: 2 },
+  { id: 4, version: 0, amount: -300.75, entryDate: "2026-11-20", tagId: 2 },
   // Valor zero não conta nem como receita nem como gasto.
-  { id: 5, amount: 0, entryDate: "2026-11-21", tagId: 2 },
+  { id: 5, version: 0, amount: 0, entryDate: "2026-11-21", tagId: 2 },
   // Outro mês entra só no saldo acumulado.
-  { id: 6, amount: 1000, entryDate: "2026-10-01", tagId: 1 },
+  { id: 6, version: 0, amount: 1000, entryDate: "2026-10-01", tagId: 1 },
 ];
 
 type Props = React.ComponentProps<typeof PeriodOverview>;
@@ -48,7 +48,7 @@ describe("PeriodOverview — resumo do mês", () => {
 
   it("usa --negative quando o saldo do mês é negativo", () => {
     renderOverview({
-      entries: [{ id: 7, amount: -100, entryDate: "2026-11-01", tagId: 2 }],
+      entries: [{ id: 7, version: 0, amount: -100, entryDate: "2026-11-01", tagId: 2 }],
     });
 
     const balanceLabel = screen.getByText("Saldo do mês");
@@ -83,7 +83,7 @@ describe("PeriodOverview — resumo do mês", () => {
   it("usa Empty com as duas ações quando o mês não tem entradas", async () => {
     const user = userEvent.setup();
     const props = renderOverview({
-      entries: [{ id: 8, amount: 100, entryDate: "2026-10-01", tagId: 1 }],
+      entries: [{ id: 8, version: 0, amount: 100, entryDate: "2026-10-01", tagId: 1 }],
       period: { month: 11, year: 2026 },
     });
 

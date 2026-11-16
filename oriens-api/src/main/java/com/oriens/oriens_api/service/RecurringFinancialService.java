@@ -23,6 +23,7 @@ public class RecurringFinancialService {
             (r,i)->new Parent(r.getLong(1),r.getObject(2,LocalDate.class),r.getObject(3,LocalDate.class),r.getObject(4,LocalDate.class),r.getString(5)==null?null:RecurrencePattern.valueOf(r.getString(5))),today);
         int generated=0;
         for(Parent p:parents) {
+            int before=generated;
             if(p.pattern==null)continue;
             LocalDate start=p.start.plusDays(1).isAfter(coverage)?p.start.plusDays(1):coverage;
             if(p.processingFrom.isAfter(start))start=p.processingFrom;
@@ -38,6 +39,7 @@ public class RecurringFinancialService {
                 db.update("update financial_occurrences set entry_id=? where parent_entry_id=? and entry_date=?",id,p.id,d);
                 generated++;
             }
+            if(generated>before) db.update("update financial_entry set version=version+1,updated_at=current_timestamp where id=?",p.id);
         }
         return generated;
     }

@@ -36,6 +36,7 @@ public class FinancialMapper {
     public EntryDTO toDTO(FinancialEntry entry) {
         EntryDTO dto = new EntryDTO();
         dto.setId(entry.getId());
+        dto.setVersion(entry.getVersion());
         dto.setAmount(entry.getAmount());
         dto.setEntryDate(entry.getEntryDate());
         dto.setDescription(entry.getDescription());
@@ -54,7 +55,7 @@ public class FinancialMapper {
         entry.setUserId(userId);
         entry.setAmount(dto.getAmount());
         entry.setEntryDate(dto.getEntryDate());
-        entry.setDescription(dto.getDescription());
+        entry.setDescription(dto.getDescription() == null ? "" : dto.getDescription());
         entry.setTag(tag);
         entry.setIsRecurring(dto.getIsRecurring() != null ? dto.getIsRecurring() : false);
         entry.setRecurrencePattern(dto.getRecurrencePattern());
@@ -66,7 +67,7 @@ public class FinancialMapper {
     public void updateEntity(FinancialEntry entry, EntryDTO dto, Tag tag) {
         entry.setAmount(dto.getAmount());
         entry.setEntryDate(dto.getEntryDate());
-        entry.setDescription(dto.getDescription());
+        entry.setDescription(dto.getDescription() == null ? "" : dto.getDescription());
         entry.setTag(tag);
         entry.setIsRecurring(dto.getIsRecurring() != null ? dto.getIsRecurring() : false);
         entry.setRecurrencePattern(dto.getRecurrencePattern());

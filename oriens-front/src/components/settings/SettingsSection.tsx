@@ -44,7 +44,7 @@ interface SettingRowProps {
 /** Linha de configuração: rótulo e descrição à esquerda, controle à direita. */
 export function SettingRow({ label, description, children }: SettingRowProps) {
   return (
-    <div className="flex items-center justify-between gap-4 p-5">
+    <div className="flex flex-col items-start justify-between gap-4 p-5 sm:flex-row sm:items-center">
       <div className="min-w-0">
         <p className="text-sm font-medium">{label}</p>
         {description && (

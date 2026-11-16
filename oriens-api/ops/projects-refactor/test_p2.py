@@ -15,6 +15,11 @@ import uuid
 
 import db
 import task_labels
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parent.parent/'mcp-account'))
+import migrate as mcp_revision
+import work as mcp_work_revision
+import finance as finance_revision
 import statistics as statistics_revision
 
 
@@ -45,6 +50,7 @@ def main():
             db.apply(db.Database(args))
             task_labels.apply(db.Database(args))
             statistics_revision.apply(db.Database(args))
+            mcp_revision.apply(db.Database(args));mcp_work_revision.apply(db.Database(args));finance_revision.apply(db.Database(args))
         endpoint = subprocess.check_output(['docker', 'port', name, '5432'], text=True).strip()
         port = endpoint.rsplit(':', 1)[1]
         env = dict(os.environ, P2_JDBC_URL=f'jdbc:postgresql://127.0.0.1:{port}/oriens_p2_proof')
@@ -55,8 +61,8 @@ def main():
         subprocess.run(['mvn', '-q', '-Dtest=WorkApiPostgresTest', 'test'], cwd=api, env=env, check=True)
         # Verify JPA validate and every mutation left the sealed SQL catalog unchanged.
         with contextlib.redirect_stdout(io.StringIO()):
-            statistics_revision.apply(db.Database(args))
-        print('P2 PostgreSQL/JPA proof passed; statistics revision catalog seal unchanged.')
+            finance_revision.apply(db.Database(args))
+        print('P2 PostgreSQL/JPA proof passed; current financial revision catalog seal unchanged.')
     finally:
         subprocess.run(['docker', 'rm', '--force', name], check=True)
 

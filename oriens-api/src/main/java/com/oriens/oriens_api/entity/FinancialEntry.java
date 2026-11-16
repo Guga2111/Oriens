@@ -27,6 +27,13 @@ public class FinancialEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(nullable = false)
+    private long version;
+
+    @Column(name = "recurrence_started_on", nullable = false)
+    private LocalDate recurrenceStartedOn;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 

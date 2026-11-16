@@ -25,6 +25,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void | boolean | Promise<void | boolean>;
   description?: ReactNode;
   error?: unknown;
+  confirmDisabled?: boolean;
 }
 
 /**
@@ -41,6 +42,7 @@ export function ConfirmDialog({
   onConfirm,
   description,
   error,
+  confirmDisabled = false,
 }: ConfirmDialogProps) {
   const [failure, setFailure] = useState<unknown>(null);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -80,9 +82,10 @@ export function ConfirmDialog({
         </AlertDialogHeader>
         <WorkFeedback error={error || failure} />
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isConfirming}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel className="min-h-11 max-md:min-h-11" disabled={isConfirming}>Cancelar</AlertDialogCancel>
           <AlertDialogAction
-            disabled={isConfirming}
+            className="min-h-11 max-md:min-h-11"
+            disabled={isConfirming || confirmDisabled}
             onClick={(event) => {
               // Mantém o diálogo aberto até onConfirm terminar.
               event.preventDefault();

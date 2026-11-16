@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react';
+import { isAxiosError } from 'axios';
+import { useCreationAttempt } from '@/hooks/useCreationAttempt';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { useCallback, useState, useEffect } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Loader2, Pencil, Trash2 } from 'lucide-react';
@@ -9,16 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -50,14 +43,10 @@ export function RecurringManagementDialog({
   const [recurringEntries, setRecurringEntries] = useState<EntryDTO[]>([]);
   const [error, setError] = useState('');
   const [deletingEntry, setDeletingEntry] = useState<EntryDTO | null>(null);
+  const deletion = useCreationAttempt();
+  const [deletionStale, setDeletionStale] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      loadRecurringEntries();
-    }
-  }, [open, userId]);
-
-  const loadRecurringEntries = async () => {
+  const loadRecurringEntries = useCallback(async () => {
     setError('');
     setIsLoading(true);
     try {
@@ -68,15 +57,19 @@ export function RecurringManagementDialog({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => { if (open) void loadRecurringEntries(); }, [open, loadRecurringEntries]);
 
   const handleDelete = async () => {
-    if (!deletingEntry) return;
+    if (!deletingEntry || deletionStale) return false;
 
     setError('');
     setIsLoading(true);
     try {
-      await deleteEntry(userId, deletingEntry.id!);
+      const command = deletion.prepare(deletingEntry);
+      await deleteEntry(userId, command.body.id!, command.body.version!, command.key);
+      deletion.reset();
       toast.success('Recorrencia excluida', {
         description: 'A entrada recorrente foi excluida com sucesso.',
       });
@@ -84,7 +77,11 @@ export function RecurringManagementDialog({
       await loadRecurringEntries();
       onEntriesChange();
     } catch (error) {
-      setError('Não foi possível excluir a entrada recorrente. Tente novamente.');
+      deletion.failed(error);
+      if (deletingEntry.version === undefined || isAxiosError(error) && [409, 428].includes(error.response?.status ?? 0)) {
+        setDeletionStale(true); await loadRecurringEntries();
+      }
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -203,29 +200,11 @@ export function RecurringManagementDialog({
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deletingEntry} onOpenChange={() => setDeletingEntry(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusao</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir esta entrada recorrente? As entradas ja geradas
-              automaticamente nao serao afetadas, mas novas entradas nao serao mais criadas.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {error && <FieldError>{error}</FieldError>}
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(event) => { event.preventDefault(); void handleDelete(); }}
-              disabled={isLoading}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog open={!!deletingEntry} onOpenChange={open => {
+        if (!open) { setDeletingEntry(null); deletion.reset(); setDeletionStale(false); }
+      }} title="Excluir recorrência?" objectName={deletingEntry?.description || 'esta recorrência'}
+        confirmLabel="Excluir" confirmDisabled={deletionStale} onConfirm={handleDelete}
+        description={deletionStale ? 'O lançamento mudou. Cancele e selecione-o novamente na lista atualizada.' : 'Uma recorrência com ocorrências deve ser encerrada pela data final. Excluir uma origem sem histórico impede novas ocorrências.'} />
     </>
   );
 }

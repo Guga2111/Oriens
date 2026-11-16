@@ -11,7 +11,7 @@ explicitamente pelo usuário nesta conversa: “aprovo”.
   nos controllers (insuficiente), domínio MCP separado (duplica invariantes).
 - [x] Apresentar desenho e obter aprovação explícita.
 - [x] Documentar antes de implementar.
-- [ ] Implementar e registrar provas reproduzíveis.
+- [x] Implementar e registrar [provas reproduzíveis](2026-11-16-mcp-p3-evidence.md).
 
 Brainstorming sob restrições, padrão 7A da skill (template original):
 

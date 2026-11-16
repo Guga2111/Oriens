@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import({HabitController.class,HabitService.class,FinancialEntryController.class,FinancialEntryServiceImpl.class,
     TagController.class,TagServiceImpl.class,FinancialMapper.class,RecurringFinancialService.class})
-@EnabledIfEnvironmentVariable(named="P2_JDBC_URL",matches="jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_p2_proof")
+@EnabledIfEnvironmentVariable(named="P2_JDBC_URL",matches="jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_(p2|mcp)_proof")
 class StatisticsPostgresTest {
     @MockBean FileStorageService profileFiles;
     @MockBean FileStorageProjectService files;
@@ -193,7 +193,7 @@ class StatisticsPostgresTest {
         db.update("update financial_entry set is_recurring=true,recurrence_pattern='MONTHLY',recurrence_started_on='2026-11-01' where id=?",parent);
         var november=new RecurringFinancialService(db,Clock.fixed(Instant.parse("2026-11-30T15:00:00Z"),ZoneOffset.UTC));
         assertThat(november.generate()).isEqualTo(1);assertThat(november.generate()).isZero();
-        Long child=db.queryForObject("select id from financial_entry where parent_entry_id=?",Long.class,parent);entries.deleteEntry(child,owner);
+        Long child=db.queryForObject("select id from financial_entry where parent_entry_id=?",Long.class,parent);entries.write(owner,"rest:financial",UUID.randomUUID().toString(),new com.oriens.oriens_api.entity.dto.financial.FinancialCommands.Delete(child,0L));
         assertThat(november.generate()).isZero();
         var march=new RecurringFinancialService(db,Clock.fixed(Instant.parse("2027-03-31T15:00:00Z"),ZoneOffset.UTC));
         assertThat(march.generate()).isEqualTo(4);

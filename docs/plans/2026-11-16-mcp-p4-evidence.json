@@ -1,0 +1,220 @@
+{
+  "date": "2026-11-16",
+  "phase": "P4",
+  "productionPublicationPerformed": false,
+  "mcpEnabledByDefault": false,
+  "sharedDatabaseTouched": false,
+  "newSchemaRevision": false,
+  "hostSuites": [
+    {
+      "name": "com.oriens.oriens_api.work.McpP4PostgresTest",
+      "tests": 43,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "name": "com.oriens.oriens_api.security.McpDisabledSecurityTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.security.JwtConfigurationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.work.ProjectWorkPostgresTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.work.StatisticsPostgresTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "name": "com.oriens.oriens_api.work.WorkApiPostgresTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2
+    }
+  ],
+  "clients": {
+    "codex": {
+      "version": "codex-cli 0.167.1",
+      "oauth": true,
+      "initialize": true,
+      "toolsList": true,
+      "toolCall": true,
+      "domainToolCall": true,
+      "domainReplay": true,
+      "productionConsent": true,
+      "productionSetup": true,
+      "inference": false,
+      "applicationJwtPassedToClient": false
+    },
+    "claude": {
+      "version": "2.1.325 (Claude Code)",
+      "oauth": true,
+      "initialize": true,
+      "toolsList": true,
+      "toolCall": true,
+      "domainToolCall": true,
+      "productionConsent": true,
+      "productionSetup": true,
+      "inference": false,
+      "applicationJwtPassedToClient": false,
+      "toolCallNote": "Real CLI with a deterministic Messages fixture on loopback; no external model or message."
+    }
+  },
+  "frontend": {
+    "testFiles": 31,
+    "tests": 161,
+    "failures": 0,
+    "typecheck": "passed",
+    "targetedEslint": "passed",
+    "tasteLintFailures": 0
+  },
+  "browser": {
+    "productionBuild": true,
+    "realIsolatedApi": true,
+    "crossOriginCookie": true,
+    "defaultDeny": true,
+    "projectNamesAndArchived": true,
+    "cancel": true,
+    "loginResume": true,
+    "pkceExchange": true,
+    "permissionReduction": true,
+    "conflictKeepsDraft": true,
+    "historyPagingAndFilter": true,
+    "revocationStopsToken": true,
+    "whatsappPreserved": true,
+    "keyboardAndFocusReturn": true,
+    "widths": [
+      1440,
+      768,
+      390
+    ]
+  },
+  "visual": {
+    "before": {
+      "widths": [
+        1440,
+        768,
+        390
+      ],
+      "failures": 0,
+      "warnings": [
+        {
+          "id": "hero-void",
+          "width": 1440,
+          "message": "30% of the first screen is one empty block (540×720px at 660,120)."
+        },
+        {
+          "id": "heavy-borders",
+          "width": 1440,
+          "message": "7 panel borders are dark against their ground: #dcd2c6 on #fdfcf9 (1.45:1) | #dcd2c6 on #fdfcf9 (1.45:1) | #dcd2c6 on #fdfcf9 (1.45:1)"
+        }
+      ]
+    },
+    "settings": {
+      "widths": [
+        1440,
+        768,
+        390
+      ],
+      "failures": 0,
+      "warnings": [
+        {
+          "id": "hero-void",
+          "width": 1440,
+          "message": "28% of the first screen is one empty block (540×660px at 660,120)."
+        },
+        {
+          "id": "heavy-borders",
+          "width": 1440,
+          "message": "8 panel borders are dark against their ground: #dcd2c6 on #fdfcf9 (1.45:1) | #dcd2c6 on #fdfcf9 (1.45:1) | #dcd2c6 on #fdfcf9 (1.45:1)"
+        }
+      ]
+    },
+    "consent": {
+      "widths": [
+        1440,
+        768,
+        390
+      ],
+      "failures": 0,
+      "warnings": []
+    },
+    "critique": {
+      "design": 7,
+      "usability": 8,
+      "creativity": 6,
+      "content": 8,
+      "overall": 7.2,
+      "allFinalInspectorScreenshotsOpened": true
+    }
+  },
+  "isolatedReleaseSmoke": {
+    "disabledRoutes404": true,
+    "normalLoginPreserved": true,
+    "enableAfterDisablePreservesGrant": true,
+    "migrationRepeatDriftRollback": true
+  },
+  "java17Suites": [
+    {
+      "name": "com.oriens.oriens_api.work.McpP4PostgresTest",
+      "tests": 43,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    {
+      "name": "com.oriens.oriens_api.security.McpDisabledSecurityTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.security.JwtConfigurationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.work.ProjectWorkPostgresTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.oriens.oriens_api.work.StatisticsPostgresTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "name": "com.oriens.oriens_api.work.WorkApiPostgresTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2
+    }
+  ],
+  "hostRuntime": "OpenJDK 25.0.2",
+  "requiredRuntime": "Temurin 17 (maven:3.9.9-eclipse-temurin-17)"
+}

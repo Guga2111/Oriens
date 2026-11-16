@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     "spring.jpa.properties.hibernate.jdbc.time_zone=UTC", "spring.task.scheduling.enabled=false"
 })
 @AutoConfigureMockMvc
-@EnabledIfEnvironmentVariable(named="P2_JDBC_URL", matches="jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_p2_proof")
+@EnabledIfEnvironmentVariable(named="P2_JDBC_URL", matches="jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_(p2|mcp)_proof")
 class WorkApiPostgresTest {
     @Configuration(proxyBeanMethods=false) @org.springframework.boot.test.context.TestComponent @EnableAutoConfiguration
     @EntityScan(basePackageClasses=Project.class)

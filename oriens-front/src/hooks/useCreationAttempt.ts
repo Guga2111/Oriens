@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { isAxiosError } from 'axios';
 
-/** Retain the exact payload and key for an uncertain POST, including its original versions. */
+/** Retain the exact payload and key for an uncertain mutation, including its original versions. */
 export function useCreationAttempt() {
   const attempt = useRef<{ body: string; key: string; createdAt: number } | null>(null);
   const [uncertain, setUncertain] = useState(false);
+  const reset = useCallback(() => { attempt.current = null; setUncertain(false); }, []);
   return {
     uncertain,
     prepare<T>(body: T): { body: T; key: string } {
@@ -16,9 +17,10 @@ export function useCreationAttempt() {
     },
     failed(error: unknown) {
       const status = isAxiosError(error) ? error.response?.status : undefined;
-      if (status && status < 500 && ![408, 425, 429].includes(status)) { attempt.current = null; setUncertain(false); }
+      const code = isAxiosError(error) ? error.response?.data?.code : undefined;
+      if (status && status < 500 && !['RESOURCE_GONE', 'IDEMPOTENCY_CONFLICT'].includes(code) && ![408, 425, 429].includes(status)) { attempt.current = null; setUncertain(false); }
       else setUncertain(true);
     },
-    reset() { attempt.current = null; setUncertain(false); },
+    reset,
   };
 }

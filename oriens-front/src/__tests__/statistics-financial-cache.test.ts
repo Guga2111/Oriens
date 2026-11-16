@@ -17,10 +17,10 @@ beforeEach(() => {
 });
 describe('financeiro — mutações atualizam estatísticas da conta', () => {
   it.each(['create', 'update', 'delete', 'tag'] as const)('%s invalida totais e evidência sem invalidar outra conta ou hábitos', async action => {
-    const entry = { amount: -12.34, entryDate: '2026-11-13', tagId: 1 };
-    if (action === 'create') await createEntry(7, entry);
-    if (action === 'update') await updateEntry(7, 1, entry);
-    if (action === 'delete') await deleteEntry(7, 1);
+    const entry = { id: 1, version: 0, amount: -12.34, entryDate: '2026-11-13', tagId: 1 };
+    if (action === 'create') await createEntry(7, entry, crypto.randomUUID());
+    if (action === 'update') await updateEntry(7, 1, entry, crypto.randomUUID());
+    if (action === 'delete') await deleteEntry(7, 1, 0, crypto.randomUUID());
     if (action === 'tag') await updateTag(7, 1, { name: 'Leitura', color: '#781336' });
     expect(queryClient.getQueryState(finance)?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(evidence)?.isInvalidated).toBe(true);

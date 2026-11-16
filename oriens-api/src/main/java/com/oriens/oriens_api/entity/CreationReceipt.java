@@ -8,7 +8,7 @@ import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Local durable receipt mapping; creation/replay/expiry policy is implemented by P2. */
+/** Shared durable mutation ledger. operation includes the channel/connection namespace. */
 @Entity
 @Table(name = "creation_receipts", uniqueConstraints = @UniqueConstraint(
         columnNames = {"user_id", "operation", "idempotency_key"}))

@@ -8,7 +8,7 @@ import {
 import type { EntryDTO, TagDTO } from "@/types/financial";
 
 function entry(amount: number, entryDate: string, tagId = 1): EntryDTO {
-  return { amount, entryDate, tagId };
+  return { id: 1, version: 0, amount, entryDate, tagId };
 }
 
 describe("financialSummary — somas em centavos", () => {

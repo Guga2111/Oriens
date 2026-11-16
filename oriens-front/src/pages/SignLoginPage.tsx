@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { OriensLogo } from "@/components/common/OriensLogo";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { mcpResume } from '@/lib/mcp';
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/services/api";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -35,6 +36,7 @@ const SignLoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -54,7 +56,7 @@ const SignLoginPage = () => {
 
       if (token) {
         await login(token);
-        navigate('/tasks')
+        navigate(mcpResume(location.search))
       } else {
         throw new Error("Token não encontrado na resposta");
       }
@@ -95,7 +97,7 @@ const SignLoginPage = () => {
 
       if (token) {
         await login(token);
-        navigate('/tasks'); 
+        navigate(mcpResume(location.search));
       }
 
     } catch (e) {

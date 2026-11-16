@@ -1,0 +1,99 @@
+{
+  "date": "2026-11-16",
+  "implementationBase": "30b4c85",
+  "approvedDesignCommit": "3bcfb12",
+  "catalog": {
+    "total": 17,
+    "domain": 16,
+    "financialTools": false
+  },
+  "java17": {
+    "runtime": {
+      "java.runtime.version": "17.0.15+6",
+      "java.version": "17.0.15",
+      "java.vendor": "Eclipse Adoptium"
+    },
+    "suites": {
+      "McpP2PostgresTest": {
+        "tests": 30,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 2
+      },
+      "McpDisabledSecurityTest": {
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "JwtConfigurationTest": {
+        "tests": 2,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "executed": 31,
+    "failures": 0,
+    "errors": 0
+  },
+  "hostClients": {
+    "executed": 32,
+    "failures": 0,
+    "errors": 0,
+    "optionalBrowserSkipped": true,
+    "clients": {
+      "codex": {
+        "version": "codex-cli 0.167.1",
+        "oauth": true,
+        "initialize": true,
+        "toolsList": true,
+        "toolCall": true,
+        "domainToolCall": true,
+        "domainReplay": true,
+        "inference": false,
+        "applicationJwtPassedToClient": false
+      },
+      "claude": {
+        "version": "2.1.325 (Claude Code)",
+        "oauth": true,
+        "initialize": true,
+        "toolsList": true,
+        "toolCall": true,
+        "domainToolCall": true,
+        "inference": false,
+        "applicationJwtPassedToClient": false,
+        "toolCallNote": "Real CLI with a deterministic Messages fixture on loopback; no external model or message."
+      }
+    },
+    "syntheticTasksCreated": 2
+  },
+  "regressions": {
+    "ProjectWorkPostgresTest": {
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "WorkApiPostgresTest": {
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2
+    }
+  },
+  "migration": {
+    "revision": "oriens-mcp-work-v1",
+    "sha256": "aeefd3068943d078191d95d72b12ba1d7e985f27609d0633a6e78b4a0663715b",
+    "apply": true,
+    "repeat": true,
+    "driftRefused": true,
+    "rollback": true,
+    "catalogSealAfterTests": true
+  },
+  "frontendChanged": false,
+  "visualInspectionPerformed": false,
+  "sharedDatabaseChanged": false,
+  "deployed": false,
+  "mcpEnabledByDefault": false
+}

@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+import { useCreationAttempt } from '@/hooks/useCreationAttempt';
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import {
@@ -74,7 +76,7 @@ interface EntryHistoryTableProps {
   entries: EntryDTO[];
   tags: TagDTO[];
   onEdit: (entry: EntryDTO) => void;
-  onDelete: (id: number) => void;
+  onDelete: (entry: EntryDTO, key: string) => Promise<void>;
   isLoading?: boolean;
   pagination: {
     page: number;
@@ -136,6 +138,8 @@ export function EntryHistoryTable({
   onFilterChange,
 }: EntryHistoryTableProps) {
   const [deletingEntry, setDeletingEntry] = useState<EntryDTO | null>(null);
+  const deletion = useCreationAttempt();
+  const [deletionStale, setDeletionStale] = useState(false);
   const [searchInput, setSearchInput] = useState(filters.searchQuery);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
@@ -172,11 +176,15 @@ export function EntryHistoryTable({
 
   const getTagById = (tagId: number) => tags.find((tag) => tag.id === tagId);
 
-  const confirmDelete = () => {
-    if (!deletingEntry?.id) return;
-    const id = deletingEntry.id;
-    setDeletingEntry(null);
-    onDelete(id);
+  const confirmDelete = async () => {
+    if (!deletingEntry?.id || deletionStale) return false;
+    const command = deletion.prepare(deletingEntry);
+    try { await onDelete(command.body, command.key); deletion.reset(); }
+    catch (error) {
+      deletion.failed(error);
+      if (deletingEntry.version === undefined || isAxiosError(error) && [409, 428].includes(error.response?.status ?? 0)) setDeletionStale(true);
+      throw error;
+    }
   };
 
   const renderActions = (entry: EntryDTO) => {
@@ -564,7 +572,7 @@ export function EntryHistoryTable({
       <ConfirmDialog
         open={deletingEntry !== null}
         onOpenChange={(open) => {
-          if (!open) setDeletingEntry(null);
+          if (!open) { setDeletingEntry(null); deletion.reset(); setDeletionStale(false); }
         }}
         title="Excluir entrada?"
         objectName={
@@ -572,6 +580,7 @@ export function EntryHistoryTable({
             ? `"${deletingEntry.description}"`
             : "esta entrada"
         }
+        confirmDisabled={deletionStale}
         confirmLabel="Excluir"
         onConfirm={confirmDelete}
         description={
@@ -583,6 +592,7 @@ export function EntryHistoryTable({
               "esta entrada"
             )}
             ? Esta ação não pode ser desfeita.
+            {deletionStale && " O lançamento mudou. Cancele e selecione-o novamente na lista atualizada."}
           </>
         }
       />

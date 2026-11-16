@@ -29,26 +29,40 @@ public class WorkCreationService {
     private final ObjectMapper mapper;
     private final Clock clock;
     public record Created(Object body, long version, long resourceId) {}
+    public record Completed(Created result, boolean replayed) {}
     public Created create(Long owner, String operation, String header, Object payload,
                           Supplier<Created> action, Predicate<Long> exists) {
+        return execute(owner, operation, header, normalized(payload), 201, action, receipt -> {
+            if (!exists.test(receipt.getResourceId())) throw fail("RESOURCE_GONE", "O recurso criado já foi excluído.");
+        }).result();
+    }
+
+    /** One durable ledger for REST creations and delegated mutations. Caller validates current
+     * authorization before replay; a delete confirmation need not reference a surviving resource. */
+    public Completed execute(Long owner, String operation, String header, Object payload, int status,
+                             Supplier<Created> action, Consumer<CreationReceipt> authorizeReplay) {
         UUID key = key(header);
-        User user = em.find(User.class, owner, LockModeType.PESSIMISTIC_WRITE);
+        // Serialize intentions without blocking FK KEY SHARE checks by the financial scheduler.
+        // FOR UPDATE here would invert owner -> origin against scheduler origin -> FK owner.
+        if (em.createNativeQuery("select id from users where id=:owner for no key update").setParameter("owner",owner).getResultList().isEmpty())
+            throw fail("UNAUTHENTICATED", "Entre novamente para continuar.");
+        User user = em.find(User.class, owner);
         if (user == null) throw fail("UNAUTHENTICATED", "Entre novamente para continuar.");
-        String hash = hash(normalized(payload));
+        String hash = hash(payload);
         Optional<CreationReceipt> previous = receipts.findByUserIdAndOperationAndIdempotencyKey(owner, operation, key);
         if (previous.isPresent()) {
             CreationReceipt receipt = previous.get();
             if (!receipt.getPayloadSha256().equals(hash)) throw fail("IDEMPOTENCY_CONFLICT", "A chave já foi usada com outros dados.");
             if (!receipt.getExpiresAt().isAfter(clock.instant())) throw fail("RESOURCE_GONE", "A tentativa expirou. Consulte os dados antes de criar novamente.");
-            if (!exists.test(receipt.getResourceId())) throw fail("RESOURCE_GONE", "O recurso criado já foi excluído.");
-            return new Created(receipt.getResponseBody(), receipt.getResourceVersion(), receipt.getResourceId());
+            authorizeReplay.accept(receipt);
+            return new Completed(new Created(receipt.getResponseBody(), receipt.getResourceVersion(), receipt.getResourceId()), true);
         }
         Created result = action.get();
         receipts.saveAndFlush(CreationReceipt.builder().user(user).operation(operation).idempotencyKey(key)
-            .payloadSha256(hash).resourceId(result.resourceId()).responseStatus(201)
+            .payloadSha256(hash).resourceId(result.resourceId()).responseStatus(status)
             .responseBody(mapper.valueToTree(result.body())).resourceVersion(result.version())
             .createdAt(clock.instant()).expiresAt(clock.instant().plus(Duration.ofHours(24))).build());
-        return result;
+        return new Completed(result, false);
     }
     /** Discard replay bodies after retention, keep only minimal tombstones to prohibit uncertain retries. */
     @Scheduled(fixedDelay = 3600000)
@@ -57,7 +71,7 @@ public class WorkCreationService {
             .setParameter("empty", mapper.createObjectNode()).setParameter("now", clock.instant()).executeUpdate();
     }
     private UUID key(String header) {
-        if (header == null) throw fail("PRECONDITION_REQUIRED", "Informe Idempotency-Key para criar.");
+        if (header == null) throw fail("PRECONDITION_REQUIRED", "Informe Idempotency-Key para esta intenção.");
         try {
             UUID parsed = UUID.fromString(header);
             if (!parsed.toString().equalsIgnoreCase(header)) throw new IllegalArgumentException();

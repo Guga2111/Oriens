@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-public interface TaskRepository extends JpaRepository<Task, Long> {
+public interface TaskRepository extends JpaRepository<Task, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<Task> {
     @Query("select t from Task t where t.user.id = :owner and t.status <> 'CANCELLED' and (t.plannedDate = :date or (:recovery = true and t.status in ('PENDING','ON_DOING') and (t.plannedDate < :date or t.dueDate <= :date)))")
     List<Task> findDay(@Param("owner") Long owner, @Param("date") LocalDate date, @Param("recovery") boolean recovery);
     @Query("select t from Task t where t.user.id = :owner and t.status <> 'CANCELLED' and t.plannedDate between :start and :end")

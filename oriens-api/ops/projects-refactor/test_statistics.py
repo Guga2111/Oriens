@@ -10,6 +10,11 @@ import time
 import uuid
 import db
 import task_labels
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parent.parent/'mcp-account'))
+import migrate as mcp_revision
+import work as mcp_work_revision
+import finance as finance_revision
 import statistics as revision
 
 
@@ -59,11 +64,13 @@ def main():
         with contextlib.redirect_stdout(io.StringIO()):
             revision.apply(database)
             revision.apply(database)
+        with contextlib.redirect_stdout(io.StringIO()):
+            mcp_revision.apply(database);mcp_work_revision.apply(database);finance_revision.apply(database)
         port=subprocess.check_output(['docker','port',name,'5432'],text=True).strip().rsplit(':',1)[1]
         env=dict(os.environ,P2_JDBC_URL=f'jdbc:postgresql://127.0.0.1:{port}/oriens_p2_proof')
         if options.browser: env['STATISTICS_BROWSER_PROOF']='1'
         subprocess.run(['mvn','-q','-Dtest=StatisticsPostgresTest,WorkApiPostgresTest','test'],cwd=api,env=env,check=True)
-        with contextlib.redirect_stdout(io.StringIO()): revision.apply(database)
+        with contextlib.redirect_stdout(io.StringIO()): finance_revision.apply(database)
         print('PASS statistics migration/repeat/rollback/seal, real JWT/PostgreSQL analysis, habits and finance tests.')
     finally:
         subprocess.run(['docker','rm','--force',name],check=True)

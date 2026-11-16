@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { SettingsSection, SettingRow } from "./SettingsSection";
+import { McpConnections } from './mcp/McpConnections';
 
 /**
  * Integrações (SPEC §11.8): o WhatsApp aparece **apenas com o estado**.
@@ -27,6 +28,7 @@ export function IntegrationsSection() {
           <span className="text-sm text-muted-foreground">Não conectado</span>
         )}
       </SettingRow>
+      <McpConnections />
     </SettingsSection>
   );
 }

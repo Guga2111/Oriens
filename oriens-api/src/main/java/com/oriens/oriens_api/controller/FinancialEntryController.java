@@ -1,6 +1,7 @@
 package com.oriens.oriens_api.controller;
 
 import com.oriens.oriens_api.entity.dto.financial.EntryDTO;
+import com.oriens.oriens_api.entity.dto.financial.FinancialCommands.*;
 import com.oriens.oriens_api.service.FinancialEntryServiceImpl;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -24,11 +25,12 @@ public class FinancialEntryController {
 
     private final FinancialEntryServiceImpl financialEntryService;
     private final com.oriens.oriens_api.security.WorkOwner owner;
+    private final com.fasterxml.jackson.databind.ObjectMapper json;
 
     @PostMapping("/user/{userId}/entries")
-    public ResponseEntity<EntryDTO> createEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @Valid @RequestBody EntryDTO dto) {
+    public ResponseEntity<EntryDTO> createEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @RequestHeader(value="Idempotency-Key",required=false) String key, @Valid @RequestBody Input dto) {
         userId = owner.matching(auth,userId);
-        return new ResponseEntity<>(financialEntryService.createEntry(dto, userId), HttpStatus.CREATED);
+        return new ResponseEntity<>(entry(financialEntryService.write(userId,"rest:financial",key,new Create(dto))), HttpStatus.CREATED);
     }
 
     @GetMapping("/user/{userId}/entries/{id}")
@@ -62,15 +64,15 @@ public class FinancialEntryController {
     }
 
     @PutMapping("/user/{userId}/entries/{id}")
-    public ResponseEntity<EntryDTO> updateEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id, @Valid @RequestBody EntryDTO dto) {
+    public ResponseEntity<EntryDTO> updateEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id, @RequestHeader(value="Idempotency-Key",required=false) String key, @RequestHeader(value="If-Match",required=false) String match, @Valid @RequestBody Input dto) {
         userId = owner.matching(auth,userId);
-        return new ResponseEntity<>(financialEntryService.updateEntry(id, dto, userId), HttpStatus.OK);
+        return new ResponseEntity<>(entry(financialEntryService.write(userId,"rest:financial",key,new Replace(id,WorkHttp.version(match),dto))), HttpStatus.OK);
     }
 
     @DeleteMapping("/user/{userId}/entries/{id}")
-    public ResponseEntity<Void> deleteEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id) {
+    public ResponseEntity<Void> deleteEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @PathVariable Long id, @RequestHeader(value="Idempotency-Key",required=false) String key, @RequestHeader(value="If-Match",required=false) String match) {
         userId = owner.matching(auth,userId);
-        financialEntryService.deleteEntry(id, userId);
+        financialEntryService.write(userId,"rest:financial",key,new Delete(id,WorkHttp.version(match)));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -85,5 +87,9 @@ public class FinancialEntryController {
     public ResponseEntity<List<EntryDTO>> getRecurringEntries(org.springframework.security.core.Authentication auth, @PathVariable Long userId) {
         userId = owner.matching(auth,userId);
         return ResponseEntity.ok(financialEntryService.getRecurringEntries(userId));
+    }
+    private EntryDTO entry(com.oriens.oriens_api.service.WorkCreationService.Completed result) {
+        EntryDTO dto=json.convertValue(result.result().body(),EntryDTO.class);
+        dto.setAmount(dto.getAmount().setScale(2));return dto;
     }
 }

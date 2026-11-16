@@ -1,7 +1,11 @@
 # MCP da conta — SPEC de implementação
 
-Data: 2026-11-16. Status: desenho aprovado; implementação P0/P1 registrada em
-[evidência própria](2026-11-16-mcp-p0-p1-evidence.md). MCP desabilitado por padrão.
+Data: 2026-11-16. Status: desenho aprovado; implementações
+[P0/P1](2026-11-16-mcp-p0-p1-evidence.md),
+[P2](2026-11-16-mcp-p2-evidence.md),
+[P3](2026-11-16-mcp-p3-evidence.md) e
+[P4](2026-11-16-mcp-p4-evidence.md) registradas em evidências próprias.
+MCP desabilitado por padrão.
 Base inspecionada: `784c6d6`. O working tree estava limpo na investigação.
 
 Este documento é a referência funcional, técnica e de aceite para expor projetos,
@@ -984,8 +988,12 @@ não havia endpoint MCP, migração aplicada, dependência instalada, cliente
 configurado, protótipo visual ou prova de runtime decorrente de sua criação.
 
 A implementação posterior de P0/P1 e suas provas estão no
-[registro de evidências](2026-11-16-mcp-p0-p1-evidence.md). O próximo catálogo de
-domínio é P2; a experiência completa e a liberação permanecem em P4. As decisões
+[registro de evidências](2026-11-16-mcp-p0-p1-evidence.md). A implementação P2
+e seus testes estão na [evidência de projetos/objetivos/tarefas](2026-11-16-mcp-p2-evidence.md).
+Finanças protegidas, adaptação REST/frontend e suas provas estão na
+[evidência P3](2026-11-16-mcp-p3-evidence.md). A experiência completa P4 e o smoke de liberação/rollback isolado estão na
+[evidência P4](2026-11-16-mcp-p4-evidence.md); publicação em ambiente público
+ainda depende do runbook operacional. As decisões
 de produto acima estão aprovadas. Versões, extensão para refresh público e
 callbacks efetivamente provados estão registrados na evidência da P0.
 

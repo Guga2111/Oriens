@@ -11,14 +11,14 @@ const tags: TagDTO[] = [
 
 const entries: EntryDTO[] = [
   {
-    id: 1,
+    id: 1, version: 0,
     amount: 1000,
     entryDate: "2026-11-05",
     description: "Salário",
     tagId: 1,
   },
   {
-    id: 2,
+    id: 2, version: 0,
     amount: -250,
     entryDate: "2026-11-06",
     description: "Mercado",
@@ -85,6 +85,6 @@ describe("EntryHistoryTable — histórico independente do mês", () => {
     expect(props.onDelete).not.toHaveBeenCalled();
 
     await user.click(within(dialog).getByRole("button", { name: "Excluir" }));
-    expect(props.onDelete).toHaveBeenCalledWith(2);
+    expect(props.onDelete).toHaveBeenCalledWith(entries[1], expect.any(String));
   });
 });

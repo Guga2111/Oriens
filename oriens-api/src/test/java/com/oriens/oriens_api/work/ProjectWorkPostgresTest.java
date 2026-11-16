@@ -37,7 +37,7 @@ import static org.assertj.core.api.Assertions.*;
         "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.jdbc.time_zone=UTC"
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@EnabledIfEnvironmentVariable(named = "P1_JDBC_URL", matches = "jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_p1_proof")
+@EnabledIfEnvironmentVariable(named = "P1_JDBC_URL", matches = "jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_(p1|mcp)_proof")
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @Import({com.oriens.oriens_api.service.TaskLabelService.class, ProjectWorkService.class, ProjectWorkPostgresTest.FixedClock.class})
 class ProjectWorkPostgresTest {

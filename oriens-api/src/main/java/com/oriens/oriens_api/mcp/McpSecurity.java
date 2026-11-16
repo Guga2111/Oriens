@@ -26,11 +26,13 @@ import java.util.*;
 
 @Configuration(proxyBeanMethods=false)
 public class McpSecurity {
-    private static final String[] RESERVED={"/mcp","/mcp/**","/oauth2/**","/.well-known/oauth-authorization-server","/.well-known/oauth-protected-resource","/.well-known/oauth-protected-resource/**"};
+    private static final String[] RESERVED={"/mcp","/mcp/**","/oauth2/**","/integrations/mcp/**","/.well-known/oauth-authorization-server","/.well-known/oauth-protected-resource","/.well-known/oauth-protected-resource/**"};
     @Bean @Order(0) @ConditionalOnProperty(name="oriens.mcp.enabled",havingValue="false",matchIfMissing=true)
     SecurityFilterChain mcpDisabled(HttpSecurity http) throws Exception {
         return http.securityMatcher(RESERVED).csrf(c->c.disable()).sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(a->a.anyRequest().denyAll()).exceptionHandling(e->e.authenticationEntryPoint((r,s,x)->s.sendError(404))).build();
+            // Do not error-dispatch to /error: that would enter the general JWT chain
+            // and turn this reserved endpoint's 404 into a 401 on a real servlet server.
+            .authorizeHttpRequests(a->a.anyRequest().denyAll()).exceptionHandling(e->e.authenticationEntryPoint((r,s,x)->s.setStatus(404))).build();
     }
     @Bean @ConditionalOnProperty(name="oriens.mcp.enabled",havingValue="true")
     McpFlows mcpFlows(org.springframework.jdbc.core.JdbcTemplate db,McpProperties p,McpAuthorizations auth,McpStore store,McpRateLimiter limits,Clock clock,OAuth2AuthorizationCodeRequestAuthenticationProvider provider) {

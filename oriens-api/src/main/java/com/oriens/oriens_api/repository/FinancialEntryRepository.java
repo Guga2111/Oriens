@@ -21,6 +21,10 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
         "and (cast(:search as string) is null or lower(e.description) like lower(concat('%',cast(:search as string),'%')))")
     Page<FinancialEntry> filtered(@Param("owner") Long owner,@Param("start") LocalDate start,@Param("end") LocalDate end,
         @Param("tag") Long tag,@Param("search") String search,Pageable pageable);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select e from FinancialEntry e where e.id=:id and e.userId=:owner")
+    Optional<FinancialEntry> lockOwned(@Param("id") Long id,@Param("owner") Long owner);
+    boolean existsByIdAndUserId(Long id,Long userId);
     boolean existsByParentEntryId(Long parentEntryId);
     @Query(value="select exists(select 1 from financial_occurrences where parent_entry_id=:parent)",nativeQuery=true)
     boolean hasOccurrences(@Param("parent") Long parent);

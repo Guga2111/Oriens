@@ -48,7 +48,8 @@ it("edição carrega snapshot atual e falha de PATCH permanece inline", async ()
 it.each(["create", "edit"])("entrada %s expõe validação inline de valor e tag", async (mode) => {
   render(mode === "create"
     ? <CreateEntryDialog {...callbacks} tags={[]} />
-    : <EditEntryDialog {...callbacks} tags={[]} entry={{ id: 1, amount: 0, entryDate: "2026-11-13", tagId: 0, description: "" }} />);
+    : <EditEntryDialog {...callbacks} tags={[]} entry={{ id: 1, version: 0, amount: 0, entryDate: "2026-11-13", tagId: 0, description: "" }} />);
+  if (mode === "edit") await userEvent.clear(screen.getByLabelText("Valor"));
   await userEvent.click(screen.getByRole("button", { name: mode === "create" ? "Criar Entrada" : "Salvar Alterações" }));
   expect(screen.getByLabelText("Valor")).toHaveAttribute("aria-invalid", "true");
   expect(screen.getByLabelText("Valor")).toHaveAccessibleDescription("Informe o valor da entrada.");

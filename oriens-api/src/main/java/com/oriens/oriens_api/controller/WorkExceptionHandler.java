@@ -41,11 +41,18 @@ public class WorkExceptionHandler {
     public ResponseEntity<Error> malformed(Exception e, HttpServletRequest request) {
         return response(400, "INVALID_REQUEST", "Verifique o JSON, os tipos e as datas informados.", null, request);
     }
-    @ExceptionHandler({OptimisticLockingFailureException.class, PessimisticLockingFailureException.class,
-        jakarta.persistence.OptimisticLockException.class, jakarta.persistence.PessimisticLockException.class,
+    @ExceptionHandler({OptimisticLockingFailureException.class,
+        jakarta.persistence.OptimisticLockException.class,
         DataIntegrityViolationException.class})
     public ResponseEntity<Error> conflict(Exception e, HttpServletRequest request) {
         return response(409, "VERSION_CONFLICT", "Os dados mudaram. Recarregue antes de salvar.", null, request);
+    }
+    @ExceptionHandler({PessimisticLockingFailureException.class, QueryTimeoutException.class,
+        jakarta.persistence.PessimisticLockException.class, jakarta.persistence.LockTimeoutException.class,
+        org.springframework.transaction.TransactionTimedOutException.class})
+    public ResponseEntity<Error> unavailable(Exception e,HttpServletRequest request) {
+        var error=response(503,"TEMPORARILY_UNAVAILABLE","Aguarde um instante e repita com a mesma chave.",null,request);
+        return ResponseEntity.status(503).headers(error.getHeaders()).header("Retry-After","1").body(error.getBody());
     }
     @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
     public ResponseEntity<Error> validation(org.springframework.web.bind.MethodArgumentNotValidException e, HttpServletRequest request) {

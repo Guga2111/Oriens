@@ -278,22 +278,18 @@ export default function FinancialPage() {
     setEditingEntry(entry);
   };
 
-  const handleDeleteEntry = async (id: number) => {
+  const handleDeleteEntry = async (entry: EntryDTO, key: string) => {
     if (!userId) return;
     try {
-      await deleteEntry(userId, id);
-      toast.success("Entrada excluída", {
-        description: "A entrada foi excluída com sucesso.",
-      });
+      await deleteEntry(userId, entry.id!, entry.version!, key);
+      toast.success("Entrada excluída", { description: "A entrada foi excluída com sucesso." });
       void loadEntries();
       void loadTableData(tablePagination.page, tableFilters);
     } catch (error) {
-      console.error("Falha ao excluir entrada financeira: ", error);
-      toast.error("Erro ao excluir entrada", {
-        description:
-          error.response?.data?.message ||
-          "Não foi possível excluir a entrada.",
-      });
+      // Refresh evidence, but keep the failed deletion and its original version in the dialog.
+      void loadEntries();
+      void loadTableData(tablePagination.page, tableFilters);
+      throw error;
     }
   };
 

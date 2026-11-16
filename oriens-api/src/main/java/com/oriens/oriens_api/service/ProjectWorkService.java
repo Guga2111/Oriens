@@ -56,6 +56,7 @@ public class ProjectWorkService {
         if (command.has("title")) project.setTitle(title(command.getTitle(), 200, "title"));
         if (command.has("description")) project.setDescription(description(command.getDescription()));
         if (command.has("color")) project.setColor(command.getColor());
+        if (command.has("favorite")) project.setFavorite(require(command.getFavorite(), "favorite"));
         em.flush();
         return project;
     }

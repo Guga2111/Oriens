@@ -1,0 +1,194 @@
+{
+  "date": "2026-11-16",
+  "phase": "P3",
+  "designCommit": "8ed77fc",
+  "sharedDatabaseChanged": false,
+  "deployed": false,
+  "mcpEnabledByDefault": false,
+  "migration": {
+    "version": "oriens-mcp-finance-v1",
+    "sha256": "09e17427c5f9c80797c56ad3069fd7847b79047b5a3495a01e847ada331bb762",
+    "appliedAndRepeated": true,
+    "driftRejected": true,
+    "ddlFailureRolledBack": true,
+    "existingAmountsAndClaimsPreserved": true,
+    "existingVersionsZero": true
+  },
+  "backend": {
+    "postgresql": "15.19",
+    "java17": {
+      "version": "17.0.15",
+      "executed": 81,
+      "skipped": 6,
+      "failures": 0,
+      "errors": 0
+    },
+    "hostBrowserRun": {
+      "java": "25.0.2",
+      "executed": 83,
+      "skipped": 4,
+      "suites": [
+        {
+          "name": "McpP3PostgresTest",
+          "tests": 40,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 1
+        },
+        {
+          "name": "StatisticsPostgresTest",
+          "tests": 11,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 1
+        },
+        {
+          "name": "WorkApiPostgresTest",
+          "tests": 17,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 2
+        },
+        {
+          "name": "ProjectWorkPostgresTest",
+          "tests": 16,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "McpDisabledSecurityTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "JwtConfigurationTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ]
+    }
+  },
+  "frontend": {
+    "testFiles": 30,
+    "tests": 154,
+    "failures": 0,
+    "typescript": "passed",
+    "targetedEslint": "passed",
+    "productionBuild": "passed",
+    "browser": {
+      "productionBuild": true,
+      "realIsolatedApi": true,
+      "createRetryAfterCommit": true,
+      "deleteRetryAfterCommit": true,
+      "versionConflictKeepsDraft": true,
+      "explicitReload": true,
+      "recurrenceEndDate": true,
+      "keyboard": true
+    }
+  },
+  "visual": {
+    "widths": [
+      1440,
+      768,
+      390
+    ],
+    "failures": 0,
+    "warnings": [
+      {
+        "id": "heavy-borders",
+        "message": "5 panel borders are dark against their ground: #dcd2c6 on #fdfcf9 (1.45:1) | #dcd2c6 on #fdfcf9 (1.45:1) | #dcd2c6 on #fdfcf9 (1.45:1)"
+      },
+      {
+        "id": "panel-void",
+        "message": "1 card(s) hold a blank band inside: 43px in \"Distribuição do mês\"."
+      }
+    ],
+    "allow": [
+      "edge-text",
+      "palette-cream"
+    ],
+    "score": 7.2,
+    "critique": "2026-11-16-mcp-p3-visual.md",
+    "captures": [
+      {
+        "file": "oriens-front/.taste-skill/p3/after/1440-create.png",
+        "sha256": "9009d2e98f5881067fc83c47619353b847bfe880e2804ef30eff869698b38008"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/1440-edit.png",
+        "sha256": "f68ceb6ad2afcf2b935d551e54352b3c2b42e7a73543be3ccef3dcb171706fe4"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/1440-page.png",
+        "sha256": "67cf0c5d8ea854d724acd8bbe5beb9493208fe1c45d6f0b3baef17b3778c698c"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/390-create-uncertain.png",
+        "sha256": "36157672148160302d05b9ab6a8364eece0ac170b107a7490d75b6aed99b5f5b"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/390-create.png",
+        "sha256": "cdab567165af01ba3a472b4eaeb7565a22eced7d5129c4dfabb19097007f463f"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/390-edit.png",
+        "sha256": "54cdca3d3ec596970048d78af8cbaff3d6e3c1f3af50dfc13358034ba2ff095f"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/390-page.png",
+        "sha256": "c89707b5e24539e7cf6d845c3313e2a2e1596f92cb262351d394760a3f2c1ac1"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/390-version-conflict.png",
+        "sha256": "e9ba192d5b865b91de7cf48902a179a770487d56307a9f133be079830757593a"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/768-create.png",
+        "sha256": "9150e624d7fb5e15a443a8b3da854fc651f5d2caab773500e2a04bce59a2f5e6"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/768-edit.png",
+        "sha256": "062dc9445f3c4ad55707fe71af38ce6e53c81ea5a128c643eb346e90d5ea2c16"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/768-page.png",
+        "sha256": "1166f071154eb56517525998697e5e7c5ce9d11e1b1e14a1962a511c2b4d05e2"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/inspect/desktop-fold.jpg",
+        "sha256": "e1e197cb1cb8a5d3dcbf124a64c3688b0d14358e939ed5236bd1ab137a9a2316"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/inspect/desktop-page-01.jpg",
+        "sha256": "ed3f1f134a65e9b5b5fe683443b946d66a21518d04f4afb25ba14325c2d54cbb"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/inspect/mobile-fold.jpg",
+        "sha256": "4ea12e77779dc36c0fb359b2720c5480fd3938217cebcbe35f87288e45d9ae53"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/inspect/mobile-page-01.jpg",
+        "sha256": "047470d0659a62e77e7b3fd46e3b9e7b84271ee3ec91963fd75f527d2764456e"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/inspect/tablet-fold.jpg",
+        "sha256": "47bcf0a803b3769814b2becbc3fc231249fcc92ae3352476b25ed82cf2c03c9b"
+      },
+      {
+        "file": "oriens-front/.taste-skill/p3/after/inspect/tablet-page-01.jpg",
+        "sha256": "802f2e274807212756d97224097a7ac875506363ec555a79425cbfd989f4103d"
+      }
+    ]
+  },
+  "omitted": [
+    "MCP real client proof (existing P0/P2 evidence; complete P4 flow remains)",
+    "optional older statistics browser test",
+    "two optional older projects/labels browser tests",
+    "shared/public HTTPS deployment and rollback smoke (P4)"
+  ]
+}

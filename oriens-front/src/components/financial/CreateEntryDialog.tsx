@@ -1,10 +1,15 @@
+import { isAxiosError } from 'axios';
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ResponsiveDialog } from '@/components/common/ResponsiveDialog';
+import { DraftDialog } from '@/components/common/DraftDialog';
+import { WorkFeedback } from '@/components/common/WorkFeedback';
+import { useCreationAttempt } from '@/hooks/useCreationAttempt';
+import { financialAmountError } from '@/lib/financial-form';
 import {
   Field,
+  FieldGroup,
   FieldDescription,
   FieldError,
   FieldLabel,
@@ -16,6 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -43,6 +49,8 @@ interface CreateEntryDialogProps {
 export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: CreateEntryDialogProps) {
   const { userId } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const attempt = useCreationAttempt();
+  const [failure, setFailure] = useState<unknown>(null);
 
   const [amount, setAmount] = useState('');
   const [entryDate, setEntryDate] = useState<Date>(new Date());
@@ -57,16 +65,8 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!amount || amount === '0') {
-      newErrors.amount = 'Informe o valor da entrada.';
-    } else {
-      const numAmount = parseFloat(amount);
-      if (!Number.isFinite(numAmount) || numAmount === 0) {
-        newErrors.amount = 'Valor inválido.';
-      } else if (numAmount < -999999999.99 || numAmount > 999999999999.99) {
-        newErrors.amount = 'Valor fora dos limites permitidos.';
-      }
-    }
+    const amountError = financialAmountError(amount);
+    if (amountError) newErrors.amount = amountError;
 
     if (!entryDate) {
       newErrors.entryDate = 'Escolha a data da entrada.';
@@ -89,11 +89,12 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
   };
 
   const handleSubmit = async () => {
-    if (!validate()) return;
+    if (isLoading || !validate()) return;
 
     setIsLoading(true);
+    setFailure(null);
     try {
-      await createEntry(userId!, {
+      const command = attempt.prepare({
         amount: parseFloat(amount),
         entryDate: format(entryDate, 'yyyy-MM-dd'),
         description: description || undefined,
@@ -102,6 +103,8 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
         recurrencePattern: isRecurring && recurrencePattern ? recurrencePattern : undefined,
         recurrenceEndDate: isRecurring && recurrenceEndDate ? format(recurrenceEndDate, 'yyyy-MM-dd') : undefined,
       });
+      await createEntry(userId!, command.body, command.key);
+      attempt.reset();
 
       toast.success('Entrada criada', {
         description: 'A entrada foi criada com sucesso.',
@@ -118,13 +121,8 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      setErrors({ submit: "Não foi possível salvar. Revise os dados e tente novamente." });
-      console.error('Erro ao criar entrada:', error);
-      toast.error('Erro ao criar entrada', {
-        description:
-          error.response?.data?.message ||
-          'Não foi possível salvar a entrada.',
-      });
+      attempt.failed(error);
+      setFailure(error);
     } finally {
       setIsLoading(false);
     }
@@ -133,21 +131,15 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
   const selectedTag = tags.find(tag => tag.id?.toString() === tagId);
 
   return (
-    <ResponsiveDialog
+    <DraftDialog
       open={open}
       onOpenChange={onOpenChange}
+      dirty={Boolean(amount || description || tagId || isRecurring)} busy={isLoading} uncertain={attempt.uncertain}
       title="Nova Entrada"
       description="Adicione uma nova receita ou despesa financeira."
       className="sm:max-w-[500px]"
       footer={
         <>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-          >
-            Cancelar
-          </Button>
           <Button onClick={handleSubmit} disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Criar Entrada
@@ -155,8 +147,12 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
         </>
       }
     >
-        <div className="flex flex-col gap-4">
-          {errors.submit && <FieldError>{errors.submit}</FieldError>}
+        {failure && <div className="mb-4"><WorkFeedback error={failure} message={
+          failure instanceof Error && !isAxiosError(failure) ? failure.message :
+          attempt.uncertain && !(isAxiosError(failure) && [409, 410].includes(failure.response?.status ?? 0))
+            ? "Confirmação indisponível. Seu rascunho foi mantido. Repita pelo botão Criar Entrada para verificar o mesmo pedido sem duplicá-lo." : undefined
+        } /></div>}
+        <fieldset disabled={isLoading || attempt.uncertain} className="min-w-0"><FieldGroup className="gap-4">
           {/* Valor */}
           <Field data-invalid={Boolean(errors.amount)}>
             <FieldLabel htmlFor="amount">Valor</FieldLabel>
@@ -239,7 +235,7 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
                   )}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent><SelectGroup>
                 {tags.map((tag) => (
                   <SelectItem key={tag.id} value={tag.id!.toString()}>
                     <div className="flex items-center gap-2">
@@ -251,7 +247,7 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
                     </div>
                   </SelectItem>
                 ))}
-              </SelectContent>
+              </SelectGroup></SelectContent>
             </Select>
             {errors.tagId && (
               <FieldError id="tag-error">{errors.tagId}</FieldError>
@@ -324,13 +320,13 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
                         {recurrencePattern && RecurrencePatternLabels[recurrencePattern as RecurrencePattern]}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent><SelectGroup>
                       {Object.entries(RecurrencePatternLabels).map(([key, label]) => (
                         <SelectItem key={key} value={key}>
                           {label}
                         </SelectItem>
                       ))}
-                    </SelectContent>
+                    </SelectGroup></SelectContent>
                   </Select>
                   {errors.recurrencePattern && (
                     <FieldError id="recurrencePattern-error">
@@ -375,7 +371,7 @@ export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: Creat
               </div>
             )}
           </div>
-        </div>
-    </ResponsiveDialog>
+        </FieldGroup></fieldset>
+    </DraftDialog>
   );
 }

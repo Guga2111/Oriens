@@ -5,6 +5,9 @@ import com.oriens.oriens_api.entity.embeddable.Location;
 import java.time.*;
 
 public class PatchProject extends PatchFields {
+    private Boolean favorite;
+    public Boolean getFavorite() { return favorite; }
+    public void setFavorite(Boolean value) { supplied("favorite"); favorite = value; }
     private Long version;
     public Long getVersion() { return version; }
     public void setVersion(Long value) { supplied("version"); version = value; }

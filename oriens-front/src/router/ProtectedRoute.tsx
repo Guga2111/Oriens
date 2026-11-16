@@ -1,9 +1,11 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { mcpFlow } from '@/lib/mcp';
 import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
 
 export function ProtectedRoute () {
     const { isAuthenticated, isLoading } = useAuth();
+    const location = useLocation();
 
     if (isLoading) {
     return (
@@ -19,5 +21,6 @@ export function ProtectedRoute () {
         return <Outlet />
     }
 
-    return <Navigate to={'/auth'} replace />
+    const flow = location.pathname === '/config' ? mcpFlow(location.search) : null;
+    return <Navigate to={flow ? `/auth?mcpFlow=${flow}` : '/auth'} replace />
 }

@@ -50,10 +50,12 @@ class McpPostgresTest {
  @EnableJpaRepositories(basePackageClasses=UserRepository.class)
  @Import({com.oriens.oriens_api.CorsConfig.class,McpConfiguration.class,McpSecurity.class,McpTransport.class,McpController.class,McpMaintenance.class,
      SecurityConfig.class,JwtConfiguration.class,WorkOwner.class,UserServiceImpl.class,CustomAuthManager.class,
-     WorkExceptionHandler.class,WorkRequestBodyAdvice.class})
+     WorkExceptionHandler.class,WorkRequestBodyAdvice.class,ProjectWorkService.class,WorkReadService.class,
+     WorkCreationService.class,TaskLabelService.class,ScopedWorkReadService.class,ProjectController.class,TaskController.class,TagController.class,TagServiceImpl.class,FinancialEntryController.class,FinancialEntryServiceImpl.class,FinancialStatisticsService.class,RecurringFinancialService.class,com.oriens.oriens_api.mapper.FinancialMapper.class})
  static class App {
   @Bean BCryptPasswordEncoder passwordEncoder(){return new BCryptPasswordEncoder();}
   @Bean Clock clock(){return Clock.systemUTC();}
+  @Bean FileStorageProjectService projectFiles(){return org.mockito.Mockito.mock(FileStorageProjectService.class);}
  }
  @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired McpStore store;@Autowired UserRepository users;
  @Autowired JdbcTemplate db;@Autowired Algorithm algorithm;@Autowired PlatformTransactionManager manager;
@@ -64,7 +66,7 @@ class McpPostgresTest {
   db.update("delete from mcp_rate_windows");
  }
  User user(){var u=new User();u.setName("MCP sintético");u.setEmail(UUID.randomUUID()+"@example.invalid");u.setPassword(new BCryptPasswordEncoder().encode("synthetic-password"));return users.save(u);}
- String jwt(User u){return "Bearer "+JWT.create().withSubject(u.getEmail()).withClaim("role","USER").withExpiresAt(Instant.now().plusSeconds(600)).sign(algorithm);}
+ String jwt(User u){return "Bearer "+JWT.create().withSubject(u.getEmail()).withClaim("userId",u.getId()).withClaim("username",u.getName()).withClaim("role","USER").withExpiresAt(Instant.now().plusSeconds(600)).sign(algorithm);}
  JsonNode body(MvcResult r)throws Exception{return json.readTree(r.getResponse().getContentAsString());}
  String str(Object v)throws Exception{return json.writeValueAsString(v);}
  record Flow(UUID id,Cookie cookie,String verifier,String callback,String client){}
@@ -223,6 +225,11 @@ class McpPostgresTest {
    assertThat(process.exitValue()).withFailMessage("CLI proof failed: %s",output).isZero();
    var evidence=json.readTree(java.nio.file.Path.of("target/mcp-client-proof.json").toFile());
    assertThat(evidence.path("codex").path("toolCall").asBoolean()).isTrue();
+   if("1".equals(System.getenv("MCP_P2_PROOF"))) {
+    assertThat(evidence.path("codex").path("domainReplay").asBoolean()).isTrue();
+    assertThat(evidence.path("claude").path("domainToolCall").asBoolean()).isTrue();
+    assertThat(db.queryForObject("select count(*) from tasks where user_id=? and title='Tarefa sintética via cliente P2'",Long.class,owner)).isEqualTo(2);
+   }
    assertThat(db.queryForObject("select count(*) from mcp_audit_events a join mcp_connections c on a.connection_id=c.id where c.user_id=? and c.name='CLI sintético' and a.action='oriens_get_context' and a.result='SUCCESS'",Long.class,owner)).isPositive();
   } finally {if(process.isAlive())process.destroyForcibly();}
  }

@@ -33,5 +33,6 @@ class McpDisabledSecurityTest {
   mvc.perform(get("/ordinary-proof")).andExpect(status().isUnauthorized());
   mvc.perform(get("/mcp").header("Authorization",jwt)).andExpect(status().isNotFound());
   mvc.perform(get("/oauth2/authorize").header("Authorization",jwt)).andExpect(status().isNotFound());
+  mvc.perform(get("/integrations/mcp/connections").header("Authorization",jwt)).andExpect(status().isNotFound());
  }
 }

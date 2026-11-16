@@ -1,15 +1,19 @@
-export interface EntryDTO {
-  id?: number;
+export interface FinancialInput {
   amount: number;
-  entryDate: string; 
-  description?: string;
+  entryDate: string;
+  description?: string | null;
   tagId: number;
   isRecurring?: boolean;
-  recurrencePattern?: RecurrencePattern;
-  recurrenceEndDate?: string;
-  parentEntryId?: number;
+  recurrencePattern?: RecurrencePattern | null;
+  recurrenceEndDate?: string | null;
+}
+
+export interface EntryDTO extends FinancialInput {
+  id: number;
+  version: number;
+  parentEntryId?: number | null;
   createdAt?: string;
-  updatedAt?: string;
+  updatedAt?: string | null;
 }
 
 export enum RecurrencePattern {
