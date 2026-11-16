@@ -29,15 +29,10 @@ apiClient.interceptors.response.use(response => {
 });
 
 export const getDashboardData = async (userId: string | number, signal?: AbortSignal): Promise<DashboardData> => {
-    try {
-        const response = await apiClient.get<DashboardData>(
-            `/statistics/user/${userId}/dashboard`, { signal }
-        );
-        return response.data;
-    } catch (error) {
-        console.error("Erro ao buscar dados do dashboard:", error);
-        throw error;
-    }
+    const response = await apiClient.get<DashboardData>(
+        `/statistics/user/${userId}/dashboard`, { signal }
+    );
+    return response.data;
 };
 
 export default apiClient;

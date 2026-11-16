@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { OriensLogo } from "@/components/common/OriensLogo";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/services/api";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -226,9 +226,9 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                   <div className="text-center text-sm">
                     <Dialog open={isForgotModalOpen} onOpenChange={handleModalOpenChange}>
                       <DialogTrigger asChild>
-                        <button type="button" className="text-primary hover:underline focus:outline-none">
+                        <Button type="button" variant="link" className="h-auto p-0 font-normal">
                           Esqueceu sua senha?
-                        </button>
+                        </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-md">
                         {!forgotEmailSent ? (
@@ -369,9 +369,9 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                     />
                     <Label htmlFor="terms" className="text-xs text-muted-foreground">
                       Eu li e concordo com os{" "}
-                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                         Termos de Serviço
-                      </a>
+                      </Link>
                       .
                     </Label>
                   </div>
