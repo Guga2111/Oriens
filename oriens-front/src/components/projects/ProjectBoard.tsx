@@ -31,8 +31,8 @@ const boardCollision: CollisionDetection = args => {
 type Column = BoardResponse['columns'][number];
 type Move = (task: WorkTask, columnId: number, beforeTaskId?: number | null) => Promise<void>;
 
-export function ProjectBoard({ board, pendingColumnId, onEdit, onAdd, onObjective }: {
-  board: BoardResponse; pendingColumnId: number; onEdit: (task: WorkTask) => void; onAdd: (column: number) => void; onObjective: (id: number) => void;
+export function ProjectBoard({ board, pendingColumnId, onOpen, onEdit, onAdd, onObjective }: {
+  board: BoardResponse; pendingColumnId: number; onOpen: (task: WorkTask) => void; onEdit: (task: WorkTask) => void; onAdd: (column: number) => void; onObjective: (id: number) => void;
 }) {
   const writes = useTaskWrites();
   const mobile = useMediaQuery('(max-width: 639px)');
@@ -97,7 +97,7 @@ export function ProjectBoard({ board, pendingColumnId, onEdit, onAdd, onObjectiv
         <div className="flex min-w-0 gap-4 pb-4" aria-label="Colunas do quadro">
           {columns.map(column => <BoardColumn key={column.id} column={column} filtered={board.filtered} disabled={moving !== null} mobile={mobile} onAdd={onAdd}>
             <SortableContext items={board.tasks.filter(t => t.columnId === column.id).map(t => t.id)} strategy={verticalListSortingStrategy}>
-              {board.tasks.filter(t => t.columnId === column.id).map((task, index, tasks) => <BoardTask key={task.id} task={task} column={column} columns={board.columns} tasks={tasks} index={index} filtered={board.filtered} disabled={moving !== null} busy={moving === task.id} mobile={mobile} pendingColumnId={pendingColumnId} onEdit={onEdit} onObjective={onObjective} onDelete={setDeleting} move={move} />)}
+              {board.tasks.filter(t => t.columnId === column.id).map((task, index, tasks) => <BoardTask key={task.id} task={task} column={column} columns={board.columns} tasks={tasks} index={index} filtered={board.filtered} disabled={moving !== null} busy={moving === task.id} mobile={mobile} pendingColumnId={pendingColumnId} onOpen={onOpen} onEdit={onEdit} onObjective={onObjective} onDelete={setDeleting} move={move} />)}
             </SortableContext>
           </BoardColumn>)}
         </div>
@@ -126,16 +126,16 @@ function BoardColumn({ column, filtered, disabled, mobile, onAdd, children }: {
   </section>;
 }
 
-function BoardTask({ task, column, columns, tasks, index, filtered, disabled, busy, mobile, pendingColumnId, onEdit, onObjective, onDelete, move }: {
+function BoardTask({ task, column, columns, tasks, index, filtered, disabled, busy, mobile, pendingColumnId, onOpen, onEdit, onObjective, onDelete, move }: {
   task: WorkTask; column: Column; columns: Column[]; tasks: WorkTask[]; index: number; filtered: boolean; disabled: boolean; busy: boolean; mobile: boolean; pendingColumnId: number;
-  onEdit: (task: WorkTask) => void; onObjective: (id: number) => void; onDelete: (task: WorkTask) => void; move: Move;
+  onOpen: (task: WorkTask) => void; onEdit: (task: WorkTask) => void; onObjective: (id: number) => void; onDelete: (task: WorkTask) => void; move: Move;
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: disabled || mobile, animateLayoutChanges: () => false });
   const overdue = !!task.dueDate && task.dueDate < productNow().date && ['PENDING', 'ON_DOING'].includes(task.status);
-  return <article ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={cn('min-w-0 rounded-md border border-border/50 bg-card p-3', isDragging && 'opacity-40')} aria-busy={busy}>
+  return <article ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={cn('relative min-w-0 rounded-md border border-border/50 bg-card p-3 transition-colors hover:bg-accent/40', isDragging && 'opacity-40')} aria-busy={busy}>
     <div className="mb-2 flex items-center justify-between gap-2">
       <Badge variant={PRIORITY[task.priority].badge}>{PRIORITY[task.priority].label}</Badge>
-      <div className="flex items-center">
+      <div className="relative z-10 flex items-center">
         {!mobile && <Button ref={setActivatorNodeRef} {...attributes} {...listeners} variant="ghost" size="icon" className="touch-none cursor-grab active:cursor-grabbing" disabled={disabled} aria-label={`Arrastar ${task.title}`}><GripVertical aria-hidden /></Button>}
         <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label={`Ações da tarefa ${task.title}`} disabled={disabled}><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger>
           <DropdownMenuContent align="end"><DropdownMenuGroup>
@@ -152,8 +152,9 @@ function BoardTask({ task, column, columns, tasks, index, filtered, disabled, bu
       </div>
     </div>
     <TaskLabels labels={task.labels} />
-    <Button variant="ghost" className="h-auto min-h-10 w-full justify-start whitespace-normal p-0 text-left" onClick={() => onEdit(task)}>{task.title}</Button>
-    {task.objective && <Button variant="link" className="mt-1 h-auto min-h-10 w-full justify-start whitespace-normal px-0 text-left" onClick={() => onObjective(task.objectiveId!)}>{task.objective.title}</Button>}
+    {/* The title's ::after covers the card, so a click anywhere opens the details. No press transform: it would shrink the overlay to the title. */}
+    <Button variant="ghost" className="h-auto min-h-10 w-full justify-start whitespace-normal p-0 text-left after:absolute after:inset-0 after:rounded-md after:content-[''] hover:bg-transparent active:transform-none" aria-haspopup="dialog" onClick={() => onOpen(task)}>{task.title}</Button>
+    {task.objective && <Button variant="link" className="relative z-10 mt-1 h-auto min-h-10 w-full justify-start whitespace-normal px-0 text-left" onClick={() => onObjective(task.objectiveId!)}>{task.objective.title}</Button>}
     <div className="mt-3 flex flex-col gap-2 text-xs text-muted-foreground">
       <p className="flex items-center gap-2"><CalendarDays className="size-4 shrink-0" aria-hidden />{task.plannedDate ? `Planejada: ${formatDue(task.plannedDate)}` : 'Sem planejamento'}{task.startTime && <><Clock className="size-3 shrink-0" aria-hidden />{task.startTime.slice(0, 5)}</>}</p>
       {task.dueDate && <p className={cn('flex items-center gap-2', overdue && 'text-negative')}><Flag className="size-4 shrink-0" aria-hidden />Prazo: {formatDue(task.dueDate)}{overdue ? ' · Ultrapassado' : ''}</p>}

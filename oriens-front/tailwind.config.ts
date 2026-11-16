@@ -18,7 +18,7 @@ export default {
         spacing: { page: 'var(--page-gutter)', overlay: 'var(--overlay-gutter)' },
         maxHeight: { dialog: 'var(--dialog-max-height)' },
         maxWidth: { 'task-dialog': 'var(--dialog-task-width)', 'project-dialog': 'var(--dialog-project-width)', 'board-dialog': 'var(--dialog-board-width)' },
-        gridTemplateColumns: { 'project-detail': 'var(--project-detail-columns)' },
+        gridTemplateColumns: { 'project-detail': 'var(--project-detail-columns)', 'task-details': 'var(--task-details-columns)' },
         width: { 'board-column': 'var(--board-column-width)', 'popover-trigger': 'var(--radix-popover-trigger-width)' },
         aspectRatio: { 'project-cover': 'var(--project-cover-ratio)' },
   		fontFamily: {

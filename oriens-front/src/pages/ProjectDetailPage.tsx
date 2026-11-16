@@ -13,6 +13,7 @@ import { ProjectObjectives } from '@/components/projects/ProjectObjectives';
 import { ProjectBoard } from '@/components/projects/ProjectBoard';
 import { BoardSettings } from '@/components/projects/BoardSettings';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
+import { TaskDetailsDialog } from '@/components/tasks/TaskDetailsDialog';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { ResponsiveDialog } from '@/components/common/ResponsiveDialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -53,7 +54,13 @@ function ProjectDetail({ id }: { id: number }) {
   const clearFilters = () => setParams(previous => { const next = new URLSearchParams(previous); ['objective', 'planning', 'overdue', 'open'].forEach(k => next.delete(k)); return next; });
   if (!project) return <div className="min-w-0 w-full"><Button asChild variant="link"><Link to="/projects">Voltar a Projetos</Link></Button>{query.isPending ? <div className="mt-4 flex flex-col gap-4" aria-label="Carregando projeto"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 w-full" /></div> : <WorkFeedback error={query.error} retry={() => void query.refetch()} />}</div>;
   const development = project.mode === 'DEVELOPMENT'; const s = project.summary;
-  const showTask = (task: WorkTask) => setEditor({ task });
+  const editTask = (task: WorkTask) => setEditor({ task });
+  // The open task lives in the URL (?task=ID) so details survive reloads and can be shared.
+  const taskId = Number(params.get('task'));
+  const openTask = Number.isSafeInteger(taskId) && taskId > 0 ? taskId : 0;
+  const showTask = (task: WorkTask) => setParams(previous => { const next = new URLSearchParams(previous); next.set('task', String(task.id)); return next; }, { replace: true });
+  const closeTask = () => setParams(previous => { const next = new URLSearchParams(previous); next.delete('task'); return next; }, { replace: true });
+  const showObjective = (objective: number) => setParams(previous => { const next = new URLSearchParams(previous); next.delete('task'); next.set('tab', 'objectives'); next.set('selectedObjective', String(objective)); return next; });
   return <div className="min-w-0 w-full tabular-nums">
     {project.imageUrl && <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="mb-6 aspect-project-cover w-full rounded-lg object-cover" />}
     <PageHeader title={project.title} description={project.description || (development ? 'Desenvolvimento' : 'Simples')} isLoading={query.isFetching}
@@ -86,7 +93,7 @@ function ProjectDetail({ id }: { id: number }) {
         <Label className="flex min-h-11 items-center gap-2 font-normal leading-5"><Checkbox checked={!!filters.open} onCheckedChange={checked => setParam('open', checked === true ? '1' : '')} />Somente abertas</Label></div>}
       <WorkFeedback error={board.error} retry={() => void board.refetch()} />
       {board.isPending && <Skeleton className="h-64 w-full" />}
-      {board.data && <><p className="mb-3 text-sm text-muted-foreground">{board.data.visible.totalTasks} de {board.data.total.totalTasks} tarefas visíveis</p><ProjectBoard board={board.data} pendingColumnId={project.defaultPendingColumnId!} onEdit={showTask} onAdd={columnId => setEditor({ columnId })} onObjective={objective => { setParams(previous => { const next = new URLSearchParams(previous); next.set('tab', 'objectives'); next.set('selectedObjective', String(objective)); return next; }); }} /></>}
+      {board.data && <><p className="mb-3 text-sm text-muted-foreground">{board.data.visible.totalTasks} de {board.data.total.totalTasks} tarefas visíveis</p><ProjectBoard board={board.data} pendingColumnId={project.defaultPendingColumnId!} onOpen={showTask} onEdit={editTask} onAdd={columnId => setEditor({ columnId })} onObjective={showObjective} /></>}
       </TabsContent>
       <TabsContent value="objectives"><WorkFeedback error={allBoard.error} retry={() => void allBoard.refetch()} /><ProjectObjectives project={project} tasks={allBoard.data?.tasks} onAddTask={objectiveId => setEditor({ objectiveId, columnId: project.defaultPendingColumnId! })} onEditTask={showTask} selectedObjective={Number(params.get('selectedObjective')) || undefined} /></TabsContent>
     </Tabs> : <div className="mt-6 grid min-w-0 items-start gap-6 xl:grid-cols-project-detail">
@@ -109,6 +116,9 @@ function ProjectDetail({ id }: { id: number }) {
     <ConfirmDialog error={write.error} open={converting} onOpenChange={setConverting} title="Usar quadro de tarefas?" objectName={project.title} confirmLabel="Converter para desenvolvimento" description="Seus objetivos serão preservados. O quadro começa com A fazer, Fazendo e Concluídas, sem criar tarefas. A conversão não pode ser desfeita."
       onConfirm={async () => { try { await write.mutateAsync({ action: 'convert', id, version: project.version }); return true; } catch { return false; } }} />
     {settings && board.data && <BoardSettings project={project} board={board.data} onReload={async () => { await query.refetch(); return (await board.refetch()).data; }} onClose={() => setSettings(false)} />}
+    {development && openTask > 0 && !editor && <TaskDetailsDialog key={openTask} taskId={openTask} projectId={project.id} columns={board.data?.columns}
+      placeholder={board.data?.tasks.find(t => t.id === openTask) ?? allBoard.data?.tasks.find(t => t.id === openTask)}
+      onClose={closeTask} onEdit={editTask} onObjective={showObjective} />}
     {editor && <TaskEditor open onOpenChange={v => { if (!v) setEditor(null); }} task={editor.task} projectId={project.id} columnId={editor.columnId} objectiveId={editor.objectiveId} />}
   </div>;
 }

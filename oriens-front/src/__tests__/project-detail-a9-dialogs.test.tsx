@@ -69,7 +69,7 @@ it('troca de projeto exige coluna explícita e remove objetivo com aviso', async
   await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', expect.objectContaining({ projectId: 10, objectiveId: null, columnId: 22, projectVersion: 4, targetProjectVersion: 6 })));
 });
 it('mover pelo menu usa o mesmo PATCH, e filtros retiram reordenação oculta', async () => {
-  renderWork(<ProjectBoard pendingColumnId={11} board={{ ...board, filtered: true }} onEdit={vi.fn()} onAdd={vi.fn()} onObjective={vi.fn()} />);
+  renderWork(<ProjectBoard pendingColumnId={11} board={{ ...board, filtered: true }} onOpen={vi.fn()} onEdit={vi.fn()} onAdd={vi.fn()} onObjective={vi.fn()} />);
   await userEvent.click(screen.getByRole('button', { name: `Ações da tarefa ${task.title}` }));
   expect(screen.queryByRole('menuitem', { name: 'Mover acima' })).toBeNull();
   await userEvent.click(screen.getByRole('menuitem', { name: 'Concluídas · Concluída' }));

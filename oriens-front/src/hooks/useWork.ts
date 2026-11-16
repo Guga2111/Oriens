@@ -54,10 +54,11 @@ export function useWorkProject(id: number) {
   return useQuery({ queryKey: workKey(userId, 'projects/detail', id), enabled: userId !== null && id > 0,
     queryFn: ({ signal }) => projectService.project(id, signal) });
 }
-export function useTaskDetail(id: number) {
+/** `placeholder` shows a confirmed list snapshot while the detail is fetched. */
+export function useTaskDetail(id: number, placeholder?: WorkTask) {
   const { userId } = useAuth();
-  return useQuery({ queryKey: workKey(userId, 'tasks/detail', id), enabled: userId !== null,
-    queryFn: ({ signal }) => taskService.task(id, signal) });
+  return useQuery({ queryKey: workKey(userId, 'tasks/detail', id), enabled: userId !== null && id > 0,
+    placeholderData: placeholder, queryFn: ({ signal }) => taskService.task(id, signal) });
 }
 export function useProjectBoard(id: number, filters: BoardFilters = {}) {
   const { userId } = useAuth();

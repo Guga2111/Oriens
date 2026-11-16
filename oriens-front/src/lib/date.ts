@@ -1,4 +1,6 @@
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { productDate, productNow } from "./product-time";
 
 /**
  * Interpreta `yyyy-MM-dd` (ou um ISO com hora) como data LOCAL, sem
@@ -49,4 +51,13 @@ export function formatDueDistance(value: Date): string {
   if (days === 0) return "hoje";
   if (days === 1) return "amanhã";
   return `em ${days} dias`;
+}
+
+/**
+ * Data por extenso no dia do produto: `18 de novembro de 2026`. Aceita dia
+ * (`yyyy-MM-dd`) ou instante ISO, convertido para o fuso do produto.
+ */
+export function formatLongDate(value: string): string {
+  const day = value.includes("T") ? productNow(new Date(value)).date : value;
+  return format(productDate(day), "d 'de' MMMM 'de' yyyy", { locale: ptBR });
 }

@@ -20,6 +20,7 @@
     --dialog-project-width: 35rem;
     --dialog-board-width: 42.5rem;
     --project-detail-columns: minmax(0, 1fr) 20rem;
+    --task-details-columns: 9rem minmax(0, 1fr);
     --board-column-width: 19rem;
     --project-cover-ratio: 3 / 1;
     /* Marca (inalterada — SPEC §9.1) */
