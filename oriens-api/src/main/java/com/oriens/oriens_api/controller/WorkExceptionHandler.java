@@ -11,7 +11,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.dao.*;
 import java.util.*;
 
-@RestControllerAdvice(assignableTypes = {ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, TagController.class})
+@RestControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, TagController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class WorkExceptionHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WorkExceptionHandler.class);
@@ -21,6 +21,10 @@ public class WorkExceptionHandler {
     public ResponseEntity<Error> domain(WorkDomainException e, HttpServletRequest request) {
         int status = switch(e.getCode()) {
             case "NOT_FOUND" -> 404;
+            case "FORBIDDEN" -> 403;
+            case "RATE_LIMITED" -> 429;
+            case "PAYLOAD_TOO_LARGE" -> 413;
+            case "REAUTHORIZATION_REQUIRED" -> 409;
             case "UNAUTHENTICATED" -> 401;
             case "PRECONDITION_REQUIRED" -> 428;
             case "VERSION_CONFLICT", "IDEMPOTENCY_CONFLICT" -> 409;

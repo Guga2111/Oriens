@@ -1,0 +1,80 @@
+{
+  "date": "2026-11-16",
+  "baseCommit": "e4efeb2",
+  "designCommit": "cdd7186",
+  "migrationSha256": "e01fb6cbf335d68834b0dfa9c031c2d107a6bb2e35da6190e5ca7a4a70f53665",
+  "dependencies": {
+    "springBoot": "3.5.6",
+    "springAuthorizationServer": "1.5.2",
+    "mcpSdk": "0.18.3",
+    "postgresql": "15.19",
+    "javaCompatibilityRuntime": "Temurin 17.0.15"
+  },
+  "suites": {
+    "work.McpPostgresTest": {
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2
+    },
+    "security.McpDisabledSecurityTest": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "security.JwtConfigurationTest": {
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "work.StatisticsPostgresTest": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "work.WorkApiPostgresTest": {
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2
+    }
+  },
+  "clients": {
+    "codex": {
+      "version": "codex-cli 0.167.1",
+      "oauth": true,
+      "initialize": true,
+      "toolsList": true,
+      "toolCall": true,
+      "inference": false,
+      "applicationJwtPassedToClient": false
+    },
+    "claude": {
+      "version": "2.1.325 (Claude Code)",
+      "oauth": true,
+      "initialize": true,
+      "toolsList": true,
+      "toolCall": true,
+      "inference": false,
+      "applicationJwtPassedToClient": false,
+      "toolCallNote": "Real CLI with a deterministic Messages fixture on loopback; no external model or message."
+    }
+  },
+  "browser": {
+    "crossOrigin": true,
+    "httpOnlyCorrelation": true,
+    "cookieAloneIsNotIdentity": true,
+    "jwtAloneCannotClaimExistingFlow": true,
+    "consent": true,
+    "pkceExchange": true,
+    "jwtNeverInUrl": true,
+    "productionUi": false
+  },
+  "sharedDatabaseChanged": false,
+  "deployed": false,
+  "productionUi": false,
+  "defaultEnabled": false
+}

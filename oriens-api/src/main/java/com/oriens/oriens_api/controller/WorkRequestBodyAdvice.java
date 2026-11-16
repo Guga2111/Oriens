@@ -9,7 +9,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAd
 import java.lang.reflect.Type;
 import java.io.IOException;
 
-@ControllerAdvice(assignableTypes = {ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class})
+@ControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class})
 public class WorkRequestBodyAdvice extends RequestBodyAdviceAdapter {
     private final ObjectMapper strict;
     public WorkRequestBodyAdvice(ObjectMapper mapper) {
@@ -40,7 +40,10 @@ public class WorkRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override public boolean supports(MethodParameter parameter, Type type, Class<? extends HttpMessageConverter<?>> converter) { return true; }
     @Override public HttpInputMessage beforeBodyRead(HttpInputMessage input, MethodParameter parameter, Type type,
             Class<? extends HttpMessageConverter<?>> converter) throws IOException {
-        byte[] bytes = input.getBody().readAllBytes();
+        byte[] bytes = parameter.getDeclaringClass() == com.oriens.oriens_api.mcp.McpController.class
+            ? input.getBody().readNBytes(262145) : input.getBody().readAllBytes();
+        if (parameter.getDeclaringClass() == com.oriens.oriens_api.mcp.McpController.class && bytes.length > 262144)
+            throw new com.oriens.oriens_api.exception.WorkDomainException("PAYLOAD_TOO_LARGE", null, "A solicitação excede 256 KiB.");
         try {
             strict.readValue(bytes, strict.constructType(type));
         } catch (IOException e) { throw new HttpMessageNotReadableException("Invalid request body", e, input); }

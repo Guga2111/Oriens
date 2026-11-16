@@ -1,6 +1,7 @@
 # MCP da conta — SPEC de implementação
 
-Data: 2026-11-16. Status: desenho aprovado; implementação não iniciada.
+Data: 2026-11-16. Status: desenho aprovado; implementação P0/P1 registrada em
+[evidência própria](2026-11-16-mcp-p0-p1-evidence.md). MCP desabilitado por padrão.
 Base inspecionada: `784c6d6`. O working tree estava limpo na investigação.
 
 Este documento é a referência funcional, técnica e de aceite para expor projetos,
@@ -976,16 +977,17 @@ Não usar contas, credenciais ou registros reais nos fixtures. Não transmitir
 mensagens a terceiros para testar. Dados de teste devem ser sintéticos e o
 banco isolado deve ser identificado e removido pelos próprios runners.
 
-## 19. Situação desta entrega e transição
+## 19. Situação da entrega original da SPEC e transição
 
-Esta entrega contém somente a SPEC. Não há endpoint MCP, migração aplicada,
-dependência instalada, cliente configurado, protótipo visual ou prova de runtime
-executada por sua criação.
+A entrega original deste documento continha somente a SPEC. Naquele momento
+não havia endpoint MCP, migração aplicada, dependência instalada, cliente
+configurado, protótipo visual ou prova de runtime decorrente de sua criação.
 
-O próximo trabalho é a P0, com esta SPEC como contrato e registro de evidências
-em documento próprio. As decisões de produto acima estão aprovadas; versões
-exatas de dependências, extensão necessária para refresh público e callbacks
-efetivos são resultados obrigatórios da prova, não fatos presumidos.
+A implementação posterior de P0/P1 e suas provas estão no
+[registro de evidências](2026-11-16-mcp-p0-p1-evidence.md). O próximo catálogo de
+domínio é P2; a experiência completa e a liberação permanecem em P4. As decisões
+de produto acima estão aprovadas. Versões, extensão para refresh público e
+callbacks efetivamente provados estão registrados na evidência da P0.
 
 Mudanças que exijam substituir login, reduzir garantias aprovadas, ampliar o
 acesso a dados, criar um serviço externo ou migrar a stack exigem uma proposta
