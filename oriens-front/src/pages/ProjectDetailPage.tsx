@@ -19,6 +19,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -76,12 +78,12 @@ function ProjectDetail({ id }: { id: number }) {
       {mobile ? <ResponsiveDialog open={showFilters} onOpenChange={setShowFilters} title="Filtros do quadro" className="max-sm:[&_button:not([role=checkbox])]:min-h-11" description="Combine objetivo, planejamento e prazo." footer={<Button onClick={() => setShowFilters(false)}>Aplicar filtros</Button>}><div className="flex flex-col gap-3">
         <WorkSelect label="Filtrar por objetivo" value={params.get('objective') ?? 'none'} onChange={v => setParam('objective', v)} options={[{ value: 'none', label: 'Todos os objetivos' }, ...(project.objectives ?? []).map(o => ({ value: String(o.id), label: o.title }))]} />
         <WorkSelect label="Filtrar planejamento" value={params.get('planning') ?? 'none'} onChange={v => setParam('planning', v)} options={[{ value: 'none', label: 'Qualquer planejamento' }, { value: 'today', label: 'Planejadas para hoje' }, { value: 'unscheduled', label: 'Sem planejamento' }]} />
-        <label className="flex min-h-11 items-center gap-2 text-sm"><Checkbox checked={!!filters.overdue} onCheckedChange={checked => setParam('overdue', checked === true ? '1' : '')} />Prazo ultrapassado</label>
-        <label className="flex min-h-11 items-center gap-2 text-sm"><Checkbox checked={!!filters.open} onCheckedChange={checked => setParam('open', checked === true ? '1' : '')} />Somente abertas</label></div></ResponsiveDialog> : <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]">
+        <Label className="flex min-h-11 items-center gap-2 font-normal leading-5"><Checkbox checked={!!filters.overdue} onCheckedChange={checked => setParam('overdue', checked === true ? '1' : '')} />Prazo ultrapassado</Label>
+        <Label className="flex min-h-11 items-center gap-2 font-normal leading-5"><Checkbox checked={!!filters.open} onCheckedChange={checked => setParam('open', checked === true ? '1' : '')} />Somente abertas</Label></div></ResponsiveDialog> : <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]">
         <WorkSelect label="Filtrar por objetivo" value={params.get('objective') ?? 'none'} onChange={v => setParam('objective', v)} options={[{ value: 'none', label: 'Todos os objetivos' }, ...(project.objectives ?? []).map(o => ({ value: String(o.id), label: o.title }))]} />
         <WorkSelect label="Filtrar planejamento" value={params.get('planning') ?? 'none'} onChange={v => setParam('planning', v)} options={[{ value: 'none', label: 'Qualquer planejamento' }, { value: 'today', label: 'Planejadas para hoje' }, { value: 'unscheduled', label: 'Sem planejamento' }]} />
-        <label className="flex min-h-11 items-center gap-2 text-sm"><Checkbox checked={!!filters.overdue} onCheckedChange={checked => setParam('overdue', checked === true ? '1' : '')} />Prazo ultrapassado</label>
-        <label className="flex min-h-11 items-center gap-2 text-sm"><Checkbox checked={!!filters.open} onCheckedChange={checked => setParam('open', checked === true ? '1' : '')} />Somente abertas</label></div>}
+        <Label className="flex min-h-11 items-center gap-2 font-normal leading-5"><Checkbox checked={!!filters.overdue} onCheckedChange={checked => setParam('overdue', checked === true ? '1' : '')} />Prazo ultrapassado</Label>
+        <Label className="flex min-h-11 items-center gap-2 font-normal leading-5"><Checkbox checked={!!filters.open} onCheckedChange={checked => setParam('open', checked === true ? '1' : '')} />Somente abertas</Label></div>}
       <WorkFeedback error={board.error} retry={() => void board.refetch()} />
       {board.isPending && <Skeleton className="h-64 w-full" />}
       {board.data && <><p className="mb-3 text-sm text-muted-foreground">{board.data.visible.totalTasks} de {board.data.total.totalTasks} tarefas visíveis</p><ProjectBoard board={board.data} pendingColumnId={project.defaultPendingColumnId!} onEdit={showTask} onAdd={columnId => setEditor({ columnId })} onObjective={objective => { setParams(previous => { const next = new URLSearchParams(previous); next.set('tab', 'objectives'); next.set('selectedObjective', String(objective)); return next; }); }} /></>}
@@ -97,7 +99,7 @@ function ProjectDetail({ id }: { id: number }) {
       </aside>
     </div>}
     <div className="mt-4"><WorkFeedback message={uploadError} />
-      <input ref={file} className="hidden" type="file" accept="image/png,image/jpeg,image/webp" onChange={async e => { const picture = e.target.files?.[0]; if (!picture) return;
+      <Input ref={file} className="hidden" type="file" accept="image/png,image/jpeg,image/webp" onChange={async e => { const picture = e.target.files?.[0]; if (!picture) return;
         setUploadError(''); if (!['image/png', 'image/jpeg', 'image/webp'].includes(picture.type) || picture.size > 5 * 1024 * 1024) { setUploadError('Use uma imagem PNG, JPEG ou WebP de até 5 MB.'); return; }
         try { await write.mutateAsync({ action: 'picture', id, version: project.version, file: picture }); toast.success('Capa salva.'); } catch { /* Error is shown near project actions. */ } finally { if (file.current) file.current.value = ''; }
       }} />

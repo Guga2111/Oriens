@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Archive, Check, ChevronLeft, ChevronRight, Pause, Pencil, Plus, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -20,6 +21,9 @@ import type { Habit, HabitCommand, HabitState, Interval } from '@/types/statisti
 import { toast } from 'sonner';
 
 const states: Record<HabitState, string> = { DONE: 'Realizado', PENDING: 'Hoje em andamento', MISSED: 'Não realizado', OFF: 'Não programado', PAUSED: 'Em pausa', OUTSIDE: 'Fora da vigência' };
+// The matrix sizes cells in .habit-matrix (index.css); neutralise the data-table padding, row rules and hover.
+const matrixRow = 'border-0 hover:bg-transparent';
+const matrixCell = 'h-auto p-px';
 const weekdays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 const errorText = (error: unknown) => (error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Não foi possível salvar. Tente novamente.';
 
@@ -48,17 +52,17 @@ export function HabitMatrix({ habits, period, today, onManage, compact = false }
       <p className="text-xs text-muted-foreground" aria-live="polite">{shortDate(dates[0])} – {shortDate(dates[dates.length - 1])}</p>
       <div className="flex gap-1"><Button variant="outline" size="icon" aria-label="Dias anteriores dos hábitos" disabled={first === 0} onClick={() => setLastDate(allDates[first - 1])}><ChevronLeft aria-hidden /></Button><Button variant="outline" size="icon" aria-label="Próximos dias dos hábitos" disabled={end === allDates.length - 1} onClick={() => setLastDate(allDates[Math.min(allDates.length - 1, end + columns)])}><ChevronRight aria-hidden /></Button></div>
     </div>}
-    <div ref={matrix} className="habit-matrix"><table aria-label="Execuções de hábitos por dia"><thead><tr><th scope="col">Hábito <span className="block text-xs">realizadas/previstas</span></th>{dates.map(d => <th scope="col" key={d}><abbr title={fullDate(d)} className="no-underline">{d.slice(8)}</abbr></th>)}</tr></thead><tbody>
-      {visible.map(habit => <tr key={habit.id}><th scope="row"><div className="flex flex-col gap-0.5 pr-3 py-0.5"><span className="text-sm font-medium text-foreground">{habit.name}</span><span className="flex items-center gap-2"><span className="text-xs tabular-nums">{habit.completed}/{habit.expected}</span><Progress value={rate(habit.completed, habit.expected) ?? 0} className="h-1.5 w-16" aria-label={`Aderência de ${habit.name}`} /><span className="sr-only">{formatRate(rate(habit.completed, habit.expected))}</span></span></div></th>
+    <div ref={matrix} className="habit-matrix"><Table aria-label="Execuções de hábitos por dia"><TableHeader><TableRow className={matrixRow}><TableHead scope="col" className={matrixCell}>Hábito <span className="block text-xs">realizadas/previstas</span></TableHead>{dates.map(d => <TableHead scope="col" key={d} className={matrixCell}><abbr title={fullDate(d)} className="no-underline">{d.slice(8)}</abbr></TableHead>)}</TableRow></TableHeader><TableBody>
+      {visible.map(habit => <TableRow key={habit.id} className={matrixRow}><TableHead scope="row" className={matrixCell}><div className="flex flex-col gap-0.5 pr-3 py-0.5"><span className="text-sm font-medium text-foreground">{habit.name}</span><span className="flex items-center gap-2"><span className="text-xs tabular-nums">{habit.completed}/{habit.expected}</span><Progress value={rate(habit.completed, habit.expected) ?? 0} className="h-1.5 w-16" aria-label={`Aderência de ${habit.name}`} /><span className="sr-only">{formatRate(rate(habit.completed, habit.expected))}</span></span></div></TableHead>
         {habit.days.filter(day => visibleDates.has(day.date)).map(day => {
           const label = `${habit.name}, ${fullDate(day.date)}: ${states[day.state]}`;
           const mark = day.state === 'DONE' ? <Check className="size-3" aria-hidden /> : day.state === 'PAUSED' ? <Pause className="size-3" aria-hidden /> : day.state === 'MISSED' ? '−' : day.state === 'PENDING' ? '·' : ' ';
           const active = day.date === today && ['DONE', 'PENDING'].includes(day.state);
-          return <td key={day.date}><Tooltip><TooltipTrigger asChild>{active ? <Checkbox className={cn('habit-mark after:hidden', `habit-${day.state}`)} checked={day.state === 'DONE'} aria-label={label} disabled={write.isPending} onCheckedChange={() => write.mutate({ action: 'execution', habit, date: day.date, completed: day.state !== 'DONE' }, { onSuccess: result => { if (result.refreshFailed) toast.warning('Execução salva. Atualize os dados para conferir o resultado.'); } })} />
-            : <span className={cn('habit-mark', `habit-${day.state}`)} aria-label={label}>{mark}<span className="sr-only">{states[day.state]}</span></span>}</TooltipTrigger><TooltipContent>{label}</TooltipContent></Tooltip></td>;
+          return <TableCell key={day.date} className={matrixCell}><Tooltip><TooltipTrigger asChild>{active ? <Checkbox className={cn('habit-mark after:hidden', `habit-${day.state}`)} checked={day.state === 'DONE'} aria-label={label} disabled={write.isPending} onCheckedChange={() => write.mutate({ action: 'execution', habit, date: day.date, completed: day.state !== 'DONE' }, { onSuccess: result => { if (result.refreshFailed) toast.warning('Execução salva. Atualize os dados para conferir o resultado.'); } })} />
+            : <span className={cn('habit-mark', `habit-${day.state}`)} aria-label={label}>{mark}<span className="sr-only">{states[day.state]}</span></span>}</TooltipTrigger><TooltipContent>{label}</TooltipContent></Tooltip></TableCell>;
         })}
-      </tr>)}
-    </tbody></table></div>
+      </TableRow>)}
+    </TableBody></Table></div>
     <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs text-muted-foreground">Realizado: marca preenchida · hoje pendente: contorno · não realizado: traço · pausa: barras · não programado: branco</p>{compact && habits.length > visible.length && <Button variant="link" onClick={onManage}>Todos os hábitos · {habits.length}</Button>}</div>
   </div>;
 }

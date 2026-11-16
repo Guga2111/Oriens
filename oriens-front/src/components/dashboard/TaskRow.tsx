@@ -160,13 +160,14 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
             <span className="truncate" title={task.location.address}>
               {task.location.address}
             </span>
-            <button
+            <Button
               type="button"
-              className="shrink-0 underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              variant="link"
+              className="h-auto shrink-0 p-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
               onClick={() => setIsMapOpen(true)}
             >
               Ver no mapa
-            </button>
+            </Button>
           </div>
         )}
       </div>

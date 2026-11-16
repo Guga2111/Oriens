@@ -7,6 +7,7 @@ import com.oriens.oriens_api.entity.dto.SupportTicketDTO;
 import com.oriens.oriens_api.entity.enums.Priority;
 import com.oriens.oriens_api.entity.enums.TicketStatus;
 import com.oriens.oriens_api.exception.UserNotFoundException;
+import com.oriens.oriens_api.exception.WorkDomainException;
 import com.oriens.oriens_api.repository.SupportTicketRepository;
 import com.oriens.oriens_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,9 +54,9 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     }
 
     @Override
-    public SupportTicket getTicketById(Long ticketId) {
-        return supportTicketRepository.findById(ticketId)
-                .orElseThrow(() -> new IllegalArgumentException("Support ticket not found with id: " + ticketId));
+    public SupportTicket getTicketById(Long ownerId, Long ticketId) {
+        return supportTicketRepository.findByIdAndUserId(ticketId, ownerId)
+                .orElseThrow(SupportTicketServiceImpl::missing);
     }
 
     @Override
@@ -76,7 +77,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
 
     @Override
     public SupportTicket updateTicketStatus(Long ticketId, TicketStatus newStatus) {
-        SupportTicket ticket = getTicketById(ticketId);
+        SupportTicket ticket = anyTicket(ticketId);
         ticket.setStatus(newStatus);
         SupportTicket updatedTicket = supportTicketRepository.save(ticket);
 
@@ -96,7 +97,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
 
     @Override
     public SupportTicket updateTicketPriority(Long ticketId, Integer priority) {
-        SupportTicket ticket = getTicketById(ticketId);
+        SupportTicket ticket = anyTicket(ticketId);
         try {
             Priority priorityEnum = Priority.values()[priority];
             ticket.setPriority(priorityEnum);
@@ -122,6 +123,16 @@ public class SupportTicketServiceImpl implements SupportTicketService {
         return allTickets.stream()
                 .filter(ticket -> ticket.getStatus() == status)
                 .toList();
+    }
+
+    /** Admin-only lookup: callers must already be guarded by the ADMIN role. */
+    private SupportTicket anyTicket(Long ticketId) {
+        return supportTicketRepository.findById(ticketId)
+                .orElseThrow(SupportTicketServiceImpl::missing);
+    }
+
+    private static WorkDomainException missing() {
+        return new WorkDomainException("NOT_FOUND", null, "Chamado não encontrado.");
     }
 
     @Override

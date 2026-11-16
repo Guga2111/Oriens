@@ -9,9 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.dao.*;
+import org.springframework.security.access.AccessDeniedException;
 import java.util.*;
 
-@RestControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, TagController.class})
+@RestControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, TagController.class, UserController.class, NotificationController.class, SupportController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class WorkExceptionHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WorkExceptionHandler.class);
@@ -63,8 +64,13 @@ public class WorkExceptionHandler {
     public ResponseEntity<Error> business(RuntimeException e,HttpServletRequest request) {
         return response(422,"DOMAIN_VIOLATION",e.getMessage(),null,request);
     }
-    @ExceptionHandler({com.oriens.oriens_api.exception.EntryNotFoundException.class,com.oriens.oriens_api.exception.TagNotFoundException.class})
+    @ExceptionHandler({com.oriens.oriens_api.exception.EntryNotFoundException.class,com.oriens.oriens_api.exception.TagNotFoundException.class,com.oriens.oriens_api.exception.UserNotFoundException.class})
     public ResponseEntity<Error> missing(RuntimeException e,HttpServletRequest request) {return response(404,"NOT_FOUND","Recurso não encontrado.",null,request);}
+    /** Role checks (@PreAuthorize) must stay 403; without this the catch-all below turns them into 500. */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Error> forbidden(AccessDeniedException e, HttpServletRequest request) {
+        return response(403, "FORBIDDEN", "Você não tem permissão para esta ação.", null, request);
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Error> internal(Exception e, HttpServletRequest request) {
         return response(500, "INTERNAL_ERROR", "Não foi possível concluir a operação.", null, request);

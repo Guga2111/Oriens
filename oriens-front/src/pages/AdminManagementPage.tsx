@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -121,12 +122,9 @@ export default function AdminManagementPage() {
                                 </DialogHeader>
                                 <div className="flex flex-col gap-4 py-4">
                                   <div className="flex flex-col gap-2">
-                                    <label
-                                      htmlFor="user-role"
-                                      className="text-sm font-medium"
-                                    >
+                                    <Label htmlFor="user-role">
                                       Nova permissão
-                                    </label>
+                                    </Label>
                                     <Select
                                       value={selectedRole}
                                       onValueChange={setSelectedRole}

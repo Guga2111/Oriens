@@ -34,6 +34,7 @@ import {
   updateTag,
   deleteTag,
 } from '@/services/financialService';
+import { DEFAULT_TAG_COLOR } from '@/lib/financial-tags';
 import { cn } from '@/lib/utils';
 
 interface TagManagementDialogProps {
@@ -58,7 +59,7 @@ export function TagManagementDialog({
   const [deletingTag, setDeletingTag] = useState<TagDTO | null>(null);
 
   const [formName, setFormName] = useState('');
-  const [formColor, setFormColor] = useState('#3b82f6');
+  const [formColor, setFormColor] = useState(DEFAULT_TAG_COLOR);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -176,14 +177,14 @@ export function TagManagementDialog({
     setIsCreating(true);
     setEditingTag(null);
     setFormName('');
-    setFormColor('#3b82f6');
+    setFormColor(DEFAULT_TAG_COLOR);
   };
 
   const resetForm = () => {
     setIsCreating(false);
     setEditingTag(null);
     setFormName('');
-    setFormColor('#3b82f6');
+    setFormColor(DEFAULT_TAG_COLOR);
     setFormErrors({});
   };
 

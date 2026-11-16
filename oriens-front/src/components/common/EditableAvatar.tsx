@@ -1,4 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Camera } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -62,7 +64,7 @@ export function EditableAvatar({ src, fallback, alt, onImageChange, isLoading }:
         <AvatarFallback className="bg-primary/10 text-primary">{fallback}</AvatarFallback>
       </Avatar>
 
-      <input
+      <Input
         type="file"
         ref={fileInputRef}
         className="hidden"
@@ -71,16 +73,18 @@ export function EditableAvatar({ src, fallback, alt, onImageChange, isLoading }:
         disabled={isLoading}
       />
 
-      <button
+      <Button
+        type="button"
         onClick={handleClick}
         disabled={isLoading}
+        aria-label="Alterar foto de perfil"
         className={cn(
-          "absolute inset-0 bg-primary/80 text-primary-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer",
-          isLoading && "opacity-100 cursor-not-allowed bg-primary/90"
+          "absolute inset-0 h-full w-full rounded-full bg-primary/80 p-0 opacity-0 transition-opacity hover:bg-primary/80 focus-visible:opacity-100 group-hover:opacity-100 [&_svg]:size-6",
+          isLoading && "bg-primary/90 opacity-100 disabled:opacity-100"
         )}
       >
-        <Camera className="h-6 w-6" />
-      </button>
+        <Camera aria-hidden />
+      </Button>
     </div>
   );
 }

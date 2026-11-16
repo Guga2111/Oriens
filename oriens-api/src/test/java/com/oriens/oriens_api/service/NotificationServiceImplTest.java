@@ -5,8 +5,8 @@ import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.entity.dto.NotificationDTO;
 import com.oriens.oriens_api.entity.dto.NotificationDeleteCountDTO;
 import com.oriens.oriens_api.entity.dto.NotificationUpdateCountDTO;
-import com.oriens.oriens_api.exception.NotificationNotFoundException;
 import com.oriens.oriens_api.exception.UserNotFoundException;
+import com.oriens.oriens_api.exception.WorkDomainException;
 import com.oriens.oriens_api.repository.NotificationRepository;
 import com.oriens.oriens_api.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -170,16 +170,17 @@ class NotificationServiceImplTest {
     // =================================================================
 
     @Test
-    void whenMarkAsRead_withValidId_thenShouldUpdateAndSaveChanges() {
+    void whenMarkAsRead_withOwnedId_thenShouldUpdateAndSaveChanges() {
         // Arrange
+        Long ownerId = 7L;
         Long notificationId = 1L;
         Notification notification = new Notification("Unread message", new User());
         notification.setRead(false); // Explicitly set initial state
 
-        when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
+        when(notificationRepository.findByIdAndUserId(notificationId, ownerId)).thenReturn(Optional.of(notification));
 
         // Act
-        notificationService.markAsRead(notificationId);
+        notificationService.markAsRead(ownerId, notificationId);
 
         // Assert
         ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
@@ -190,15 +191,18 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    void whenMarkAsRead_withInvalidId_thenShouldThrowNotificationNotFoundException() {
+    void whenMarkAsRead_withMissingOrForeignId_thenShouldThrowNotFoundWithoutSaving() {
         // Arrange
-        Long invalidId = 99L;
-        when(notificationRepository.findById(invalidId)).thenReturn(Optional.empty());
+        Long ownerId = 7L;
+        Long foreignId = 99L;
+        when(notificationRepository.findByIdAndUserId(foreignId, ownerId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NotificationNotFoundException.class, () -> {
-            notificationService.markAsRead(invalidId);
+        WorkDomainException error = assertThrows(WorkDomainException.class, () -> {
+            notificationService.markAsRead(ownerId, foreignId);
         });
+        assertThat(error.getCode()).isEqualTo("NOT_FOUND");
+        verify(notificationRepository, never()).save(any(Notification.class));
     }
 
     // =================================================================

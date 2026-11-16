@@ -1,7 +1,9 @@
 import { useId, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkProjects } from '@/hooks/useWork';
 import { dependencies, permissionGroups, scopeLabel, toggleScope } from '@/lib/mcp';
@@ -12,17 +14,18 @@ function Choice({ label, note, checked, disabled, onChange }: { label: string; n
   const id = useId();
   return <div className="flex min-h-11 items-start gap-3">
     <Checkbox id={id} aria-label={label} checked={checked} disabled={disabled} onCheckedChange={v => onChange(v === true)} className="mt-3" aria-describedby={note ? id+'-note' : undefined} />
-    <label htmlFor={id} className="min-h-11 min-w-0 flex-1 cursor-pointer py-2 text-sm leading-6">
+    <Label htmlFor={id} className="min-h-11 min-w-0 flex-1 cursor-pointer py-2 font-normal leading-6">
       {label}{note && <span id={id+'-note'} className="block text-xs leading-5 text-muted-foreground">{note}</span>}
-    </label>
+    </Label>
   </div>;
 }
 
 function ProjectPicker({ value, onChange, onProject }: { value: Permissions; onChange: (v: Permissions) => void; onProject?: (p: McpProject) => void }) {
   const [search, setSearch] = useState(''), [page, setPage] = useState(0);
+  const searchId = useId();
   const projects = useWorkProjects({ page, size: 10, includeArchived: true, search, sortBy: 'title', direction: 'ASC' });
   return <div className="flex flex-col gap-3">
-    <label className="flex flex-col gap-2 text-sm">Buscar projetos<Input className="min-h-11 max-md:min-h-11" value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} placeholder="Nome do projeto" /></label>
+    <Field className="gap-2"><FieldLabel htmlFor={searchId} className="font-normal">Buscar projetos</FieldLabel><Input id={searchId} className="min-h-11 max-md:min-h-11" value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} placeholder="Nome do projeto" /></Field>
     {projects.isPending ? <Skeleton className="h-20 w-full" aria-label="Carregando projetos" /> : projects.isError
       ? <McpFeedback error={projects.error} retry={() => void projects.refetch()} />
       : <>

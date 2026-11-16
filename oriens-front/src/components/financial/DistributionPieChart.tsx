@@ -7,6 +7,15 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import { byTag, summarizeAll } from "@/lib/financialSummary";
 import { formatCurrency } from "@/lib/format";
@@ -109,21 +118,21 @@ export function DistributionPieChart({
               </div>
             </div>
 
-            <table className="w-full min-w-0 text-sm">
-              <caption className="sr-only">
+            <Table className="min-w-0">
+              <TableCaption className="sr-only">
                 Distribuição do mês por tag
-              </caption>
-              <thead className="sr-only">
-                <tr>
-                  <th scope="col">Tag</th>
-                  <th scope="col">Valor</th>
-                  <th scope="col">Porcentagem</th>
-                </tr>
-              </thead>
-              <tbody>
+              </TableCaption>
+              <TableHeader className="sr-only">
+                <TableRow>
+                  <TableHead scope="col">Tag</TableHead>
+                  <TableHead scope="col">Valor</TableHead>
+                  <TableHead scope="col">Porcentagem</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {slices.map((slice) => (
-                  <tr key={slice.key}>
-                    <th scope="row" className="py-1 text-left font-normal">
+                  <TableRow key={slice.key} className="border-0 hover:bg-transparent">
+                    <TableHead scope="row" className="h-auto px-0 py-1 font-normal text-foreground">
                       <span className="flex min-w-0 items-center gap-2">
                         <span
                           aria-hidden
@@ -132,19 +141,19 @@ export function DistributionPieChart({
                         />
                         <span className="truncate">{slice.name}</span>
                       </span>
-                    </th>
-                    <td className="py-1 pl-2 text-right tabular-nums">
+                    </TableHead>
+                    <TableCell className="py-1 pl-2 pr-0 text-right tabular-nums">
                       {formatCurrency(slice.amount)}
-                    </td>
-                    <td className="w-14 py-1 text-right tabular-nums text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="w-14 px-0 py-1 text-right tabular-nums text-muted-foreground">
                       {total > 0
                         ? `${((slice.amount / total) * 100).toFixed(1)}%`
                         : "—"}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </CardContent>

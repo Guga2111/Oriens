@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldGroup, FieldLabel, FieldSet, FieldLegend } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -42,10 +43,10 @@ export function TaskLabelPicker({ value, onChange, disabled, onCatalogDelete }: 
           {catalog.isPending ? <p role="status" className="text-sm text-muted-foreground">Carregando etiquetas…</p> : <ScrollArea className="max-h-64">
             <FieldSet className="gap-2"><FieldLegend className="sr-only">Etiquetas da conta</FieldLegend>
               {visible.map(label => <div key={label.id} className="flex min-w-0 items-center gap-2 rounded-md px-1 py-1">
-                <label htmlFor={`${prefix}-${label.id}`} className="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-3 px-2">
+                <Label htmlFor={`${prefix}-${label.id}`} className="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-3 px-2">
                   <Checkbox id={`${prefix}-${label.id}`} checked={value.includes(label.id)} disabled={disabled || value.length >= 20 && !value.includes(label.id)} onCheckedChange={() => toggle(label.id)} />
                   <TaskLabelBadge label={label} />
-                </label>
+                </Label>
                 <Button type="button" variant="ghost" size="icon" aria-label={`Editar etiqueta ${label.name}`} disabled={disabled} onClick={() => { setOpen(false); setEditor({ label }); }}><Pencil aria-hidden /></Button>
               </div>)}
               {!visible.length && <p className="py-3 text-sm text-muted-foreground">{search ? 'Nenhuma etiqueta encontrada.' : 'Nenhuma etiqueta na conta. Crie a primeira abaixo.'}</p>}
@@ -98,7 +99,7 @@ function LabelEditor({ label, onClose, onCreated, onDeleted }: { label?: TaskLab
       <Field data-invalid={!!error}><FieldLabel htmlFor={`${formId}-name`}>Nome da etiqueta</FieldLabel><Input id={`${formId}-name`} value={name} maxLength={50} required aria-invalid={!!error} aria-describedby={error ? `${formId}-error` : undefined} onChange={e => setName(e.target.value)} />{error && <p id={`${formId}-error`} role="alert" className="text-sm text-destructive">{error}</p>}</Field>
       <FieldSet className="gap-3"><FieldLegend>Cor da etiqueta</FieldLegend>
         <RadioGroup aria-label="Cor da etiqueta" value={color} onValueChange={value => setColor(value as TaskLabelColor)} className="grid grid-cols-2 gap-2">
-          {TASK_LABEL_COLORS.map(value => <label key={value} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border p-3"><RadioGroupItem value={value} /><TaskLabelBadge label={{ name: LABEL_COLORS[value].name, color: value }} /></label>)}
+          {TASK_LABEL_COLORS.map(value => <Label key={value} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border p-3"><RadioGroupItem value={value} /><TaskLabelBadge label={{ name: LABEL_COLORS[value].name, color: value }} /></Label>)}
         </RadioGroup>
       </FieldSet>
       <div className="flex flex-col items-start gap-2"><span className="text-sm text-muted-foreground">Prévia</span><TaskLabelBadge label={{ name: name.trim() || 'Etiqueta', color }} /></div>
