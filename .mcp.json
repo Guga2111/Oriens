@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "oriens": {
+      "type": "http",
+      "url": "http://127.0.0.1:8080/mcp",
+      "oauth": {
+        "clientId": "oriens-claude-code",
+        "callbackPort": 8765,
+        "scopes": "finance:create finance:delete finance:read finance:update mcp:context objectives:create objectives:delete objectives:update offline_access projects:create projects:delete projects:read projects:update tasks:create tasks:delete tasks:read tasks:update"
+      }
+    }
+  }
+}

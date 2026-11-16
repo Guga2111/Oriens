@@ -4,6 +4,53 @@ O MCP permite que um cliente compatível consulte ou altere dados que você
 autorizar. O Oriens não pede uma chave de provedor nem executa um modelo de IA.
 O processamento e o custo do modelo pertencem ao cliente/provedor escolhido.
 
+## Habilitar no Docker local
+
+O Compose de desenvolvimento lê `oriens-api/.env` e repassa as opções MCP para
+o Spring. O recurso continua desligado quando `ORIENS_MCP_ENABLED` não é definido.
+A porta da API de desenvolvimento fica restrita a `127.0.0.1`.
+
+No arquivo `oriens-api/.env`, preserve o `JWT_SECRET` existente e configure:
+
+```dotenv
+ORIENS_MCP_ENABLED=true
+ORIENS_MCP_ISSUER=http://127.0.0.1:8080
+ORIENS_MCP_FRONTEND=http://127.0.0.1:5173
+ORIENS_MCP_ENCRYPTION_PASSWORD=<segredo aleatório estável com pelo menos 32 caracteres>
+ORIENS_MCP_ENCRYPTION_SALT=<32 caracteres hexadecimais aleatórios>
+ORIENS_MCP_CODEX_REDIRECTS=http://127.0.0.1/callback
+ORIENS_MCP_CLAUDE_REDIRECTS=http://localhost:8765/callback
+```
+
+Guarde esse arquivo fora do Git, com permissão `600`. Gere os dois valores de
+proteção uma vez e preserve-os entre reinícios; substituí-los exige o procedimento
+de rotação do runbook. Confirme antes que o banco local já tem a revisão
+`oriens-mcp-finance-v1`; a API não aplica migrações no startup.
+
+Na pasta `oriens-api`, recrie somente a API:
+
+```sh
+docker compose --env-file .env -f docker-compose.dev.yml up -d --no-deps oriens-api-dev
+```
+
+Se a imagem ainda não contém a implementação MCP, acrescente `--build` ao
+comando. O banco e seu volume não precisam ser recriados.
+
+No frontend, configure `oriens-front/.env.development.local`:
+
+```dotenv
+VITE_API_BASE_URL=http://127.0.0.1:8080
+```
+
+Reinicie o Vite se necessário e abra **http://127.0.0.1:5173/config**. Faça login
+novamente nessa origem. Use `127.0.0.1` tanto para frontend quanto para API;
+misturar `localhost` e `127.0.0.1` impede a correlação OAuth por cookie. Não copie
+o JWT entre origens. Em seguida, siga os passos de conexão abaixo. Habilitar o
+servidor não concede permissões a nenhum cliente.
+
+Para desligar, defina `ORIENS_MCP_ENABLED=false` e execute novamente o comando
+Compose. As conexões/histórico persistidos são preservados.
+
 ## Conectar
 
 1. Entre no Oriens e abra **Configurações → Integrações → Conectar via MCP**.
