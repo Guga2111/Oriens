@@ -23,6 +23,8 @@ public final class StatisticsViews {
         }
     }
     public record DayCount(LocalDate date, long completed) {}
+    public record Streak(LocalDate today, Long days, LocalDate startDate, LocalDate throughDate,
+                         boolean lowerBound, LocalDate coverageFrom) {}
     public record Activity(Period period, LocalDate coverageFrom, long total, long previousTotal,
                            List<DayCount> days, List<DayCount> previousDays) {}
     public record PlanCounts(long planned, long completed) {}

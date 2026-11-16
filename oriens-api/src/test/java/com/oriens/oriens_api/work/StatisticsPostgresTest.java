@@ -63,6 +63,56 @@ class StatisticsPostgresTest {
     Long tag(String name){return db.queryForObject("insert into tags(user_id,name,color,is_default,allow_negative,created_at) values(?,?,'#781336',false,true,now()) returning id",Long.class,owner,name);}
     Long entry(Long tag,String amount,String date,String description){return db.queryForObject("insert into financial_entry(user_id,tag_id,amount,entry_date,description,is_recurring,created_at) values(?,?,?,?::date,?,false,now()) returning id",Long.class,owner,tag,new BigDecimal(amount),date,description);}
 
+    @Test void streakCombinesSourcesDeduplicatesAndRecountsMutations()throws Exception {
+        assertThat(get(root()+"/streak").path("days").asLong()).isZero();
+        task(owner,"Ontem",null,"2026-11-12",null,"CONCLUDED");
+        task(owner,"Ontem novamente",null,"2026-11-12",null,"CONCLUDED");
+        task(owner,"Antes",null,"2026-11-11",null,"CONCLUDED");
+        task(stranger,"Outra conta",null,"2026-11-13",null,"CONCLUDED");
+        assertThat(get(root()+"/streak").path("days").asLong()).isEqualTo(2);
+        assertThat(get(root()+"/streak").path("throughDate").asText()).isEqualTo("2026-11-12");
+        var h=habits.create(owner,new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Input("Hoje",List.of(5),LocalDate.parse("2026-11-13"),null));
+        habits.execute(owner,h.id(),LocalDate.parse("2026-11-13"),new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Execution(0L,true));
+        assertThat(get(root()+"/streak").path("days").asLong()).isEqualTo(3);
+        task(owner,"Hoje também",null,"2026-11-13",null,"CONCLUDED");
+        assertThat(get(root()+"/streak").path("days").asLong()).isEqualTo(3);
+        db.update("update tasks set status='PENDING',completed_at=null where user_id=? and title='Hoje também'",owner);
+        assertThat(get(root()+"/streak").path("days").asLong()).isEqualTo(3);
+        habits.execute(owner,h.id(),LocalDate.parse("2026-11-13"),new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Execution(1L,false));
+        assertThat(get(root()+"/streak").path("days").asLong()).isEqualTo(2);
+        db.update("delete from tasks where user_id=? and completed_at='2026-11-12'",owner);
+        assertThat(get(root()+"/streak").path("days").asLong()).isZero();
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(root()+"/streak").header("Authorization",other)).andExpect(status().isNotFound());
+    }
+
+    @Test void streakUsesRecifeMidnightAndIncludesWeekends() {
+        task(owner,"Sexta",null,"2026-11-13",null,"CONCLUDED");
+        task(owner,"Sábado",null,"2026-11-14",null,"CONCLUDED");
+        task(owner,"Domingo",null,"2026-11-15",null,"CONCLUDED");
+        var before=new StatisticsReadService(db,Clock.fixed(Instant.parse("2026-11-14T02:59:59Z"),ZoneOffset.UTC)).streak(owner);
+        assertThat(before.today()).isEqualTo(LocalDate.parse("2026-11-13"));assertThat(before.days()).isEqualTo(1);
+        var sunday=new StatisticsReadService(db,Clock.fixed(Instant.parse("2026-11-16T02:59:59Z"),ZoneOffset.UTC)).streak(owner);
+        assertThat(sunday.days()).isEqualTo(3);
+        var monday=new StatisticsReadService(db,Clock.fixed(Instant.parse("2026-11-16T03:00:00Z"),ZoneOffset.UTC)).streak(owner);
+        assertThat(monday.days()).isEqualTo(3);assertThat(monday.throughDate()).isEqualTo(LocalDate.parse("2026-11-15"));
+        var tuesday=new StatisticsReadService(db,Clock.fixed(Instant.parse("2026-11-17T03:00:00Z"),ZoneOffset.UTC)).streak(owner);
+        assertThat(tuesday.days()).isZero();
+    }
+
+    @Test void streakHasNoAnnualCapAndNeverInventsMissingHistory()throws Exception {
+        db.update("update users set statistics_started_on='2026-11-13' where id=?",owner);
+        assertThat(get(root()+"/streak").path("days").isNull()).isTrue();
+        LocalDate today=LocalDate.parse("2026-11-13");
+        for(int i=0;i<370;i++)task(owner,"Dia "+i,null,today.minusDays(i).toString(),null,"CONCLUDED");
+        JsonNode longStreak=get(root()+"/streak");
+        assertThat(longStreak.path("days").asLong()).isEqualTo(370);
+        assertThat(longStreak.path("lowerBound").asBoolean()).isTrue();
+        assertThat(longStreak.path("startDate").asText()).isEqualTo(today.minusDays(369).toString());
+        db.update("update users set statistics_started_on='2025-01-01' where id=?",owner);
+        db.update("update statistics_coverage set started_on='2025-01-01' where id=1");
+        assertThat(get(root()+"/streak").path("lowerBound").asBoolean()).isFalse();
+    }
+
     @Test void populationsDatesEvidenceAndOwnershipReconcile()throws Exception {
         task(owner,"No plano","2026-11-10","2026-11-10",null,"CONCLUDED");
         task(owner,"Concluída depois","2026-11-11","2026-11-14",null,"CONCLUDED");

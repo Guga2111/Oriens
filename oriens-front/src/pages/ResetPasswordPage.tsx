@@ -166,7 +166,7 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background-brand">
+    <div className="min-h-screen flex items-center justify-center px-page py-4 bg-background-brand">
       <div className="w-full max-w-md">
         <Card className="border-border/50">
           <CardHeader className="flex flex-col gap-1 pb-4">

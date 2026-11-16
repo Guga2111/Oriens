@@ -179,8 +179,8 @@ export default function AdminSupportPage() {
     : [];
 
   return (
-    <div className="p-6 md:p-8">
-      <div className="flex max-w-[1280px] flex-col gap-6">
+    <div className="min-w-0 w-full">
+      <div className="flex min-w-0 w-full flex-col gap-6">
         <PageHeader
           title="Suporte"
           description="Gerencie e acompanhe os tickets de suporte dos usuários"

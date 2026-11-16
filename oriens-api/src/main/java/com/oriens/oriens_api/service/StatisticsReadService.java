@@ -3,6 +3,7 @@ package com.oriens.oriens_api.service;
 import com.oriens.oriens_api.entity.dto.statistics.StatisticsViews.*;
 import com.oriens.oriens_api.entity.dto.statistics.StatisticsViews.Period;
 import com.oriens.oriens_api.exception.WorkDomainException;
+import com.oriens.oriens_api.configuration.ProductClockConfiguration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,6 +19,32 @@ public class StatisticsReadService {
     private final Clock clock;
     public LocalDate coverageFrom(Long owner) {
         return db.queryForObject("select greatest(c.started_on,u.statistics_started_on) from statistics_coverage c cross join users u where c.id=1 and u.id=?", LocalDate.class, owner);
+    }
+    /** Executions are validated at write time; prospective schedules/pauses preserve past executions. */
+    public Streak streak(Long owner) {
+        LocalDate today = LocalDate.now(clock.withZone(ProductClockConfiguration.ZONE));
+        LocalDate coverage = coverageFrom(owner);
+        return db.queryForObject("""
+            with active_days as (
+                select completed_at as day from tasks
+                where user_id=? and status='CONCLUDED' and completed_at<=?
+                union
+                select execution_date as day from habit_executions
+                where user_id=? and execution_date<=?
+            ), ranked as (
+                select day, max(day) over () as latest,
+                    row_number() over (order by day desc) as ordinal from active_days
+            )
+            select count(*),min(day),max(day) from ranked
+            where latest>=? and day=latest-(ordinal-1)::int
+            """, (row, index) -> {
+                long count = row.getLong(1);
+                LocalDate start = row.getObject(2, LocalDate.class);
+                LocalDate through = row.getObject(3, LocalDate.class);
+                Long days = count == 0 && coverage.isAfter(today.minusDays(1)) ? null : count;
+                return new Streak(today, days, start, through,
+                    start != null && !start.isAfter(coverage), coverage);
+            }, owner, today, owner, today, today.minusDays(1));
     }
     public Activity activity(Long owner, LocalDate start, LocalDate end) {
         Period period = Period.of(start, end, clock);

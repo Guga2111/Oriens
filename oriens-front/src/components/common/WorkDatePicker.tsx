@@ -10,8 +10,8 @@ import { productDate } from '@/lib/product-time';
 import { parseLocalDate } from '@/lib/date';
 
 /** Calendar dates stay yyyy-MM-dd throughout the work API; never convert to UTC. */
-export function WorkDatePicker({ id, label, value, onChange, disabled }: {
-  id?: string; label: string; value: string; onChange: (value: string) => void; disabled?: boolean;
+export function WorkDatePicker({ id, label, value, onChange, disabled, min, max, required = false, invalid = false }: {
+  id?: string; label: string; value: string; onChange: (value: string) => void; disabled?: boolean; min?: string; max?: string; required?: boolean; invalid?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const date = parseLocalDate(value);
@@ -19,16 +19,22 @@ export function WorkDatePicker({ id, label, value, onChange, disabled }: {
   return <div className="flex min-w-0 items-center gap-1">
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button id={id} type="button" variant="outline" disabled={disabled} aria-label={`${label}: ${date ? format(date, 'dd/MM/yyyy') : 'Selecionar data'}`} className="min-w-0 flex-1 justify-start font-normal">
+        <Button id={id} type="button" variant="outline" disabled={disabled} aria-invalid={invalid || undefined} aria-label={`${label}: ${date ? format(date, 'dd/MM/yyyy') : 'Selecionar data'}`} className="min-w-0 flex-1 justify-start font-normal">
           <CalendarDays aria-hidden data-icon="inline-start" />{date ? format(date, 'dd/MM/yyyy') : 'Selecionar data'}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
-        <Calendar mode="single" selected={date} defaultMonth={date ?? today} today={today} locale={ptBR} initialFocus
+        <Calendar mode="single" selected={date} defaultMonth={date ?? (min && format(today, 'yyyy-MM-dd') < min ? parseLocalDate(min) : max && format(today, 'yyyy-MM-dd') > max ? parseLocalDate(max) : today)} today={today} locale={ptBR} initialFocus required={required}
+          disabled={[...(min ? [{ before: parseLocalDate(min)! }] : []), ...(max ? [{ after: parseLocalDate(max)! }] : [])]}
           labels={{ labelPrevious: () => 'Mês anterior', labelNext: () => 'Próximo mês' }}
-          onSelect={next => { onChange(next ? format(next, 'yyyy-MM-dd') : ''); setOpen(false); }} />
+          onSelect={next => {
+            if (!next && required) return;
+            const value = next ? format(next, 'yyyy-MM-dd') : '';
+            if (value && ((min && value < min) || (max && value > max))) return;
+            onChange(value); setOpen(false);
+          }} />
       </PopoverContent>
     </Popover>
-    {value && <Button type="button" variant="ghost" size="icon" disabled={disabled} aria-label={`Limpar ${label.toLowerCase()}`} onClick={() => onChange('')}><X aria-hidden /></Button>}
+    {value && !required && <Button type="button" variant="ghost" size="icon" disabled={disabled} aria-label={`Limpar ${label.toLowerCase()}`} onClick={() => onChange('')}><X aria-hidden /></Button>}
   </div>;
 }

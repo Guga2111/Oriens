@@ -79,7 +79,7 @@ export function taskAffectsKey(key: QueryKey, user: number, result: TaskMutation
     case 'tasks/week': return dates.some(d => d >= (key[3] as string) && d <= (key[4] as string));
     case 'planning/count': return dates.includes(key[3] as string);
     case 'tasks/all': case 'projects/list': case 'projects/sidebar': return true;
-    case 'statistics': return key.length === 3 || ['activity', 'planning', 'task-evidence'].includes(key[3] as string);
+    case 'statistics': return key.length === 3 || ['activity', 'planning', 'task-evidence', 'streak'].includes(key[3] as string);
     case 'projects/detail': case 'projects/board': case 'projects/objectives':
       return result.affectedProjectIds.includes(key[3] as number);
     default: return false;

@@ -1,7 +1,8 @@
 import api from './api';
-import type { ActivityData, FinanceData, HabitsData, Habit, HabitCommand, Interval, PlanningData, TaskEvidencePage } from '@/types/statistics';
+import type { ActivityData, ActivityStreakData, FinanceData, HabitsData, Habit, HabitCommand, Interval, PlanningData, TaskEvidencePage } from '@/types/statistics';
 
 export const statisticsService = {
+  streak: async (user: number, signal?: AbortSignal) => (await api.get<ActivityStreakData>(`/statistics/user/${user}/streak`, { signal })).data,
   activity: async (user: number, period: Interval, signal?: AbortSignal) => (await api.get<ActivityData>(`/statistics/user/${user}/activity`, { params: period, signal })).data,
   planning: async (user: number, period: Interval, signal?: AbortSignal) => (await api.get<PlanningData>(`/statistics/user/${user}/planning`, { params: period, signal })).data,
   finance: async (user: number, period: Interval, signal?: AbortSignal) => (await api.get<FinanceData>(`/statistics/user/${user}/finance`, { params: period, signal })).data,

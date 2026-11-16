@@ -21,7 +21,7 @@ export default function ProjectsPage() {
   const [deleting, setDeleting] = useState<WorkProject | null>(null);
   const rows = projects.data?.pages.flatMap(p => p.content) ?? [];
   const visible = filter === 'favorites' ? rows.filter(p => p.favorite) : rows;
-  return <div className="mx-auto w-full max-w-work p-4 md:p-8">
+  return <div className="min-w-0 w-full">
     <PageHeader title="Projetos" description={totals.data ? `${totals.data.activeProjects} ativos · ${totals.data.favoriteProjects} favoritos na conta` : undefined}
       isLoading={projects.isFetching && !projects.isPending} actions={<Button className="max-sm:min-h-11" onClick={() => { setEdit(null); setCreating(true); }}><Plus aria-hidden />Novo projeto</Button>} />
     <div className="my-5 flex flex-wrap items-center justify-between gap-3"><ToggleGroup type="single" value={filter} onValueChange={v => v && setFilter(v)} aria-label="Filtrar projetos"><ToggleGroupItem value="active">Ativos</ToggleGroupItem><ToggleGroupItem value="favorites">Favoritos</ToggleGroupItem></ToggleGroup><Button asChild variant="link"><Link to="/all-data?tab=projects&archived=1"><Archive aria-hidden />Ver arquivados</Link></Button></div>

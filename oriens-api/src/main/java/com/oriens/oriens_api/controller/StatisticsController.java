@@ -20,6 +20,12 @@ public class StatisticsController {
     private final com.oriens.oriens_api.service.StatisticsReadService read;
     private final com.oriens.oriens_api.service.FinancialStatisticsService finance;
 
+    @GetMapping("/user/{userId}/streak")
+    public com.oriens.oriens_api.entity.dto.statistics.StatisticsViews.Streak streak(
+            org.springframework.security.core.Authentication auth, @PathVariable Long userId) {
+        return read.streak(owner.matching(auth, userId));
+    }
+
     @GetMapping("/user/{userId}/activity")
     public Object activity(org.springframework.security.core.Authentication auth, @PathVariable Long userId,
             @org.springframework.web.bind.annotation.RequestParam @org.springframework.format.annotation.DateTimeFormat(iso=org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,

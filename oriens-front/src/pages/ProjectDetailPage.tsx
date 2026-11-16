@@ -29,7 +29,7 @@ import type { WorkTask } from '@/types/work';
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
-  if (!Number.isSafeInteger(Number(id)) || Number(id) <= 0) return <div className="p-4 md:p-8"><PageHeader title="Projeto indisponível" /><Button asChild variant="link"><Link to="/projects">Voltar a Projetos</Link></Button></div>;
+  if (!Number.isSafeInteger(Number(id)) || Number(id) <= 0) return <div className="min-w-0 w-full"><PageHeader title="Projeto indisponível" /><Button asChild variant="link"><Link to="/projects">Voltar a Projetos</Link></Button></div>;
   return <ProjectDetail key={id} id={Number(id)} />;
 }
 function ProjectDetail({ id }: { id: number }) {
@@ -49,10 +49,10 @@ function ProjectDetail({ id }: { id: number }) {
   const [uploadError, setUploadError] = useState('');
   const setParam = (name: string, value: string) => setParams(previous => { const next = new URLSearchParams(previous); if (!value || value === 'none') next.delete(name); else next.set(name, value); return next; });
   const clearFilters = () => setParams(previous => { const next = new URLSearchParams(previous); ['objective', 'planning', 'overdue', 'open'].forEach(k => next.delete(k)); return next; });
-  if (!project) return <div className="p-4 md:p-8"><Button asChild variant="link"><Link to="/projects">Voltar a Projetos</Link></Button>{query.isPending ? <div className="mt-4 flex flex-col gap-4" aria-label="Carregando projeto"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 w-full" /></div> : <WorkFeedback error={query.error} retry={() => void query.refetch()} />}</div>;
+  if (!project) return <div className="min-w-0 w-full"><Button asChild variant="link"><Link to="/projects">Voltar a Projetos</Link></Button>{query.isPending ? <div className="mt-4 flex flex-col gap-4" aria-label="Carregando projeto"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 w-full" /></div> : <WorkFeedback error={query.error} retry={() => void query.refetch()} />}</div>;
   const development = project.mode === 'DEVELOPMENT'; const s = project.summary;
   const showTask = (task: WorkTask) => setEditor({ task });
-  return <div className="mx-auto w-full max-w-work p-4 tabular-nums md:p-8">
+  return <div className="min-w-0 w-full tabular-nums">
     <nav aria-label="Breadcrumb" className="mb-4 text-sm"><Link to="/projects" className="hover:underline">Projetos</Link><span aria-hidden> › </span><span>{project.title}</span></nav>
     {project.imageUrl && <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="mb-6 aspect-project-cover w-full rounded-lg object-cover" />}
     <PageHeader title={project.title} description={project.description || (development ? 'Desenvolvimento' : 'Simples')} isLoading={query.isFetching}

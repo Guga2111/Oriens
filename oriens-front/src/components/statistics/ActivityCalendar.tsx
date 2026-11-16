@@ -5,7 +5,7 @@ import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Calendar } from '@/components/ui/calendar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AnalysisPanel } from './AnalysisPrimitives';
@@ -42,7 +42,17 @@ export function ActivityCalendar({ period, today, tasks, habits, onWindowChange,
     return day ? format(productDate(day), 'MMM', { locale: ptBR }) : '';
   });
   return <AnalysisPanel title="Calendário de atividade" description={`Janela própria · ${intervalLabel(period)}`} action={<div className="flex gap-1">
-    <Popover open={lookupOpen} onOpenChange={next => { if (next) lookupSelection.current = false; setLookupOpen(next); }}><PopoverTrigger asChild><Button ref={lookupTrigger} variant="ghost" size="icon" aria-label="Consultar atividade por data"><CalendarDays data-icon="inline-start" /></Button></PopoverTrigger><PopoverContent align="end" onCloseAutoFocus={event => { if (lookupSelection.current) event.preventDefault(); }}><label className="flex flex-col gap-2 text-sm">Consultar data<Input type="date" aria-label="Consultar atividade de uma data" min={period.startDate} max={period.endDate} onChange={event => { if (event.target.value >= period.startDate && event.target.value <= period.endDate) { lookupSelection.current = true; setLookupOpen(false); setSelected(event.target.value); onSelect(event.target.value, refs.current.get(event.target.value) ?? lookupTrigger.current ?? event.currentTarget); } }} /></label></PopoverContent></Popover>
+    <Popover open={lookupOpen} onOpenChange={next => { if (next) lookupSelection.current = false; setLookupOpen(next); }}><PopoverTrigger asChild><Button ref={lookupTrigger} variant="ghost" size="icon" aria-label="Consultar atividade por data"><CalendarDays data-icon="inline-start" /></Button></PopoverTrigger><PopoverContent align="end" className="w-auto p-0" onCloseAutoFocus={event => { if (lookupSelection.current) event.preventDefault(); }}>
+      <Calendar mode="single" required aria-label="Consultar atividade de uma data" locale={ptBR} weekStartsOn={1} today={productDate(today)} defaultMonth={productDate(period.endDate)} selected={productDate(selected ?? period.endDate)} initialFocus
+        disabled={[{ before: productDate(period.startDate) }, { after: productDate(period.endDate < today ? period.endDate : today) }]}
+        labels={{ labelPrevious: () => 'Mês anterior', labelNext: () => 'Próximo mês', labelDay: date => fullDate(dateKey(date)) }}
+        onSelect={day => {
+          if (!day) return;
+          const date = dateKey(day);
+          lookupSelection.current = true; setLookupOpen(false); setSelected(date); setFocused(date);
+          onSelect(date, refs.current.get(date) ?? lookupTrigger.current!);
+        }} />
+    </PopoverContent></Popover>
     <Button variant="ghost" size="icon" aria-label="Recuar janela anual um mês" onClick={() => onWindowChange(dateKey(subMonths(productDate(period.endDate), 1)))}><ChevronLeft data-icon="inline-start" /></Button>
     <Button variant="ghost" size="icon" aria-label="Avançar janela anual um mês" disabled={period.endDate >= today} onClick={() => onWindowChange(dateKey(subMonths(productDate(period.endDate), -1)) > today ? today : dateKey(subMonths(productDate(period.endDate), -1)))}><ChevronRight data-icon="inline-start" /></Button>
   </div>}>

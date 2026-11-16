@@ -20,10 +20,10 @@ describe('estatísticas — interação e consistência de cache', () => {
     const changed = vi.fn();
     render(<StatisticsPeriodPicker value={{ startDate: '2026-10-17', endDate: '2026-11-15' }} today="2026-11-15" mode="30" onModeChange={vi.fn()} onChange={changed} />);
     fireEvent.click(screen.getByRole('button', { name: /Escolher intervalo:/ }));
-    fireEvent.click(screen.getByRole('gridcell', { name: '20', exact: true }));
+    fireEvent.click(screen.getByRole('gridcell', { name: '20' }));
     expect(screen.getByRole('button', { name: 'Aplicar período' })).toBeDisabled();
     expect(changed).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('gridcell', { name: '25', exact: true }));
+    fireEvent.click(screen.getByRole('gridcell', { name: '25' }));
     fireEvent.click(screen.getByRole('button', { name: 'Aplicar período' }));
     expect(changed).toHaveBeenCalledWith({ startDate: '2026-10-20', endDate: '2026-10-25' });
   });
@@ -57,6 +57,8 @@ describe('estatísticas — interação e consistência de cache', () => {
   it('mutações de tarefa invalidam suas análises, sem atualizar domínios independentes ou outra conta', () => {
     const result = { id: 1, previousPlannedDate: '2026-11-15', affectedProjectIds: [] };
     expect(taskAffectsKey(workKey(7, 'statistics', 'activity'), 7, result, '2026-11-15')).toBe(true);
+    expect(taskAffectsKey(workKey(7, 'statistics', 'streak', '2026-11-15'), 7, result, '2026-11-15')).toBe(true);
+    expect(taskAffectsKey(workKey(8, 'statistics', 'streak', '2026-11-15'), 7, result, '2026-11-15')).toBe(false);
     expect(taskAffectsKey(workKey(7, 'statistics', 'task-evidence'), 7, result, '2026-11-15')).toBe(true);
     expect(taskAffectsKey(workKey(7, 'statistics', 'finance'), 7, result, '2026-11-15')).toBe(false);
     expect(taskAffectsKey(workKey(7, 'statistics', 'habits'), 7, result, '2026-11-15')).toBe(false);
@@ -74,5 +76,6 @@ describe('estatísticas — interação e consistência de cache', () => {
     await act(async () => { result = await write.mutateAsync(command); });
     expect(result!.refreshFailed).toBe(true); expect(statisticsService.writeHabit).toHaveBeenCalledTimes(1);
     expect(client.invalidateQueries).toHaveBeenCalledWith({ queryKey: workKey(7, 'statistics', 'habits') }, { throwOnError: true });
+    expect(client.invalidateQueries).toHaveBeenCalledWith({ queryKey: workKey(7, 'statistics', 'streak') }, { throwOnError: true });
   });
 });

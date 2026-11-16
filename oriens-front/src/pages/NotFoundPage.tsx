@@ -14,7 +14,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background-brand px-6 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background-brand px-page text-center">
       <OriensLogo className="h-10 w-10" title="Oriens" />
       <p className="text-sm font-medium text-primary">Erro 404</p>
       <h1 className="text-4xl font-bold tracking-tight">

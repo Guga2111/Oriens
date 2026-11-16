@@ -52,6 +52,12 @@ http.createServer(async(req,res)=>{
   if(qa==='error'||(qa==='partial-error'&&u.includes('/finance')))return send({message:'Falha sintética de QA'},503);
   let body={};if(!['GET','HEAD'].includes(method)){let raw='';for await(const c of req)raw+=c;body=raw?JSON.parse(raw):{};}
   const p=period(url.searchParams),empty=qa==='empty',ts=empty?[]:tasks,hs=empty?[]:habits,es=empty?[]:entries;
+  if(u.endsWith('/streak')){
+   const dates=new Set([...ts.filter(t=>t.status==='CONCLUDED'&&t.completedAt<=today).map(t=>t.completedAt),...hs.flatMap(h=>[...h.executions].filter(d=>d<=today&&state(h,d)==='DONE'))]);
+   const throughDate=dates.has(today)?today:dates.has(add(today,-1))?add(today,-1):null;let days=0,startDate=null;
+   if(throughDate)for(let d=throughDate;dates.has(d);d=add(d,-1)){days++;startDate=d;}
+   return send({today,days,startDate,throughDate,lowerBound:!!startDate&&startDate<=coverageFrom,coverageFrom});
+  }
   if(u.endsWith('/activity'))return send(activity(p,ts));
   if(u.endsWith('/planning'))return send(planning(p,ts));
   if(u.endsWith('/finance'))return send(finance(p,es));

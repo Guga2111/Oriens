@@ -7,11 +7,12 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AnalysisPanel, AnalysisEmpty, QueryContent } from '@/components/statistics/AnalysisPrimitives';
 import { ActivityCalendar } from '@/components/statistics/ActivityCalendar';
+import { ActivityStreak } from '@/components/statistics/ActivityStreak';
 import { StatisticsPeriodPicker } from '@/components/statistics/StatisticsPeriodPicker';
 import { HabitManager, HabitMatrix } from '@/components/statistics/HabitAnalysis';
 import { FinanceChart } from '@/components/statistics/AnalysisCharts';
 import { StatisticsEvidence, type Evidence } from '@/components/statistics/StatisticsEvidence';
-import { useActivity, useFinanceStatistics, useHabitStatistics, usePlanning } from '@/hooks/useStatistics';
+import { useActivity, useActivityStreak, useFinanceStatistics, useHabitStatistics, usePlanning } from '@/hooks/useStatistics';
 import { useProductToday } from '@/hooks/useProductToday';
 import { activityCells, countChange, dateKey, formatRate, intervalLabel, previousInterval, rate, rateChange } from '@/lib/statistics';
 import { productDate } from '@/lib/product-time';
@@ -35,7 +36,8 @@ export function StatisticsPage() {
   const annual = useMemo(() => ({ startDate: dateKey(addDays(subYears(productDate(annualEnd), 1), 1)), endDate: annualEnd }), [annualEnd]);
   const tasks = useActivity(period), planning = usePlanning(period), habits = useHabitStatistics(period), finance = useFinanceStatistics(period);
   const yearTasks = useActivity(annual), yearHabits = useHabitStatistics(annual);
-  const queries = [tasks, planning, habits, finance, yearTasks, yearHabits];
+  const streak = useActivityStreak();
+  const queries = [tasks, planning, habits, finance, yearTasks, yearHabits, streak];
   const updating = queries.some(q => q.isFetching), previous = previousInterval(period);
   const days = useMemo(() => activityCells(period, today, tasks.data, habits.data), [period, today, tasks.data, habits.data]);
   const activeDays = days.filter(d => d.total > 0).length, partialCoverage = days.some(d => !d.covered);
@@ -43,12 +45,12 @@ export function StatisticsPage() {
   function evidence(next: Evidence, element: HTMLElement) { opener.current = element; setSelection(next); }
   function openHabits(element: HTMLElement) { opener.current = element; setManageHabits(true); }
   const comparison = `Anterior: ${intervalLabel(previous)}`;
-  return <div className="statistics-screen mx-auto flex w-full max-w-work flex-col gap-4 p-4 md:p-6 lg:p-8">
+  return <div className="statistics-screen flex min-w-0 w-full flex-col gap-4">
     <PageHeader className="w-full" title="Estatísticas" description={<> {intervalLabel(period)}{period.endDate === today ? ' · período parcial, hoje em andamento' : ''}</>} isLoading={updating}
       actions={<><StatisticsPeriodPicker value={period} today={today} onChange={setPeriod} mode={mode} onModeChange={setMode} /><Button variant="ghost" size="icon" aria-label="Atualizar estatísticas" disabled={updating} onClick={() => void Promise.allSettled(queries.map(q => q.refetch()))}><RefreshCw data-icon="inline-start" /></Button></>} />
     <div className="flex w-full flex-wrap items-center justify-between gap-2 text-sm">
-      {!tasks.data && !habits.data && (tasks.isPending || habits.isPending) ? <Skeleton className="h-7 w-72" /> : <p><strong className="text-2xl font-semibold tabular-nums">{tasks.data || habits.data ? activeDays : '—'}</strong> dias com registros no período · <strong className="font-semibold tabular-nums">{tasks.data?.total ?? '—'}</strong> tarefas concluídas{partialCoverage ? ' · cobertura parcial' : ''}{tasks.data && <span className="ml-2 text-xs text-muted-foreground">Conclusões: {countChange(tasks.data.total, tasks.data.previousTotal)}{previous.startDate < tasks.data.coverageFrom ? ' · histórico anterior parcial' : ''}.</span>}</p>}
-      <p className="text-xs text-muted-foreground">{updatedAt ? `Atualizado às ${new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Recife', hour: '2-digit', minute: '2-digit' }).format(updatedAt)}` : 'Aguardando dados'}</p>
+      {!tasks.data && !habits.data && (tasks.isPending || habits.isPending) ? <Skeleton className="h-7 w-72" /> : <p className="min-w-0 flex-1 basis-80"><strong className="text-2xl font-semibold tabular-nums">{tasks.data || habits.data ? activeDays : '—'}</strong> dias com registros no período · <strong className="font-semibold tabular-nums">{tasks.data?.total ?? '—'}</strong> tarefas concluídas{partialCoverage ? ' · cobertura parcial' : ''}{tasks.data && <span className="ml-2 text-xs text-muted-foreground">Conclusões: {countChange(tasks.data.total, tasks.data.previousTotal)}{previous.startDate < tasks.data.coverageFrom ? ' · histórico anterior parcial' : ''}.</span>}</p>}
+      <div className="flex flex-wrap items-center gap-3"><ActivityStreak query={streak} /><p className="text-xs text-muted-foreground">{updatedAt ? `Atualizado às ${new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Recife', hour: '2-digit', minute: '2-digit' }).format(updatedAt)}` : 'Aguardando dados'}</p></div>
     </div>
     <ActivityCalendar period={annual} today={today} tasks={yearTasks} habits={yearHabits} onWindowChange={setAnnualEnd} onSelect={(date, element) => evidence({ kind: 'day', period: { startDate: date, endDate: date } }, element)} />
     <div className="grid w-full min-w-0 items-start gap-4 xl:grid-cols-12">

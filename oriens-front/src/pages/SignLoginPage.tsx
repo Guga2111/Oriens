@@ -135,7 +135,7 @@ const handleForgotPassword = async (e: React.FormEvent) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background-brand">
+    <div className="min-h-screen flex items-center justify-center px-page py-4 bg-background-brand">
       <div className="w-full max-w-md">
         {/* Logo e Título */}
         <div className="flex flex-col items-center mb-8">

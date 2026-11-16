@@ -1,0 +1,1679 @@
+{
+  "checks": [
+    "/tasks 390 mobile: equal 16px gutters, full-width content",
+    "/projects 390 mobile: equal 16px gutters, full-width content",
+    "/stats 390 mobile: equal 16px gutters, full-width content",
+    "/config 390 mobile: equal 16px gutters, full-width content",
+    "/tasks/project/9 390 mobile: equal 16px gutters, full-width content",
+    "/tasks/project/invalid 390 mobile: equal 16px gutters, full-width content",
+    "/financial 390 mobile: equal 16px gutters, full-width content",
+    "/all-data 390 mobile: equal 16px gutters, full-width content",
+    "/support 390 mobile: equal 16px gutters, full-width content",
+    "/admin/support 390 mobile: equal 16px gutters, full-width content",
+    "/admin/management 390 mobile: equal 16px gutters, full-width content",
+    "/tasks 768 mobile: equal 32px gutters, full-width content",
+    "/projects 768 mobile: equal 32px gutters, full-width content",
+    "/stats 768 mobile: equal 32px gutters, full-width content",
+    "/config 768 mobile: equal 32px gutters, full-width content",
+    "/tasks/project/9 768 mobile: equal 32px gutters, full-width content",
+    "/tasks/project/invalid 768 mobile: equal 32px gutters, full-width content",
+    "/financial 768 mobile: equal 32px gutters, full-width content",
+    "/all-data 768 mobile: equal 32px gutters, full-width content",
+    "/support 768 mobile: equal 32px gutters, full-width content",
+    "/admin/support 768 mobile: equal 32px gutters, full-width content",
+    "/admin/management 768 mobile: equal 32px gutters, full-width content",
+    "/tasks 1440 expanded: equal 32px gutters, full-width content",
+    "/projects 1440 expanded: equal 32px gutters, full-width content",
+    "/stats 1440 expanded: equal 32px gutters, full-width content",
+    "/config 1440 expanded: equal 32px gutters, full-width content",
+    "/tasks/project/9 1440 expanded: equal 32px gutters, full-width content",
+    "/tasks/project/invalid 1440 expanded: equal 32px gutters, full-width content",
+    "/financial 1440 expanded: equal 32px gutters, full-width content",
+    "/all-data 1440 expanded: equal 32px gutters, full-width content",
+    "/support 1440 expanded: equal 32px gutters, full-width content",
+    "/admin/support 1440 expanded: equal 32px gutters, full-width content",
+    "/admin/management 1440 expanded: equal 32px gutters, full-width content",
+    "/tasks 1440 collapsed: equal 32px gutters, full-width content",
+    "/projects 1440 collapsed: equal 32px gutters, full-width content",
+    "/stats 1440 collapsed: equal 32px gutters, full-width content",
+    "/config 1440 collapsed: equal 32px gutters, full-width content",
+    "/tasks/project/9 1440 collapsed: equal 32px gutters, full-width content",
+    "/tasks/project/invalid 1440 collapsed: equal 32px gutters, full-width content",
+    "/financial 1440 collapsed: equal 32px gutters, full-width content",
+    "/all-data 1440 collapsed: equal 32px gutters, full-width content",
+    "/support 1440 collapsed: equal 32px gutters, full-width content",
+    "/admin/support 1440 collapsed: equal 32px gutters, full-width content",
+    "/admin/management 1440 collapsed: equal 32px gutters, full-width content",
+    "/tasks 1920 expanded: equal 32px gutters, full-width content",
+    "/projects 1920 expanded: equal 32px gutters, full-width content",
+    "/stats 1920 expanded: equal 32px gutters, full-width content",
+    "/config 1920 expanded: equal 32px gutters, full-width content",
+    "/tasks/project/9 1920 expanded: equal 32px gutters, full-width content",
+    "/tasks/project/invalid 1920 expanded: equal 32px gutters, full-width content",
+    "/financial 1920 expanded: equal 32px gutters, full-width content",
+    "/all-data 1920 expanded: equal 32px gutters, full-width content",
+    "/support 1920 expanded: equal 32px gutters, full-width content",
+    "/admin/support 1920 expanded: equal 32px gutters, full-width content",
+    "/admin/management 1920 expanded: equal 32px gutters, full-width content",
+    "/tasks 1920 collapsed: equal 32px gutters, full-width content",
+    "/projects 1920 collapsed: equal 32px gutters, full-width content",
+    "/stats 1920 collapsed: equal 32px gutters, full-width content",
+    "/config 1920 collapsed: equal 32px gutters, full-width content",
+    "/tasks/project/9 1920 collapsed: equal 32px gutters, full-width content",
+    "/tasks/project/invalid 1920 collapsed: equal 32px gutters, full-width content",
+    "/financial 1920 collapsed: equal 32px gutters, full-width content",
+    "/all-data 1920 collapsed: equal 32px gutters, full-width content",
+    "/support 1920 collapsed: equal 32px gutters, full-width content",
+    "/admin/support 1920 collapsed: equal 32px gutters, full-width content",
+    "/admin/management 1920 collapsed: equal 32px gutters, full-width content",
+    "/tasks 2560 expanded: equal 32px gutters, full-width content",
+    "/projects 2560 expanded: equal 32px gutters, full-width content",
+    "/stats 2560 expanded: equal 32px gutters, full-width content",
+    "/config 2560 expanded: equal 32px gutters, full-width content",
+    "/tasks/project/9 2560 expanded: equal 32px gutters, full-width content",
+    "/tasks/project/invalid 2560 expanded: equal 32px gutters, full-width content",
+    "/financial 2560 expanded: equal 32px gutters, full-width content",
+    "/all-data 2560 expanded: equal 32px gutters, full-width content",
+    "/support 2560 expanded: equal 32px gutters, full-width content",
+    "/admin/support 2560 expanded: equal 32px gutters, full-width content",
+    "/admin/management 2560 expanded: equal 32px gutters, full-width content",
+    "/tasks 2560 collapsed: equal 32px gutters, full-width content",
+    "/projects 2560 collapsed: equal 32px gutters, full-width content",
+    "/stats 2560 collapsed: equal 32px gutters, full-width content",
+    "/config 2560 collapsed: equal 32px gutters, full-width content",
+    "/tasks/project/9 2560 collapsed: equal 32px gutters, full-width content",
+    "/tasks/project/invalid 2560 collapsed: equal 32px gutters, full-width content",
+    "/financial 2560 collapsed: equal 32px gutters, full-width content",
+    "/all-data 2560 collapsed: equal 32px gutters, full-width content",
+    "/support 2560 collapsed: equal 32px gutters, full-width content",
+    "/admin/support 2560 collapsed: equal 32px gutters, full-width content",
+    "/admin/management 2560 collapsed: equal 32px gutters, full-width content"
+  ],
+  "measurements": [
+    {
+      "path": "/tasks",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/projects",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/stats",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/config",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/9",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/invalid",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/financial",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/all-data",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/support",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/admin/support",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/admin/management",
+      "width": 390,
+      "sidebar": "mobile",
+      "padding": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "innerWidth": 358,
+      "rootWidth": 358,
+      "sectionWidth": 358,
+      "left": 16,
+      "rootLeft": 16,
+      "right": 16,
+      "overflow": false
+    },
+    {
+      "path": "/tasks",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/projects",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/stats",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/config",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/9",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/invalid",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/financial",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/all-data",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/support",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/support",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/management",
+      "width": 768,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 704,
+      "rootWidth": 704,
+      "sectionWidth": 704,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/projects",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/stats",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/config",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/9",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/invalid",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/financial",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/all-data",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/support",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/support",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/management",
+      "width": 1440,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1120,
+      "rootWidth": 1120,
+      "sectionWidth": 1120,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/projects",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/stats",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/config",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/9",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/invalid",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/financial",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/all-data",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/support",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/support",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/management",
+      "width": 1440,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1328,
+      "rootWidth": 1328,
+      "sectionWidth": 1328,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/projects",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/stats",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/config",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/9",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/invalid",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/financial",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/all-data",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/support",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/support",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/management",
+      "width": 1920,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1600,
+      "rootWidth": 1600,
+      "sectionWidth": 1600,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/projects",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/stats",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/config",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/9",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/invalid",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/financial",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/all-data",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/support",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/support",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/management",
+      "width": 1920,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 1808,
+      "rootWidth": 1808,
+      "sectionWidth": 1808,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/projects",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/stats",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/config",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/9",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/invalid",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/financial",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/all-data",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/support",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/support",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/management",
+      "width": 2560,
+      "sidebar": "expanded",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2240,
+      "rootWidth": 2240,
+      "sectionWidth": 2240,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/projects",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/stats",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/config",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/9",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/invalid",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/financial",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/all-data",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/support",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/support",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    },
+    {
+      "path": "/admin/management",
+      "width": 2560,
+      "sidebar": "collapsed",
+      "padding": [
+        32,
+        32,
+        32,
+        32
+      ],
+      "innerWidth": 2448,
+      "rootWidth": 2448,
+      "sectionWidth": 2448,
+      "left": 32,
+      "rootLeft": 32,
+      "right": 32,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

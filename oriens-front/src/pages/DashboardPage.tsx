@@ -108,8 +108,8 @@ export function DashboardPage() {
 
   return (
     <>
-      <div className="planning-screen p-4 sm:p-6 md:p-8">
-        <div className="mx-auto max-w-planning">
+      <div className="planning-screen min-w-0 w-full">
+        <div className="min-w-0 w-full">
           <PageHeader
             className="md:flex-col lg:flex-row"
             title={title}

@@ -1,19 +1,20 @@
 {
   "checks": [
+    "streak opens by keyboard and returns focus",
     "batched annual queries",
     "keyboard day navigation, selection, close and focus return",
-    "global period applied to domain queries",
+    "global period applied to domain queries; current streak stays independent",
     "financial evidence pagination",
     "category and period preserved in evidence",
-    "habit creation, execution/uncheck and live aggregates",
+    "habit creation, execution/uncheck refresh aggregates and streak",
     "habit pause excludes expected occurrence",
     "habit editing and archive preserve history",
     "bounded layout 1440px",
     "bounded layout 768px",
     "bounded layout 390px",
-    "touch selection at 390px",
+    "streak and calendar touch selection at 390px",
     "no browser exceptions"
   ],
-  "requestCount": 59,
+  "requestCount": 69,
   "errors": []
 }

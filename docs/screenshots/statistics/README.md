@@ -1,5 +1,8 @@
 # Estatísticas — implementação e evidências
 
+Esta é a validação original da reformulação. A evolução posterior de sequência
+com chama vermelha e suas novas provas está em [streak](../streak/README.md).
+
 Validado em 15/11/2026. O [desenho aprovado](../../plans/2026-11-15-statistics-design.md)
 contém o diagnóstico, as alternativas e a tabela completa de definições das métricas.
 

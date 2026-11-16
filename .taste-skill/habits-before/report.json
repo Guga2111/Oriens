@@ -1,0 +1,1661 @@
+{
+ "url": "http://127.0.0.1:4221/stats?theme=light",
+ "at": "2026-11-15T23:47:49.421Z",
+ "allow": [
+  "palette-cream"
+ ],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.57,
+    0.59
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 1452,
+     "screens": 1.6,
+     "words": 483,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 52,
+     "sections": 1,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 1,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Estatísticas",
+     "words": 1,
+     "chars": 12,
+     "lines": 1,
+     "size": 24,
+     "vw": 1.7,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Estatísticas",
+     "words": 1,
+     "lines": 1,
+     "size": 24,
+     "font": "Inter"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ],
+     "sizeCount": 7,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 13,
+      "leading": 1.54,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 6.9
+     },
+     "measureChars": 144,
+     "max": {
+      "size": 24,
+      "vw": 1.7,
+      "font": "Inter",
+      "text": "Estatísticas"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.15,
+     "smallText": 1
+    },
+    "eyebrows": [],
+    "numbered": [
+     {
+      "text": "01",
+      "size": 13,
+      "top": 609
+     },
+     {
+      "text": "02",
+      "size": 13,
+      "top": 609
+     },
+     {
+      "text": "03",
+      "size": 13,
+      "top": 609
+     },
+     {
+      "text": "04",
+      "size": 13,
+      "top": 609
+     },
+     {
+      "text": "05",
+      "size": 13,
+      "top": 609
+     },
+     {
+      "text": "06",
+      "size": 13,
+      "top": 609
+     },
+     {
+      "text": "07",
+      "size": 13,
+      "top": 609
+     },
+     {
+      "text": "08",
+      "size": 13,
+      "top": 609
+     },
+     {
+      "text": "09",
+      "size": 13,
+      "top": 609
+     }
+    ],
+    "color": {
+     "bodyBg": "#f7f5ec",
+     "bodyBgHsl": {
+      "h": 49,
+      "s": 0.41,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f7f5ec",
+       "top": 0,
+       "hsl": {
+        "h": 49,
+        "s": 0.41,
+        "l": 0.95
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#6b544c",
+       "share": 0.58
+      },
+      {
+       "color": "#2f1a1c",
+       "share": 0.3
+      },
+      {
+       "color": "#721228",
+       "share": 0.09
+      },
+      {
+       "color": "#2f1a1d",
+       "share": 0.01
+      },
+      {
+       "color": "#ae1c1d",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#f7f5ec",
+      "hsl": {
+       "h": 49,
+       "s": 0.41,
+       "l": 0.95
+      },
+      "fg": "#2f1a1c"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 4,
+     "inHero": 4,
+     "radius": 6,
+     "height": 32,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Estatísticas",
+      "Últimos 30 dias",
+      "17/10 – 15/11",
+      "9 dias seguidos"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 4,
+     "hairlineSamples": [
+      "div.fixed.inset-y-0 256px",
+      "div.flex.flex-col 255px",
+      "div.flex.flex-col 255px",
+      "header.sticky.top-0 1184px"
+     ],
+     "outlinedBoxes": 5,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 5,
+     "boxRadius": 8,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 48,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 1452,
+    "margins": {
+     "left": 288,
+     "right": 49
+    },
+    "sections": [
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 200,
+      "height": 275,
+      "words": 42,
+      "media": 0,
+      "middle": 65,
+      "heading": {
+       "text": "Calendário de atividade",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 305,
+      "right": 49,
+      "textLeft": 305,
+      "textRight": 49,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.w-full",
+      "tag": "div",
+      "top": 491,
+      "height": 845,
+      "words": 178,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "30",
+       "size": 24,
+       "tag": "strong"
+      },
+      "left": 305,
+      "right": 49,
+      "textLeft": 305,
+      "textRight": 49,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Estatísticas",
+      "size": 24,
+      "top": 80,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 305,
+      "n": 4
+     },
+     {
+      "x": 288,
+      "n": 1
+     },
+     {
+      "x": 778,
+      "n": 1
+     },
+     {
+      "x": 1062,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 7,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.11,
+    "voidBox": {
+     "x": 0,
+     "y": 360,
+     "w": 300,
+     "h": 480
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#f7f5ec",
+    "sidebar": {
+     "w": 256,
+     "tag": "div",
+     "links": 7,
+     "share": 0.18
+    },
+    "topbar": {
+     "h": 48
+    },
+    "canvas": {
+     "left": 49,
+     "right": -262
+    },
+    "hero": {
+     "text": "Estatísticas",
+     "words": 1,
+     "chars": 12,
+     "lines": 1,
+     "size": 24,
+     "vw": 1.7,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 80,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 2,
+    "layout": {
+     "panels": 5,
+     "firstScreen": 3,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 5,
+     "radii": [
+      [
+       8,
+       5
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 49,
+       "size": 40,
+       "radius": "6px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 38,
+     "tabularShare": 1,
+     "kpiMax": 24
+    },
+    "rows": {
+     "count": 10,
+     "median": 17
+    },
+    "chartHues": 1,
+    "placeholders": [],
+    "type": {
+     "under13": 0.4,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Estatísticas",
+     "size": 24,
+     "top": 80
+    },
+    "colourShare": 0.006
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    0.71,
+    0.83,
+    0.8
+   ],
+   "motion": {
+    "elements": 1,
+    "css": 1,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 2328,
+     "screens": 2.3,
+     "words": 468,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 45,
+     "sections": 1,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 2,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Estatísticas",
+     "words": 1,
+     "chars": 12,
+     "lines": 1,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 72,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Estatísticas",
+     "words": 1,
+     "lines": 1,
+     "size": 24,
+     "font": "Inter"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ],
+     "sizeCount": 7,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 13,
+      "leading": 1.54,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 6.9
+     },
+     "measureChars": 111,
+     "max": {
+      "size": 24,
+      "vw": 3.1,
+      "font": "Inter",
+      "text": "Estatísticas"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.16,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [
+     {
+      "text": "01",
+      "size": 13,
+      "top": 1031
+     },
+     {
+      "text": "02",
+      "size": 13,
+      "top": 1031
+     },
+     {
+      "text": "03",
+      "size": 13,
+      "top": 1031
+     },
+     {
+      "text": "04",
+      "size": 13,
+      "top": 1031
+     },
+     {
+      "text": "05",
+      "size": 13,
+      "top": 1031
+     },
+     {
+      "text": "06",
+      "size": 13,
+      "top": 1031
+     },
+     {
+      "text": "07",
+      "size": 13,
+      "top": 1031
+     },
+     {
+      "text": "08",
+      "size": 13,
+      "top": 1031
+     },
+     {
+      "text": "09",
+      "size": 13,
+      "top": 1031
+     }
+    ],
+    "color": {
+     "bodyBg": "#f7f5ec",
+     "bodyBgHsl": {
+      "h": 49,
+      "s": 0.41,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f7f5ec",
+       "top": 0,
+       "hsl": {
+        "h": 49,
+        "s": 0.41,
+        "l": 0.95
+       }
+      },
+      {
+       "color": "#fcfdf9",
+       "top": 567,
+       "hsl": {
+        "h": 75,
+        "s": 0.5,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#6b544c",
+       "share": 0.61
+      },
+      {
+       "color": "#2f1a1c",
+       "share": 0.28
+      },
+      {
+       "color": "#721228",
+       "share": 0.1
+      },
+      {
+       "color": "#ae1c1d",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#f7f5ec",
+      "hsl": {
+       "h": 49,
+       "s": 0.41,
+       "l": 0.95
+      },
+      "fg": "#2f1a1c"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 3,
+     "radius": 6,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Últimos 30 dias",
+      "17/10 – 15/11",
+      "9 dias seguidos"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 1,
+     "hairlineSamples": [
+      "header.sticky.top-0 768px"
+     ],
+     "outlinedBoxes": 5,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 5,
+     "boxRadius": 8,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 48,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 2328,
+    "margins": {
+     "left": 24,
+     "right": 24
+    },
+    "sections": [
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 244,
+      "height": 307,
+      "words": 38,
+      "media": 0,
+      "middle": 40,
+      "heading": {
+       "text": "Calendário de atividade",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 41,
+      "right": 41,
+      "textLeft": 41,
+      "textRight": 70,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.w-full",
+      "tag": "div",
+      "top": 567,
+      "height": 1633,
+      "words": 181,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "30",
+       "size": 24,
+       "tag": "strong"
+      },
+      "left": 41,
+      "right": 41,
+      "textLeft": 41,
+      "textRight": 41,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Estatísticas",
+      "size": 24,
+      "top": 72,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 41,
+      "n": 6
+     },
+     {
+      "x": 24,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 7,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#f7f5ec",
+    "sidebar": null,
+    "topbar": {
+     "h": 48
+    },
+    "canvas": {
+     "left": 24,
+     "right": -210
+    },
+    "hero": {
+     "text": "Estatísticas",
+     "words": 1,
+     "chars": 12,
+     "lines": 1,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 72,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 2,
+    "layout": {
+     "panels": 5,
+     "firstScreen": 3,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 5,
+     "radii": [
+      [
+       8,
+       5
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 49,
+       "size": 40,
+       "radius": "6px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 38,
+     "tabularShare": 1,
+     "kpiMax": 24
+    },
+    "rows": {
+     "count": 10,
+     "median": 17
+    },
+    "chartHues": 1,
+    "placeholders": [],
+    "type": {
+     "under13": 0.4,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Estatísticas",
+     "size": 24,
+     "top": 72
+    },
+    "colourShare": 0.007
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 4,
+   "filled": [
+    0.69,
+    0.84,
+    0.78,
+    0.69
+   ],
+   "motion": {
+    "elements": 3,
+    "css": 3,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 3173,
+     "screens": 3.8,
+     "words": 464,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 45,
+     "sections": 1,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 2,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Estatísticas",
+     "words": 1,
+     "chars": 12,
+     "lines": 1,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 64,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Estatísticas",
+     "words": 1,
+     "lines": 1,
+     "size": 24,
+     "font": "Inter"
+    },
+    "headings": [
+     {
+      "text": "Estatísticas",
+      "words": 1,
+      "chars": 12,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.33,
+      "top": 64,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "27",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.08,
+      "top": 213,
+      "tag": "strong",
+      "kind": "statement"
+     },
+     {
+      "text": "30",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.08,
+      "top": 1042,
+      "tag": "strong",
+      "kind": "statement"
+     },
+     {
+      "text": "76,6%",
+      "words": 1,
+      "chars": 5,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.19,
+      "top": 1532,
+      "tag": "strong",
+      "kind": "statement"
+     },
+     {
+      "text": "R$ 3.580,15",
+      "words": 2,
+      "chars": 11,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 1990,
+      "tag": "p",
+      "kind": "statement"
+     }
+    ],
+    "headingSummary": {
+     "count": 5,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 4,
+     "centered": 0,
+     "medianWords": 1,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ],
+     "sizeCount": 7,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 13,
+      "leading": 1.54,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 6.9
+     },
+     "measureChars": 55,
+     "max": {
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "text": "Estatísticas"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.16,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [
+     {
+      "text": "01",
+      "size": 13,
+      "top": 1608
+     },
+     {
+      "text": "02",
+      "size": 13,
+      "top": 1608
+     },
+     {
+      "text": "03",
+      "size": 13,
+      "top": 1608
+     },
+     {
+      "text": "04",
+      "size": 13,
+      "top": 1608
+     },
+     {
+      "text": "05",
+      "size": 13,
+      "top": 1608
+     },
+     {
+      "text": "06",
+      "size": 13,
+      "top": 1608
+     },
+     {
+      "text": "07",
+      "size": 13,
+      "top": 1608
+     },
+     {
+      "text": "08",
+      "size": 13,
+      "top": 1608
+     },
+     {
+      "text": "09",
+      "size": 13,
+      "top": 1608
+     }
+    ],
+    "color": {
+     "bodyBg": "#f7f5ec",
+     "bodyBgHsl": {
+      "h": 49,
+      "s": 0.41,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f7f5ec",
+       "top": 0,
+       "hsl": {
+        "h": 49,
+        "s": 0.41,
+        "l": 0.95
+       }
+      },
+      {
+       "color": "#fcfdf9",
+       "top": 332,
+       "hsl": {
+        "h": 75,
+        "s": 0.5,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#6b544c",
+       "share": 0.61
+      },
+      {
+       "color": "#2f1a1c",
+       "share": 0.28
+      },
+      {
+       "color": "#721228",
+       "share": 0.1
+      },
+      {
+       "color": "#ae1c1d",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#f7f5ec",
+      "hsl": {
+       "h": 49,
+       "s": 0.41,
+       "l": 0.95
+      },
+      "fg": "#2f1a1c"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 3,
+     "radius": 6,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Últimos 30 dias",
+      "17/10 – 15/11",
+      "9 dias seguidos"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 1,
+     "hairlineSamples": [
+      "header.sticky.top-0 390px"
+     ],
+     "outlinedBoxes": 5,
+     "dashed": 184,
+     "blurred": 0,
+     "roundedBoxes": 5,
+     "boxRadius": 8,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 48,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 3173,
+    "margins": {
+     "left": 16,
+     "right": 33
+    },
+    "sections": [
+     {
+      "sel": "div.flex.flex-col",
+      "tag": "div",
+      "top": 64,
+      "height": 132,
+      "words": 17,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Estatísticas",
+       "size": 24,
+       "tag": "h1"
+      },
+      "left": 16,
+      "right": 24,
+      "textLeft": 16,
+      "textRight": 24,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 332,
+      "height": 616,
+      "words": 31,
+      "media": 0,
+      "middle": 2091,
+      "heading": {
+       "text": "Calendário de atividade",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 0,
+      "right": 33,
+      "textLeft": 29,
+      "textRight": 43,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 964,
+      "height": 474,
+      "words": 34,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "30",
+       "size": 24,
+       "tag": "strong"
+      },
+      "left": 33,
+      "right": 33,
+      "textLeft": 33,
+      "textRight": 33,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 1454,
+      "height": 419,
+      "words": 53,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "76,6%",
+       "size": 24,
+       "tag": "strong"
+      },
+      "left": 33,
+      "right": 33,
+      "textLeft": 33,
+      "textRight": 42,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 1889,
+      "height": 626,
+      "words": 43,
+      "media": 1,
+      "middle": 0,
+      "heading": {
+       "text": "R$ 3.580,15",
+       "size": 24,
+       "tag": "p"
+      },
+      "left": 33,
+      "right": 33,
+      "textLeft": 33,
+      "textRight": 35,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.rounded-lg.border",
+      "tag": "div",
+      "top": 2531,
+      "height": 498,
+      "words": 32,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Despesas por categoria",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 33,
+      "right": 33,
+      "textLeft": 33,
+      "textRight": 33,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Estatísticas",
+      "size": 24,
+      "top": 64,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 33,
+      "n": 6
+     },
+     {
+      "x": 16,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 7,
+    "bodySize": 13,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#f7f5ec",
+    "sidebar": null,
+    "topbar": {
+     "h": 48
+    },
+    "canvas": {
+     "left": 16,
+     "right": -1225
+    },
+    "hero": {
+     "text": "Estatísticas",
+     "words": 1,
+     "chars": 12,
+     "lines": 1,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 64,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 2,
+    "layout": {
+     "panels": 5,
+     "firstScreen": 1,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 5,
+     "radii": [
+      [
+       8,
+       5
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 49,
+       "size": 40,
+       "radius": "6px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 38,
+     "tabularShare": 1,
+     "kpiMax": 24
+    },
+    "rows": {
+     "count": 10,
+     "median": 44
+    },
+    "chartHues": 1,
+    "placeholders": [],
+    "type": {
+     "under13": 0.4,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Estatísticas",
+     "size": 24,
+     "top": 64
+    },
+    "colourShare": 0.001
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/habits-before/desktop-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/habits-before/desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/habits-before/tablet-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/habits-before/tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/habits-before/mobile-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/habits-before/mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

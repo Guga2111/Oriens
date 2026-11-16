@@ -3,6 +3,7 @@ import type { Page, EntryDTO } from './financial';
 export interface Interval { startDate: string; endDate: string }
 export interface AnalysisPeriod extends Interval { previousStartDate: string; previousEndDate: string; today: string; timezone: string; partial: boolean }
 export interface DayCount { date: string; completed: number }
+export interface ActivityStreakData { today: string; days: number | null; startDate: string | null; throughDate: string | null; lowerBound: boolean; coverageFrom: string }
 export interface ActivityData { period: AnalysisPeriod; coverageFrom: string; total: number; previousTotal: number; days: DayCount[]; previousDays: DayCount[] }
 export interface PlanCounts { planned: number; completed: number }
 export interface PlanningData { period: AnalysisPeriod; current: PlanCounts; previous: PlanCounts; overdue: number; overdueByProject: { projectId: number | null; title: string; total: number }[] }

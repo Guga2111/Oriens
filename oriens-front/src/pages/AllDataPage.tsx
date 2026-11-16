@@ -57,8 +57,8 @@ export default function AllDataPage() {
   const pagination = (data: { totalPages: number; totalElements: number } | undefined, page: number) =>
     ({ page, totalPages: data?.totalPages ?? 0, totalElements: data?.totalElements ?? 0 });
   return (
-    <div className="p-6 md:p-8">
-      <div className="flex max-w-[1280px] flex-col gap-6">
+    <div className="min-w-0 w-full">
+      <div className="flex min-w-0 w-full flex-col gap-6">
         <PageHeader title="Todos os dados" description="Visualize todas as suas tarefas e projetos em um só lugar." />
         <Tabs value={tab} onValueChange={value => setParams(current => {
           const next = new URLSearchParams(current); next.set("tab", value); return next;

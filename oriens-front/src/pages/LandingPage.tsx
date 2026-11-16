@@ -32,7 +32,7 @@ export function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background-brand">
       {/* Header */}
-      <header className="px-4 md:px-6">
+      <header className="px-page">
         <div className="mx-auto flex h-16 max-w-[1120px] items-center">
           <Link to="/" className="flex items-center gap-2">
             <OriensLogo className="h-8 w-8" title="Oriens" />
@@ -48,7 +48,7 @@ export function LandingPage() {
       {/* Main Content */}
       <main className="flex-1">
         <section className="w-full py-20 text-center md:py-24">
-          <div className="mx-auto max-w-[1120px] px-4 md:px-6">
+          <div className="mx-auto max-w-[1120px] px-page">
             <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
               Organize suas tarefas com Oriens
             </h1>
@@ -71,7 +71,7 @@ export function LandingPage() {
         </section>
 
         <section id="demo" className="w-full pb-20 md:pb-24">
-          <div className="mx-auto max-w-[1120px] px-4 md:px-6">
+          <div className="mx-auto max-w-[1120px] px-page">
             <img
               src="/oriens-tasks-screen.png"
               alt="Tela de hoje do Oriens com as tarefas do dia em três períodos"
@@ -84,7 +84,7 @@ export function LandingPage() {
           id="features-detail"
           className="w-full bg-brand-burgundy py-20 text-brand-cream md:py-28"
         >
-          <div className="mx-auto grid max-w-[1120px] gap-12 px-4 md:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div className="mx-auto grid max-w-[1120px] gap-12 px-page lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
                 O dia inteiro em uma faixa
@@ -137,7 +137,7 @@ export function LandingPage() {
       </main>
 
       <footer className="bg-background-brand py-16">
-        <div className="mx-auto grid max-w-[1120px] grid-cols-1 gap-8 px-4 text-center md:grid-cols-3 md:px-6 md:text-left">
+        <div className="mx-auto grid max-w-[1120px] grid-cols-1 gap-8 px-page text-center md:grid-cols-3 md:text-left">
           <div className="flex flex-col items-center gap-2 md:items-start">
             <div className="flex items-center gap-2">
               <OriensLogo className="h-6 w-6" />
@@ -205,7 +205,7 @@ export function LandingPage() {
             </div>
           </div>
         </div>
-        <div className="mx-auto mt-8 max-w-[1120px] px-4 md:px-6">
+        <div className="mx-auto mt-8 max-w-[1120px] px-page">
           <p className="text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()} Oriens. Desenvolvido com Spring Boot,
             React, Vite e TypeScript.

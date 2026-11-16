@@ -6,6 +6,11 @@ import { statisticsService } from '@/services/statisticsService';
 import { getAllEntries } from '@/services/financialService';
 import type { HabitCommand, Interval } from '@/types/statistics';
 
+export function useActivityStreak() {
+  const { userId } = useAuth(), today = useProductToday();
+  return useQuery({ queryKey: workKey(userId, 'statistics', 'streak', today), enabled: userId !== null,
+    queryFn: ({ signal }) => statisticsService.streak(userId!, signal) });
+}
 export function useActivity(period: Interval, enabled = true) {
   const { userId } = useAuth(), today = useProductToday();
   return useQuery({ queryKey: workKey(userId, 'statistics', 'activity', period, today), enabled: userId !== null && enabled,
@@ -43,7 +48,7 @@ export function useHabitWrites() {
     const habit = await statisticsService.writeHabit(userId, command);
     // Writes are confirmed independently of a failed refresh. Never repeat creation to refresh.
     try {
-      await client.invalidateQueries({ queryKey: workKey(userId, 'statistics', 'habits') }, { throwOnError: true });
+      await Promise.all(['habits', 'streak'].map(domain => client.invalidateQueries({ queryKey: workKey(userId, 'statistics', domain) }, { throwOnError: true })));
       return { habit, refreshFailed: false };
     } catch { return { habit, refreshFailed: true }; }
   } });

@@ -329,7 +329,7 @@ export function TasksDataTable({
                     Refine a lista de tarefas.
                   </SheetDescription>
                 </SheetHeader>
-                <div className="px-4 pb-4">{filtersPanel}</div>
+                <div className="pb-4">{filtersPanel}</div>
                 <SheetFooter className="flex-row justify-end gap-2">
                   {hasActiveFilters && (
                     <Button variant="outline" onClick={clearFilters}>
