@@ -154,8 +154,8 @@ export function AppSidebar({ projectsVersion = 0 }: AppSidebarProps) {
 
   return (
     <Sidebar side="left" collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-2 py-2">
+      <SidebarHeader className="h-[--app-header-height] shrink-0 justify-center border-b border-sidebar-border px-4 py-0 group-data-[collapsible=icon]:px-2">
+        <div className="flex items-center gap-2">
           <OriensLogo className="h-8 w-8 shrink-0" />
           <span className="truncate text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
             Oriens

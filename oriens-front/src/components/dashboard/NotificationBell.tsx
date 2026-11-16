@@ -116,7 +116,7 @@ const handleMarkAllAsRead = async () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="relative h-10 w-10">
+        <Button variant="ghost" size="icon" className="relative size-11 shrink-0" aria-label={hasUnread ? "Notificações não lidas" : "Notificações"}>
           <Bell className="h-5 w-5" />
           {hasUnread && (
             <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-primary" />

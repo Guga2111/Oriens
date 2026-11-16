@@ -1,0 +1,1370 @@
+{
+ "url": "docs/screenshots/app-header/before/snapshot.html",
+ "at": "2026-11-16T15:54:15.128Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0.38
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 900,
+     "screens": 1,
+     "words": 142,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 18,
+     "sections": 2,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+     "words": 9,
+     "chars": 61,
+     "lines": 1,
+     "size": 24,
+     "vw": 1.7,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 116,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+     "words": 9,
+     "lines": 1,
+     "size": 24,
+     "font": "Inter"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ],
+     "sizeCount": 6,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 500,
+      "tracking": 0,
+      "contrast": 13.6
+     },
+     "measureChars": 25,
+     "max": {
+      "size": 24,
+      "vw": 1.7,
+      "font": "Inter",
+      "text": "Planejamento do lançamento e revisão da "
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.21,
+     "smallText": 2
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f7f5ec",
+     "bodyBgHsl": {
+      "h": 49,
+      "s": 0.41,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f7f5ec",
+       "top": 0,
+       "hsl": {
+        "h": 49,
+        "s": 0.41,
+        "l": 0.95
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#2e1b1c",
+       "share": 0.72
+      },
+      {
+       "color": "#6b554d",
+       "share": 0.2
+      },
+      {
+       "color": "#2e1b1d",
+       "share": 0.05
+      },
+      {
+       "color": "#fceed6",
+       "share": 0.02
+      },
+      {
+       "color": "#731229",
+       "share": 0
+      }
+     ],
+     "button": {
+      "bg": "#efeae1",
+      "hsl": {
+       "h": 39,
+       "s": 0.3,
+       "l": 0.91
+      },
+      "fg": "#2e1b1c"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 5,
+     "inHero": 5,
+     "radius": 6,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Projetos",
+      "Planejamento do lançamento e revisão da ",
+      "Selecionar data",
+      "Adicionar objetivo",
+      "Usar quadro de tarefas"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 4,
+     "hairlineSamples": [
+      "div.fixed.inset-y-0 256px",
+      "div.flex.flex-col 255px",
+      "div.flex.flex-col 255px",
+      "header.sticky.top-0 1184px"
+     ],
+     "outlinedBoxes": 2,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 2,
+     "boxRadius": 8,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 48,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 900,
+    "margins": {
+     "left": 320,
+     "right": 85
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+      "size": 24,
+      "top": 116,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 1077,
+      "n": 2
+     },
+     {
+      "x": 320,
+      "n": 1
+     },
+     {
+      "x": 341,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 4,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.24,
+    "voidBox": {
+     "x": 0,
+     "y": 540,
+     "w": 1020,
+     "h": 300
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#f7f5ec",
+    "sidebar": {
+     "w": 256,
+     "tag": "div",
+     "links": 11,
+     "share": 0.18
+    },
+    "topbar": {
+     "h": 48
+    },
+    "canvas": {
+     "left": 64,
+     "right": 76
+    },
+    "hero": {
+     "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+     "words": 9,
+     "chars": 61,
+     "lines": 1,
+     "size": 24,
+     "vw": 1.7,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 116,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 2,
+     "firstScreen": 2,
+     "ragged": [
+      {
+       "diff": 214,
+       "top": 212
+      }
+     ],
+     "voids": [
+      {
+       "gap": 41,
+       "at": 476,
+       "panel": "Objetivos"
+      }
+     ]
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 2,
+     "radii": [
+      [
+       8,
+       2
+      ]
+     ],
+     "heavyBorders": 2,
+     "borderSamples": [
+      "#ddd3c6 on #fcfdf9 (1.45:1)",
+      "#ddd3c6 on #fcfdf9 (1.45:1)"
+     ],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 2,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 49,
+       "size": 40,
+       "radius": "6px"
+      },
+      {
+       "hue": 49,
+       "size": 40,
+       "radius": "6px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 70,
+     "leftAligned": 0,
+     "figures": 21,
+     "tabularShare": 0,
+     "kpiMax": 14
+    },
+    "rows": {
+     "count": 5,
+     "median": 36
+    },
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.05,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Planejamento do lançamento e revisão da experiência do Orien",
+     "size": 24,
+     "top": 116
+    },
+    "colourShare": 0.004
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.59,
+    0.7
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 1340,
+     "screens": 1.3,
+     "words": 112,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 18,
+     "sections": 2,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+     "words": 9,
+     "chars": 61,
+     "lines": 2,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 116,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+     "words": 9,
+     "lines": 2,
+     "size": 24,
+     "font": "Inter"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      13,
+      14,
+      16,
+      24
+     ],
+     "sizeCount": 4,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 14.9
+     },
+     "measureChars": 60,
+     "max": {
+      "size": 24,
+      "vw": 3.1,
+      "font": "Inter",
+      "text": "Planejamento do lançamento e revisão da "
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.29,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f7f5ec",
+     "bodyBgHsl": {
+      "h": 49,
+      "s": 0.41,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f7f5ec",
+       "top": 0,
+       "hsl": {
+        "h": 49,
+        "s": 0.41,
+        "l": 0.95
+       }
+      },
+      {
+       "color": "#fcfdf9",
+       "top": 244,
+       "hsl": {
+        "h": 75,
+        "s": 0.5,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#2e1b1c",
+       "share": 0.68
+      },
+      {
+       "color": "#6b554d",
+       "share": 0.28
+      },
+      {
+       "color": "#fceed6",
+       "share": 0.03
+      },
+      {
+       "color": "#731229",
+       "share": 0
+      }
+     ],
+     "button": {
+      "bg": "#f7f5ec",
+      "hsl": {
+       "h": 49,
+       "s": 0.41,
+       "l": 0.95
+      },
+      "fg": "#2e1b1c"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 2,
+     "radius": 6,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Selecionar data",
+      "Adicionar objetivo"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 1,
+     "hairlineSamples": [
+      "header.sticky.top-0 768px"
+     ],
+     "outlinedBoxes": 2,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 2,
+     "boxRadius": 8,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 48,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 1340,
+    "margins": {
+     "left": 32,
+     "right": 53
+    },
+    "sections": [
+     {
+      "sel": "section.min-w-0.rounded-lg",
+      "tag": "section",
+      "top": 244,
+      "height": 449,
+      "words": 23,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Objetivos",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 53,
+      "right": 53,
+      "textLeft": 53,
+      "textRight": 362,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "aside.flex.min-w-0",
+      "tag": "aside",
+      "top": 717,
+      "height": 575,
+      "words": 47,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Resumo",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 53,
+      "right": 53,
+      "textLeft": 53,
+      "textRight": 265,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+      "size": 24,
+      "top": 116,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 53,
+      "n": 3
+     },
+     {
+      "x": 32,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 4,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#f7f5ec",
+    "sidebar": null,
+    "topbar": {
+     "h": 48
+    },
+    "canvas": {
+     "left": 32,
+     "right": 44
+    },
+    "hero": {
+     "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+     "words": 9,
+     "chars": 61,
+     "lines": 2,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 116,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 2,
+     "firstScreen": 2,
+     "ragged": [],
+     "voids": [
+      {
+       "gap": 41,
+       "at": 596,
+       "panel": "Objetivos"
+      }
+     ]
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 2,
+     "radii": [
+      [
+       8,
+       2
+      ]
+     ],
+     "heavyBorders": 2,
+     "borderSamples": [
+      "#ddd3c6 on #fcfdf9 (1.45:1)",
+      "#ddd3c6 on #fcfdf9 (1.45:1)"
+     ],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 2,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 49,
+       "size": 40,
+       "radius": "6px"
+      },
+      {
+       "hue": 49,
+       "size": 40,
+       "radius": "6px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 70,
+     "leftAligned": 0,
+     "figures": 21,
+     "tabularShare": 0,
+     "kpiMax": 14
+    },
+    "rows": {
+     "count": 5,
+     "median": 36
+    },
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.05,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Planejamento do lançamento e revisão da experiência do Orien",
+     "size": 24,
+     "top": 116
+    },
+    "colourShare": 0.007
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.61,
+    0.6
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 1488,
+     "screens": 1.8,
+     "words": 112,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 18,
+     "sections": 2,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+     "words": 9,
+     "chars": 61,
+     "lines": 3,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 120,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+     "words": 9,
+     "lines": 3,
+     "size": 24,
+     "font": "Inter"
+    },
+    "headings": [
+     {
+      "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+      "words": 9,
+      "chars": 61,
+      "lines": 3,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1.33,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.92,
+      "top": 120,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 3,
+     "over2Lines": 1,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      13,
+      14,
+      16,
+      24
+     ],
+     "sizeCount": 4,
+     "notLoaded": [],
+     "body": {
+      "font": "Inter",
+      "size": 14,
+      "leading": 1.43,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 14.9
+     },
+     "measureChars": 49,
+     "max": {
+      "size": 24,
+      "vw": 6.2,
+      "font": "Inter",
+      "text": "Planejamento do lançamento e revisão da "
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.29,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f7f5ec",
+     "bodyBgHsl": {
+      "h": 49,
+      "s": 0.41,
+      "l": 0.95
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f7f5ec",
+       "top": 0,
+       "hsl": {
+        "h": 49,
+        "s": 0.41,
+        "l": 0.95
+       }
+      },
+      {
+       "color": "#fcfdf9",
+       "top": 336,
+       "hsl": {
+        "h": 75,
+        "s": 0.5,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#2e1b1c",
+       "share": 0.68
+      },
+      {
+       "color": "#6b554d",
+       "share": 0.28
+      },
+      {
+       "color": "#fceed6",
+       "share": 0.03
+      },
+      {
+       "color": "#731229",
+       "share": 0
+      }
+     ],
+     "button": {
+      "bg": "#f7f5ec",
+      "hsl": {
+       "h": 49,
+       "s": 0.41,
+       "l": 0.95
+      },
+      "fg": "#2e1b1c"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 2,
+     "radius": 6,
+     "height": 44,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Selecionar data",
+      "Adicionar objetivo"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 1,
+     "hairlineSamples": [
+      "header.sticky.top-0 390px"
+     ],
+     "outlinedBoxes": 2,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 2,
+     "boxRadius": 8,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 48,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "inter"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 1488,
+    "margins": {
+     "left": 16,
+     "right": 32
+    },
+    "sections": [
+     {
+      "sel": "div.flex.flex-col",
+      "tag": "div",
+      "top": 120,
+      "height": 176,
+      "words": 15,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Planejamento do lançamento e revisão da experiênci",
+       "size": 24,
+       "tag": "h1"
+      },
+      "left": 16,
+      "right": 28,
+      "textLeft": 16,
+      "textRight": 28,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.mt-6.grid",
+      "tag": "div",
+      "top": 336,
+      "height": 1120,
+      "words": 70,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Objetivos",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 33,
+      "right": 33,
+      "textLeft": 33,
+      "textRight": 51,
+      "fullBleed": false,
+      "footer": true,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+      "size": 24,
+      "top": 120,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 33,
+      "n": 3
+     },
+     {
+      "x": 16,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 4,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#f7f5ec",
+    "sidebar": null,
+    "topbar": {
+     "h": 48
+    },
+    "canvas": {
+     "left": 16,
+     "right": 28
+    },
+    "hero": {
+     "text": "Planejamento do lançamento e revisão da experiência do Oriens",
+     "words": 9,
+     "chars": 61,
+     "lines": 3,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Inter",
+     "weight": 600,
+     "tracking": 0,
+     "leading": 1.33,
+     "top": 120,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 2,
+     "firstScreen": 1,
+     "ragged": [],
+     "voids": [
+      {
+       "gap": 41,
+       "at": 696,
+       "panel": "Objetivos"
+      }
+     ]
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 2,
+     "radii": [
+      [
+       8,
+       2
+      ]
+     ],
+     "heavyBorders": 2,
+     "borderSamples": [
+      "#ddd3c6 on #fcfdf9 (1.45:1)",
+      "#ddd3c6 on #fcfdf9 (1.45:1)"
+     ],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 2,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 49,
+       "size": 40,
+       "radius": "6px"
+      },
+      {
+       "hue": 49,
+       "size": 44,
+       "radius": "6px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 70,
+     "leftAligned": 0,
+     "figures": 21,
+     "tabularShare": 0,
+     "kpiMax": 14
+    },
+    "rows": {
+     "count": 5,
+     "median": 44
+    },
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.05,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      13,
+      14,
+      16,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Planejamento do lançamento e revisão da experiência do Orien",
+     "size": 24,
+     "top": 120
+    },
+    "colourShare": 0.021
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "WARN",
+   "id": "palette-cream",
+   "width": 1440,
+   "message": "Yellow-cream background (page background #f7f5ec, section #f7f5ec, button #efeae1).",
+   "fix": "Use the drawn palette. If you want warmth, take a low-chroma stone or bone, not a yellow cream.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "tabular",
+   "width": 1440,
+   "message": "Only 0% of the figures use tabular numerals.",
+   "fix": "Set font-variant-numeric: tabular-nums on tables, KPIs and anything that updates, so digits keep their width.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "ragged-row",
+   "width": 1440,
+   "message": "1 pair(s) of cards in one row end at different heights (by 214px).",
+   "fix": "Cards that share a row share a bottom edge: balance them by their content (the same number of rows, a block of similar height beside it), or stack them. In testing, ragged rows were marked down every time."
+  },
+  {
+   "level": "WARN",
+   "id": "panel-void",
+   "width": 1440,
+   "message": "1 card(s) hold a blank band inside: 41px in \"Objetivos\".",
+   "fix": "A card stretches to its neighbour only when it has content to fill. Keep a legend or a note directly under its chart (only an action or a total may sit at a stretched card's foot), let a short card keep its own height (align-items: start), and let a filtered block shrink to its rows."
+  },
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 390,
+   "message": "1 headline(s) wrap past two lines at 390px: \"Planejamento do lançamento e revisão da experiên\" → 3 lines (9 words, 24px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 24px or less."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/app-header/before/desktop-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/app-header/before/desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/app-header/before/tablet-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/app-header/before/tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/app-header/before/mobile-fold.jpg",
+   "pages": [
+    "/Users/luisgosampaio/Documents/projects/Oriens/.taste-skill/app-header/before/mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

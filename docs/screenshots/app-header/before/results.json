@@ -1,0 +1,43 @@
+{
+  "phase": "before",
+  "base": "http://127.0.0.1:4222",
+  "measurements": [
+    {
+      "width": 1440,
+      "state": "expanded",
+      "headerHeight": 48,
+      "headerBottom": 48,
+      "sidebarHeight": 65,
+      "sidebarBottom": 65,
+      "overflow": false,
+      "breadcrumbCount": 1
+    },
+    {
+      "width": 1440,
+      "state": "collapsed",
+      "headerHeight": 48,
+      "headerBottom": 48,
+      "sidebarHeight": 65,
+      "sidebarBottom": 65,
+      "overflow": false,
+      "breadcrumbCount": 1
+    },
+    {
+      "width": 768,
+      "state": "mobile",
+      "headerHeight": 48,
+      "headerBottom": 48,
+      "overflow": false,
+      "breadcrumbCount": 1
+    },
+    {
+      "width": 390,
+      "state": "mobile",
+      "headerHeight": 48,
+      "headerBottom": 48,
+      "overflow": false,
+      "breadcrumbCount": 1
+    }
+  ],
+  "errors": []
+}

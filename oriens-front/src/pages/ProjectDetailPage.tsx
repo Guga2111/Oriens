@@ -53,7 +53,6 @@ function ProjectDetail({ id }: { id: number }) {
   const development = project.mode === 'DEVELOPMENT'; const s = project.summary;
   const showTask = (task: WorkTask) => setEditor({ task });
   return <div className="min-w-0 w-full tabular-nums">
-    <nav aria-label="Breadcrumb" className="mb-4 text-sm"><Link to="/projects" className="hover:underline">Projetos</Link><span aria-hidden> › </span><span>{project.title}</span></nav>
     {project.imageUrl && <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="mb-6 aspect-project-cover w-full rounded-lg object-cover" />}
     <PageHeader title={project.title} description={project.description || (development ? 'Desenvolvimento' : 'Simples')} isLoading={query.isFetching}
       meta={project.archived ? 'Projeto arquivado. As tarefas continuam disponíveis na agenda.' : undefined}

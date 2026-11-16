@@ -13,6 +13,7 @@
   :root {
     /* Geometry shared by work screens. Standard spacing uses the Tailwind scale. */
     --page-gutter: 1rem;
+    --app-header-height: 4rem;
     --overlay-gutter: 1rem;
     --dialog-max-height: 90dvh;
     --dialog-task-width: 40rem;

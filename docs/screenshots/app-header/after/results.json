@@ -1,0 +1,59 @@
+{
+  "phase": "after",
+  "base": "http://127.0.0.1:4223",
+  "measurements": [
+    {
+      "width": 1440,
+      "state": "expanded",
+      "headerHeight": 64,
+      "headerBottom": 64,
+      "headerPadding": [
+        16,
+        16
+      ],
+      "sidebarHeight": 64,
+      "sidebarBottom": 64,
+      "overflow": false,
+      "breadcrumbCount": 1
+    },
+    {
+      "width": 1440,
+      "state": "collapsed",
+      "headerHeight": 64,
+      "headerBottom": 64,
+      "headerPadding": [
+        16,
+        16
+      ],
+      "sidebarHeight": 64,
+      "sidebarBottom": 64,
+      "overflow": false,
+      "breadcrumbCount": 1
+    },
+    {
+      "width": 768,
+      "state": "mobile",
+      "headerHeight": 64,
+      "headerBottom": 64,
+      "headerPadding": [
+        16,
+        16
+      ],
+      "overflow": false,
+      "breadcrumbCount": 1
+    },
+    {
+      "width": 390,
+      "state": "mobile",
+      "headerHeight": 64,
+      "headerBottom": 64,
+      "headerPadding": [
+        16,
+        16
+      ],
+      "overflow": false,
+      "breadcrumbCount": 1
+    }
+  ],
+  "errors": []
+}

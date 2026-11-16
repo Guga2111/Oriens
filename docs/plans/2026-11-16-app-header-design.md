@@ -8,6 +8,7 @@ O usuário escolheu a opção 2 (header com contexto) e pediu para retirar o bre
 
 - Header e topo da sidebar compartilham uma altura de 64 px, incluindo a borda inferior. A linha continua na mesma posição com a sidebar expandida ou recolhida.
 - Menu à esquerda, navegação de contexto ao lado e notificações à direita. Os dois botões têm alvo de 44 px e o mesmo tratamento visual discreto.
+- Ajuste solicitado após revisão: a header usa recuo fixo de 16 px, independente do padding responsivo do conteúdo das páginas.
 - As rotas principais mostram o nome da seção. O detalhe mostra `Projetos › Nome do projeto`, com link de volta para Projetos.
 - O breadcrumb sai do conteúdo do detalhe. O título h1, a descrição, os metadados e as ações continuam no PageHeader.
 - Em telas estreitas, o nome longo é truncado em uma linha; menu, link para Projetos e notificações continuam acessíveis.
