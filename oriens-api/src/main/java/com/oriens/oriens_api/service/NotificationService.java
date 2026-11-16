@@ -13,7 +13,7 @@ public interface NotificationService {
     Notification createNotification (String message, User user);
     List<Notification> getNotificationsByUser (Long userId);
     List<NotificationDTO> getLastNotificationsByUser (Long userId);
-    void markAsRead (Long notificationId);
+    void markAsRead (Long ownerId, Long notificationId);
     NotificationUpdateCountDTO markAllAsRead (Long userId);
 
     NotificationDeleteCountDTO clearAll (Long userId);
