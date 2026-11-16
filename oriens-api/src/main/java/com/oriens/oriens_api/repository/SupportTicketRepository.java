@@ -8,8 +8,11 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SupportTicketRepository extends CrudRepository<SupportTicket, Long> {
+
+    Optional<SupportTicket> findByIdAndUserId(Long id, Long userId);
 
     List<SupportTicket> findByUserOrderByCreatedAtDesc(User user);
 

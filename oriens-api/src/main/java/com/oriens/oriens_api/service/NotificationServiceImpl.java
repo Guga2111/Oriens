@@ -5,8 +5,8 @@ import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.entity.dto.NotificationDTO;
 import com.oriens.oriens_api.entity.dto.NotificationDeleteCountDTO;
 import com.oriens.oriens_api.entity.dto.NotificationUpdateCountDTO;
-import com.oriens.oriens_api.exception.NotificationNotFoundException;
 import com.oriens.oriens_api.exception.UserNotFoundException;
+import com.oriens.oriens_api.exception.WorkDomainException;
 import com.oriens.oriens_api.repository.NotificationRepository;
 import com.oriens.oriens_api.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,10 +55,10 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public void markAsRead(Long notificationId) {
+    public void markAsRead(Long ownerId, Long notificationId) {
 
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new NotificationNotFoundException(notificationId));
+        Notification notification = notificationRepository.findByIdAndUserId(notificationId, ownerId)
+                .orElseThrow(NotificationServiceImpl::missing);
 
         notification.setRead(true);
 
@@ -77,6 +77,10 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationDeleteCountDTO clearAll(Long userId) {
         int deletedCount = notificationRepository.deleteByUserId(userId);
         return new NotificationDeleteCountDTO(deletedCount);
+    }
+
+    private static WorkDomainException missing() {
+        return new WorkDomainException("NOT_FOUND", null, "Notificação não encontrada.");
     }
 
     private NotificationDTO convertToDto(Notification notification) {

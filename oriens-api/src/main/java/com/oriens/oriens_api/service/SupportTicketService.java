@@ -11,7 +11,7 @@ public interface SupportTicketService {
 
     SupportTicket createTicket(Long userId, SupportTicketDTO supportTicketDTO);
 
-    SupportTicket getTicketById(Long ticketId);
+    SupportTicket getTicketById(Long ownerId, Long ticketId);
 
     List<SupportTicket> getTicketsByUserId(Long userId);
 
