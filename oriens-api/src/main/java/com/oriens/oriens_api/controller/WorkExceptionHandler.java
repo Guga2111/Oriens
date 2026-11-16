@@ -11,7 +11,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.dao.*;
 import java.util.*;
 
-@RestControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, TagController.class})
+@RestControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, TagController.class, UserController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class WorkExceptionHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WorkExceptionHandler.class);
@@ -63,7 +63,11 @@ public class WorkExceptionHandler {
     public ResponseEntity<Error> business(RuntimeException e,HttpServletRequest request) {
         return response(422,"DOMAIN_VIOLATION",e.getMessage(),null,request);
     }
-    @ExceptionHandler({com.oriens.oriens_api.exception.EntryNotFoundException.class,com.oriens.oriens_api.exception.TagNotFoundException.class})
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Error> forbidden(Exception e, HttpServletRequest request) {
+        return response(403, "FORBIDDEN", "Você não tem permissão para esta ação.", null, request);
+    }
+    @ExceptionHandler({com.oriens.oriens_api.exception.EntryNotFoundException.class,com.oriens.oriens_api.exception.TagNotFoundException.class,com.oriens.oriens_api.exception.UserNotFoundException.class})
     public ResponseEntity<Error> missing(RuntimeException e,HttpServletRequest request) {return response(404,"NOT_FOUND","Recurso não encontrado.",null,request);}
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Error> internal(Exception e, HttpServletRequest request) {
