@@ -4,6 +4,7 @@ import { WorkDatePicker } from '@/components/common/WorkDatePicker';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -60,8 +61,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
       <fieldset disabled={write.isPending || attempt.uncertain} className="min-w-0"><FieldGroup>
         {!projectToEdit && <Field><FieldLabel id="project-mode">Modo do projeto</FieldLabel>
           <RadioGroup aria-labelledby="project-mode" value={mode} onValueChange={v => setMode(v as WorkProject['mode'])}>
-            <label className="flex items-start gap-3 rounded-md border p-3"><RadioGroupItem value="SIMPLE" /><span className="text-sm">Simples<span className="block text-muted-foreground">Acompanhe objetivos, sem configurar um quadro.</span></span></label>
-            <label className="flex items-start gap-3 rounded-md border p-3"><RadioGroupItem value="DEVELOPMENT" /><span className="text-sm">Desenvolvimento<span className="block text-muted-foreground">Organize tarefas em A fazer, Fazendo e Concluídas.</span></span></label>
+            <Label className="flex items-start gap-3 rounded-md border p-3 font-normal"><RadioGroupItem value="SIMPLE" /><span className="text-sm">Simples<span className="block text-muted-foreground">Acompanhe objetivos, sem configurar um quadro.</span></span></Label>
+            <Label className="flex items-start gap-3 rounded-md border p-3 font-normal"><RadioGroupItem value="DEVELOPMENT" /><span className="text-sm">Desenvolvimento<span className="block text-muted-foreground">Organize tarefas em A fazer, Fazendo e Concluídas.</span></span></Label>
           </RadioGroup>
         </Field>}
         <Field data-invalid={!!error}><FieldLabel htmlFor="project-title">Título do Projeto</FieldLabel><Input id="project-title" value={title} onChange={e => setTitle(e.target.value)} maxLength={200} required aria-invalid={!!error} aria-describedby={error ? 'project-title-error' : undefined} />{error && <FieldError id="project-title-error">{error}</FieldError>}</Field>

@@ -3,6 +3,7 @@ import { ptBR } from "date-fns/locale";
 import { TaskChip } from "@/components/dashboard/TaskChip";
 import { TaskRow } from "@/components/dashboard/TaskRow";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 import { compareTaskTime } from "@/lib/tasks";
@@ -67,15 +68,16 @@ export function WeekView({
             <section key={headingId} aria-labelledby={headingId}>
               <div className="flex items-center gap-3 border-b pb-2">
                 <h2 id={headingId} className="text-base font-semibold">
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => onSelectDay(day)}
                     aria-label={`Ver ${fullDate}`}
                     aria-current={isToday ? "date" : undefined}
-                    className="min-h-11 rounded-sm text-left hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="h-auto min-h-11 justify-start rounded-sm px-0 py-0 text-left text-base font-semibold hover:bg-transparent hover:text-primary"
                   >
                     {shortWeekday(day)}, {format(day, "d")}
-                  </button>
+                  </Button>
                 </h2>
                 {isToday && <Badge variant="warning">Hoje</Badge>}
                 {dayTasks.length === 0 && <span className="ml-auto text-sm text-muted-foreground">Sem tarefas</span>}
@@ -122,14 +124,15 @@ export function WeekView({
                 key={format(day, "yyyy-MM-dd")}
                 className="flex min-w-0 flex-col gap-2"
               >
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => onSelectDay(day)}
                   data-day={format(day, 'yyyy-MM-dd')}
                   aria-label={`Ver ${fullDate}`}
                   aria-current={isToday ? "date" : undefined}
                   className={cn(
-                    "relative rounded-md px-2 py-1.5 text-center transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "relative h-auto flex-col items-stretch gap-0 px-2 py-1.5 text-center font-normal hover:bg-muted/60 hover:text-foreground",
                     isSelected && "bg-muted"
                   )}
                 >
@@ -150,7 +153,7 @@ export function WeekView({
                   >
                     {format(day, "dd")}
                   </span>
-                </button>
+                </Button>
 
                 <div className="flex flex-col gap-1.5">
                   {dayTasks.length > 0 ? (

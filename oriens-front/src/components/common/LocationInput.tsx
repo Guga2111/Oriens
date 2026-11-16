@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -99,15 +100,16 @@ export function LocationInput({ isLoaded, onPlaceSelect, ...inputProps }: Locati
       {suggestions.length > 0 && (
         <div className="absolute top-full mt-1 w-full bg-background border border-border rounded-md shadow-lg z-50">
           {suggestions.map((suggestion) => (
-            <button
+            <Button
               key={suggestion.place_id}
               type="button"
+              variant="ghost"
               onMouseDown={event => event.preventDefault()}
               onClick={() => handleSuggestionClick(suggestion.place_id)}
-              className="w-full text-left p-2 hover:bg-muted text-sm"
+              className="h-auto w-full justify-start whitespace-normal rounded-none p-2 text-left font-normal"
             >
               {suggestion.description}
-            </button>
+            </Button>
           ))}
         </div>
       )}

@@ -13,10 +13,10 @@ export function ActivityStreak({ query }: { query: UseQueryResult<ActivityStreak
   const data = query.data, days = data?.days, active = days != null && days > 0;
   const label = days == null ? 'Sequência: —' : days === 0 ? '0 dias seguidos' : `${data.lowerBound ? 'Pelo menos ' : ''}${days} ${days === 1 ? 'dia seguido' : 'dias seguidos'}`;
   return <Popover>
-    <PopoverTrigger asChild><button type="button" className={cn(badgeVariants({ variant: active ? 'streak' : 'outline' }), 'min-h-11 gap-2 md:min-h-8')} title="Dias consecutivos com tarefa concluída ou hábito executado. Toque para ver a regra completa." aria-label={`Sequência de atividade: ${label}. Ver regra${query.isError ? '. Atualização indisponível' : ''}`}>
+    <PopoverTrigger asChild><Button type="button" variant="ghost" className={cn(badgeVariants({ variant: active ? 'streak' : 'outline' }), 'h-auto min-h-11 gap-2 max-md:min-h-11 md:min-h-8')} title="Dias consecutivos com tarefa concluída ou hábito executado. Toque para ver a regra completa." aria-label={`Sequência de atividade: ${label}. Ver regra${query.isError ? '. Atualização indisponível' : ''}`}>
       <Flame className="size-4 shrink-0" aria-hidden="true" />
       <span className="tabular-nums">{label}</span>{query.isError && <span className="text-muted-foreground">· {data ? 'desatualizada' : 'indisponível'}</span>}
-    </button></PopoverTrigger>
+    </Button></PopoverTrigger>
     <PopoverContent align="start" className="flex max-w-[calc(100vw-2rem)] flex-col gap-3 text-sm" aria-label="Como funciona a sequência de atividade">
       <h2 className="font-semibold">Sequência de atividade</h2>
       <p>Um dia com pelo menos uma tarefa concluída ou execução de hábito mantém a sequência. Várias realizações no mesmo dia contam uma vez.</p>
