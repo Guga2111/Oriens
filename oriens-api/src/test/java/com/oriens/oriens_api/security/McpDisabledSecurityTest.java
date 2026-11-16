@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers=McpDisabledSecurityTest.Probe.class,properties={
  "JWT_SECRET=synthetic-disabled-mcp-test-only-0123456789-abcdefghijklmnopqrstuvwxyz",
  "oriens.mcp.enabled=false"})
-@Import({McpDisabledSecurityTest.Probe.class,SecurityConfig.class,JwtConfiguration.class,McpSecurity.class})
+@Import({McpDisabledSecurityTest.Probe.class,SecurityConfig.class,JwtConfiguration.class,McpSecurity.class,com.oriens.oriens_api.CorsConfig.class})
 class McpDisabledSecurityTest {
  @RestController static class Probe {
   @GetMapping("/ordinary-proof") String ordinary(){return "ok";}
@@ -34,5 +34,17 @@ class McpDisabledSecurityTest {
   mvc.perform(get("/mcp").header("Authorization",jwt)).andExpect(status().isNotFound());
   mvc.perform(get("/oauth2/authorize").header("Authorization",jwt)).andExpect(status().isNotFound());
   mvc.perform(get("/integrations/mcp/connections").header("Authorization",jwt)).andExpect(status().isNotFound());
+ }
+ @Test void disabledMcpIsReadableByTheTrustedFrontendWithoutAllowingOtherOrigins()throws Exception{
+  mvc.perform(options("/integrations/mcp/setup").param("client","claude-code")
+      .header("Origin","http://localhost:5173").header("Access-Control-Request-Method","GET")
+      .header("Access-Control-Request-Headers","authorization"))
+    .andExpect(status().isOk()).andExpect(header().string("Access-Control-Allow-Origin","http://localhost:5173"))
+    .andExpect(header().string("Access-Control-Allow-Headers","authorization"));
+  mvc.perform(get("/integrations/mcp/setup").param("client","claude-code").header("Origin","http://localhost:5173"))
+    .andExpect(status().isNotFound()).andExpect(header().string("Access-Control-Allow-Origin","http://localhost:5173"));
+  mvc.perform(options("/integrations/mcp/setup").header("Origin","https://untrusted.example.invalid")
+      .header("Access-Control-Request-Method","GET").header("Access-Control-Request-Headers","authorization"))
+    .andExpect(status().isForbidden()).andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
  }
 }

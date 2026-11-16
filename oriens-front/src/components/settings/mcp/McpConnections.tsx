@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mcpService } from '@/services/mcpService';
-import { clientName, connectionStatus, mcpDate } from '@/lib/mcp';
+import { clientName, connectionStatus, mcpDate, mcpUnavailableMessage } from '@/lib/mcp';
 import { McpFeedback } from './McpFeedback';
 import { McpSetupDialog } from './McpSetupDialog';
 import { McpConnectionDialog } from './McpConnectionDialog';
@@ -24,7 +24,7 @@ export function McpConnections() {
       <Button ref={connect} className="min-h-11 max-md:min-h-11" disabled={unavailable} onClick={e => { trigger.current=e.currentTarget; setSetupOpen(true); }}>Conectar via MCP</Button>
     </div>
     {connections.isPending ? <Skeleton className="h-20 w-full" aria-label="Carregando conexões" /> : connections.isError
-      ? <McpFeedback error={connections.error} message={unavailable ? 'MCP ainda não está habilitado neste ambiente. As demais integrações continuam disponíveis.' : undefined} retry={() => void connections.refetch()} />
+      ? <McpFeedback error={connections.error} message={unavailable ? mcpUnavailableMessage : undefined} retry={() => void connections.refetch()} />
       : <>
         {!connections.data.items.length && <p className="text-sm text-muted-foreground">Nenhuma conexão autorizada. Configure seu cliente e escolha o acesso no consentimento.</p>}
         <ul className="flex flex-col gap-4">

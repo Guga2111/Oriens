@@ -45,6 +45,16 @@ export const clientName = (id: string) => id === 'oriens-codex' ? 'Codex' : id =
 export const connectionStatus = (c: McpConnection) => c.revokedAt ? 'Revogada' : Date.parse(c.expiresAt) <= Date.now() ? 'Expirada' : 'Ativa';
 export const mcpDate = (value: string | null) => value ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Recife' }).format(new Date(value)) : 'Ainda não utilizada';
 export const mcpErrorCode = (error: unknown) => isAxiosError(error) ? error.response?.data?.code : undefined;
+export const mcpUnavailableMessage = 'MCP ainda não está habilitado neste ambiente. As demais integrações continuam disponíveis.';
+export function mcpSetupError(error: unknown): string {
+  if (isAxiosError(error)) {
+    if (error.response?.status === 404) return mcpUnavailableMessage;
+    if (error.response?.status === 401) return mcpError(error);
+    if (error.response?.status === 403) return 'Sua conta não tem acesso à configuração MCP deste ambiente.';
+    if (error.response?.data?.message) return error.response.data.message;
+  }
+  return 'Não foi possível carregar a configuração do cliente. Tente novamente.';
+}
 export function mcpError(error: unknown): string {
   if (isAxiosError(error)) {
     if (error.response?.status === 401) return 'Sua sessão expirou. Entre novamente para continuar.';

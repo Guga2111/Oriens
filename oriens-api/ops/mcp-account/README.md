@@ -318,7 +318,10 @@ somente para mostrar nomes autorizados. O histórico sem filtros usa um único
 instante para os dois limites da janela de 90 dias.
 
 Com MCP desabilitado, protocolo, OAuth, metadados e `/integrations/mcp/**`
-respondem 404 diretamente, sem despacho para `/error`/cadeia JWT. O smoke real
+respondem 404 diretamente, sem despacho para `/error`/cadeia JWT. A origem de
+frontend autorizada recebe os headers CORS inclusive nesse 404; seu preflight
+OPTIONS é atendido normalmente. Origens não autorizadas continuam recusadas.
+Isso permite à interface mostrar “MCP não habilitado” em vez de erro de rede. O smoke real
 verifica desligamento e religamento em instâncias independentes, login normal e
 persistência da conexão sem alteração do schema aditivo. Não é rollback para um
 escritor financeiro antigo nem prova do proxy/certificado público.

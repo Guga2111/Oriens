@@ -4,18 +4,28 @@ import userEvent from '@testing-library/user-event';
 import { renderWork } from './work-fixtures';
 import { McpConsent } from '@/components/settings/mcp/McpConsent';
 import { McpConnectionDialog } from '@/components/settings/mcp/McpConnectionDialog';
+import { McpSetupDialog } from '@/components/settings/mcp/McpSetupDialog';
 import { mcpService } from '@/services/mcpService';
 import { mcpSetupText } from '@/lib/mcp-setup';
-import { emptyPermissions, mcpFlow, mcpResume, toggleScope } from '@/lib/mcp';
+import { emptyPermissions, mcpFlow, mcpResume, toggleScope, mcpSetupError, mcpUnavailableMessage } from '@/lib/mcp';
 import type { McpConnection, McpSetup } from '@/types/mcp';
 
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7, userEmail: 'fixture@example.invalid' }) }));
-vi.mock('@/services/mcpService', () => ({ mcpService: { authorization: vi.fn(), decide: vi.fn(), connection: vi.fn(), patch: vi.fn(), revoke: vi.fn(), events: vi.fn() } }));
+vi.mock('@/services/mcpService', () => ({ mcpService: { setup: vi.fn(), authorization: vi.fn(), decide: vi.fn(), connection: vi.fn(), patch: vi.fn(), revoke: vi.fn(), events: vi.fn() } }));
 const id = 'a72b8bad-2c72-4f35-bfaa-48543de42624';
 const connection: McpConnection = { id, clientId: 'oriens-codex', name: 'Revisão semanal', version: 3, policyRevision: 1,
   scopes: ['mcp:context', 'finance:read', 'finance:create'], allowedProjectIds: [], allowedProjects: [], allowStandaloneTasks: false,
   createdAt: '2026-11-16T12:00:00Z', authorizedAt: '2026-11-16T12:00:00Z', expiresAt: '2099-12-16T12:00:00Z', lastUsedAt: null, revokedAt: null };
 beforeEach(() => { vi.resetAllMocks(); vi.mocked(mcpService.events).mockResolvedValue({ items: [], page: 0, pageSize: 5, totalElements: 0, hasNext: false }); });
+
+it('setup diferencia MCP desabilitado e falha de carregamento de uma operação de escrita', async () => {
+  vi.mocked(mcpService.setup).mockRejectedValue({ isAxiosError: true, response: { status: 404 } });
+  renderWork(<McpSetupDialog open onOpenChange={vi.fn()} />);
+  expect(await screen.findByText(mcpUnavailableMessage)).toBeInTheDocument();
+  expect(screen.queryByText(/Suas escolhas foram mantidas/)).not.toBeInTheDocument();
+  expect(mcpSetupError({ isAxiosError: true, code: 'ERR_NETWORK' })).toBe('Não foi possível carregar a configuração do cliente. Tente novamente.');
+  expect(mcpSetupError({ isAxiosError: true, response: { status: 401 } })).toContain('Sua sessão expirou');
+});
 
 it('retoma somente UUID em rota local fixa e recusa parâmetros duplicados ou destinos arbitrários', () => {
   expect(mcpResume(`?mcpFlow=${id}&returnTo=https://evil.invalid`)).toBe(`/config?mcpFlow=${id}`);

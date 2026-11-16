@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mcpService } from '@/services/mcpService';
 import { mcpSetupText } from '@/lib/mcp-setup';
+import { mcpSetupError } from '@/lib/mcp';
 import type { McpClient } from '@/types/mcp';
 import { McpFeedback } from './McpFeedback';
 
@@ -28,7 +29,7 @@ export function McpSetupDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       </div>
       <p className="text-sm text-muted-foreground">Copiar a configuração não autoriza acesso nem instala programas. Você escolherá os dados e as ações no consentimento do Oriens.</p>
       {setup.isPending ? <Skeleton className="h-40 w-full" aria-label="Carregando configuração" /> : setup.isError
-        ? <McpFeedback error={setup.error} retry={() => void setup.refetch()} />
+        ? <McpFeedback error={setup.error} message={mcpSetupError(setup.error)} retry={() => void setup.refetch()} />
         : configurationError ? <McpFeedback message={configurationError} /> : <>
           <label className="flex flex-col gap-2 text-sm font-medium">URL do servidor<input className="h-11 w-full rounded-md border border-input bg-background px-3 font-normal" readOnly value={setup.data.resource} onFocus={e => e.currentTarget.select()} /></label>
           <p className="text-sm">{client === 'codex' ? 'Adicione este bloco ao arquivo ~/.codex/config.toml. Depois execute codex mcp login oriens.' : client === 'claude-code' ? 'Adicione este servidor ao arquivo .mcp.json do projeto. Depois execute claude mcp login oriens na pasta do projeto.' : 'O cliente precisa aceitar OAuth com um registro público previamente aprovado pelo operador.'}</p>
