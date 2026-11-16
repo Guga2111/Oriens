@@ -6,7 +6,9 @@ import { useAuth } from '@/context/AuthContext';
 import { ResponsiveDialog } from '@/components/common/ResponsiveDialog';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { Button } from '@/components/ui/button';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mcpService } from '@/services/mcpService';
 import { clientName, connectionStatus, mcpDate } from '@/lib/mcp';
@@ -14,6 +16,8 @@ import type { McpConnection } from '@/types/mcp';
 import { McpFeedback } from './McpFeedback';
 import { McpPermissionsEditor, McpPermissionSummary } from './McpPermissions';
 
+// Radix Select forbids an empty item value, so "all results" uses a sentinel mapped to the API's empty filter.
+const ALL_RESULTS = 'all';
 const results: Record<string, string> = { SUCCESS: 'Sucesso', DENIED: 'Negada', FAILED: 'Falha', REVOKED: 'Revogada', REAUTHORIZATION_REQUIRED: 'Nova autorização necessária', REPLAY: 'Repetição reconhecida' };
 const actions: Record<string, string> = { authorization: 'Conexão autorizada', authorization_declined: 'Autorização cancelada', permissions_reduced: 'Permissões reduzidas', renamed: 'Nome alterado', revocation: 'Acesso revogado', expansion_requested: 'Ampliação solicitada', connection_update: 'Edição da conexão', key_rotation: 'Rotação de proteção' };
 
@@ -26,9 +30,10 @@ function History({ id }: { id: string }) {
   return <section aria-labelledby="mcp-history" className="flex min-w-0 flex-col gap-4">
     <h3 id="mcp-history" className="text-base font-semibold">Histórico de uso</h3>
     <p className="text-sm text-muted-foreground">Últimos 90 dias, horário de Recife. Somente metadados; o histórico não recupera conteúdo alterado.</p>
-    <div className="flex flex-col gap-2 text-sm"><label htmlFor={resultId}>Resultado</label><select id={resultId} className="h-11 rounded-md border border-input bg-background px-3" value={result} onChange={e => { setResult(e.target.value); setPage(0); }}>
-      <option value="">Todos os resultados</option>{Object.entries(results).map(([key,label]) => <option key={key} value={key}>{label}</option>)}
-    </select></div>
+    <Field className="gap-2"><FieldLabel htmlFor={resultId} className="font-normal">Resultado</FieldLabel><Select value={result || ALL_RESULTS} onValueChange={v => { setResult(v === ALL_RESULTS ? '' : v); setPage(0); }}>
+      <SelectTrigger id={resultId} className="h-11"><SelectValue /></SelectTrigger>
+      <SelectContent><SelectItem value={ALL_RESULTS}>Todos os resultados</SelectItem>{Object.entries(results).map(([key,label]) => <SelectItem key={key} value={key}>{label}</SelectItem>)}</SelectContent>
+    </Select></Field>
     {events.isPending ? <Skeleton className="h-24 w-full" aria-label="Carregando histórico" /> : events.isError ? <McpFeedback error={events.error} retry={() => void events.refetch()} /> : <>
       {!events.data.items.length ? <p className="text-sm text-muted-foreground">Nenhuma operação neste filtro.</p> : <ul className="flex flex-col gap-4">
         {events.data.items.map(event => <li key={event.id} className="flex min-w-0 flex-col gap-1 text-sm">
@@ -61,7 +66,7 @@ export function McpConnectionDialog({ id, onClose, onExpand }: { id: string; onC
 }
 
 function ConnectionEditor({ connection: c, onReload, onClose, onExpand }: { connection: McpConnection; onReload: () => void; onClose: () => void; onExpand: () => void }) {
-  const { userId } = useAuth(); const client = useQueryClient();
+  const { userId } = useAuth(); const client = useQueryClient(); const nameId = useId();
   const [name, setName] = useState(c.name), [value, setValue] = useState({ scopes: c.scopes, allowedProjectIds: c.allowedProjectIds, allowStandaloneTasks: c.allowStandaloneTasks });
   const [error, setError] = useState<unknown>(), [pending, setPending] = useState(false), [conflict, setConflict] = useState(false), [revokeOpen, setRevokeOpen] = useState(false);
   const active = connectionStatus(c) === 'Ativa';
@@ -89,7 +94,7 @@ function ConnectionEditor({ connection: c, onReload, onClose, onExpand }: { conn
       <h3 className="text-base font-semibold">Editar nome ou reduzir acesso</h3>
       <p className="text-sm text-muted-foreground">Reduções valem na próxima chamada. Para ampliar ações, projetos ou tarefas avulsas, autorize novamente no cliente: uma nova conexão será criada; esta conserva seu acesso até ser revogada.</p>
       <fieldset disabled={pending} className="flex min-w-0 flex-col gap-5">
-        <label className="flex flex-col gap-2 text-sm font-medium">Nome da conexão<Input className="min-h-11 max-md:min-h-11" required maxLength={100} value={name} onChange={e => setName(e.target.value)} /></label>
+        <Field className="gap-2"><FieldLabel htmlFor={nameId}>Nome da conexão</FieldLabel><Input id={nameId} className="min-h-11 max-md:min-h-11" required maxLength={100} value={name} onChange={e => setName(e.target.value)} /></Field>
         <McpPermissionsEditor value={value} onChange={setValue} available={[...c.scopes, ...(c.allowStandaloneTasks ? ['standalone'] : [])]} projects={c.allowedProjects} />
       </fieldset>
       <div className="flex flex-wrap gap-2"><Button className="min-h-11 max-md:min-h-11" type="submit" disabled={pending || conflict || !name.trim()}>{pending ? 'Salvando…' : 'Salvar permissões'}</Button>

@@ -3,6 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { ResponsiveDialog } from '@/components/common/ResponsiveDialog';
 import { Button } from '@/components/ui/button';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mcpService } from '@/services/mcpService';
 import { mcpSetupText } from '@/lib/mcp-setup';
@@ -12,7 +15,7 @@ import { McpFeedback } from './McpFeedback';
 
 export function McpSetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const { userId } = useAuth();
-  const clientId = useId();
+  const clientId = useId(), resourceId = useId();
   const [client, setClient] = useState<McpClient>('codex'), [copied, setCopied] = useState(false), [copyError, setCopyError] = useState(false);
   const setup = useQuery({ queryKey: ['mcp', userId, 'setup', client], enabled: open, retry: false,
     queryFn: ({ signal }) => mcpService.setup(client, signal) });
@@ -22,16 +25,17 @@ export function McpSetupDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   return <ResponsiveDialog open={open} onOpenChange={onOpenChange} title="Conectar via MCP" description="Escolha o cliente que terá acesso ao Oriens." className="sm:max-w-2xl"
     footer={<Button className="min-h-11 max-md:min-h-11" variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>}>
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2 text-sm font-medium"><label htmlFor={clientId}>Cliente</label>
-        <select id={clientId} className="h-11 w-full rounded-md border border-input bg-background px-3" value={client} onChange={e => { setClient(e.target.value as McpClient); setCopied(false); setCopyError(false); }}>
-          <option value="codex">Codex</option><option value="claude-code">Claude Code</option><option value="other">Outro cliente</option>
-        </select>
-      </div>
+      <Field className="gap-2"><FieldLabel htmlFor={clientId}>Cliente</FieldLabel>
+        <Select value={client} onValueChange={v => { setClient(v as McpClient); setCopied(false); setCopyError(false); }}>
+          <SelectTrigger id={clientId} className="h-11"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="codex">Codex</SelectItem><SelectItem value="claude-code">Claude Code</SelectItem><SelectItem value="other">Outro cliente</SelectItem></SelectContent>
+        </Select>
+      </Field>
       <p className="text-sm text-muted-foreground">Copiar a configuração não autoriza acesso nem instala programas. Você escolherá os dados e as ações no consentimento do Oriens.</p>
       {setup.isPending ? <Skeleton className="h-40 w-full" aria-label="Carregando configuração" /> : setup.isError
         ? <McpFeedback error={setup.error} message={mcpSetupError(setup.error)} retry={() => void setup.refetch()} />
         : configurationError ? <McpFeedback message={configurationError} /> : <>
-          <label className="flex flex-col gap-2 text-sm font-medium">URL do servidor<input className="h-11 w-full rounded-md border border-input bg-background px-3 font-normal" readOnly value={setup.data.resource} onFocus={e => e.currentTarget.select()} /></label>
+          <Field className="gap-2"><FieldLabel htmlFor={resourceId}>URL do servidor</FieldLabel><Input id={resourceId} className="h-11" readOnly value={setup.data.resource} onFocus={e => e.currentTarget.select()} /></Field>
           <p className="text-sm">{client === 'codex' ? 'Adicione este bloco ao arquivo ~/.codex/config.toml. Depois execute codex mcp login oriens.' : client === 'claude-code' ? 'Adicione este servidor ao arquivo .mcp.json do projeto. Depois execute claude mcp login oriens na pasta do projeto.' : 'O cliente precisa aceitar OAuth com um registro público previamente aprovado pelo operador.'}</p>
           <pre tabIndex={0} aria-label="Configuração do cliente" className="max-h-64 overflow-auto rounded-md bg-muted p-4 text-xs leading-5"><code>{text}</code></pre>
           <Button className="min-h-11 max-md:min-h-11" onClick={() => void copy()}>Copiar configuração</Button>

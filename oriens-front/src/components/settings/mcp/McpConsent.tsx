@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { mcpService } from '@/services/mcpService';
@@ -27,6 +28,7 @@ export function McpConsent({ flowId }: { flowId: string | null }) {
 
 function ConsentForm({ flow }: { flow: McpAuthorization }) {
   const { userEmail } = useAuth();
+  const nameId = useId();
   const [value, setValue] = useState(emptyPermissions), [projects, setProjects] = useState<McpProject[]>([]);
   const [name, setName] = useState(flow.clientName), [pending, setPending] = useState(false), [error, setError] = useState<unknown>();
   const [expired, setExpired] = useState(Date.now() >= Date.parse(flow.expiresAt));
@@ -46,7 +48,7 @@ function ConsentForm({ flow }: { flow: McpAuthorization }) {
       <p className="text-muted-foreground">O nome do cliente é um registro de configuração; não verifica a identidade do software. Solicitação válida até {mcpDate(flow.expiresAt)} (Recife).</p>
     </div>
     <fieldset disabled={pending || expired} className="flex min-w-0 flex-col gap-6">
-      <label className="flex max-w-lg flex-col gap-2 text-sm font-medium">Nome da conexão<Input className="min-h-11 max-md:min-h-11" required maxLength={100} value={name} onChange={e => setName(e.target.value)} /></label>
+      <Field className="max-w-lg gap-2"><FieldLabel htmlFor={nameId}>Nome da conexão</FieldLabel><Input id={nameId} className="min-h-11 max-md:min-h-11" required maxLength={100} value={name} onChange={e => setName(e.target.value)} /></Field>
       <McpPermissionsEditor value={value} onChange={setValue} available={flow.requestedScopes} onProject={p => setProjects(current => [...current.filter(v => v.id !== p.id), p])} />
     </fieldset>
     <section aria-labelledby="consent-summary" className="flex flex-col gap-4 rounded-lg border bg-card p-5">
