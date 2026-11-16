@@ -44,7 +44,7 @@ export function AppLayout() {
           <AppHeader />
           {/* Loading e erro das páginas acontecem dentro deste Outlet,
               nunca substituindo o shell (SPEC §10.2). */}
-          <div data-page-content className="min-w-0 flex-1 overflow-y-auto p-page">
+          <div data-page-content className="min-w-0 flex-1 overflow-y-auto px-page py-4 md:py-8">
             <Outlet />
           </div>
         </SidebarInset>

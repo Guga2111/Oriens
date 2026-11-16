@@ -56,7 +56,7 @@ export function ResponsiveDialog({
               <DrawerDescription>{description}</DrawerDescription>
             )}
           </DrawerHeader>
-          <ScrollArea className="min-h-0 flex-1"><div className="px-page pb-4">{children}</div></ScrollArea>
+          <ScrollArea className="min-h-0 flex-1"><div className="px-overlay pb-4">{children}</div></ScrollArea>
           {footer && (
             <DrawerFooter className="shrink-0 flex-row justify-end gap-2 border-t">
               {footer}

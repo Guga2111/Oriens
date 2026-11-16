@@ -25,8 +25,8 @@ try{
 
  const routes=['/tasks','/projects','/stats','/config','/tasks/project/9','/tasks/project/invalid','/financial','/all-data','/support','/admin/support','/admin/management'];
  const measurements=[];
- for(const width of [390,768,1440,1920,2560]){
-  await p.setViewportSize({width,height:1000});const expected=width<768?16:32;
+ for(const width of [390,768,1024,1440,1920,2560]){
+  await p.setViewportSize({width,height:1000});const expected=width<768?16:width<1024?32:64, vertical=width<768?16:32;
   for(const sidebar of width>=1100?['expanded','collapsed']:['mobile'])for(const path of routes){
    await p.goto(base+path);const frame=p.locator('[data-page-content]');await frame.waitFor();await p.getByRole('heading',{level:1}).first().waitFor();
    if(sidebar!=='mobile'){
@@ -37,7 +37,7 @@ try{
     const css=getComputedStyle(el),box=el.getBoundingClientRect(),child=el.firstElementChild,root=child.getBoundingClientRect(),section=child.firstElementChild.getBoundingClientRect(),heading=el.querySelector('h1').getBoundingClientRect();
     return{padding:[css.paddingTop,css.paddingRight,css.paddingBottom,css.paddingLeft].map(parseFloat),innerWidth:el.clientWidth-parseFloat(css.paddingLeft)-parseFloat(css.paddingRight),rootWidth:root.width,sectionWidth:section.width,left:heading.left-box.left,rootLeft:root.left-box.left,right:box.right-root.right,overflow:el.scrollWidth>el.clientWidth+1};
    });
-   assert.deepEqual(metrics.padding,[expected,expected,expected,expected],`${path} padding ${width} ${sidebar}`);
+   assert.deepEqual(metrics.padding,[vertical,expected,vertical,expected],`${path} padding ${width} ${sidebar}`);
    assert(Math.abs(metrics.rootWidth-metrics.innerWidth)<1,`${path} root width ${JSON.stringify(metrics)}`);
    assert(Math.abs(metrics.sectionWidth-metrics.innerWidth)<1,`${path} inner width cap ${JSON.stringify(metrics)}`);
    assert(Math.abs(metrics.left-expected)<1,`${path} heading left ${width}`);assert(Math.abs(metrics.right-expected)<1,`${path} right edge ${width}`);assert(!metrics.overflow,`${path} overflow ${width}`);
@@ -51,5 +51,5 @@ try{
  }
  assert.deepEqual(errors,[]);
  fs.writeFileSync(new URL('./browser-results.json',import.meta.url),JSON.stringify({checks,measurements,errors},null,2));
- console.log(`PASS: ${checks.length} route/frame checks at 390, 768, 1440, 1920 and 2560px; expanded/collapsed sidebar; no browser exceptions`);
+ console.log(`PASS: ${checks.length} route/frame checks at 390, 768, 1024, 1440, 1920 and 2560px; expanded/collapsed sidebar; no browser exceptions`);
 }catch(error){console.log('ERRORS',errors);throw error;}finally{await browser.close();}

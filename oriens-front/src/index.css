@@ -13,6 +13,7 @@
   :root {
     /* Geometry shared by work screens. Standard spacing uses the Tailwind scale. */
     --page-gutter: 1rem;
+    --overlay-gutter: 1rem;
     --dialog-max-height: 90dvh;
     --dialog-task-width: 40rem;
     --dialog-project-width: 35rem;
@@ -168,9 +169,12 @@
   }
 }
 
-/* One lateral gutter for pages, dialogs and sheets. */
+/* Page gutters grow with the canvas; overlays retain their compact inset. */
 @media (min-width: 768px) {
-  :root { --page-gutter: 2rem; }
+  :root { --page-gutter: 2rem; --overlay-gutter: 2rem; }
+}
+@media (min-width: 1024px) {
+  :root { --page-gutter: 4rem; }
 }
 
 @keyframes task-complete {

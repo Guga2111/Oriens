@@ -22,72 +22,83 @@
     "/support 768 mobile: equal 32px gutters, full-width content",
     "/admin/support 768 mobile: equal 32px gutters, full-width content",
     "/admin/management 768 mobile: equal 32px gutters, full-width content",
-    "/tasks 1440 expanded: equal 32px gutters, full-width content",
-    "/projects 1440 expanded: equal 32px gutters, full-width content",
-    "/stats 1440 expanded: equal 32px gutters, full-width content",
-    "/config 1440 expanded: equal 32px gutters, full-width content",
-    "/tasks/project/9 1440 expanded: equal 32px gutters, full-width content",
-    "/tasks/project/invalid 1440 expanded: equal 32px gutters, full-width content",
-    "/financial 1440 expanded: equal 32px gutters, full-width content",
-    "/all-data 1440 expanded: equal 32px gutters, full-width content",
-    "/support 1440 expanded: equal 32px gutters, full-width content",
-    "/admin/support 1440 expanded: equal 32px gutters, full-width content",
-    "/admin/management 1440 expanded: equal 32px gutters, full-width content",
-    "/tasks 1440 collapsed: equal 32px gutters, full-width content",
-    "/projects 1440 collapsed: equal 32px gutters, full-width content",
-    "/stats 1440 collapsed: equal 32px gutters, full-width content",
-    "/config 1440 collapsed: equal 32px gutters, full-width content",
-    "/tasks/project/9 1440 collapsed: equal 32px gutters, full-width content",
-    "/tasks/project/invalid 1440 collapsed: equal 32px gutters, full-width content",
-    "/financial 1440 collapsed: equal 32px gutters, full-width content",
-    "/all-data 1440 collapsed: equal 32px gutters, full-width content",
-    "/support 1440 collapsed: equal 32px gutters, full-width content",
-    "/admin/support 1440 collapsed: equal 32px gutters, full-width content",
-    "/admin/management 1440 collapsed: equal 32px gutters, full-width content",
-    "/tasks 1920 expanded: equal 32px gutters, full-width content",
-    "/projects 1920 expanded: equal 32px gutters, full-width content",
-    "/stats 1920 expanded: equal 32px gutters, full-width content",
-    "/config 1920 expanded: equal 32px gutters, full-width content",
-    "/tasks/project/9 1920 expanded: equal 32px gutters, full-width content",
-    "/tasks/project/invalid 1920 expanded: equal 32px gutters, full-width content",
-    "/financial 1920 expanded: equal 32px gutters, full-width content",
-    "/all-data 1920 expanded: equal 32px gutters, full-width content",
-    "/support 1920 expanded: equal 32px gutters, full-width content",
-    "/admin/support 1920 expanded: equal 32px gutters, full-width content",
-    "/admin/management 1920 expanded: equal 32px gutters, full-width content",
-    "/tasks 1920 collapsed: equal 32px gutters, full-width content",
-    "/projects 1920 collapsed: equal 32px gutters, full-width content",
-    "/stats 1920 collapsed: equal 32px gutters, full-width content",
-    "/config 1920 collapsed: equal 32px gutters, full-width content",
-    "/tasks/project/9 1920 collapsed: equal 32px gutters, full-width content",
-    "/tasks/project/invalid 1920 collapsed: equal 32px gutters, full-width content",
-    "/financial 1920 collapsed: equal 32px gutters, full-width content",
-    "/all-data 1920 collapsed: equal 32px gutters, full-width content",
-    "/support 1920 collapsed: equal 32px gutters, full-width content",
-    "/admin/support 1920 collapsed: equal 32px gutters, full-width content",
-    "/admin/management 1920 collapsed: equal 32px gutters, full-width content",
-    "/tasks 2560 expanded: equal 32px gutters, full-width content",
-    "/projects 2560 expanded: equal 32px gutters, full-width content",
-    "/stats 2560 expanded: equal 32px gutters, full-width content",
-    "/config 2560 expanded: equal 32px gutters, full-width content",
-    "/tasks/project/9 2560 expanded: equal 32px gutters, full-width content",
-    "/tasks/project/invalid 2560 expanded: equal 32px gutters, full-width content",
-    "/financial 2560 expanded: equal 32px gutters, full-width content",
-    "/all-data 2560 expanded: equal 32px gutters, full-width content",
-    "/support 2560 expanded: equal 32px gutters, full-width content",
-    "/admin/support 2560 expanded: equal 32px gutters, full-width content",
-    "/admin/management 2560 expanded: equal 32px gutters, full-width content",
-    "/tasks 2560 collapsed: equal 32px gutters, full-width content",
-    "/projects 2560 collapsed: equal 32px gutters, full-width content",
-    "/stats 2560 collapsed: equal 32px gutters, full-width content",
-    "/config 2560 collapsed: equal 32px gutters, full-width content",
-    "/tasks/project/9 2560 collapsed: equal 32px gutters, full-width content",
-    "/tasks/project/invalid 2560 collapsed: equal 32px gutters, full-width content",
-    "/financial 2560 collapsed: equal 32px gutters, full-width content",
-    "/all-data 2560 collapsed: equal 32px gutters, full-width content",
-    "/support 2560 collapsed: equal 32px gutters, full-width content",
-    "/admin/support 2560 collapsed: equal 32px gutters, full-width content",
-    "/admin/management 2560 collapsed: equal 32px gutters, full-width content"
+    "/tasks 1024 mobile: equal 64px gutters, full-width content",
+    "/projects 1024 mobile: equal 64px gutters, full-width content",
+    "/stats 1024 mobile: equal 64px gutters, full-width content",
+    "/config 1024 mobile: equal 64px gutters, full-width content",
+    "/tasks/project/9 1024 mobile: equal 64px gutters, full-width content",
+    "/tasks/project/invalid 1024 mobile: equal 64px gutters, full-width content",
+    "/financial 1024 mobile: equal 64px gutters, full-width content",
+    "/all-data 1024 mobile: equal 64px gutters, full-width content",
+    "/support 1024 mobile: equal 64px gutters, full-width content",
+    "/admin/support 1024 mobile: equal 64px gutters, full-width content",
+    "/admin/management 1024 mobile: equal 64px gutters, full-width content",
+    "/tasks 1440 expanded: equal 64px gutters, full-width content",
+    "/projects 1440 expanded: equal 64px gutters, full-width content",
+    "/stats 1440 expanded: equal 64px gutters, full-width content",
+    "/config 1440 expanded: equal 64px gutters, full-width content",
+    "/tasks/project/9 1440 expanded: equal 64px gutters, full-width content",
+    "/tasks/project/invalid 1440 expanded: equal 64px gutters, full-width content",
+    "/financial 1440 expanded: equal 64px gutters, full-width content",
+    "/all-data 1440 expanded: equal 64px gutters, full-width content",
+    "/support 1440 expanded: equal 64px gutters, full-width content",
+    "/admin/support 1440 expanded: equal 64px gutters, full-width content",
+    "/admin/management 1440 expanded: equal 64px gutters, full-width content",
+    "/tasks 1440 collapsed: equal 64px gutters, full-width content",
+    "/projects 1440 collapsed: equal 64px gutters, full-width content",
+    "/stats 1440 collapsed: equal 64px gutters, full-width content",
+    "/config 1440 collapsed: equal 64px gutters, full-width content",
+    "/tasks/project/9 1440 collapsed: equal 64px gutters, full-width content",
+    "/tasks/project/invalid 1440 collapsed: equal 64px gutters, full-width content",
+    "/financial 1440 collapsed: equal 64px gutters, full-width content",
+    "/all-data 1440 collapsed: equal 64px gutters, full-width content",
+    "/support 1440 collapsed: equal 64px gutters, full-width content",
+    "/admin/support 1440 collapsed: equal 64px gutters, full-width content",
+    "/admin/management 1440 collapsed: equal 64px gutters, full-width content",
+    "/tasks 1920 expanded: equal 64px gutters, full-width content",
+    "/projects 1920 expanded: equal 64px gutters, full-width content",
+    "/stats 1920 expanded: equal 64px gutters, full-width content",
+    "/config 1920 expanded: equal 64px gutters, full-width content",
+    "/tasks/project/9 1920 expanded: equal 64px gutters, full-width content",
+    "/tasks/project/invalid 1920 expanded: equal 64px gutters, full-width content",
+    "/financial 1920 expanded: equal 64px gutters, full-width content",
+    "/all-data 1920 expanded: equal 64px gutters, full-width content",
+    "/support 1920 expanded: equal 64px gutters, full-width content",
+    "/admin/support 1920 expanded: equal 64px gutters, full-width content",
+    "/admin/management 1920 expanded: equal 64px gutters, full-width content",
+    "/tasks 1920 collapsed: equal 64px gutters, full-width content",
+    "/projects 1920 collapsed: equal 64px gutters, full-width content",
+    "/stats 1920 collapsed: equal 64px gutters, full-width content",
+    "/config 1920 collapsed: equal 64px gutters, full-width content",
+    "/tasks/project/9 1920 collapsed: equal 64px gutters, full-width content",
+    "/tasks/project/invalid 1920 collapsed: equal 64px gutters, full-width content",
+    "/financial 1920 collapsed: equal 64px gutters, full-width content",
+    "/all-data 1920 collapsed: equal 64px gutters, full-width content",
+    "/support 1920 collapsed: equal 64px gutters, full-width content",
+    "/admin/support 1920 collapsed: equal 64px gutters, full-width content",
+    "/admin/management 1920 collapsed: equal 64px gutters, full-width content",
+    "/tasks 2560 expanded: equal 64px gutters, full-width content",
+    "/projects 2560 expanded: equal 64px gutters, full-width content",
+    "/stats 2560 expanded: equal 64px gutters, full-width content",
+    "/config 2560 expanded: equal 64px gutters, full-width content",
+    "/tasks/project/9 2560 expanded: equal 64px gutters, full-width content",
+    "/tasks/project/invalid 2560 expanded: equal 64px gutters, full-width content",
+    "/financial 2560 expanded: equal 64px gutters, full-width content",
+    "/all-data 2560 expanded: equal 64px gutters, full-width content",
+    "/support 2560 expanded: equal 64px gutters, full-width content",
+    "/admin/support 2560 expanded: equal 64px gutters, full-width content",
+    "/admin/management 2560 expanded: equal 64px gutters, full-width content",
+    "/tasks 2560 collapsed: equal 64px gutters, full-width content",
+    "/projects 2560 collapsed: equal 64px gutters, full-width content",
+    "/stats 2560 collapsed: equal 64px gutters, full-width content",
+    "/config 2560 collapsed: equal 64px gutters, full-width content",
+    "/tasks/project/9 2560 collapsed: equal 64px gutters, full-width content",
+    "/tasks/project/invalid 2560 collapsed: equal 64px gutters, full-width content",
+    "/financial 2560 collapsed: equal 64px gutters, full-width content",
+    "/all-data 2560 collapsed: equal 64px gutters, full-width content",
+    "/support 2560 collapsed: equal 64px gutters, full-width content",
+    "/admin/support 2560 collapsed: equal 64px gutters, full-width content",
+    "/admin/management 2560 collapsed: equal 64px gutters, full-width content"
   ],
   "measurements": [
     {
@@ -488,20 +499,218 @@
     },
     {
       "path": "/tasks",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/projects",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/stats",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/config",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/9",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/tasks/project/invalid",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/financial",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/all-data",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/support",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/admin/support",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/admin/management",
+      "width": 1024,
+      "sidebar": "mobile",
+      "padding": [
+        32,
+        64,
+        32,
+        64
+      ],
+      "innerWidth": 896,
+      "rootWidth": 896,
+      "sectionWidth": 896,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
+      "overflow": false
+    },
+    {
+      "path": "/tasks",
       "width": 1440,
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -510,16 +719,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -528,16 +737,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -546,16 +755,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -564,16 +773,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -582,16 +791,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -600,16 +809,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -618,16 +827,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -636,16 +845,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -654,16 +863,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -672,16 +881,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1120,
-      "rootWidth": 1120,
-      "sectionWidth": 1120,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1056,
+      "rootWidth": 1056,
+      "sectionWidth": 1056,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -690,16 +899,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -708,16 +917,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -726,16 +935,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -744,16 +953,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -762,16 +971,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -780,16 +989,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -798,16 +1007,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -816,16 +1025,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -834,16 +1043,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -852,16 +1061,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -870,16 +1079,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1328,
-      "rootWidth": 1328,
-      "sectionWidth": 1328,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1264,
+      "rootWidth": 1264,
+      "sectionWidth": 1264,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -888,16 +1097,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -906,16 +1115,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -924,16 +1133,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -942,16 +1151,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -960,16 +1169,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -978,16 +1187,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -996,16 +1205,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1014,16 +1223,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1032,16 +1241,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1050,16 +1259,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1068,16 +1277,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1600,
-      "rootWidth": 1600,
-      "sectionWidth": 1600,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1536,
+      "rootWidth": 1536,
+      "sectionWidth": 1536,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1086,16 +1295,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1104,16 +1313,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1122,16 +1331,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1140,16 +1349,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1158,16 +1367,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1176,16 +1385,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1194,16 +1403,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1212,16 +1421,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1230,16 +1439,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1248,16 +1457,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1266,16 +1475,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 1808,
-      "rootWidth": 1808,
-      "sectionWidth": 1808,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 1744,
+      "rootWidth": 1744,
+      "sectionWidth": 1744,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1284,16 +1493,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1302,16 +1511,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1320,16 +1529,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1338,16 +1547,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1356,16 +1565,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1374,16 +1583,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1392,16 +1601,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1410,16 +1619,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1428,16 +1637,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1446,16 +1655,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1464,16 +1673,16 @@
       "sidebar": "expanded",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2240,
-      "rootWidth": 2240,
-      "sectionWidth": 2240,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2176,
+      "rootWidth": 2176,
+      "sectionWidth": 2176,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1482,16 +1691,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1500,16 +1709,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1518,16 +1727,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1536,16 +1745,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1554,16 +1763,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1572,16 +1781,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1590,16 +1799,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1608,16 +1817,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1626,16 +1835,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1644,16 +1853,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     },
     {
@@ -1662,16 +1871,16 @@
       "sidebar": "collapsed",
       "padding": [
         32,
+        64,
         32,
-        32,
-        32
+        64
       ],
-      "innerWidth": 2448,
-      "rootWidth": 2448,
-      "sectionWidth": 2448,
-      "left": 32,
-      "rootLeft": 32,
-      "right": 32,
+      "innerWidth": 2384,
+      "rootWidth": 2384,
+      "sectionWidth": 2384,
+      "left": 64,
+      "rootLeft": 64,
+      "right": 64,
       "overflow": false
     }
   ],

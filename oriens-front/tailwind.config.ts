@@ -15,7 +15,7 @@ export default {
   		}
   	},
   	extend: {
-        spacing: { page: 'var(--page-gutter)' },
+        spacing: { page: 'var(--page-gutter)', overlay: 'var(--overlay-gutter)' },
         maxHeight: { dialog: 'var(--dialog-max-height)' },
         maxWidth: { 'task-dialog': 'var(--dialog-task-width)', 'project-dialog': 'var(--dialog-project-width)', 'board-dialog': 'var(--dialog-board-width)' },
         gridTemplateColumns: { 'project-detail': 'var(--project-detail-columns)' },
