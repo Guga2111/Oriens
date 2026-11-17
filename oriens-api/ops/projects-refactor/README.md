@@ -1,5 +1,10 @@
 # P0 — baseline e procedimento operacional
 
+> **Histórico (17/11/2026):** a instalação por runners selados descrita aqui foi substituída pelo
+> Flyway (`src/main/resources/db/migration/postgresql`, V1–V6, aplicado no startup da API). Os scripts
+> `*.py` de migração, os `.sha256` e os `test_*.py` citados foram removidos; para testes PostgreSQL use
+> `ops/postgres-tests.sh`. `db.py backup`/`restore`/`inventory` continuam válidos.
+
 > Código com etiquetas exige a [evolução aditiva oriens-task-labels-v1](TASK_LABELS.md). Em banco já selado, não repetir a instalação/reset da baseline.
 
 Implementa a P0 da [SPEC](../../../docs/plans/2026-11-13-projects-refactor-spec.md).
@@ -31,7 +36,7 @@ Nove tabelas de aplicação observadas; baseline tem onze, mais um selo operacio
 Todos os timestamps atuais sem fuso permanecem como no mapping, exceto Task.createdAt que passa
 a Instant/timestamptz segundo a SPEC; Project.lastAccessed já é timestamptz.
 Enums usam varchar+CHECK, sem tipos enum PostgreSQL extras nem dependência Flyway nova.
-Defaults, checks, FKs e índices estão explícitos em [baseline.sql](baseline.sql).
+Defaults, checks, FKs e índices estão explícitos em [V1__projects_baseline.sql](../../src/main/resources/db/migration/postgresql/V1__projects_baseline.sql).
 
 Diferenças que P1 precisa mapear: Task.startTime anulável/time(0), Task.createdAt Instant,
 Project.archived não nulo, títulos 200/descrições 10.000, modo textual, campos @Version bigint,
@@ -61,7 +66,7 @@ python3 oriens-api/ops/projects-refactor/db.py apply \
   --host localhost --port 5432 --database oriens_p0_empty --user postgres
 ```
 
-O instalador verifica SHA-256 contra [baseline.sha256](baseline.sha256), abre uma conexão,
+O instalador verifica SHA-256 contra `baseline.sha256` (removido), abre uma conexão,
 transação e advisory lock, recusa objetos preexistentes sem selo e executa DDL com
 `ON_ERROR_STOP`. Grava versão `oriens-projects-v2`, hash do SQL e assinatura do catálogo.
 Na repetição, verifica todos os três e sai sem reaplicar. Dados podem existir após instalação;

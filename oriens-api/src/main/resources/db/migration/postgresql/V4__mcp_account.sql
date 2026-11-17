@@ -1,4 +1,4 @@
--- Additive over oriens-statistics-v1. Applied only by migrate.py, never at startup.
+-- oriens-mcp-account-v1: additive over oriens-statistics-v1 (V3).
 CREATE TABLE mcp_connections (
  id uuid PRIMARY KEY, user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
  client_id varchar(100) NOT NULL, name varchar(120) NOT NULL,

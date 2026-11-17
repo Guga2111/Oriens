@@ -1,5 +1,10 @@
 # P6 — runbook de liberação coordenada
 
+> **Histórico (17/11/2026):** a instalação por runners selados descrita aqui foi substituída pelo
+> Flyway (`src/main/resources/db/migration/postgresql`, V1–V6, aplicado no startup da API). Os scripts
+> `*.py` de migração, os `.sha256` e os `test_*.py` citados foram removidos; para testes PostgreSQL use
+> `ops/postgres-tests.sh`. `db.py backup`/`restore`/`inventory` continuam válidos.
+
 > Código com etiquetas exige a [evolução aditiva oriens-task-labels-v1](TASK_LABELS.md). Em banco já selado, não repetir a instalação/reset da baseline.
 
 Estado: preparação e ensaios locais; **alvo real não informado, reset não autorizado**.

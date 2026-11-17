@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
 
-/** Run only through ops/projects-refactor/test_p1.py against its disposable baseline database. */
+/** Run only through ops/postgres-tests.sh, against its disposable database migrated by Flyway. */
 @DataJpaTest(showSql = false, properties = {
         "spring.datasource.url=${P1_JDBC_URL}", "spring.datasource.username=postgres",
         "spring.datasource.password=", "spring.jpa.hibernate.ddl-auto=validate",

@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
+@DataJpaTest(properties = "spring.jpa.hibernate.ddl-auto=create-drop") // Flyway present: Boot no longer defaults H2 to create-drop
 class NotificationRepositoryTest {
 
     @Autowired

@@ -1,5 +1,10 @@
 # Evolução aditiva — Estatísticas e hábitos
 
+> **Histórico (17/11/2026):** a instalação por runners selados descrita aqui foi substituída pelo
+> Flyway (`src/main/resources/db/migration/postgresql`, V1–V6, aplicado no startup da API). Os scripts
+> `*.py` de migração, os `.sha256` e os `test_*.py` citados foram removidos; para testes PostgreSQL use
+> `ops/postgres-tests.sh`. `db.py backup`/`restore`/`inventory` continuam válidos.
+
 Revisão `oriens-statistics-v1`, sobre `oriens-task-labels-v1`. O desenho aprovado
 está em [docs/plans/2026-11-15-statistics-design.md](../../../docs/plans/2026-11-15-statistics-design.md).
 Não reinstalar/resetar a baseline e não executar DDL automaticamente no startup.

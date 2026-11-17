@@ -1,5 +1,10 @@
 # Evolução aditiva — etiquetas de tarefas por conta
 
+> **Histórico (17/11/2026):** a instalação por runners selados descrita aqui foi substituída pelo
+> Flyway (`src/main/resources/db/migration/postgresql`, V1–V6, aplicado no startup da API). Os scripts
+> `*.py` de migração, os `.sha256` e os `test_*.py` citados foram removidos; para testes PostgreSQL use
+> `ops/postgres-tests.sh`. `db.py backup`/`restore`/`inventory` continuam válidos.
+
 Revisão: `oriens-task-labels-v1`, sobre a baseline selada `oriens-projects-v2`.
 Não é uma reinstalação: **não executar DROP/CREATE ou reset de banco** para esta
 atualização. baseline.sql e baseline.sha256 permanecem inalterados.

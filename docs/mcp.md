@@ -24,8 +24,7 @@ ORIENS_MCP_CLAUDE_REDIRECTS=http://localhost:8765/callback
 
 Guarde esse arquivo fora do Git, com permissão `600`. Gere os dois valores de
 proteção uma vez e preserve-os entre reinícios; substituí-los exige o procedimento
-de rotação do runbook. Confirme antes que o banco local já tem a revisão
-`oriens-mcp-finance-v1`; a API não aplica migrações no startup.
+de rotação do runbook. O schema MCP é criado pelo Flyway quando a API sobe.
 
 Na pasta `oriens-api`, recrie somente a API:
 
@@ -142,8 +141,8 @@ em [ops/mcp-account](../oriens-api/ops/mcp-account/README.md). MCP permanece
 
 Antes de habilitar um ambiente público:
 
-1. Identifique host/banco/operador, backup e restore isolado; confirme as revisões
-   aditivas P0/P1 → P2 → P3, checksums e `ddl-auto=validate`.
+1. Identifique host/banco/operador, backup e restore isolado. O Flyway aplica as
+   migrações aditivas (até `V6__mcp_finance`) no startup; `ddl-auto=validate` confere o resultado.
 2. Publique API e frontend compatíveis com versões/idempotência financeira antes
    de reabrir escritores. Não mantenha instâncias financeiras antigas em paralelo.
 3. Configure issuer/recurso HTTPS, origem confiável de frontend e callbacks exatos.

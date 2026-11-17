@@ -1,5 +1,10 @@
 # MCP da conta — P0/P1/P2/P3/P4
 
+> **Histórico (17/11/2026):** a instalação por runners selados descrita aqui foi substituída pelo
+> Flyway (`src/main/resources/db/migration/postgresql`, V1–V6, aplicado no startup da API). Os scripts
+> `*.py` de migração, os `.sha256` e os `test_*.py` citados foram removidos; para testes PostgreSQL use
+> `ops/postgres-tests.sh`. `db.py backup`/`restore`/`inventory` continuam válidos.
+
 Revisão atual `oriens-mcp-finance-v1`, após `oriens-mcp-account-v1` e
 `oriens-mcp-work-v1`, em evolução aditiva sobre `oriens-statistics-v1`.
 Contrato: [SPEC](../../../docs/plans/2026-11-16-mcp-account-spec.md).
@@ -11,25 +16,13 @@ Contrato: [SPEC](../../../docs/plans/2026-11-16-mcp-account-spec.md).
 
 ## Instalação e rollback
 
-Não executar DDL no startup. Não reinstalar a baseline nem alterar seus hashes.
-O preflight exige a revisão anterior, checksum e catálogo selados. As constraints
-anteriores de dono financeiro permanecem obrigatórias. Não há versão financeira
-nesta revisão: ela pertence à P3. Nenhum registro de domínio é reprocessado.
+O schema MCP são as migrações Flyway `V4__mcp_account`, `V5__mcp_work` e `V6__mcp_finance`,
+aplicadas pela API no startup, em transação e com lock do Flyway. Um banco instalado pelos
+antigos runners é adotado por `LegacySchemaSeal`: a revisão em `oriens_schema_baseline` vira o
+baseline do Flyway e só as migrações seguintes rodam. Revisão desconhecida impede o startup.
 
-Antes de publicação real, identificar literalmente ambiente, host, porta, banco e
-operador; parar escritores/schedulers, conferir backup e restore isolado conforme
-[STATISTICS.md](../projects-refactor/STATISTICS.md). Este trabalho não aplicou
-migração a banco compartilhado.
-
-```sh
-python3 oriens-api/ops/mcp-account/migrate.py \
-  --host HOST_EXPLICITO --port PORTA --database BANCO_EXATO --user OPERADOR
-```
-
-Usar `.pgpass`/`PGPASSFILE` protegido, nunca senha nos argumentos. Repetir o mesmo
-comando verifica o selo sem reaplicar DDL. Drift, revisão desconhecida ou erro
-revertem a transação inteira. Banco vazio recebe baseline, etiquetas e estatísticas
-antes desta evolução, pelos runners existentes.
+Antes de publicar em banco real, identificar ambiente, host, banco e operador e fazer backup
+(`ops/projects-refactor/db.py backup`), com restore ensaiado em banco isolado.
 
 Rollback de aplicação preserva o schema aditivo. Desabilitar MCP e autorizações
 antes de publicar código anterior. Não apagar conexões/histórico para reverter

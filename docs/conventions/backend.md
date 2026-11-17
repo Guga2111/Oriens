@@ -301,15 +301,18 @@ código → status e devolve o envelope `{code, message, fieldErrors, requestId}
 ## 7. Banco de dados e migrações
 
 1. **`spring.jpa.hibernate.ddl-auto=validate`** em dev e prod. O Hibernate nunca cria ou altera tabela.
-2. **Mudança de schema é aditiva e selada** em `oriens-api/ops/<entrega>/`: arquivo `.sql`, `.sha256`,
-   script Python de aplicação (alvo explícito, sem inferir do ambiente, sem DDL no startup), testes do
-   script e README com instalação **e rollback**. Siga `ops/projects-refactor/` e `ops/mcp-account/`.
-   Nunca edite um `.sql` já selado: crie a próxima revisão.
+2. **Mudança de schema é uma migração Flyway aditiva** em
+   `oriens-api/src/main/resources/db/migration/postgresql/V<n>__descricao.sql` (próximo número livre).
+   O Flyway aplica no startup da API, em transação, e valida o checksum das já aplicadas: **nunca edite
+   uma migração já aplicada** — crie a próxima. Rollback é de aplicação (a migração é aditiva, a versão
+   anterior da API continua compatível); remover algo exige uma migração própria em entrega posterior.
+   O diretório `{vendor}` mantém o SQL PostgreSQL fora dos testes H2. Bancos instalados pelos antigos
+   runners de `ops/` são adotados por `LegacySchemaSeal` (versão de `oriens_schema_baseline` → baseline).
 3. **Restrições no banco, não só no Java**: `NOT NULL`, `CHECK`, `UNIQUE`, FKs (inclusive compostas com
    `user_id` para garantir que filho e pai têm o mesmo dono).
 4. **Índice** para toda coluna usada em filtro/ordenação de listagem nova.
 5. Antes de aplicar em banco compartilhado: identificar ambiente, conferir backup e restore isolado
-   (ver `ops/projects-refactor/STATISTICS.md`).
+   (`ops/projects-refactor/db.py backup`/`restore`).
 
 ❌ **Antipadrões**
 - `ddl-auto=update`/`create` fora do perfil de teste em memória.
@@ -347,7 +350,7 @@ código → status e devolve o envelope `{code, message, fieldErrors, requestId}
 |---|---|---|
 | Unitário de serviço (Mockito) | `src/test/.../service` | Regra de domínio isolada |
 | Repositório | `src/test/.../repository` | Consulta JPQL nova |
-| Integração Postgres | `src/test/.../work/*PostgresTest` | Contrato HTTP, posse (IDOR), concorrência, N+1, migrações |
+| Integração Postgres | `src/test/.../work/*PostgresTest`, via `ops/postgres-tests.sh` | Contrato HTTP, posse (IDOR), concorrência, N+1, migrações |
 
 Regras:
 - Teste de IDOR com dois usuários para todo endpoint novo (§2.4).
@@ -377,7 +380,6 @@ IDOR), porque muda contrato com o front.
 | `WorkExceptionHandler` | Código `FORBIDDEN` fora do `switch` (um `WorkDomainException("FORBIDDEN")` vira 422); o 403 de papel vem do handler de `AccessDeniedException` | Baixo |
 | `McpP2/P3/P4PostgresTest` | Não usam `@EnabledIfEnvironmentVariable`: sem `MCP_JDBC_URL`, `./mvnw test` falha com 113 erros | Médio (suíte sempre vermelha) |
 | `MvcConfig` | `System.out.println` | Baixo |
-| `src/main/resources/db/migration/V1__…sql` | Arquivo no padrão Flyway sem Flyway no projeto; o fluxo real é `ops/` | Baixo (confusão) |
 
 **Resolvido em 2026-11-16** (branch `fix/security-and-ui-conventions`): IDOR em `UserController`
 (perfil, preferências, avatar, exclusão e busca por e-mail), `NotificationController` e `SupportController`,
