@@ -9,6 +9,14 @@ services:
       DB_URL: ${DB_URL}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      ORIENS_MCP_ENABLED: ${ORIENS_MCP_ENABLED:-false}
+      ORIENS_MCP_ISSUER: ${ORIENS_MCP_ISSUER:-}
+      ORIENS_MCP_FRONTEND: ${ORIENS_MCP_FRONTEND:-}
+      # Spring removes property-name hyphens when binding environment variables.
+      ORIENS_MCP_ENCRYPTIONPASSWORD: ${ORIENS_MCP_ENCRYPTION_PASSWORD:-}
+      ORIENS_MCP_ENCRYPTIONSALT: ${ORIENS_MCP_ENCRYPTION_SALT:-}
+      ORIENS_MCP_CODEXREDIRECTS: ${ORIENS_MCP_CODEX_REDIRECTS:-http://127.0.0.1/callback}
+      ORIENS_MCP_CLAUDEREDIRECTS: ${ORIENS_MCP_CLAUDE_REDIRECTS:-http://localhost:8765/callback}
     ports:
       - "${API_PORT:-8080}:8080"
     volumes:

@@ -117,8 +117,17 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           API_PORT: ${{ vars.API_PORT || '8080' }}
+          ORIENS_MCP_ENABLED: ${{ vars.ORIENS_MCP_ENABLED || 'false' }}
+          # The API serves MCP/OAuth at the public site root (nginx routes /mcp, /oauth2 and /.well-known there).
+          ORIENS_MCP_ISSUER: https://oriens.luisgosampaio.com
+          ORIENS_MCP_FRONTEND: https://oriens.luisgosampaio.com
+          ORIENS_MCP_ENCRYPTION_PASSWORD: ${{ secrets.ORIENS_MCP_ENCRYPTION_PASSWORD }}
+          ORIENS_MCP_ENCRYPTION_SALT: ${{ secrets.ORIENS_MCP_ENCRYPTION_SALT }}
         run: |
-          names="DB_URL DB_USER DB_PASSWORD JWT_SECRET API_PORT"
+          names="DB_URL DB_USER DB_PASSWORD JWT_SECRET API_PORT ORIENS_MCP_ENABLED"
+          if [ "$ORIENS_MCP_ENABLED" = "true" ]; then
+            names="$names ORIENS_MCP_ISSUER ORIENS_MCP_FRONTEND ORIENS_MCP_ENCRYPTION_PASSWORD ORIENS_MCP_ENCRYPTION_SALT"
+          fi
           # Validate everything before touching the remote file, so a bad secret never leaves a partial .env.
           for name in $names; do
             value="${!name}"

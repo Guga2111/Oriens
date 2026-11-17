@@ -44,6 +44,23 @@ class McpEnvironmentConfigurationTest {
         });
     }
 
+    @Test void productionEnvironmentBindsHttpsSiteRootAsIssuerAndFrontend() {
+        context(Map.of(
+            "ORIENS_MCP_ENABLED","true",
+            "ORIENS_MCP_ISSUER","https://oriens.luisgosampaio.com",
+            "ORIENS_MCP_FRONTEND","https://oriens.luisgosampaio.com",
+            "ORIENS_MCP_ENCRYPTIONPASSWORD","c3ludGhldGljK3Byb2R1Y3Rpb24vY29uZmlndXJhdGlvbi1zZWNyZXQ9PT0rLzEy",
+            "ORIENS_MCP_ENCRYPTIONSALT","fedcba9876543210fedcba9876543210",
+            "ORIENS_MCP_CODEXREDIRECTS","http://127.0.0.1/callback",
+            "ORIENS_MCP_CLAUDEREDIRECTS","http://localhost:8765/callback"
+        )).run(c -> {
+            assertThat(c).hasNotFailed();
+            var p=c.getBean(McpProperties.class);
+            assertThat(p.base()).isEqualTo("https://oriens.luisgosampaio.com");
+            assertThat(p.resource()).isEqualTo("https://oriens.luisgosampaio.com/mcp");
+        });
+    }
+
     @Test void absentConfigurationKeepsMcpDisabledWithoutRequiringSecrets() {
         context(Map.of()).run(c -> {
             assertThat(c).hasNotFailed();
