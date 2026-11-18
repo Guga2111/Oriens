@@ -58,9 +58,9 @@ test("timeline: escala, Hoje, ‹ ›, detalhe pela barra e deep link", async ({
   await expect(page.getByRole("region", { name: /Sem data/ }).getByRole("button", { name: new RegExp(undated.title) })).toBeVisible();
 
   // Scale lives in the URL.
-  await page.getByRole("radio", { name: "Semana" }).click();
+  await page.getByRole("radio", { name: "Semana", exact: true }).click();
   await expect(page).toHaveURL(/[?&]scale=week/);
-  await page.getByRole("radio", { name: "Mês" }).click();
+  await page.getByRole("radio", { name: "Mês", exact: true }).click();
   await expect(page).toHaveURL(/[?&]scale=month/);
 
   // ‹ › move the anchor by half the month window (4 months); Hoje drops it.
