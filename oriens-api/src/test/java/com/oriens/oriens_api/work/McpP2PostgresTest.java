@@ -278,4 +278,39 @@ class McpP2PostgresTest extends McpPostgresTest {
         assertThat(out.getResponse().getStatus()==400||body(out).has("error")).isTrue();
         assertThat(db.queryForObject("select count(*) from tasks where user_id=?",Long.class,owner)).isZero();
     }
+
+    @Test void boardWindowKeepsOverlappingAndUndatedTasksWithRestAndMcpParity()throws Exception {
+        var p=project("Timeline");
+        String[][] rows={{"Dentro","2026-11-12","2026-11-15"},{"Cruza o início","2026-11-05","2026-11-10"},{"Cruza o fim","2026-11-20","2026-11-28"},
+            {"Invertida","2026-11-25","2026-11-15"},{"Só planejada","2026-11-15",null},{"Só prazo",null,"2026-11-15"},{"Sem data",null,null},
+            {"Antes","2026-11-01","2026-11-09"},{"Depois","2026-11-21","2026-11-30"},{"Só prazo depois",null,"2026-11-21"}};
+        for(String[] r:rows)work.createTask(owner,new CreateTask(r[0],null,p.getId(),current(p).getVersion(),null,null,
+            r[1]==null?null:LocalDate.parse(r[1]),null,r[2]==null?null:LocalDate.parse(r[2]),null,null,null));
+        var expected=Set.of("Dentro","Cruza o início","Cruza o fim","Invertida","Só planejada","Só prazo","Sem data");
+        String window="startDate=2026-11-10&endDate=2026-11-20";
+
+        JsonNode rest=body(mvc.perform(get("/project/"+p.getId()+"/board?"+window).header("Authorization",jwt)).andExpect(status().isOk()).andReturn());
+        assertThat(rest.path("filtered").asBoolean()).isTrue();
+        assertThat(rest.path("total").path("totalTasks").asInt()).isEqualTo(10);
+        assertThat(rest.path("visible").path("totalTasks").asInt()).isEqualTo(7);
+        var restTitles=new HashSet<String>();rest.path("tasks").forEach(t->restTitles.add(t.path("title").asText()));
+        assertThat(restTitles).isEqualTo(expected);
+
+        var g=grant(Set.of("mcp:context","projects:read","tasks:read"),Set.of(p.getId()),false);
+        var board=success(g,"get_board",fields("projectId",id(p.getId()),"tasksPageSize",50,"startDate","2026-11-10","endDate","2026-11-20")).path("data");
+        assertThat(board.path("filtered").asBoolean()).isTrue();
+        assertThat(board.path("projectTaskCounts").path("totalTasks").asLong()).isEqualTo(10);
+        assertThat(board.path("filteredTaskCounts").path("totalTasks").asLong()).isEqualTo(7);
+        var mcpTitles=new HashSet<String>();board.path("tasks").path("items").forEach(t->mcpTitles.add(t.path("title").asText()));
+        assertThat(mcpTitles).as("REST and MCP apply the same window").isEqualTo(restTitles);
+
+        for(String invalid:List.of("startDate=2026-11-10","endDate=2026-11-20","startDate=2026-11-20&endDate=2026-11-10",
+                "startDate=2026-01-01&endDate=2027-01-02","startDate=2026-11-10&endDate=amanha"))
+            mvc.perform(get("/project/"+p.getId()+"/board?"+invalid).header("Authorization",jwt)).andExpect(status().isBadRequest());
+        mvc.perform(get("/project/"+p.getId()+"/board?"+window).header("Authorization",otherJwt)).andExpect(status().isNotFound());
+        denied(g,"get_board",fields("projectId",id(p.getId()),"startDate","2026-11-10"),"INVALID_REQUEST");
+        denied(g,"get_board",fields("projectId",id(p.getId()),"startDate","2026-11-20","endDate","2026-11-10"),"INVALID_REQUEST");
+        denied(g,"get_board",fields("projectId",id(p.getId()),"startDate","2026-01-01","endDate","2027-01-02"),"INVALID_REQUEST");
+        denied(g,"get_board",fields("projectId",id(p.getId()),"startDate","2026-13-01","endDate","2026-12-01"),"INVALID_REQUEST");
+    }
 }

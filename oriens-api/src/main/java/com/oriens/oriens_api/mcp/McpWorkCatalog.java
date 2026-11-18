@@ -99,9 +99,9 @@ public final class McpWorkCatalog {
         out.add(definition("delete_objective","objectives:delete",true,true,"Exclui objetivo preservando tarefas e removendo seus vínculos. Contagem de tarefas somente com leitura autorizada.",
             object(fields("idempotencyKey",UUID_SCHEMA,"projectId",ID,"objectiveId",ID,"expectedVersion",VERSION,"expectedProjectVersion",VERSION),
                 "idempotencyKey","projectId","objectiveId","expectedVersion","expectedProjectVersion"),mutation(OBJECTIVE)));
-        out.add(definition("get_board","projects:read",false,false,"Estrutura paginada do quadro DEVELOPMENT. Tarefas têm paginação independente e referência de coluna; linhas/contagens somente com tasks:read. Totais do projeto e do filtro são distintos.",
+        out.add(definition("get_board","projects:read",false,false,"Estrutura paginada do quadro DEVELOPMENT. Tarefas têm paginação independente e referência de coluna; linhas/contagens somente com tasks:read. Totais do projeto e do filtro são distintos. startDate e endDate (juntos, até 366 dias) limitam o período consultado, não são campos da tarefa: entra a tarefa cujo intervalo entre plannedDate e dueDate cruza a janela; tarefa sem nenhuma das duas datas sempre entra.",
             object(extend(boardPaging,
-                "projectId",ID,"objectiveId",ID,"planning",choices("today","unscheduled"),"overdue",BOOL,"open",BOOL),"projectId"),
+                "projectId",ID,"objectiveId",ID,"planning",choices("today","unscheduled"),"overdue",BOOL,"open",BOOL,"startDate",DATE,"endDate",DATE),"projectId"),
             object(fields("projectId",ID,"projectVersion",VERSION,"columns",page(COLUMN),"tasks",page(complete(TASK_FIELDS)),"projectTaskCounts",COUNTS,"filteredTaskCounts",COUNTS,
                 "filtered",BOOL,"includedSections",array(TEXT)),"projectId","projectVersion","columns","filtered","includedSections")));
         out.add(definition("list_tasks","tasks:read",false,false,"Consulta união dos projetos autorizados e avulsas permitidas. Prazo (dueDate) e dia planejado (plannedDate) são distintos. Intervalo exige dateField, startDate e endDate. Não aceita coluna sem projeto.",

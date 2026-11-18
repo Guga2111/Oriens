@@ -2,7 +2,8 @@ import api from './api';
 import type { Page } from '@/types/financial';
 import type { WorkProject, BoardResponse, ProjectTotals, SidebarProject, ProjectWrite, DeletionPreview } from '@/types/work';
 
-export interface BoardFilters { objectiveId?: number; planning?: 'today' | 'unscheduled'; overdue?: boolean; open?: boolean }
+/** startDate/endDate (YYYY-MM-DD, together) bound the queried period; they are not task fields. */
+export interface BoardFilters { objectiveId?: number; planning?: 'today' | 'unscheduled'; overdue?: boolean; open?: boolean; startDate?: string; endDate?: string }
 export interface ProjectFilters {
   page?: number;
   size?: number;

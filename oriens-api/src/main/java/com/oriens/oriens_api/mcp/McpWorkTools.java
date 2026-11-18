@@ -132,7 +132,8 @@ public class McpWorkTools {
                 "timezone","America/Recife","scopes",new TreeSet<>(p.scopes()),"allowedProjectIds",p.allowedProjectIds().stream().sorted().map(String::valueOf).toList(),"allowStandaloneTasks",p.allowStandaloneTasks());
             case "oriens_list_projects" -> read.listProjects(a,text(n,"search"),bool(n,"includeArchived"),page(n,"","id"));
             case "oriens_get_project" -> read.getProject(a,id(n,"projectId"),page(n,"objectives","position"));
-            case "oriens_get_board" -> read.board(a,id(n,"projectId"),page(n,"columns","position"),boardTasks(n),id(n,"objectiveId"),text(n,"planning"),bool(n,"overdue"),bool(n,"open"));
+            case "oriens_get_board" -> read.board(a,id(n,"projectId"),page(n,"columns","position"),boardTasks(n),id(n,"objectiveId"),text(n,"planning"),bool(n,"overdue"),bool(n,"open"),
+                date(n,"startDate"),date(n,"endDate"));
             case "oriens_list_tasks" -> read.listTasks(a,new ScopedWorkReadService.TaskFilter(id(n,"projectId"),bool(n,"standaloneOnly"),id(n,"columnId"),enumeration(n,"status",Status.class),
                 enumeration(n,"priority",Priority.class),text(n,"search"),text(n,"dateField"),date(n,"startDate"),date(n,"endDate")),page(n,"","createdAt"));
             case "oriens_get_task" -> read.getTask(a,id(n,"taskId"));

@@ -101,23 +101,26 @@ public class WorkReadService {
         return new WeeklyResponse(start, end, ProductClockConfiguration.ZONE.getId(),
             values.stream().filter(t -> t.status() == Status.CONCLUDED).count(), values.size());
     }
-    public BoardResponse board(Long owner, Long id, Long objectiveId, String planning, boolean overdue, boolean open) {
+    public BoardResponse board(Long owner, Long id, Long objectiveId, String planning, boolean overdue, boolean open,
+            LocalDate startDate, LocalDate endDate) {
         Project p = project(owner, id);
         if (p.getMode() != ProjectMode.DEVELOPMENT) throw new WorkDomainException("DOMAIN_VIOLATION", "projectId", "Projeto simples não possui quadro.");
         if (planning != null && !Set.of("today", "unscheduled").contains(planning))
             throw new WorkDomainException("INVALID_REQUEST", "planning", "Filtro de planejamento inválido.");
+        BoardWindow window = BoardWindow.of(startDate, endDate);
         if (objectiveId != null && objectives.findById(objectiveId).filter(o -> o.getProject().getId().equals(id)).isEmpty()) throw missing();
         List<TaskView> all = views(owner, tasks.findByProjectIdOrderByPositionAscIdAsc(id));
         LocalDate date = today();
         List<TaskView> visible = all.stream().filter(t -> objectiveId == null || objectiveId.equals(t.objectiveId()))
             .filter(t -> planning == null || ("today".equals(planning) ? date.equals(t.plannedDate()) : t.plannedDate() == null))
             .filter(t -> !open || active(t))
-            .filter(t -> !overdue || active(t) && t.dueDate() != null && t.dueDate().isBefore(date)).toList();
+            .filter(t -> !overdue || active(t) && t.dueDate() != null && t.dueDate().isBefore(date))
+            .filter(t -> window == null || window.includes(t.plannedDate(), t.dueDate())).toList();
         return new BoardResponse(id, p.getVersion(), columns.findByProjectIdOrderByPositionAscIdAsc(id).stream().map(c -> {
             List<TaskView> rows = visible.stream().filter(t -> c.getId().equals(t.columnId())).toList();
             return new BoardColumn(c.getId(), id, c.getName(), c.getKind(), c.getPosition(), c.getVersion(),
                 all.stream().filter(t -> c.getId().equals(t.columnId())).count(), rows.size());
-        }).toList(), visible, counts(all), counts(visible), objectiveId != null || planning != null || overdue || open);
+        }).toList(), visible, counts(all), counts(visible), objectiveId != null || planning != null || overdue || open || window != null);
     }
     private static TaskCounts counts(List<TaskView> rows) {
         return new TaskCounts(rows.size(), rows.stream().filter(t -> t.status() != Status.CANCELLED).count(),
