@@ -134,6 +134,64 @@ it('hides the today line from assistive tech and announces today as text', async
   expect(today.closest('[aria-hidden="true"]')).toBeNull();
 });
 
+it('shows a grid-shaped skeleton (header and 6 rows) on the first load', () => {
+  vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
+  renderWork(<TooltipProvider><ProjectTimeline project={timelineProject} onOpen={vi.fn()} onAdd={vi.fn()} /></TooltipProvider>, '/projects/9');
+  expect(screen.getByLabelText('Carregando timeline').children).toHaveLength(7);
+  expect(screen.queryByRole('region', { name: 'Timeline do projeto' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('status', { name: 'Atualizando a timeline' })).not.toBeInTheDocument();
+});
+
+it('keeps the previous data with a toolbar spinner while a new window loads', async () => {
+  show();
+  await screen.findByRole('button', { name: /^API de leitura/ });
+  vi.mocked(api.get).mockReturnValue(new Promise(() => {}));
+  await userEvent.click(screen.getByRole('radio', { name: 'Semana' }));
+  expect(await screen.findByRole('status', { name: 'Atualizando a timeline' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^API de leitura/ })).toBeInTheDocument();
+  expect(screen.queryByLabelText('Carregando timeline')).not.toBeInTheDocument();
+});
+
+it('names completed and inverted bars; a completed task planned after its due date keeps the done look', async () => {
+  show({ ...response, tasks: [
+    make(6, { title: 'Publicar build', objectiveId: 81, plannedDate: '2026-11-10', dueDate: '2026-11-12', status: 'CONCLUDED' }),
+    make(7, { title: 'Migrar dados', objectiveId: 81, plannedDate: '2026-11-27', dueDate: '2026-11-25' }),
+    make(8, { title: 'Fechar release', objectiveId: 81, plannedDate: '2026-11-14', dueDate: '2026-11-11', status: 'CONCLUDED' }),
+  ] });
+  const done = await screen.findByRole('button', { name: 'Publicar build, concluída, planejada 10 nov, prazo 12 nov' });
+  expect(within(done).getByText('Publicar build')).toHaveClass('line-through');
+  const inverted = screen.getByRole('button', { name: 'Migrar dados, a fazer, planejada 27 nov, prazo 25 nov, planejada para depois do prazo' });
+  expect(inverted).toHaveClass('text-negative');
+  const doneInverted = screen.getByRole('button', { name: 'Fechar release, concluída, planejada 14 nov, prazo 11 nov, planejada para depois do prazo' });
+  expect(doneInverted).toHaveClass('text-muted-foreground');
+  expect(doneInverted).not.toHaveClass('text-negative');
+});
+
+it('puts the title inside a bar only when it spans enough days, and squares the clipped edge', async () => {
+  show({ ...response, tasks: [
+    tasks[0], // 2 days: below the 3 days the fortnight scale needs for an inner title.
+    make(9, { title: 'Refatorar', objectiveId: 81, plannedDate: '2026-10-01', dueDate: '2026-10-25', status: 'ON_DOING' }),
+  ] });
+  const short = await screen.findByRole('button', { name: /^API de leitura/ });
+  expect(short).toBeEmptyDOMElement();
+  const clipped = screen.getByRole('button', { name: /^Refatorar/ });
+  expect(clipped).toHaveTextContent('Refatorar');
+  expect(clipped).toHaveClass('rounded-l-none');
+  expect(clipped).not.toHaveClass('rounded-r-none');
+});
+
+it('collapses and reopens an objective group from the keyboard', async () => {
+  show();
+  const group = await screen.findByRole('button', { name: /^Receber contatos pelo site/ });
+  group.focus();
+  await userEvent.keyboard('{Enter}');
+  expect(group).toHaveAttribute('aria-expanded', 'false');
+  expect(screen.queryByRole('button', { name: /^API de leitura/ })).not.toBeInTheDocument();
+  await userEvent.keyboard(' ');
+  expect(group).toHaveAttribute('aria-expanded', 'true');
+  expect(screen.getByRole('button', { name: /^API de leitura/ })).toBeInTheDocument();
+});
+
 it('offers a retry when the board fails to load', async () => {
   vi.mocked(api.get).mockRejectedValue({ isAxiosError: true, response: { status: 404 } });
   renderWork(<TooltipProvider><ProjectTimeline project={timelineProject} onOpen={vi.fn()} onAdd={vi.fn()} /></TooltipProvider>, '/projects/9');

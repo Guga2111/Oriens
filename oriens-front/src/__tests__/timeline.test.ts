@@ -22,6 +22,21 @@ describe('timeline window', () => {
     expect(shiftTimelineAnchor('month', anchor, 1)).toBe('2027-03-18');
   });
 
+  it('steps back and forth in every scale, returning to the anchor', () => {
+    expect(shiftTimelineAnchor('week', anchor, 1)).toBe('2026-12-16');
+    expect(shiftTimelineAnchor('fortnight', anchor, -1)).toBe('2026-09-23');
+    expect(shiftTimelineAnchor('month', anchor, -1)).toBe('2026-07-18');
+    for (const scale of ['week', 'fortnight', 'month'] as const) {
+      expect(shiftTimelineAnchor(scale, shiftTimelineAnchor(scale, anchor, 1), -1)).toBe(anchor);
+    }
+  });
+
+  it('keeps every window within the 366-day board limit, even across a leap year', () => {
+    for (const scale of ['week', 'fortnight', 'month'] as const) {
+      for (const day of [anchor, '2028-02-29', '2027-12-31']) expect(timelineWindow(scale, day).days).toBeLessThanOrEqual(366);
+    }
+  });
+
   it('ignores an invalid anchor or scale', () => {
     expect(parseTimelineAnchor(null, anchor)).toBe(anchor);
     expect(parseTimelineAnchor('amanhã', anchor)).toBe(anchor);
@@ -58,6 +73,14 @@ describe('task span (§5.6)', () => {
     expect(placeRange(period, '2026-12-26', '2027-01-10')).toEqual({ column: 55, span: 2, clippedStart: false, clippedEnd: true });
     expect(placeRange(period, '2026-10-01', '2026-11-01')).toBeNull();
     expect(placeRange(period, '2026-12-28', '2026-12-30')).toBeNull();
+  });
+
+  it('keeps square corners only on the sides that really cross the window', () => {
+    const period = timelineWindow('week', anchor); // 2026-11-02 .. 2026-12-27, 56 days
+    expect(placeRange(period, '2026-11-02', '2026-12-27')).toEqual({ column: 1, span: 56, clippedStart: false, clippedEnd: false });
+    expect(placeRange(period, '2026-10-01', '2027-01-31')).toEqual({ column: 1, span: 56, clippedStart: true, clippedEnd: true });
+    const inverted = taskSpan({ plannedDate: '2027-01-05', dueDate: '2026-12-20' })!;
+    expect(placeRange(period, inverted.lo, inverted.hi)).toEqual({ column: 49, span: 8, clippedStart: false, clippedEnd: true });
   });
 });
 
