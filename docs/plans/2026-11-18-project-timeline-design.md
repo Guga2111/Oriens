@@ -56,6 +56,10 @@ Fontes: [Kibo UI Gantt](https://www.kibo-ui.com/components/gantt) ·
 Os nomes são os mesmos de `oriens_list_tasks`. Os dois parâmetros são opcionais, e sem eles o
 comportamento atual não muda.
 
+> `startDate`/`endDate` são **limites da consulta** (o período exibido), e não campos da tarefa. A tarefa
+> continua sem `start_date`: a barra vai de `plannedDate` a `dueDate` (decisão de 17/11). Os nomes foram
+> mantidos para consistência com `oriens_list_tasks`.
+
 - **Validação:** os dois vêm juntos ou nenhum vem, com `startDate ≤ endDate` e um vão de no máximo 366 dias.
   Fora disso a resposta é 400 `INVALID_REQUEST`, com `field` no parâmetro culpado (padrão de `WorkDomainException`).
 - **Regra de inclusão:** `lo = min(plannedDate, dueDate)` e `hi = max(plannedDate, dueDate)`. Com uma
