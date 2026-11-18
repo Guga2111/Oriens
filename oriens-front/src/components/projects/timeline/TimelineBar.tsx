@@ -12,7 +12,7 @@ import type { WorkTask } from '@/types/work';
 const barVariants = cva('row-start-1 h-7 min-w-0 justify-start self-center overflow-hidden px-2 text-xs max-md:min-w-0', {
   variants: {
     tone: {
-      pending: 'border border-border bg-secondary text-foreground hover:bg-accent',
+      pending: 'border border-muted-foreground bg-secondary text-foreground hover:bg-accent',
       doing: 'bg-primary text-primary-foreground hover:bg-primary/90',
       done: 'bg-muted text-muted-foreground hover:bg-accent',
       late: 'border border-negative bg-secondary text-negative hover:bg-accent',

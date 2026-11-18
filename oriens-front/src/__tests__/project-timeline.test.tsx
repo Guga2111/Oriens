@@ -169,11 +169,14 @@ it('names completed and inverted bars; a completed task planned after its due da
 
 it('puts the title inside a bar only when it spans enough days, and squares the clipped edge', async () => {
   show({ ...response, tasks: [
-    tasks[0], // 2 days: below the 3 days the fortnight scale needs for an inner title.
+    // Pending, 2 days: below the 3 days the fortnight scale needs for an inner title.
+    make(1, { title: 'API de leitura', objectiveId: 81, plannedDate: '2026-11-19', dueDate: '2026-11-20' }),
     make(9, { title: 'Refatorar', objectiveId: 81, plannedDate: '2026-10-01', dueDate: '2026-10-25', status: 'ON_DOING' }),
   ] });
   const short = await screen.findByRole('button', { name: /^API de leitura/ });
   expect(short).toBeEmptyDOMElement();
+  // Without an inner title the outline is the only cue of the control: ≥3:1 (WCAG 1.4.11) in both themes.
+  expect(short).toHaveClass('border-muted-foreground');
   const clipped = screen.getByRole('button', { name: /^Refatorar/ });
   expect(clipped).toHaveTextContent('Refatorar');
   expect(clipped).toHaveClass('rounded-l-none');

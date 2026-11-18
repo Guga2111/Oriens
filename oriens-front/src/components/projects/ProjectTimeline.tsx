@@ -103,7 +103,7 @@ export function ProjectTimeline({ project, onOpen, onAdd }: {
         <ScrollArea orientation="horizontal" className="w-full">
           <div ref={content} className="relative w-max min-w-full pb-2" style={{ '--timeline-days': period.days } as CSSProperties}>
             <div aria-hidden className={cn('pointer-events-none absolute inset-x-0 bottom-2 top-0 grid', grid)}>
-              {days.map((day, index) => day.weekend && <div key={day.date} className="bg-muted" style={{ gridColumn: gridColumn({ column: index + 1, span: 1 }) }} />)}
+              {days.map((day, index) => day.weekend && <div key={day.date} className="bg-card" style={{ gridColumn: gridColumn({ column: index + 1, span: 1 }) }} />)}
               {/* Starts below the 5rem TimelineHeader so it never crosses the date labels. */}
             {todayColumn !== null && <div data-timeline-today className="mt-20 w-0.5 justify-self-center bg-now" style={{ gridColumn: gridColumn({ column: todayColumn, span: 1 }), gridRow: 1 }} />}
             </div>
