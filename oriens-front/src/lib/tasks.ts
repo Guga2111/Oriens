@@ -1,4 +1,4 @@
-import type { Task } from "@/types/task";
+import type { Task, TaskStatus } from "@/types/task";
 
 export interface TaskPeriod {
   id: "morning" | "afternoon" | "night";
@@ -107,4 +107,9 @@ export function describeWeek(tasks: Task[]): string {
 
   const concluded = tasks.filter((task) => task.status === "CONCLUDED").length;
   return `${concluded} de ${tasks.length} concluídas nesta semana`;
+}
+
+/** Open (pending or in progress) with a deadline before the product's today (YYYY-MM-DD). */
+export function isTaskOverdue(task: { dueDate: string | null; status: TaskStatus }, today: string): boolean {
+  return !!task.dueDate && task.dueDate < today && (task.status === "PENDING" || task.status === "ON_DOING");
 }

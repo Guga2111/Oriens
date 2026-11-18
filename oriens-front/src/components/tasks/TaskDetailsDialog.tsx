@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { useTaskDetail, useTaskWrites } from '@/hooks/useWork';
 import { formatLongDate } from '@/lib/date';
 import { productNow } from '@/lib/product-time';
+import { isTaskOverdue } from '@/lib/tasks';
 import { PRIORITY, TASK_STATUS } from '@/lib/labels';
 import { statusNames } from '@/lib/work-form';
 import { cn } from '@/lib/utils';
@@ -91,8 +92,7 @@ function isNotFound(error: unknown) {
 
 function TaskDetails({ task, onObjective, feedback }: { task: WorkTask; onObjective: (id: number) => void; feedback: ReactNode }) {
   const today = productNow().date;
-  const open = task.status === 'PENDING' || task.status === 'ON_DOING';
-  const overdue = !!task.dueDate && task.dueDate < today && open;
+  const overdue = isTaskOverdue(task, today);
   return <div className="flex min-w-0 flex-col gap-6">
     <ul aria-label="Prioridade, estado e etiquetas" className="flex min-w-0 flex-wrap gap-1.5">
       <li><Badge variant={PRIORITY[task.priority].badge}>Prioridade {PRIORITY[task.priority].label.toLowerCase()}</Badge></li>
