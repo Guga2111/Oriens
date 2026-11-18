@@ -18,7 +18,10 @@ export default {
         spacing: { page: 'var(--page-gutter)', overlay: 'var(--overlay-gutter)' },
         maxHeight: { dialog: 'var(--dialog-max-height)' },
         maxWidth: { 'task-dialog': 'var(--dialog-task-width)', 'project-dialog': 'var(--dialog-project-width)', 'board-dialog': 'var(--dialog-board-width)' },
-        gridTemplateColumns: { 'project-detail': 'var(--project-detail-columns)', 'task-details': 'var(--task-details-columns)' },
+        gridTemplateColumns: { 'project-detail': 'var(--project-detail-columns)', 'task-details': 'var(--task-details-columns)',
+          // --timeline-days is the window length, set at runtime on the timeline grid.
+          ...Object.fromEntries(['week', 'fortnight', 'month'].map(scale => [`timeline-${scale}`, `var(--timeline-label-width) repeat(var(--timeline-days), var(--timeline-day-${scale}))`])) },
+        inset: { 'timeline-label': 'var(--timeline-label-width)' },
         width: { 'board-column': 'var(--board-column-width)', 'popover-trigger': 'var(--radix-popover-trigger-width)' },
         aspectRatio: { 'project-cover': 'var(--project-cover-ratio)' },
   		fontFamily: {

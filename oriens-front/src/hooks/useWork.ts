@@ -6,7 +6,7 @@ import { taskService } from '@/services/taskService';
 import { projectService, type BoardFilters } from '@/services/projectService';
 import type { TaskFilters } from '@/services/taskService';
 import type { ProjectFilters } from '@/services/projectService';
-import type { TaskPatch, TaskCreation, TaskMutation, TaskDeletion, WorkTask, WorkProject, ProjectWrite, SidebarProject } from '@/types/work';
+import type { BoardResponse, TaskPatch, TaskCreation, TaskMutation, TaskDeletion, WorkTask, WorkProject, ProjectWrite, SidebarProject } from '@/types/work';
 
 export const workKey = (user: number | null, family: string, ...params: unknown[]) => ['work', user, family, ...params] as const;
 export function useWorkStatistics() {
@@ -60,9 +60,11 @@ export function useTaskDetail(id: number, placeholder?: WorkTask) {
   return useQuery({ queryKey: workKey(userId, 'tasks/detail', id), enabled: userId !== null && id > 0,
     placeholderData: placeholder, queryFn: ({ signal }) => taskService.task(id, signal) });
 }
-export function useProjectBoard(id: number, filters: BoardFilters = {}) {
+/** `keepPrevious` shows the same project's last board while new filters load (timeline window changes). */
+export function useProjectBoard(id: number, filters: BoardFilters = {}, keepPrevious = false) {
   const { userId } = useAuth();
-  return useQuery({ queryKey: workKey(userId, 'projects/board', id, filters), enabled: userId !== null && id > 0,
+  return useQuery<BoardResponse>({ queryKey: workKey(userId, 'projects/board', id, filters), enabled: userId !== null && id > 0,
+    placeholderData: keepPrevious ? (previous?: BoardResponse) => previous?.projectId === id ? previous : undefined : undefined,
     queryFn: ({ signal }) => projectService.board(id, filters, signal) });
 }
 export function usePlanningCount(date: string, exclude?: number) {
