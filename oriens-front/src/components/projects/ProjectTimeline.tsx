@@ -11,13 +11,11 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
 import { TimelineGroup } from '@/components/projects/timeline/TimelineGroup';
 import { TimelineHeader } from '@/components/projects/timeline/TimelineHeader';
-import { useProjectBoard } from '@/hooks/useWork';
-import { useProductToday } from '@/hooks/useProductToday';
+import { useTimelineBoard } from '@/hooks/useTimelineBoard';
 import { formatLongDate } from '@/lib/date';
 import { TASK_STATUS } from '@/lib/labels';
 import {
-  TIMELINE_SCALES, dayIndex, gridColumn, layoutTimeline, parseTimelineAnchor, parseTimelineScale, shiftTimelineAnchor,
-  timelineDays, timelineWindow, type TimelineScale,
+  TIMELINE_SCALES, dayIndex, gridColumn, layoutTimeline, shiftTimelineAnchor, timelineDays, type TimelineScale,
 } from '@/lib/timeline';
 import { cn } from '@/lib/utils';
 import type { WorkProject, WorkTask } from '@/types/work';
@@ -28,12 +26,8 @@ const GRID: Record<TimelineScale, string> = {
 
 /** Gantt view of a DEVELOPMENT project: the board within a date window, grouped by objective (spec §5). */
 export function ProjectTimeline({ project, onOpen }: { project: WorkProject; onOpen: (task: WorkTask) => void }) {
-  const today = useProductToday();
-  const [params, setParams] = useSearchParams();
-  const scale = parseTimelineScale(params.get('scale'));
-  const anchor = parseTimelineAnchor(params.get('anchor'), today);
-  const period = useMemo(() => timelineWindow(scale, anchor), [scale, anchor]);
-  const board = useProjectBoard(project.id, { startDate: period.startDate, endDate: period.endDate }, true);
+  const [, setParams] = useSearchParams();
+  const { board, today, scale, anchor, period } = useTimelineBoard(project.id);
   const layout = useMemo(() => board.data && layoutTimeline(board.data.tasks, project.objectives ?? [], period), [board.data, project.objectives, period]);
   // Only explicit toggles are kept; otherwise a group is open when it has rows in the window.
   const [toggled, setToggled] = useState<Record<string, boolean>>({});
