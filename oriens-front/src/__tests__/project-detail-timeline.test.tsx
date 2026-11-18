@@ -17,13 +17,14 @@ vi.mock('@/services/api', () => ({ default: { get: vi.fn(), patch: vi.fn(), post
 const scheduled: WorkTask = { ...task, id: 51, title: 'API de leitura', plannedDate: '2026-11-16', dueDate: '2026-11-20' };
 const barName = 'API de leitura, a fazer, planejada 16 nov, prazo 20 nov';
 
-function serve(current = project) {
+const windowed = { ...board, filtered: true, tasks: [scheduled] };
+function serve(current = project, timeline = windowed) {
   vi.mocked(api.get).mockImplementation(async (url, config) => {
     const path = String(url);
     if (path.startsWith('/task-labels/')) return { data: [] };
     // The detail never answers: the dialog can only show the placeholder.
     if (path.startsWith('/task/')) return new Promise(() => {});
-    if (path.endsWith('/board')) return { data: config?.params?.startDate ? { ...board, filtered: true, tasks: [scheduled] } : board };
+    if (path.endsWith('/board')) return { data: config?.params?.startDate ? timeline : board };
     if (path.includes('/project/user/')) return { data: pageOf([current]) };
     return { data: current };
   });
@@ -58,6 +59,16 @@ it('a deep link with ?tab=timeline&task=ID opens the details dialog', async () =
   expect(within(dialog).getByRole('button', { name: /Editar/ })).toBeInTheDocument();
   // The modal dialog hides the page behind it from the accessibility tree.
   expect(screen.getByRole('tab', { name: 'Timeline', hidden: true })).toHaveAttribute('aria-selected', 'true');
+});
+
+it('"Nova tarefa" in the empty timeline opens the page TaskEditor', async () => {
+  const none = { totalTasks: 0, nonCancelledTasks: 0, completedTasks: 0, cancelledTasks: 0 };
+  serve(project, { ...windowed, tasks: [], total: none, visible: none });
+  show('/tasks/project/9?tab=timeline');
+  const panel = await screen.findByRole('tabpanel', { name: 'Timeline' });
+  await within(panel).findByText('Nenhuma tarefa neste projeto');
+  await userEvent.click(within(panel).getByRole('button', { name: 'Nova tarefa' }));
+  expect(await screen.findByRole('dialog', { name: 'Nova tarefa' })).toBeInTheDocument();
 });
 
 it('an unknown ?tab falls back to the board', async () => {

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
@@ -24,8 +24,13 @@ const GRID: Record<TimelineScale, string> = {
   week: 'grid-cols-timeline-week', fortnight: 'grid-cols-timeline-fortnight', month: 'grid-cols-timeline-month',
 };
 
-/** Gantt view of a DEVELOPMENT project: the board within a date window, grouped by objective (spec §5). */
-export function ProjectTimeline({ project, onOpen }: { project: WorkProject; onOpen: (task: WorkTask) => void }) {
+/**
+ * Gantt view of a DEVELOPMENT project: the board within a date window, grouped by objective (spec §5).
+ * `onAdd` opens the page's own TaskEditor, so the timeline never owns a second editor.
+ */
+export function ProjectTimeline({ project, onOpen, onAdd }: {
+  project: WorkProject; onOpen: (task: WorkTask) => void; onAdd: () => void;
+}) {
   const [, setParams] = useSearchParams();
   const { board, today, scale, anchor, period } = useTimelineBoard(project.id);
   const layout = useMemo(() => board.data && layoutTimeline(board.data.tasks, project.objectives ?? [], period), [board.data, project.objectives, period]);
@@ -86,21 +91,24 @@ export function ProjectTimeline({ project, onOpen }: { project: WorkProject; onO
     {board.data && !board.data.total.totalTasks ? <Empty className="border">
       <EmptyHeader><EmptyTitle>Nenhuma tarefa neste projeto</EmptyTitle>
         <EmptyDescription>As tarefas com planejamento ou prazo aparecem aqui ao longo do tempo.</EmptyDescription></EmptyHeader>
+      <EmptyContent><Button onClick={onAdd}><Plus aria-hidden />Nova tarefa</Button></EmptyContent>
     </Empty> : layout && <>
       <section aria-label="Timeline do projeto" className="min-w-0 rounded-lg border">
+        {/* Outside the horizontal scroller so it wraps to the frame width on phones. */}
+        {empty && <div className="flex flex-wrap items-center gap-3 border-b px-3 py-4">
+          <p className="text-sm text-muted-foreground">
+            Nenhuma tarefa neste período{outside > 0 ? ` · ${outside} fora do período` : ''}</p>
+          <Button variant="outline" size="sm" onClick={goToday}>Hoje</Button>
+        </div>}
         <ScrollArea orientation="horizontal" className="w-full">
           <div ref={content} className="relative w-max min-w-full pb-2" style={{ '--timeline-days': period.days } as CSSProperties}>
             <div aria-hidden className={cn('pointer-events-none absolute inset-x-0 bottom-2 top-0 grid', grid)}>
               {days.map((day, index) => day.weekend && <div key={day.date} className="bg-muted" style={{ gridColumn: gridColumn({ column: index + 1, span: 1 }) }} />)}
               {/* Starts below the 5rem TimelineHeader so it never crosses the date labels. */}
-            {todayColumn !== null && <div className="mt-20 w-0.5 justify-self-center bg-now" style={{ gridColumn: gridColumn({ column: todayColumn, span: 1 }), gridRow: 1 }} />}
+            {todayColumn !== null && <div data-timeline-today className="mt-20 w-0.5 justify-self-center bg-now" style={{ gridColumn: gridColumn({ column: todayColumn, span: 1 }), gridRow: 1 }} />}
             </div>
             {todayColumn !== null && <span className="sr-only">Hoje é {formatLongDate(today)}</span>}
             <TimelineHeader period={period} scale={scale} grid={grid} todayColumn={todayColumn} />
-            {empty && <div className={cn('relative grid', grid)}>
-              <p className="sticky left-0 col-span-full w-max px-3 py-6 text-sm text-muted-foreground">
-                Nenhuma tarefa neste período{outside > 0 ? ` · ${outside} fora do período` : ''}</p>
-            </div>}
             {layout.groups.map(group => <TimelineGroup key={group.key} group={group} grid={grid} scale={scale} period={period} today={today}
               open={toggled[group.key] ?? group.rows.length > 0} onOpenChange={open => setToggled(state => ({ ...state, [group.key]: open }))} onOpen={onOpen} />)}
           </div>

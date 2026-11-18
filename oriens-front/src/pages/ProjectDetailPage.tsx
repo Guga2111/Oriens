@@ -101,7 +101,7 @@ function ProjectDetail({ id }: { id: number }) {
       {board.data && <><p className="mb-3 text-sm text-muted-foreground">{board.data.visible.totalTasks} de {board.data.total.totalTasks} tarefas visíveis</p><ProjectBoard board={board.data} pendingColumnId={project.defaultPendingColumnId!} onOpen={showTask} onEdit={editTask} onAdd={columnId => setEditor({ columnId })} onObjective={showObjective} /></>}
       </TabsContent>
       <TabsContent value="objectives"><WorkFeedback error={allBoard.error} retry={() => void allBoard.refetch()} /><ProjectObjectives project={project} tasks={allBoard.data?.tasks} onAddTask={objectiveId => setEditor({ objectiveId, columnId: project.defaultPendingColumnId! })} onEditTask={showTask} selectedObjective={Number(params.get('selectedObjective')) || undefined} /></TabsContent>
-      <TabsContent value="timeline"><ProjectTimeline project={project} onOpen={showTask} /></TabsContent>
+      <TabsContent value="timeline"><ProjectTimeline project={project} onOpen={showTask} onAdd={() => setEditor({ columnId: project.defaultPendingColumnId! })} /></TabsContent>
     </Tabs> : <div className="mt-6 grid min-w-0 items-start gap-6 xl:grid-cols-project-detail">
       <ProjectObjectives project={project} onAddTask={() => {}} onEditTask={() => {}} />
       <aside className="flex min-w-0 flex-col gap-4 rounded-lg border bg-card p-4 md:p-5" aria-label="Informações do projeto"><h2 className="text-base font-semibold">Resumo</h2><p className="text-sm">{s.totalObjectives ? `${s.completedObjectives}/${s.totalObjectives} objetivos concluídos` : 'Nenhum objetivo definido'}</p>

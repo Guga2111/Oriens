@@ -28,9 +28,9 @@ const response: BoardResponse = { ...board, filtered: true, tasks, total: counts
 function Location() { const location = useLocation(); return <output aria-label="url">{location.search}</output>; }
 function show(data = response, route = '/projects/9?tab=timeline&anchor=2026-11-18') {
   vi.mocked(api.get).mockResolvedValue({ data });
-  const onOpen = vi.fn();
-  renderWork(<TooltipProvider><ProjectTimeline project={timelineProject} onOpen={onOpen} /><Location /></TooltipProvider>, route);
-  return onOpen;
+  const onOpen = vi.fn(); const onAdd = vi.fn();
+  renderWork(<TooltipProvider><ProjectTimeline project={timelineProject} onOpen={onOpen} onAdd={onAdd} /><Location /></TooltipProvider>, route);
+  return { onOpen, onAdd };
 }
 beforeEach(() => { vi.mocked(api.get).mockReset(); });
 
@@ -51,7 +51,7 @@ it('fetches the fortnight window and groups rows by objective position, "Sem obj
 });
 
 it('names bars by state and dates, flags overdue, and opens the task on click', async () => {
-  const onOpen = show();
+  const { onOpen } = show();
   const late = await screen.findByRole('button', { name: 'API de leitura, a fazer, planejada 16 nov, prazo 17 nov, atrasada' });
   expect(screen.getByRole('button', { name: 'Escrever testes, em andamento, planejada 19 nov, sem prazo' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Revisar, a fazer, sem planejamento, prazo 24 nov' })).toBeInTheDocument();
@@ -74,22 +74,69 @@ it('keeps scale and anchor in the URL', async () => {
   expect(screen.getByLabelText('url')).not.toHaveTextContent('anchor=');
 });
 
-it('shows an empty window inside the grid frame', async () => {
+it('shows an empty window inside the grid frame with a Hoje button that drops the anchor', async () => {
   const outside = { ...counts, totalTasks: 3 };
   show({ ...response, tasks: [], total: outside, visible: { ...counts, totalTasks: 0 } });
-  expect(await screen.findByText('Nenhuma tarefa neste período · 3 fora do período')).toBeInTheDocument();
+  const region = await screen.findByRole('region', { name: 'Timeline do projeto' });
+  expect(within(region).getByText('Nenhuma tarefa neste período · 3 fora do período')).toBeInTheDocument();
+  expect(screen.getByLabelText('url')).toHaveTextContent('anchor=2026-11-18');
+  await userEvent.click(within(region).getByRole('button', { name: 'Hoje' }));
+  expect(screen.getByLabelText('url')).not.toHaveTextContent('anchor=');
 });
 
-it('shows the empty project state without the grid', async () => {
+it('keeps an undated task in "Sem data" instead of showing the empty window', async () => {
+  show({ ...response, tasks: [make(4, { title: 'Ideia solta', objectiveId: 81 })], total: { ...counts, totalTasks: 3 }, visible: { ...counts, totalTasks: 1 } });
+  const undated = await screen.findByRole('region', { name: /Sem data/ });
+  expect(within(undated).getByRole('button', { name: /Ideia solta/ })).toBeInTheDocument();
+  expect(screen.queryByText(/Nenhuma tarefa neste período/)).not.toBeInTheDocument();
+  expect(screen.queryByText('Nenhuma tarefa neste projeto')).not.toBeInTheDocument();
+});
+
+it('shows the empty project state without the grid and asks the page for a new task', async () => {
   const none = { totalTasks: 0, nonCancelledTasks: 0, completedTasks: 0, cancelledTasks: 0 };
-  show({ ...response, tasks: [], total: none, visible: none });
+  const { onAdd } = show({ ...response, tasks: [], total: none, visible: none });
   expect(await screen.findByText('Nenhuma tarefa neste projeto')).toBeInTheDocument();
   expect(screen.queryByRole('region', { name: 'Timeline do projeto' })).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Nova tarefa' }));
+  expect(onAdd).toHaveBeenCalledTimes(1);
+});
+
+it('tabs from the toolbar through each group and its bars, then "Sem data"; row labels never take focus', async () => {
+  show();
+  await screen.findByRole('region', { name: 'Timeline do projeto' });
+  screen.getByRole('button', { name: 'Próximo período' }).focus();
+  const order: string[] = [];
+  for (let step = 0; step < 7; step++) {
+    await userEvent.tab();
+    const focused = document.activeElement as HTMLElement;
+    expect(focused.closest('[aria-hidden="true"]')).toBeNull();
+    order.push(focused.getAttribute('aria-label') ?? focused.textContent ?? '');
+  }
+  expect(order).toEqual([
+    'Receber contatos pelo site, 2 de 6 tarefas concluídas, prazo 20 nov',
+    'API de leitura, a fazer, planejada 16 nov, prazo 17 nov, atrasada',
+    'Escrever testes, em andamento, planejada 19 nov, sem prazo',
+    'Publicar, 0 de 0 tarefas concluídas',
+    'Sem objetivo, 1 tarefa no período',
+    'Revisar, a fazer, sem planejamento, prazo 24 nov',
+    'Ideia soltaA fazer',
+  ]);
+});
+
+it('hides the today line from assistive tech and announces today as text', async () => {
+  show();
+  const region = await screen.findByRole('region', { name: 'Timeline do projeto' });
+  const line = region.querySelector('[data-timeline-today]');
+  expect(line).toBeInTheDocument();
+  expect(line?.closest('[aria-hidden="true"]')).not.toBeNull();
+  const today = within(region).getByText('Hoje é 18 de novembro de 2026');
+  expect(today).toHaveClass('sr-only');
+  expect(today.closest('[aria-hidden="true"]')).toBeNull();
 });
 
 it('offers a retry when the board fails to load', async () => {
   vi.mocked(api.get).mockRejectedValue({ isAxiosError: true, response: { status: 404 } });
-  renderWork(<TooltipProvider><ProjectTimeline project={timelineProject} onOpen={vi.fn()} /></TooltipProvider>, '/projects/9');
+  renderWork(<TooltipProvider><ProjectTimeline project={timelineProject} onOpen={vi.fn()} onAdd={vi.fn()} /></TooltipProvider>, '/projects/9');
   expect(await screen.findByRole('alert')).toHaveTextContent('Recurso indisponível ou sem acesso.');
   expect(screen.getByRole('button', { name: 'Recarregar dados' })).toBeInTheDocument();
 });
