@@ -15,6 +15,7 @@ import { useTaskWrites } from '@/hooks/useWork';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { formatDue } from '@/lib/date';
 import { productNow } from '@/lib/product-time';
+import { isTaskOverdue } from '@/lib/tasks';
 import { statusNames } from '@/lib/work-form';
 import { PRIORITY } from '@/lib/labels';
 import { cn } from '@/lib/utils';
@@ -131,7 +132,7 @@ function BoardTask({ task, column, columns, tasks, index, filtered, disabled, bu
   onOpen: (task: WorkTask) => void; onEdit: (task: WorkTask) => void; onObjective: (id: number) => void; onDelete: (task: WorkTask) => void; move: Move;
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: disabled || mobile, animateLayoutChanges: () => false });
-  const overdue = !!task.dueDate && task.dueDate < productNow().date && ['PENDING', 'ON_DOING'].includes(task.status);
+  const overdue = isTaskOverdue(task, productNow().date);
   return <article ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={cn('relative min-w-0 rounded-md border border-border/50 bg-card p-3 transition-colors hover:bg-accent/40', isDragging && 'opacity-40')} aria-busy={busy}>
     <div className="mb-2 flex items-center justify-between gap-2">
       <Badge variant={PRIORITY[task.priority].badge}>{PRIORITY[task.priority].label}</Badge>

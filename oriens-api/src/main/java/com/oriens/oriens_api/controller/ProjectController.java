@@ -10,12 +10,14 @@ import com.oriens.oriens_api.security.WorkOwner;
 import com.oriens.oriens_api.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -54,8 +56,10 @@ public class ProjectController {
     @GetMapping("/{id}/board")
     public ResponseEntity<BoardResponse> board(Authentication auth, @PathVariable Long id,
             @RequestParam(required=false) Long objectiveId, @RequestParam(required=false) String planning,
-            @RequestParam(defaultValue="false") boolean overdue, @RequestParam(defaultValue="false") boolean open) {
-        BoardResponse result = read.board(owner.id(auth), id, objectiveId, planning, overdue, open);
+            @RequestParam(defaultValue="false") boolean overdue, @RequestParam(defaultValue="false") boolean open,
+            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        BoardResponse result = read.board(owner.id(auth), id, objectiveId, planning, overdue, open, startDate, endDate);
         return WorkHttp.ok(result, result.projectVersion());
     }
     @GetMapping("/user/{userId}/sidebar")

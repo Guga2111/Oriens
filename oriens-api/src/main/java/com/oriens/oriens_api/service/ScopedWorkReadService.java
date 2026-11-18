@@ -97,22 +97,25 @@ public class ScopedWorkReadService {
         if(a.taskRead()) {out.put("taskSummary",counts(taskScope(a).and(equal("projectId",id))));included.add("taskSummary");}
         out.put("includedSections",included);return out;
     }
-    public Map<String,Object> board(Access a,long id,Pageable columnPage,Pageable taskPage,Long objectiveId,String planning,boolean overdue,boolean open) {
+    public Map<String,Object> board(Access a,long id,Pageable columnPage,Pageable taskPage,Long objectiveId,String planning,boolean overdue,boolean open,
+            LocalDate startDate,LocalDate endDate) {
         Project p=project(a,id);
         if(p.getMode()!=ProjectMode.DEVELOPMENT) throw new WorkDomainException("DOMAIN_VIOLATION","projectId","Projeto simples não possui quadro.");
+        BoardWindow window=BoardWindow.of(startDate,endDate);
         if(objectiveId!=null) objective(a,id,objectiveId);
         Specification<Task> all=taskScope(a).and(equal("projectId",id)), visible=all;
         if(objectiveId!=null) visible=visible.and(equal("objectiveId",objectiveId));
         if(planning!=null) visible=visible.and(equal("plannedDate",planning.equals("today")?today():null));
         if(open||overdue) visible=visible.and((r,q,b)->r.get("status").in(Status.PENDING,Status.ON_DOING));
         if(overdue) visible=visible.and((r,q,b)->b.lessThan(r.get("dueDate"),today()));
+        if(window!=null) visible=visible.and(window.specification());
         Specification<Task> filtered=visible;
         var out=fields("projectId",id(p.getId()),"projectVersion",p.getVersion(),
             "columns",page(columns.findAll(childScope(a,id),columnPage),c->{
                 var row=columnView(c);
                 if(a.taskRead()) {row.put("totalCount",tasks.count(all.and(equal("columnId",c.getId()))));row.put("visibleCount",tasks.count(filtered.and(equal("columnId",c.getId()))));}
                 return row;
-            }),"filtered",objectiveId!=null||planning!=null||overdue||open);
+            }),"filtered",objectiveId!=null||planning!=null||overdue||open||window!=null);
         var included=new ArrayList<>(List.of("columns"));
         if(a.taskRead()) {
             out.put("tasks",page(tasks.findAll(visible,taskPage),this::taskBrief));
