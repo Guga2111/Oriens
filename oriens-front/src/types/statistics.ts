@@ -13,15 +13,17 @@ export interface Money { income: MoneyAmount; expenses: MoneyAmount; result: Mon
 export interface MoneyDay { date: string; income: MoneyAmount; expenses: MoneyAmount }
 export interface CategoryTotal { tagId: number; name: string; amount: MoneyAmount; entries: number }
 export interface FinanceData { period: AnalysisPeriod; current: Money; previous: Money; days: MoneyDay[]; categories: CategoryTotal[]; automaticEntries: number }
-export type HabitState = 'DONE' | 'PENDING' | 'MISSED' | 'OFF' | 'PAUSED' | 'OUTSIDE';
-export interface HabitSchedule { startDate: string; endDate: string | null; weekdays: number[] }
+export type HabitState = 'DONE' | 'PENDING' | 'MISSED' | 'OPTIONAL' | 'OFF' | 'PAUSED' | 'OUTSIDE';
+/** `weeklyTarget` set: that many executions per week on any day; otherwise one on each of `weekdays`. */
+export interface HabitSchedule { startDate: string; endDate: string | null; weekdays: number[]; weeklyTarget: number | null }
 export interface HabitDay { date: string; state: HabitState }
 export interface Habit { id: number; name: string; createdOn: string; startDate: string; endDate: string | null; archivedOn: string | null; version: number; schedules: HabitSchedule[]; pauses: Interval[]; days: HabitDay[]; completed: number; expected: number; previousCompleted: number; previousExpected: number }
 export interface HabitsData { period: AnalysisPeriod; coverageFrom: string; habits: Habit[]; days: DayCount[]; previousDays: DayCount[]; completed: number; expected: number; previousCompleted: number; previousExpected: number }
-export interface HabitInput { name: string; weekdays: number[]; startDate: string; endDate: string | null }
+export interface HabitFrequency { weekdays: number[] | null; weeklyTarget: number | null }
+export interface HabitInput extends HabitFrequency { name: string; startDate: string; endDate: string | null }
 export type HabitCommand =
   | { action: 'create'; input: HabitInput; key: string }
-  | { action: 'update'; habit: Habit; name: string; weekdays: number[] }
+  | ({ action: 'update'; habit: Habit; name: string } & HabitFrequency)
   | { action: 'execution'; habit: Habit; date: string; completed: boolean }
   | { action: 'pause'; habit: Habit; startDate: string; endDate: string }
   | { action: 'archive'; habit: Habit };

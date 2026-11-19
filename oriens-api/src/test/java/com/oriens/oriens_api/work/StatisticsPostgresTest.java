@@ -71,7 +71,7 @@ class StatisticsPostgresTest {
         task(stranger,"Outra conta",null,"2026-11-13",null,"CONCLUDED");
         assertThat(get(root()+"/streak").path("days").asLong()).isEqualTo(2);
         assertThat(get(root()+"/streak").path("throughDate").asText()).isEqualTo("2026-11-12");
-        var h=habits.create(owner,new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Input("Hoje",List.of(5),LocalDate.parse("2026-11-13"),null));
+        var h=habits.create(owner,new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Input("Hoje",List.of(5),null,LocalDate.parse("2026-11-13"),null));
         habits.execute(owner,h.id(),LocalDate.parse("2026-11-13"),new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Execution(0L,true));
         assertThat(get(root()+"/streak").path("days").asLong()).isEqualTo(3);
         task(owner,"Hoje também",null,"2026-11-13",null,"CONCLUDED");
@@ -181,6 +181,39 @@ class StatisticsPostgresTest {
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(path+"/"+id+"/archive").header("Authorization",token).contentType("application/json").content("{\"version\":2}")).andExpect(status().isOk());
         assertThat(habits.summary(owner,LocalDate.parse("2026-11-13"),LocalDate.parse("2026-11-13")).completed()).isEqualTo(1);
     }
+    // Regression: "5x per week" habits were bound to fixed weekdays, so any other day was a miss.
+    @Test void weeklyTargetHabitsCountAnyDayAndOnlyMissWhatTheWeekCanNoLongerReach()throws Exception {
+        String path="/habits/user/"+owner;
+        for(String invalid:List.of("{\"name\":\"Treino\",\"weekdays\":[1],\"weeklyTarget\":5,\"startDate\":\"2026-11-13\"}",
+                "{\"name\":\"Treino\",\"weeklyTarget\":8,\"startDate\":\"2026-11-13\"}","{\"name\":\"Treino\",\"startDate\":\"2026-11-13\"}"))
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(path).header("Authorization",token).header("Idempotency-Key",UUID.randomUUID().toString()).contentType("application/json").content(invalid)).andExpect(status().isBadRequest());
+        String key=UUID.randomUUID().toString(),payload="{\"name\":\"Treino\",\"weeklyTarget\":5,\"startDate\":\"2026-11-13\"}";
+        JsonNode habit=null;for(int i=0;i<2;i++){JsonNode result=body(mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(path).header("Authorization",token).header("Idempotency-Key",key).contentType("application/json").content(payload)).andExpect(status().isCreated()).andReturn());if(habit==null)habit=result;else assertThat(result.path("id")).isEqualTo(habit.path("id"));}
+        long id=habit.path("id").asLong();
+        assertThat(habit.path("schedules").get(0).path("weeklyTarget").asInt()).isEqualTo(5);
+        assertThatThrownBy(()->db.update("update habit_schedules set weekdays=31 where habit_id=?",id)).hasMessageContaining("ck_habit_schedule_weekly_target");
+        // Backdate the definition to Monday 2026-11-09; today is Friday 2026-11-13.
+        db.update("update habits set created_on='2026-11-09',start_date='2026-11-09' where id=?",id);
+        db.update("update habit_schedules set start_date='2026-11-09' where habit_id=?",id);
+        long version=0;
+        for(String day:List.of("2026-11-10","2026-11-11","2026-11-09"))
+            version=body(mvc.perform(put(path+"/"+id+"/executions/"+day).header("Authorization",token).contentType("application/json").content("{\"version\":"+version+",\"completed\":true}")).andExpect(status().isOk()).andReturn()).path("version").asLong();
+        JsonNode week=get(path+"?startDate=2026-11-09&endDate=2026-11-13").path("habits").get(0);
+        List<String> states=new ArrayList<>();week.path("days").forEach(d->states.add(d.path("state").asText()));
+        // 3 of 5 done and the weekend still open: today is pending, nothing is missed.
+        assertThat(states).containsExactly("DONE","DONE","DONE","OPTIONAL","PENDING");
+        assertThat(week.path("completed").asLong()).isEqualTo(3);assertThat(week.path("expected").asLong()).isEqualTo(4);
+        // The following Monday the week is closed: exactly the 2 unmet executions are missed.
+        var monday=new HabitService(db,Clock.fixed(Instant.parse("2026-11-16T15:00:00Z"),ZoneOffset.UTC)).summary(owner,LocalDate.parse("2026-11-09"),LocalDate.parse("2026-11-15")).habits().get(0);
+        assertThat(monday.days().stream().filter(d->d.state().equals("MISSED")).count()).isEqualTo(2);
+        assertThat(monday.completed()).isEqualTo(3);assertThat(monday.expected()).isEqualTo(5);
+        // An existing fixed-weekday habit can switch to a weekly target from tomorrow on.
+        JsonNode fixed=post(path,Map.of("name","Correr","weekdays",List.of(5),"startDate","2026-11-13"));
+        JsonNode switched=body(mvc.perform(put(path+"/"+fixed.path("id")).header("Authorization",token).contentType("application/json").content("{\"version\":0,\"name\":\"Correr\",\"weeklyTarget\":3}")).andExpect(status().isOk()).andReturn());
+        assertThat(switched.path("schedules").get(1).path("startDate").asText()).isEqualTo("2026-11-14");
+        assertThat(switched.path("schedules").get(1).path("weeklyTarget").asInt()).isEqualTo(3);
+        assertThat(switched.path("schedules").get(0).path("weeklyTarget").isNull()).isTrue();
+    }
     @Test void pauseAndIdempotentCreationPreserveDenominators()throws Exception {
         String path="/habits/user/"+owner,key=UUID.randomUUID().toString();String payload="{\"name\":\"Alongar\",\"weekdays\":[5],\"startDate\":\"2026-11-13\"}";
         JsonNode first=null;for(int i=0;i<2;i++){JsonNode result=body(mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(path).header("Authorization",token).header("Idempotency-Key",key).contentType("application/json").content(payload)).andExpect(status().isCreated()).andReturn());if(first==null)first=result;else assertThat(result.path("id")).isEqualTo(first.path("id"));}
@@ -225,7 +258,7 @@ class StatisticsPostgresTest {
             var second=pool.submit(()->tx.execute(status->generator.generate()));
             assertThat(first.get(10,java.util.concurrent.TimeUnit.SECONDS)+second.get(10,java.util.concurrent.TimeUnit.SECONDS)).isEqualTo(1);
             assertThat(db.queryForObject("select count(*) from financial_entry where parent_entry_id=?",Long.class,parent)).isEqualTo(1);
-            var h=habits.create(owner,new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Input("Concorrente",List.of(5),LocalDate.parse("2026-11-13"),null));
+            var h=habits.create(owner,new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Input("Concorrente",List.of(5),null,LocalDate.parse("2026-11-13"),null));
             java.util.concurrent.Callable<Boolean> execute=()->{try{habits.execute(owner,h.id(),LocalDate.parse("2026-11-13"),new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Execution(0L,true));return true;}catch(com.oriens.oriens_api.exception.WorkDomainException e){assertThat(e.getCode()).isEqualTo("VERSION_CONFLICT");return false;}};
             var one=pool.submit(execute);var two=pool.submit(execute);
             assertThat(List.of(one.get(10,java.util.concurrent.TimeUnit.SECONDS),two.get(10,java.util.concurrent.TimeUnit.SECONDS))).containsExactlyInAnyOrder(true,false);
