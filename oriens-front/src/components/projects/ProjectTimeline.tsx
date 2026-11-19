@@ -15,7 +15,7 @@ import { useTimelineBoard } from '@/hooks/useTimelineBoard';
 import { formatLongDate } from '@/lib/date';
 import { TASK_STATUS } from '@/lib/labels';
 import {
-  TIMELINE_SCALES, dayIndex, gridColumn, layoutTimeline, shiftTimelineAnchor, timelineDays, type TimelineScale,
+  TIMELINE_SCALES, dayIndex, gridColumn, layoutTimeline, shiftTimelineAnchor, timelineDays, weekSegments, type TimelineScale,
 } from '@/lib/timeline';
 import { cn } from '@/lib/utils';
 import type { WorkProject, WorkTask } from '@/types/work';
@@ -63,6 +63,7 @@ export function ProjectTimeline({ project, onOpen, onAdd }: {
 
   const goToday = () => { update({ anchor: null }); scrollTo(today, true); };
   const days = timelineDays(period);
+  const weekStarts = new Set(weekSegments(period).map(week => week.column));
   const outside = board.data ? board.data.total.totalTasks - board.data.visible.totalTasks : 0;
   const empty = layout && layout.groups.every(group => !group.rows.length) && !layout.undated.length;
 
@@ -93,7 +94,7 @@ export function ProjectTimeline({ project, onOpen, onAdd }: {
         <EmptyDescription>As tarefas com planejamento ou prazo aparecem aqui ao longo do tempo.</EmptyDescription></EmptyHeader>
       <EmptyContent><Button onClick={onAdd}><Plus aria-hidden />Nova tarefa</Button></EmptyContent>
     </Empty> : layout && <>
-      <section aria-label="Timeline do projeto" className="min-w-0 rounded-lg border">
+      <section aria-label="Timeline do projeto" className="min-w-0 overflow-hidden rounded-lg border bg-card">
         {/* Outside the horizontal scroller so it wraps to the frame width on phones. */}
         {empty && <div className="flex flex-wrap items-center gap-3 border-b px-3 py-4">
           <p className="text-sm text-muted-foreground">
@@ -102,10 +103,15 @@ export function ProjectTimeline({ project, onOpen, onAdd }: {
         </div>}
         <ScrollArea orientation="horizontal" className="w-full">
           <div ref={content} className="relative w-max min-w-full pb-2" style={{ '--timeline-days': period.days } as CSSProperties}>
+            {/* Column grid: day lines and weekend tone where days are drawn (week, fortnight), week lines only on the month scale. */}
             <div aria-hidden className={cn('pointer-events-none absolute inset-x-0 bottom-2 top-0 grid', grid)}>
-              {days.map((day, index) => day.weekend && <div key={day.date} className="bg-card" style={{ gridColumn: gridColumn({ column: index + 1, span: 1 }) }} />)}
+              {scale === 'month'
+                ? weekSegments(period).map(week => <div key={week.key} style={{ gridColumn: gridColumn(week), gridRow: 1 }}
+                  className={cn(week.column > 1 && 'border-l border-border')} />)
+                : days.map((day, index) => <div key={day.date} style={{ gridColumn: gridColumn({ column: index + 1, span: 1 }), gridRow: 1 }}
+                  className={cn(index > 0 && 'border-l', weekStarts.has(index + 1) ? 'border-border' : 'border-muted', day.weekend && 'bg-background')} />)}
               {/* Starts below the 5rem TimelineHeader so it never crosses the date labels. */}
-            {todayColumn !== null && <div data-timeline-today className="mt-20 w-0.5 justify-self-center bg-now" style={{ gridColumn: gridColumn({ column: todayColumn, span: 1 }), gridRow: 1 }} />}
+              {todayColumn !== null && <div data-timeline-today className="mt-20 w-px justify-self-center bg-now" style={{ gridColumn: gridColumn({ column: todayColumn, span: 1 }), gridRow: 1 }} />}
             </div>
             {todayColumn !== null && <span className="sr-only">Hoje é {formatLongDate(today)}</span>}
             <TimelineHeader period={period} scale={scale} grid={grid} todayColumn={todayColumn} />

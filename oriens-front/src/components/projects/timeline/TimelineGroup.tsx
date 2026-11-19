@@ -6,8 +6,10 @@ import { formatTimelineDate, gridColumn, placeRange, type TimelineGroupData, typ
 import { cn } from '@/lib/utils';
 import type { WorkTask } from '@/types/work';
 
-/** Sticky first column; opaque so the weekend tone and today line pass under it. */
-export const timelineLabelCell = 'sticky left-0 z-10 col-start-1 row-start-1 flex min-w-0 items-center bg-background pr-2';
+/** Sticky first column; opaque so the column grid and today line pass under it. */
+export const timelineLabelCell = 'sticky left-0 z-10 col-start-1 row-start-1 flex min-w-0 items-center border-r bg-card pr-2';
+/** Row rule, one step lighter than the frame. */
+const rowRule = 'border-b border-muted';
 
 export function TimelineGroup({ group, grid, scale, period, today, open, onOpenChange, onOpen }: {
   group: TimelineGroupData; grid: string; scale: TimelineScale; period: TimelineWindow; today: string;
@@ -24,7 +26,7 @@ export function TimelineGroup({ group, grid, scale, period, today, open, onOpenC
     objective?.dueDate && `prazo ${formatTimelineDate(objective.dueDate)}${dueLate ? ', atrasado' : ''}`].filter(Boolean).join(', ');
   const Chevron = open ? ChevronDown : ChevronRight;
   return <Collapsible open={open} onOpenChange={onOpenChange}>
-    <div className={cn('relative grid h-11', grid)}>
+    <div className={cn('relative grid h-11', rowRule, grid)}>
       <div className={timelineLabelCell}>
         <CollapsibleTrigger asChild>
           <Button variant="ghost" size="sm" className="w-full min-w-0 justify-start px-2" aria-label={name}>
@@ -42,7 +44,7 @@ export function TimelineGroup({ group, grid, scale, period, today, open, onOpenC
         className={cn('row-start-1 size-4 self-center justify-self-center fill-current', dueLate ? 'text-negative' : 'text-primary')} />}
     </div>
     <CollapsibleContent>
-      {rows.map(row => <div key={row.task.id} className={cn('relative grid h-11 sm:h-10', grid)}>
+      {rows.map(row => <div key={row.task.id} className={cn('relative grid h-11 sm:h-10', rowRule, grid)}>
         <div className={timelineLabelCell}>
           {/* Mouse shortcut only: the bar is the keyboard and screen-reader target. */}
           <Button variant="ghost" size="sm" tabIndex={-1} aria-hidden className="w-full min-w-0 justify-start pl-8 pr-2 font-normal" onClick={() => onOpen(row.task)}>
