@@ -13,7 +13,7 @@ export const statisticsService = {
     const base = `/habits/user/${user}`;
     if (command.action === 'create') return (await api.post<Habit>(base, command.input, { headers: { 'Idempotency-Key': command.key } })).data;
     const path = `${base}/${command.habit.id}`, version = command.habit.version;
-    if (command.action === 'update') return (await api.put<Habit>(path, { version, name: command.name, weekdays: command.weekdays })).data;
+    if (command.action === 'update') return (await api.put<Habit>(path, { version, name: command.name, weekdays: command.weekdays, weeklyTarget: command.weeklyTarget })).data;
     if (command.action === 'execution') return (await api.put<Habit>(`${path}/executions/${command.date}`, { version, completed: command.completed })).data;
     if (command.action === 'pause') return (await api.post<Habit>(`${path}/pauses`, { version, startDate: command.startDate, endDate: command.endDate })).data;
     return (await api.post<Habit>(`${path}/archive`, { version })).data;

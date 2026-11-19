@@ -71,7 +71,7 @@ describe('estatísticas — interação e consistência de cache', () => {
     let write: ReturnType<typeof useHabitWrites>;
     function Harness() { write = useHabitWrites(); return null; }
     render(<QueryClientProvider client={client}><Harness /></QueryClientProvider>);
-    const command: HabitCommand = { action: 'create', key: 'synthetic-key', input: { name: 'Ler', weekdays: [1], startDate: '2026-11-15', endDate: null } };
+    const command: HabitCommand = { action: 'create', key: 'synthetic-key', input: { name: 'Ler', weekdays: [1], weeklyTarget: null, startDate: '2026-11-15', endDate: null } };
     let result: Awaited<ReturnType<typeof write.mutateAsync>>;
     await act(async () => { result = await write.mutateAsync(command); });
     expect(result!.refreshFailed).toBe(true); expect(statisticsService.writeHabit).toHaveBeenCalledTimes(1);

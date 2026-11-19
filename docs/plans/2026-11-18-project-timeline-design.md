@@ -157,17 +157,19 @@ A linha de tarefa tem `h-10` e a de objetivo `h-11`. Abaixo de 640px, todas têm
 
 ### 5.5 Barras de tarefa
 
-A barra tem `h-7` e `rounded-md`, centralizada na linha.
+A barra tem `h-7` e `rounded-md`, centralizada na linha. Quando o título não cabe nela, a barra fica fina
+(`h-4`), para que a barra de um dia não pareça um checkbox (revisão de 19/11).
 
 | Estado | Aparência |
 |---|---|
-| Pendente | `bg-secondary text-foreground` com `border border-border` |
+| Pendente | `bg-card text-foreground` com `border border-muted-foreground`, hover `bg-muted`. No tema claro, `secondary`, `muted` e `accent` têm o mesmo tom, então a barra pendente usa contorno sobre `card` para não se confundir com a concluída (revisão de 19/11). |
 | Fazendo | `bg-primary text-primary-foreground` |
-| Concluída | `bg-muted text-muted-foreground`, título riscado e ícone `Check` |
+| Concluída | `bg-muted text-muted-foreground`, título riscado e ícone `Check`; hover `bg-muted-foreground/15` |
 | Atrasada (`isTaskOverdue`) | Borda e texto em `negative`, com ícone `AlertTriangle`. Vale sobre o estado pendente ou fazendo. |
 | Cancelada | Oculta, com o contador "N canceladas ocultas" na barra de ferramentas |
 
-O título vai dentro da barra quando cabe; quando não cabe, fica à direita dela, fora da barra. A largura
+O título vai dentro da barra quando cabe; quando não cabe, fica à direita dela, fora da barra. O título interno
+é `sticky` ao lado da coluna de rótulos, então continua visível quando o início da barra sai da tela. A largura
 mínima visual é de um dia.
 
 ### 5.6 Casos de data

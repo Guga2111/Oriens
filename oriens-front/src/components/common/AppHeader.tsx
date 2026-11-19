@@ -57,7 +57,7 @@ export function AppHeader() {
   const sectionName = sectionNames[pathname.replace(/\/$/, "")] ?? "Oriens";
 
   return (
-    <header className="sticky top-0 z-10 flex h-[--app-header-height] shrink-0 items-center gap-2 border-b border-sidebar-border bg-background px-4">
+    <header className="sticky top-0 z-20 flex h-[--app-header-height] shrink-0 items-center gap-2 border-b border-sidebar-border bg-background px-4">
       <SidebarTrigger className="size-11 shrink-0" aria-label="Alternar menu de navegação" />
       <Breadcrumb aria-label="Breadcrumb" className="min-w-0 flex-1">
         <BreadcrumbList className="flex-nowrap">

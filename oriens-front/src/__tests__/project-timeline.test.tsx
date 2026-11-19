@@ -70,7 +70,8 @@ it('keeps scale and anchor in the URL', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Próximo período' }));
   expect(screen.getByLabelText('url')).toHaveTextContent('anchor=2026-12-16');
   await waitFor(() => expect(api.get).toHaveBeenLastCalledWith('/project/9/board', expect.objectContaining({ params: { startDate: '2026-11-30', endDate: '2027-01-24' } })));
-  await userEvent.click(screen.getByRole('button', { name: 'Hoje' }));
+  // The fixture has no task in this window, so the empty state adds its own Hoje; the toolbar's comes first.
+  await userEvent.click(screen.getAllByRole('button', { name: 'Hoje' })[0]);
   expect(screen.getByLabelText('url')).not.toHaveTextContent('anchor=');
 });
 
@@ -84,11 +85,12 @@ it('shows an empty window inside the grid frame with a Hoje button that drops th
   expect(screen.getByLabelText('url')).not.toHaveTextContent('anchor=');
 });
 
-it('keeps an undated task in "Sem data" instead of showing the empty window', async () => {
+it('shows the empty window even when undated tasks fill "Sem data" below the grid', async () => {
   show({ ...response, tasks: [make(4, { title: 'Ideia solta', objectiveId: 81 })], total: { ...counts, totalTasks: 3 }, visible: { ...counts, totalTasks: 1 } });
   const undated = await screen.findByRole('region', { name: /Sem data/ });
   expect(within(undated).getByRole('button', { name: /Ideia solta/ })).toBeInTheDocument();
-  expect(screen.queryByText(/Nenhuma tarefa neste período/)).not.toBeInTheDocument();
+  const region = screen.getByRole('region', { name: 'Timeline do projeto' });
+  expect(within(region).getByText('Nenhuma tarefa neste período · 2 fora do período')).toBeInTheDocument();
   expect(screen.queryByText('Nenhuma tarefa neste projeto')).not.toBeInTheDocument();
 });
 
@@ -129,6 +131,7 @@ it('hides the today line from assistive tech and announces today as text', async
   const line = region.querySelector('[data-timeline-today]');
   expect(line).toBeInTheDocument();
   expect(line?.closest('[aria-hidden="true"]')).not.toBeNull();
+  expect(line).toHaveClass('w-0.5');
   const today = within(region).getByText('Hoje é 18 de novembro de 2026');
   expect(today).toHaveClass('sr-only');
   expect(today.closest('[aria-hidden="true"]')).toBeNull();
@@ -177,10 +180,43 @@ it('puts the title inside a bar only when it spans enough days, and squares the 
   expect(short).toBeEmptyDOMElement();
   // Without an inner title the outline is the only cue of the control: ≥3:1 (WCAG 1.4.11) in both themes.
   expect(short).toHaveClass('border-muted-foreground');
+  // Thin, so a one-day bar never reads as a checkbox.
+  expect(short).toHaveClass('h-4');
   const clipped = screen.getByRole('button', { name: /^Refatorar/ });
   expect(clipped).toHaveTextContent('Refatorar');
+  expect(clipped).toHaveClass('h-7');
+  // The title sticks beside the label column; overflow-clip keeps the timeline scroller as its scroll container.
+  expect(within(clipped).getByText('Refatorar').closest('[data-timeline-title]')).toHaveClass('sticky', 'left-timeline-label');
+  expect(clipped).toHaveClass('overflow-clip');
+  expect(clipped).not.toHaveClass('overflow-hidden');
   expect(clipped).toHaveClass('rounded-l-none');
   expect(clipped).not.toHaveClass('rounded-r-none');
+});
+
+it('keeps open and done bars apart, each with a hover step (secondary, muted and accent share one tone)', async () => {
+  show({ ...response, tasks: [
+    make(1, { title: 'API de leitura', objectiveId: 81, plannedDate: '2026-11-19', dueDate: '2026-11-25' }),
+    make(6, { title: 'Publicar build', objectiveId: 81, plannedDate: '2026-11-19', dueDate: '2026-11-25', status: 'CONCLUDED' }),
+    make(7, { title: 'Corrigir', objectiveId: 81, plannedDate: '2026-11-10', dueDate: '2026-11-16' }),
+  ] });
+  expect(await screen.findByRole('button', { name: /^API de leitura/ })).toHaveClass('bg-card', 'hover:bg-muted');
+  expect(screen.getByRole('button', { name: /^Publicar build/ })).toHaveClass('bg-muted', 'hover:bg-muted-foreground/15');
+  expect(screen.getByRole('button', { name: /^Corrigir/ })).toHaveClass('bg-card', 'border-negative', 'hover:bg-muted');
+});
+
+it('scrolls a keyboard-focused bar clear of the sticky label column', async () => {
+  const scrollIntoView = vi.fn();
+  Element.prototype.scrollIntoView = scrollIntoView;
+  show();
+  const group = await screen.findByRole('button', { name: /^Receber contatos pelo site/ });
+  group.focus();
+  await userEvent.tab();
+  const bar = screen.getByRole('button', { name: /^API de leitura/ });
+  expect(bar).toHaveFocus();
+  expect(bar).toHaveClass('scroll-ml-timeline-label');
+  expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest' });
+  expect(scrollIntoView.mock.contexts.at(-1)).toBe(bar);
+  delete (Element.prototype as Partial<Element>).scrollIntoView;
 });
 
 it('collapses and reopens an objective group from the keyboard', async () => {

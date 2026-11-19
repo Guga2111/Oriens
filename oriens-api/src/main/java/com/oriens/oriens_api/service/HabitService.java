@@ -13,7 +13,7 @@ import java.time.*;
 import java.util.*;
 import java.util.stream.*;
 
-/** Fixed-weekday habit lifecycle. Four bounded batch reads; never a query per day or habit. */
+/** Habit lifecycle (fixed weekdays or a weekly target). Four bounded batch reads; never a query per day or habit. */
 @Service @RequiredArgsConstructor @Transactional
 public class HabitService {
     private final JdbcTemplate db;
@@ -36,29 +36,36 @@ public class HabitService {
             throw fail("INVALID_REQUEST","name","Informe um nome de até 100 caracteres.");
         return name.strip();
     }
-    private int mask(List<Integer> weekdays) {
+    private static final int EVERY_DAY=127;
+    /** Fixed weekdays become their mask; a weekly target makes every weekday eligible. */
+    private int mask(List<Integer> weekdays,Integer weeklyTarget) {
+        if(weeklyTarget!=null) {
+            if(weekdays!=null && !weekdays.isEmpty())throw fail("INVALID_REQUEST","weeklyTarget","Escolha dias fixos ou uma meta semanal, não ambos.");
+            if(weeklyTarget<1 || weeklyTarget>7)throw fail("INVALID_REQUEST","weeklyTarget","A meta semanal deve ficar entre 1 e 7 vezes.");
+            return EVERY_DAY;
+        }
         if(weekdays==null || weekdays.isEmpty() || weekdays.stream().anyMatch(d->d==null || d<1 || d>7)
                 || new HashSet<>(weekdays).size()!=weekdays.size())throw fail("INVALID_REQUEST","weekdays","Escolha dias da semana distintos.");
         return weekdays.stream().mapToInt(d->1<<(d-1)).reduce(0,(a,b)->a|b);
     }
     private List<Integer> weekdays(int mask) {return IntStream.rangeClosed(1,7).filter(d->(mask & (1<<(d-1)))!=0).boxed().toList();}
     public Habit create(Long owner,Input input) {
-        lock(owner);String name=name(input.name());int days=mask(input.weekdays());
+        lock(owner);String name=name(input.name());int days=mask(input.weekdays(),input.weeklyTarget());
         if(input.startDate()==null || input.startDate().isBefore(today()) || (input.endDate()!=null && input.endDate().isBefore(input.startDate())))
             throw fail("INVALID_REQUEST","startDate","O hábito deve começar hoje ou no futuro; o fim não pode anteceder o início.");
         Long id=db.queryForObject("insert into habits(user_id,name,created_on,start_date,end_date) values(?,?,?,?,?) returning id",Long.class,owner,name,today(),input.startDate(),input.endDate());
-        db.update("insert into habit_schedules(habit_id,user_id,start_date,weekdays) values(?,?,?,?)",id,owner,input.startDate(),days);
+        db.update("insert into habit_schedules(habit_id,user_id,start_date,weekdays,weekly_target) values(?,?,?,?,?)",id,owner,input.startDate(),days,input.weeklyTarget());
         return current(owner,id);
     }
     public Habit update(Long owner,Long id,Update input) {
         lock(owner);Row h=owned(owner,id);version(h,input.version());
         if(h.archived!=null)throw fail("INVALID_REQUEST","habit","Hábitos arquivados preservam seu histórico.");
-        int days=mask(input.weekdays());String name=name(input.name());
+        int days=mask(input.weekdays(),input.weeklyTarget());String name=name(input.name());
         LocalDate effective=today().plusDays(1).isAfter(h.start)?today().plusDays(1):h.start;
         // Replace only a not-yet-effective revision. Past definitions remain unchanged.
         db.update("delete from habit_schedules where habit_id=? and user_id=? and start_date>=?",id,owner,effective);
         db.update("update habit_schedules set end_date=? where habit_id=? and user_id=? and (end_date is null or end_date>=?)",effective.minusDays(1),id,owner,effective);
-        db.update("insert into habit_schedules(habit_id,user_id,start_date,weekdays) values(?,?,?,?)",id,owner,effective,days);
+        db.update("insert into habit_schedules(habit_id,user_id,start_date,weekdays,weekly_target) values(?,?,?,?,?)",id,owner,effective,days,input.weeklyTarget());
         db.update("update habits set name=?,version=version+1 where user_id=? and id=?",name,owner,id);
         return current(owner,id);
     }
@@ -67,7 +74,7 @@ public class HabitService {
         if(date==null || date.isAfter(today()) || date.isBefore(h.createdOn))throw fail("INVALID_REQUEST","date","Escolha uma data programada, desde o cadastro até hoje.");
         Habit habit=summary(owner,date,date).habits().stream().filter(v->v.id().equals(id)).findFirst().orElseThrow();
         String state=habit.days().get(0).state();
-        if(!Set.of("DONE","PENDING","MISSED").contains(state))throw fail("INVALID_REQUEST","date","Este dia não possui uma ocorrência prevista.");
+        if(!HabitCalendar.EXECUTABLE.contains(state))throw fail("INVALID_REQUEST","date","Este dia não possui uma ocorrência prevista.");
         boolean already=state.equals("DONE");
         if(already!=input.completed()) {
             if(input.completed())db.update("insert into habit_executions(habit_id,user_id,execution_date) values(?,?,?) on conflict do nothing",id,owner,date);
@@ -101,21 +108,23 @@ public class HabitService {
         List<Row> rows=db.query("select id,name,created_on,start_date,end_date,archived_on,version from habits where user_id=? order by archived_on nulls first,lower(name),id",(r,i)->
             new Row(r.getLong(1),r.getString(2),r.getObject(3,LocalDate.class),r.getObject(4,LocalDate.class),r.getObject(5,LocalDate.class),r.getObject(6,LocalDate.class),r.getLong(7)),owner);
         Map<Long,List<Schedule>> schedules=new HashMap<>();
-        db.query("select habit_id,start_date,end_date,weekdays from habit_schedules where user_id=? order by start_date",r->{
-            schedules.computeIfAbsent(r.getLong(1),k->new ArrayList<>()).add(new Schedule(r.getObject(2,LocalDate.class),r.getObject(3,LocalDate.class),weekdays(r.getInt(4))));},owner);
+        db.query("select habit_id,start_date,end_date,weekdays,weekly_target from habit_schedules where user_id=? order by start_date",r->{
+            schedules.computeIfAbsent(r.getLong(1),k->new ArrayList<>()).add(new Schedule(r.getObject(2,LocalDate.class),r.getObject(3,LocalDate.class),weekdays(r.getInt(4)),r.getObject(5,Integer.class)));},owner);
         Map<Long,List<Pause>> pauses=new HashMap<>();
         db.query("select habit_id,start_date,end_date from habit_pauses where user_id=? order by start_date",r->{
             pauses.computeIfAbsent(r.getLong(1),k->new ArrayList<>()).add(new Pause(r.getObject(2,LocalDate.class),r.getObject(3,LocalDate.class)));},owner);
+        // Whole ISO weeks: a weekly target judges each day against every execution of its week.
         Map<Long,Set<LocalDate>> executions=new HashMap<>();
         db.query("select habit_id,execution_date from habit_executions where user_id=? and execution_date between ? and ?",r->{
-            executions.computeIfAbsent(r.getLong(1),k->new HashSet<>()).add(r.getObject(2,LocalDate.class));},owner,p.previousStartDate(),end);
+            executions.computeIfAbsent(r.getLong(1),k->new HashSet<>()).add(r.getObject(2,LocalDate.class));},owner,p.previousStartDate().with(DayOfWeek.MONDAY),end.with(DayOfWeek.SUNDAY));
         Map<LocalDate,Long> totals=new HashMap<>();List<Habit> values=new ArrayList<>();
         for(Row h:rows) {
             List<Schedule> ss=schedules.getOrDefault(h.id,List.of());List<Pause> ps=pauses.getOrDefault(h.id,List.of());
             List<Day> days=new ArrayList<>();long completed=0,expected=0,previousCompleted=0,previousExpected=0;
+            HabitCalendar calendar=calendar(h,ss,ps,executions.getOrDefault(h.id,Set.of()),p.today());
             for(LocalDate d=p.previousStartDate();!d.isAfter(end);d=d.plusDays(1)) {
-                String state=state(h,d,ss,ps,executions.getOrDefault(h.id,Set.of()),p.today());
-                boolean done=state.equals("DONE"),planned=Set.of("DONE","PENDING","MISSED").contains(state);
+                String state=calendar.state(d);
+                boolean done=state.equals("DONE"),planned=HabitCalendar.EXPECTED.contains(state);
                 if(done)totals.merge(d,1L,Long::sum);
                 if(!d.isBefore(start)) {days.add(new Day(d,state));if(done)completed++;if(planned)expected++;}
                 else {if(done)previousCompleted++;if(planned)previousExpected++;}
@@ -130,13 +139,10 @@ public class HabitService {
     private List<DayCount> counts(LocalDate start,LocalDate end,Map<LocalDate,Long> counts) {
         return start.datesUntil(end.plusDays(1)).map(d->new DayCount(d,counts.getOrDefault(d,0L))).toList();
     }
-    private String state(Row h,LocalDate d,List<Schedule> schedules,List<Pause> pauses,Set<LocalDate> executions,LocalDate today) {
-        if(d.isBefore(h.start) || d.isBefore(h.createdOn) || (h.end!=null && d.isAfter(h.end)) || (h.archived!=null && !d.isBefore(h.archived)))return "OUTSIDE";
-        if(pauses.stream().anyMatch(p->!d.isBefore(p.startDate()) && !d.isAfter(p.endDate())))return "PAUSED";
-        boolean planned=schedules.stream().anyMatch(s->!d.isBefore(s.startDate()) && (s.endDate()==null || !d.isAfter(s.endDate())) && s.weekdays().contains(d.getDayOfWeek().getValue()));
-        if(!planned)return "OFF";
-        if(executions.contains(d))return "DONE";
-        return d.equals(today)?"PENDING":"MISSED";
+    private HabitCalendar calendar(Row h,List<Schedule> schedules,List<Pause> pauses,Set<LocalDate> executions,LocalDate today) {
+        LocalDate from=h.start.isBefore(h.createdOn)?h.createdOn:h.start;
+        LocalDate until=h.archived==null?h.end:(h.end==null || h.archived.minusDays(1).isBefore(h.end)?h.archived.minusDays(1):h.end);
+        return new HabitCalendar(from,until,schedules,pauses,executions,today);
     }
     private static WorkDomainException fail(String code,String field,String message){return new WorkDomainException(code,field,message);}
 }
