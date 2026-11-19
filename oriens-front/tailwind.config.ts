@@ -22,6 +22,7 @@ export default {
           // --timeline-days is the window length, set at runtime on the timeline grid.
           ...Object.fromEntries(['week', 'fortnight', 'month'].map(scale => [`timeline-${scale}`, `var(--timeline-label-width) repeat(var(--timeline-days), var(--timeline-day-${scale}))`])) },
         inset: { 'timeline-label': 'var(--timeline-label-width)' },
+        scrollMargin: { 'timeline-label': 'var(--timeline-label-width)' },
         width: { 'board-column': 'var(--board-column-width)', 'popover-trigger': 'var(--radix-popover-trigger-width)' },
         aspectRatio: { 'project-cover': 'var(--project-cover-ratio)' },
   		fontFamily: {

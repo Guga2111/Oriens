@@ -39,7 +39,10 @@ async function seedTimeline(request: APIRequestContext, suffix: string, today: s
   const bar = await addTask(`Barra ${suffix}`, { plannedDate: day(-1), dueDate: day(3) });
   const milestone = await addTask(`Marco ${suffix}`, { dueDate: day(5) });
   const undated = await addTask(`Sem data ${suffix}`, {});
-  return { projectId: project.id as number, bar, milestone, undated };
+  // Both start left of the initial view, which centres today: one crosses the window start, one ends before today.
+  const long = await addTask(`Longa ${suffix}`, { plannedDate: day(-60), dueDate: day(30) });
+  const early = await addTask(`Antiga ${suffix}`, { plannedDate: day(-25), dueDate: day(-21) });
+  return { projectId: project.id as number, bar, milestone, undated, long, early };
 }
 
 test("timeline: escala, Hoje, ‹ ›, detalhe pela barra e deep link", async ({ page, request }, testInfo) => {
@@ -85,4 +88,38 @@ test("timeline: escala, Hoje, ‹ ›, detalhe pela barra e deep link", async ({
   await page.reload();
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("button", { name: /Editar/ })).toBeVisible();
+});
+
+test("timeline: cabeçalho do app, foco e título ficam visíveis apesar da coluna fixa", async ({ page, request }, testInfo) => {
+  const suffix = `${testInfo.project.name} ${Date.now()}`;
+  const { projectId, long, early } = await seedTimeline(request, suffix, productNow().date);
+  await login(page);
+  await page.goto(`/tasks/project/${projectId}?tab=timeline`);
+  const region = page.getByRole("region", { name: "Timeline do projeto" });
+  const longBar = page.getByRole("button", { name: new RegExp(`^${long.title},`) });
+  await expect(longBar).toBeAttached();
+  const labelRight = async () => {
+    const box = (await region.locator("[data-timeline-label]").boundingBox())!;
+    return box.x + box.width;
+  };
+
+  // A bar that starts off-screen keeps its title right beside the label column.
+  const title = (await longBar.locator("[data-timeline-title]").boundingBox())!;
+  expect(title.x).toBeGreaterThanOrEqual((await labelRight()) - 1);
+  expect(title.x).toBeLessThan((await labelRight()) + 8);
+
+  // Keyboard focus brings a bar fully clear of the sticky label column.
+  await longBar.focus();
+  await page.keyboard.press("Tab");
+  const earlyBar = page.getByRole("button", { name: new RegExp(`^${early.title},`) });
+  await expect(earlyBar).toBeFocused();
+  await expect.poll(async () => (await earlyBar.boundingBox())!.x).toBeGreaterThanOrEqual((await labelRight()) - 1);
+
+  // Scrolled under the sticky app header, the label column stays beneath it.
+  await region.evaluate(element => element.scrollIntoView({ block: "start" }));
+  const header = (await page.locator("header").first().boundingBox())!;
+  const regionBox = (await region.boundingBox())!;
+  const onTop = await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest("header"),
+    [regionBox.x + 16, header.y + header.height / 2]);
+  expect(onTop).toBe(true);
 });
