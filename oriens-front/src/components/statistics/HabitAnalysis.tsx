@@ -17,14 +17,16 @@ import { useHabitStatistics, useHabitWrites } from '@/hooks/useStatistics';
 import { AnalysisEmpty, QueryContent } from './AnalysisPrimitives';
 import { formatRate, fullDate, intervalDays, rate, shortDate } from '@/lib/statistics';
 import { cn } from '@/lib/utils';
-import type { Habit, HabitCommand, HabitState, Interval } from '@/types/statistics';
+import type { Habit, HabitCommand, HabitSchedule, HabitState, Interval } from '@/types/statistics';
 import { toast } from 'sonner';
 
-const states: Record<HabitState, string> = { DONE: 'Realizado', PENDING: 'Hoje em andamento', MISSED: 'Não realizado', OFF: 'Não programado', PAUSED: 'Em pausa', OUTSIDE: 'Fora da vigência' };
+const states: Record<HabitState, string> = { DONE: 'Realizado', PENDING: 'Hoje em andamento', MISSED: 'Não realizado', OPTIONAL: 'Dia livre', OFF: 'Não programado', PAUSED: 'Em pausa', OUTSIDE: 'Fora da vigência' };
+const executable: HabitState[] = ['DONE', 'PENDING', 'MISSED', 'OPTIONAL'];
 // The matrix sizes cells in .habit-matrix (index.css); neutralise the data-table padding, row rules and hover.
 const matrixRow = 'border-0 hover:bg-transparent';
 const matrixCell = 'h-auto p-px';
 const weekdays = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+const frequency = (schedule?: HabitSchedule) => schedule?.weeklyTarget ? `${schedule.weeklyTarget}x por semana, em qualquer dia` : schedule?.weekdays.map(d => weekdays[d - 1].slice(0, 3)).join(' · ');
 const errorText = (error: unknown) => (error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Não foi possível salvar. Tente novamente.';
 
 export function HabitMatrix({ habits, period, today, onManage, compact = false }: { habits: Habit[]; period: Interval; today: string; onManage: () => void; compact?: boolean }) {
@@ -57,13 +59,13 @@ export function HabitMatrix({ habits, period, today, onManage, compact = false }
         {habit.days.filter(day => visibleDates.has(day.date)).map(day => {
           const label = `${habit.name}, ${fullDate(day.date)}: ${states[day.state]}`;
           const mark = day.state === 'DONE' ? <Check className="size-3" aria-hidden /> : day.state === 'PAUSED' ? <Pause className="size-3" aria-hidden /> : day.state === 'MISSED' ? '−' : day.state === 'PENDING' ? '·' : ' ';
-          const active = day.date === today && ['DONE', 'PENDING'].includes(day.state);
+          const active = day.date === today && ['DONE', 'PENDING', 'OPTIONAL'].includes(day.state);
           return <TableCell key={day.date} className={matrixCell}><Tooltip><TooltipTrigger asChild>{active ? <Checkbox className={cn('habit-mark after:hidden', `habit-${day.state}`)} checked={day.state === 'DONE'} aria-label={label} disabled={write.isPending} onCheckedChange={() => write.mutate({ action: 'execution', habit, date: day.date, completed: day.state !== 'DONE' }, { onSuccess: result => { if (result.refreshFailed) toast.warning('Execução salva. Atualize os dados para conferir o resultado.'); } })} />
             : <span className={cn('habit-mark', `habit-${day.state}`)} aria-label={label}>{mark}<span className="sr-only">{states[day.state]}</span></span>}</TooltipTrigger><TooltipContent>{label}</TooltipContent></Tooltip></TableCell>;
         })}
       </TableRow>)}
     </TableBody></Table></div>
-    <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs text-muted-foreground">Realizado: marca preenchida · hoje pendente: contorno · não realizado: traço · pausa: barras · não programado: branco</p>{compact && habits.length > visible.length && <Button variant="link" onClick={onManage}>Todos os hábitos · {habits.length}</Button>}</div>
+    <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs text-muted-foreground">Realizado: marca preenchida · hoje pendente: contorno · não realizado: traço · pausa: barras · não programado ou dia livre: branco</p>{compact && habits.length > visible.length && <Button variant="link" onClick={onManage}>Todos os hábitos · {habits.length}</Button>}</div>
   </div>;
 }
 
@@ -83,10 +85,10 @@ export function HabitManager({ open, onOpenChange, today, opener }: { open: bool
       <SheetHeader><SheetTitle>Hábitos</SheetTitle><SheetDescription>Programação, execuções e pausas. Dias não programados não são falhas.</SheetDescription></SheetHeader>
       <div className="mt-6 flex flex-col gap-4"><div className="flex flex-wrap items-end justify-between gap-3"><Field className="w-auto"><FieldLabel htmlFor="habit-record-date">Data de execução</FieldLabel><WorkDatePicker id="habit-record-date" label="Data de execução" value={date} max={today} required onChange={setDate} /></Field><Button onClick={() => setEditing('new')}><Plus aria-hidden data-icon="inline-start" />Novo hábito</Button></div>
         {write.isError && <Alert><AlertDescription>{errorText(write.error)} <Button variant="link" onClick={() => void data.refetch()}>Recarregar</Button></AlertDescription></Alert>}
-        <QueryContent query={data} label="hábitos">{value => value.habits.length === 0 ? <AnalysisEmpty title="Seu primeiro hábito" description="Escolha os dias da semana e comece a registrar suas execuções." action={<Button onClick={() => setEditing('new')}>Cadastrar hábito</Button>} /> : <div className="flex flex-col gap-4">{value.habits.map(habit => {
-          const state = habit.days[0]?.state ?? 'OUTSIDE', canExecute = ['DONE', 'PENDING', 'MISSED'].includes(state);
+        <QueryContent query={data} label="hábitos">{value => value.habits.length === 0 ? <AnalysisEmpty title="Seu primeiro hábito" description="Escolha dias fixos ou quantas vezes por semana e comece a registrar suas execuções." action={<Button onClick={() => setEditing('new')}>Cadastrar hábito</Button>} /> : <div className="flex flex-col gap-4">{value.habits.map(habit => {
+          const state = habit.days[0]?.state ?? 'OUTSIDE', canExecute = executable.includes(state);
           const schedule = habit.schedules[habit.schedules.length - 1];
-          return <div className="flex flex-col gap-2 rounded-md border p-4" key={habit.id}><div className="flex items-start justify-between gap-3"><div><h3 className="text-base font-medium">{habit.name}</h3><p className="text-xs text-muted-foreground">{schedule?.weekdays.map(d => weekdays[d - 1].slice(0, 3)).join(' · ')} · desde {shortDate(habit.startDate)}{habit.archivedOn ? ` · arquivado a partir de ${shortDate(habit.archivedOn)}` : ''}</p></div><span className="text-xs text-muted-foreground">{states[state]}</span></div>
+          return <div className="flex flex-col gap-2 rounded-md border p-4" key={habit.id}><div className="flex items-start justify-between gap-3"><div><h3 className="text-base font-medium">{habit.name}</h3><p className="text-xs text-muted-foreground">{frequency(schedule)} · desde {shortDate(habit.startDate)}{habit.archivedOn ? ` · arquivado a partir de ${shortDate(habit.archivedOn)}` : ''}</p></div><span className="text-xs text-muted-foreground">{states[state]}</span></div>
             <div className="flex flex-wrap items-center gap-2">{canExecute && <Button variant={state === 'DONE' ? 'outline' : 'default'} disabled={write.isPending} onClick={() => void submit({ action: 'execution', habit, date, completed: state !== 'DONE' }).catch(() => {})}>{state === 'DONE' ? <RotateCcw aria-hidden data-icon="inline-start" /> : <Check aria-hidden data-icon="inline-start" />}{state === 'DONE' ? 'Desmarcar execução' : 'Registrar execução'}</Button>}
               {!habit.archivedOn && <><Button variant="outline" size="sm" disabled={write.isPending} onClick={() => setEditing(habit)}><Pencil aria-hidden data-icon="inline-start" />Editar</Button><Button variant="outline" size="sm" disabled={write.isPending} onClick={() => setPausing(habit)}><Pause aria-hidden data-icon="inline-start" />Pausar</Button><Button variant="outline" size="sm" disabled={write.isPending} onClick={() => setArchiving(habit)}><Archive aria-hidden data-icon="inline-start" />Arquivar</Button></>}
             </div>{habit.pauses.length > 0 && <p className="text-xs text-muted-foreground">Pausas: {habit.pauses.map(p => `${shortDate(p.startDate)}–${shortDate(p.endDate)}`).join('; ')}</p>}
@@ -101,18 +103,22 @@ export function HabitManager({ open, onOpenChange, today, opener }: { open: bool
 }
 function HabitEditor({ habit, today, pending, onClose, onSave }: { habit: Habit | 'new'; today: string; pending: boolean; onClose: () => void; onSave: (command: HabitCommand) => Promise<unknown> }) {
   const existing = habit === 'new' ? null : habit;
-  const [name, setName] = useState(existing?.name ?? ''), [days, setDays] = useState<string[]>((existing?.schedules.slice(-1)[0]?.weekdays ?? [1, 2, 3, 4, 5, 6, 7]).map(String));
+  const schedule = existing?.schedules.slice(-1)[0];
+  const [name, setName] = useState(existing?.name ?? ''), [mode, setMode] = useState(schedule?.weeklyTarget ? 'weekly' : 'fixed');
+  const [days, setDays] = useState<string[]>((schedule?.weeklyTarget ? [1, 2, 3, 4, 5, 6, 7] : schedule?.weekdays ?? [1, 2, 3, 4, 5, 6, 7]).map(String)), [target, setTarget] = useState(String(schedule?.weeklyTarget ?? 3));
   const [start, setStart] = useState(today), [end, setEnd] = useState(''), [error, setError] = useState(''), [submitted, setSubmitted] = useState(false);
   const key = useRef(crypto.randomUUID()), payload = useRef('');
-  const valid = name.trim().length > 0 && name.trim().length <= 100 && days.length > 0 && (!!existing || (start >= today && (!end || end >= start)));
-  return <Dialog open onOpenChange={next => { if (!next && !pending) onClose(); }}><DialogContent className="max-h-dialog overflow-y-auto"><DialogHeader><DialogTitle>{existing ? 'Editar hábito' : 'Novo hábito'}</DialogTitle><DialogDescription>{existing ? 'A nova frequência valerá a partir de amanhã; o histórico será preservado.' : 'Uma execução por dia programado. Sem registro de dias anteriores ao cadastro.'}</DialogDescription></DialogHeader>
+  const weekly = mode === 'weekly', valid = name.trim().length > 0 && name.trim().length <= 100 && (weekly || days.length > 0) && (!!existing || (start >= today && (!end || end >= start)));
+  return <Dialog open onOpenChange={next => { if (!next && !pending) onClose(); }}><DialogContent className="max-h-dialog overflow-y-auto"><DialogHeader><DialogTitle>{existing ? 'Editar hábito' : 'Novo hábito'}</DialogTitle><DialogDescription>{existing ? 'A nova frequência valerá a partir de amanhã; o histórico será preservado.' : 'No máximo uma execução por dia. Sem registro de dias anteriores ao cadastro.'}</DialogDescription></DialogHeader>
     <form className="flex flex-col gap-4" onSubmit={async event => {
       event.preventDefault(); setSubmitted(true); setError(''); if (!valid) return;
-      const input = { name: name.trim(), weekdays: days.map(Number), startDate: start, endDate: end || null };
+      const input = { name: name.trim(), weekdays: weekly ? null : days.map(Number), weeklyTarget: weekly ? Number(target) : null, startDate: start, endDate: end || null };
       if (payload.current && payload.current !== JSON.stringify(input)) key.current = crypto.randomUUID(); payload.current = JSON.stringify(input);
-      try { await onSave(existing ? { action: 'update', habit: existing, name: input.name, weekdays: input.weekdays } : { action: 'create', input, key: key.current }); onClose(); } catch (e) { setError(errorText(e)); }
+      try { await onSave(existing ? { action: 'update', habit: existing, name: input.name, weekdays: input.weekdays, weeklyTarget: input.weeklyTarget } : { action: 'create', input, key: key.current }); onClose(); } catch (e) { setError(errorText(e)); }
     }}><FieldGroup><Field data-invalid={submitted && !name.trim()}><FieldLabel htmlFor="habit-name">Nome</FieldLabel><Input id="habit-name" autoFocus value={name} maxLength={100} aria-invalid={submitted && !name.trim()} onChange={e => setName(e.target.value)} /></Field>
-      <Field data-invalid={submitted && days.length === 0}><FieldLabel id="habit-weekdays-label">Dias da semana</FieldLabel><ToggleGroup variant="outline" type="multiple" value={days} onValueChange={setDays} className="flex-wrap justify-start" aria-labelledby="habit-weekdays-label" aria-invalid={submitted && days.length === 0} disabled={pending}>{weekdays.map((label, i) => <ToggleGroupItem key={label} value={String(i + 1)} aria-label={label}>{label.slice(0, 3)}</ToggleGroupItem>)}</ToggleGroup>{submitted && days.length === 0 && <FieldDescription>Escolha pelo menos um dia.</FieldDescription>}</Field>
+      <Field><FieldLabel id="habit-frequency-label">Frequência</FieldLabel><ToggleGroup variant="outline" type="single" value={mode} onValueChange={value => { if (value) setMode(value); }} className="flex-wrap justify-start" aria-labelledby="habit-frequency-label" disabled={pending}><ToggleGroupItem value="fixed">Dias fixos</ToggleGroupItem><ToggleGroupItem value="weekly">Vezes por semana</ToggleGroupItem></ToggleGroup></Field>
+      {weekly ? <Field><FieldLabel id="habit-target-label">Vezes por semana</FieldLabel><ToggleGroup variant="outline" type="single" value={target} onValueChange={value => { if (value) setTarget(value); }} className="flex-wrap justify-start" aria-labelledby="habit-target-label" disabled={pending}>{[1, 2, 3, 4, 5, 6, 7].map(n => <ToggleGroupItem key={n} value={String(n)} aria-label={`${n} ${n === 1 ? 'vez' : 'vezes'} por semana`}>{n}x</ToggleGroupItem>)}</ToggleGroup><FieldDescription>Em qualquer dia da semana (segunda a domingo). Um dia só conta como não realizado quando a meta da semana já não pode ser alcançada.</FieldDescription></Field>
+      : <Field data-invalid={submitted && days.length === 0}><FieldLabel id="habit-weekdays-label">Dias da semana</FieldLabel><ToggleGroup variant="outline" type="multiple" value={days} onValueChange={setDays} className="flex-wrap justify-start" aria-labelledby="habit-weekdays-label" aria-invalid={submitted && days.length === 0} disabled={pending}>{weekdays.map((label, i) => <ToggleGroupItem key={label} value={String(i + 1)} aria-label={label}>{label.slice(0, 3)}</ToggleGroupItem>)}</ToggleGroup>{submitted && days.length === 0 && <FieldDescription>Escolha pelo menos um dia.</FieldDescription>}</Field>}
       {!existing && <><Field data-invalid={submitted && start < today}><FieldLabel htmlFor="habit-start">Começar em</FieldLabel><WorkDatePicker id="habit-start" label="Começar em" min={today} value={start} required onChange={setStart} invalid={submitted && start < today} /></Field><Field data-invalid={submitted && !!end && end < start}><FieldLabel htmlFor="habit-end">Terminar em (opcional)</FieldLabel><WorkDatePicker id="habit-end" label="Terminar em" min={start} value={end} onChange={setEnd} invalid={submitted && !!end && end < start} />{submitted && !!end && end < start && <FieldDescription>O término deve ser igual ou posterior ao início.</FieldDescription>}</Field></>}
     </FieldGroup>{error && <Alert><AlertDescription>{error}</AlertDescription></Alert>}<div className="flex justify-end gap-2"><Button type="button" variant="ghost" disabled={pending} onClick={onClose}>Cancelar</Button><Button type="submit" disabled={pending}>{pending ? 'Salvando…' : 'Salvar hábito'}</Button></div></form>
   </DialogContent></Dialog>;

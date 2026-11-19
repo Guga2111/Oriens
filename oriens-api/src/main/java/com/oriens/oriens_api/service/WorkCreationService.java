@@ -79,9 +79,13 @@ public class WorkCreationService {
         } catch (IllegalArgumentException e) { throw fail("INVALID_REQUEST", "Idempotency-Key deve ser UUID."); }
     }
     private Object normalized(Object payload) {
-        if (payload instanceof com.oriens.oriens_api.entity.dto.statistics.HabitViews.Input h)
-            return new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Input(trim(h.name()),
-                h.weekdays() == null ? null : h.weekdays().stream().sorted(Comparator.nullsFirst(Comparator.naturalOrder())).toList(), h.startDate(), h.endDate());
+        if (payload instanceof com.oriens.oriens_api.entity.dto.statistics.HabitViews.Input h) {
+            ObjectNode normalized = mapper.valueToTree(new com.oriens.oriens_api.entity.dto.statistics.HabitViews.Input(trim(h.name()),
+                h.weekdays() == null ? null : h.weekdays().stream().sorted(Comparator.nullsFirst(Comparator.naturalOrder())).toList(), h.weeklyTarget(), h.startDate(), h.endDate()));
+            // Preserve the hash of fixed-weekday creation receipts for uncertain retries after upgrade.
+            if (h.weeklyTarget() == null) normalized.remove("weeklyTarget");
+            return normalized;
+        }
         if (payload instanceof CreateProject p) return new CreateProject(trim(p.title()), p.mode(), p.description(), p.color(),
             p.objectives() == null ? List.of() : p.objectives().stream().map(o -> o == null ? null : new NewObjective(trim(o.title()), o.dueDate())).toList());
         if (payload instanceof CreateTask t) {

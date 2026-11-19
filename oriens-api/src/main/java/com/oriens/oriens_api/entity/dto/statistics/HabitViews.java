@@ -6,14 +6,15 @@ import java.util.List;
 
 public final class HabitViews {
     private HabitViews() {}
-    public record Input(@NotBlank @Size(max=100) String name, @NotEmpty List<@Min(1) @Max(7) Integer> weekdays,
-                        @NotNull LocalDate startDate, LocalDate endDate) {}
+    /** Frequency is either fixed {@code weekdays} or {@code weeklyTarget} executions per week on any day, never both. */
+    public record Input(@NotBlank @Size(max=100) String name, List<@Min(1) @Max(7) Integer> weekdays,
+                        @Min(1) @Max(7) Integer weeklyTarget, @NotNull LocalDate startDate, LocalDate endDate) {}
     public record Update(@NotNull Long version, @NotBlank @Size(max=100) String name,
-                         @NotEmpty List<@Min(1) @Max(7) Integer> weekdays) {}
+                         List<@Min(1) @Max(7) Integer> weekdays, @Min(1) @Max(7) Integer weeklyTarget) {}
     public record Execution(@NotNull Long version, boolean completed) {}
     public record PauseInput(@NotNull Long version, @NotNull LocalDate startDate, @NotNull LocalDate endDate) {}
     public record Version(@NotNull Long version) {}
-    public record Schedule(LocalDate startDate, LocalDate endDate, List<Integer> weekdays) {}
+    public record Schedule(LocalDate startDate, LocalDate endDate, List<Integer> weekdays, Integer weeklyTarget) {}
     public record Pause(LocalDate startDate, LocalDate endDate) {}
     public record Day(LocalDate date, String state) {}
     public record Habit(Long id, String name, LocalDate createdOn, LocalDate startDate, LocalDate endDate,
