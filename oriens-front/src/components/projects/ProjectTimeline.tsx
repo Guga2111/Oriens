@@ -65,7 +65,8 @@ export function ProjectTimeline({ project, onOpen, onAdd }: {
   const days = timelineDays(period);
   const weekStarts = new Set(weekSegments(period).map(week => week.column));
   const outside = board.data ? board.data.total.totalTasks - board.data.visible.totalTasks : 0;
-  const empty = layout && layout.groups.every(group => !group.rows.length) && !layout.undated.length;
+  // Undated tasks live below the grid, so they never fill it.
+  const empty = layout && layout.groups.every(group => !group.rows.length);
 
   return <div className="flex min-w-0 flex-col gap-4">
     <div className="flex flex-wrap items-center gap-2">
@@ -111,7 +112,7 @@ export function ProjectTimeline({ project, onOpen, onAdd }: {
                 : days.map((day, index) => <div key={day.date} style={{ gridColumn: gridColumn({ column: index + 1, span: 1 }), gridRow: 1 }}
                   className={cn(index > 0 && 'border-l', weekStarts.has(index + 1) ? 'border-border' : 'border-muted', day.weekend && 'bg-background')} />)}
               {/* Starts below the 5rem TimelineHeader so it never crosses the date labels. */}
-              {todayColumn !== null && <div data-timeline-today className="mt-20 w-px justify-self-center bg-now" style={{ gridColumn: gridColumn({ column: todayColumn, span: 1 }), gridRow: 1 }} />}
+              {todayColumn !== null && <div data-timeline-today className="mt-20 w-0.5 justify-self-center bg-now" style={{ gridColumn: gridColumn({ column: todayColumn, span: 1 }), gridRow: 1 }} />}
             </div>
             {todayColumn !== null && <span className="sr-only">Hoje é {formatLongDate(today)}</span>}
             <TimelineHeader period={period} scale={scale} grid={grid} todayColumn={todayColumn} />
