@@ -21,39 +21,12 @@ defaults:
     shell: bash
 
 jobs:
-  test-api:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: oriens-api
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: maven
-      # McpP*PostgresTest need a dedicated Postgres (known debt, see AGENTS.md).
-      - run: ./mvnw -B test '-Dtest=!McpP2PostgresTest,!McpP3PostgresTest,!McpP4PostgresTest' -Dsurefire.failIfNoSpecifiedTests=false
-
-  test-front:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: oriens-front
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: oriens-front/package-lock.json
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test
+  # Same checks a PR must pass (checks.yml); nothing is deployed unless they pass.
+  checks:
+    uses: ./.github/workflows/checks.yml
 
   deploy:
-    needs: [test-api, test-front]
+    needs: [checks]
     runs-on: ubuntu-latest
     environment:
       name: production
