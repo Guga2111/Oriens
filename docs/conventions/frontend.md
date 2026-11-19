@@ -343,7 +343,7 @@ outro motivo, não amplie o problema.
 | `components/layout/AppSidebar.tsx` (`#ccc`), `components/projects/CreateProjectDialog.tsx` (`#808080`) | Cor padrão de dado como literal → constante nomeada em `lib/` |
 | Vários (`max-w-[1120px]`, `max-w-[640px]`, `min-[1100px]:`, `min-w-[8rem]`, `xl:grid-cols-[…]`…) | Medidas arbitrárias repetidas → tokens |
 | 19 usos de `style={{…}}` | Revisar quais são estáticos |
-| `services/settingsService.ts`, `AppSidebar`, `TaskRow`, `FinancialPage`, `SignLoginPage`, contextos | `console.error` deixado no código |
+| `services/settingsService.ts`, `TaskRow`, `FinancialPage`, `SignLoginPage`, contextos | `console.error` deixado no código |
 | `components/statistics/ActivityStreak.tsx` | `title=""` usado como tooltip → `Tooltip` |
 | `tsconfig.app.json` | `strict: false`, `noImplicitAny: false` |
 | `src/__tests__/task-labels.test.tsx`, `project-detail-a9-dialogs.test.tsx` | Instáveis sob carga (timeout de 5 s) |
