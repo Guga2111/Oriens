@@ -27,8 +27,21 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
-      # McpP*PostgresTest need a dedicated Postgres (known debt, see AGENTS.md).
+      # McpP*PostgresTest fail without their Postgres; test-postgres runs them.
       - run: ./mvnw -B test '-Dtest=!McpP2PostgresTest,!McpP3PostgresTest,!McpP4PostgresTest' -Dsurefire.failIfNoSpecifiedTests=false
+
+  # H2 never runs the Flyway migrations; here every *PostgresTest boots a fresh PostgreSQL 15
+  # database, so a broken migration or Postgres-only query fails the PR.
+  test-postgres:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+      - run: oriens-api/ops/postgres-tests.sh
 
   test-front:
     runs-on: ubuntu-latest
