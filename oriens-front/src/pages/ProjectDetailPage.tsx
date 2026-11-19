@@ -12,6 +12,7 @@ import { DeleteProjectDialog } from '@/components/projects/DeleteProjectDialog';
 import { ProjectObjectives } from '@/components/projects/ProjectObjectives';
 import { ProjectBoard } from '@/components/projects/ProjectBoard';
 import { BoardSettings } from '@/components/projects/BoardSettings';
+import { ProjectTimeline } from '@/components/projects/ProjectTimeline';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
 import { TaskDetailsDialog } from '@/components/tasks/TaskDetailsDialog';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -26,9 +27,12 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProjectBoard, useProjectFlags, useProjectWrites, useWorkProject } from '@/hooks/useWork';
+import { useTimelineBoard } from '@/hooks/useTimelineBoard';
 import type { BoardFilters } from '@/services/projectService';
 import { parseLocalDate } from '@/lib/date';
 import type { WorkTask } from '@/types/work';
+
+const TABS = ['board', 'objectives', 'timeline'] as const;
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
@@ -40,12 +44,13 @@ function ProjectDetail({ id }: { id: number }) {
   const [showFilters, setShowFilters] = useState(false);
   const query = useWorkProject(id); const project = query.data;
   const [params, setParams] = useSearchParams(); const navigate = useNavigate();
-  const tab = params.get('tab') === 'objectives' ? 'objectives' : 'board';
+  const tab = TABS.find(value => value === params.get('tab')) ?? 'board';
   const filters: BoardFilters = { ...(params.get('objective') ? { objectiveId: Number(params.get('objective')) } : {}),
     ...(['today', 'unscheduled'].includes(params.get('planning') ?? '') ? { planning: params.get('planning') as 'today' | 'unscheduled' } : {}),
     ...(params.get('overdue') === '1' ? { overdue: true } : {}), ...(params.get('open') === '1' ? { open: true } : {}) };
   const board = useProjectBoard(project?.mode === 'DEVELOPMENT' ? id : 0, filters);
   const allBoard = useProjectBoard(project?.mode === 'DEVELOPMENT' && tab === 'objectives' ? id : 0);
+  const timeline = useTimelineBoard(project?.mode === 'DEVELOPMENT' && tab === 'timeline' ? id : 0).board;
   const flags = useProjectFlags(); const write = useProjectWrites(); const file = useRef<HTMLInputElement>(null);
   const [edit, setEdit] = useState(false); const [deleting, setDeleting] = useState(false); const [converting, setConverting] = useState(false); const [settings, setSettings] = useState(false);
   const [editor, setEditor] = useState<{ task?: WorkTask; columnId?: number; objectiveId?: number } | null>(null);
@@ -77,7 +82,7 @@ function ProjectDetail({ id }: { id: number }) {
       </>} />
     <div className="mt-4 flex flex-col gap-3"><WorkFeedback error={query.error || flags.error || write.error} retry={() => void query.refetch()} />{flags.data?.refreshFailed && <WorkFeedback message="Salvo. Recarregue as listas para atualizar os dados." />}</div>
     {development ? <Tabs value={tab} onValueChange={v => setParam('tab', v)} className="mt-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><TabsList variant="line" aria-label="Visão do projeto"><TabsTrigger value="board">Quadro</TabsTrigger><TabsTrigger value="objectives">Objetivos</TabsTrigger></TabsList>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><TabsList variant="line" aria-label="Visão do projeto"><TabsTrigger value="board">Quadro</TabsTrigger><TabsTrigger value="objectives">Objetivos</TabsTrigger><TabsTrigger value="timeline">Timeline</TabsTrigger></TabsList>
 </div>
       <div className="mb-5 text-sm" aria-label="Contagens gerais do projeto">Geral: {s.completedObjectives}/{s.totalObjectives} objetivos concluídos · {s.nonCancelledTasks ? `${s.completedTasks}/${s.nonCancelledTasks} tarefas concluídas` : 'Nenhuma tarefa ativa'}{s.cancelledTasks ? ` · ${s.cancelledTasks} canceladas` : ''}</div>
       <TabsContent value="board"><div className="mb-4 flex flex-wrap gap-2">{mobile && <Button variant="outline" onClick={() => setShowFilters(true)}>Filtros{Object.keys(filters).length ? ` (${Object.keys(filters).length})` : ''}</Button>}
@@ -96,6 +101,7 @@ function ProjectDetail({ id }: { id: number }) {
       {board.data && <><p className="mb-3 text-sm text-muted-foreground">{board.data.visible.totalTasks} de {board.data.total.totalTasks} tarefas visíveis</p><ProjectBoard board={board.data} pendingColumnId={project.defaultPendingColumnId!} onOpen={showTask} onEdit={editTask} onAdd={columnId => setEditor({ columnId })} onObjective={showObjective} /></>}
       </TabsContent>
       <TabsContent value="objectives"><WorkFeedback error={allBoard.error} retry={() => void allBoard.refetch()} /><ProjectObjectives project={project} tasks={allBoard.data?.tasks} onAddTask={objectiveId => setEditor({ objectiveId, columnId: project.defaultPendingColumnId! })} onEditTask={showTask} selectedObjective={Number(params.get('selectedObjective')) || undefined} /></TabsContent>
+      <TabsContent value="timeline"><ProjectTimeline project={project} onOpen={showTask} onAdd={() => setEditor({ columnId: project.defaultPendingColumnId! })} /></TabsContent>
     </Tabs> : <div className="mt-6 grid min-w-0 items-start gap-6 xl:grid-cols-project-detail">
       <ProjectObjectives project={project} onAddTask={() => {}} onEditTask={() => {}} />
       <aside className="flex min-w-0 flex-col gap-4 rounded-lg border bg-card p-4 md:p-5" aria-label="Informações do projeto"><h2 className="text-base font-semibold">Resumo</h2><p className="text-sm">{s.totalObjectives ? `${s.completedObjectives}/${s.totalObjectives} objetivos concluídos` : 'Nenhum objetivo definido'}</p>
@@ -117,7 +123,7 @@ function ProjectDetail({ id }: { id: number }) {
       onConfirm={async () => { try { await write.mutateAsync({ action: 'convert', id, version: project.version }); return true; } catch { return false; } }} />
     {settings && board.data && <BoardSettings project={project} board={board.data} onReload={async () => { await query.refetch(); return (await board.refetch()).data; }} onClose={() => setSettings(false)} />}
     {development && openTask > 0 && !editor && <TaskDetailsDialog key={openTask} taskId={openTask} projectId={project.id} columns={board.data?.columns}
-      placeholder={board.data?.tasks.find(t => t.id === openTask) ?? allBoard.data?.tasks.find(t => t.id === openTask)}
+      placeholder={[board, allBoard, timeline].map(b => b.data?.tasks.find(t => t.id === openTask)).find(Boolean)}
       onClose={closeTask} onEdit={editTask} onObjective={showObjective} />}
     {editor && <TaskEditor open onOpenChange={v => { if (!v) setEditor(null); }} task={editor.task} projectId={project.id} columnId={editor.columnId} objectiveId={editor.objectiveId} />}
   </div>;

@@ -22,6 +22,11 @@
     --project-detail-columns: minmax(0, 1fr) 20rem;
     --task-details-columns: 9rem minmax(0, 1fr);
     --board-column-width: 19rem;
+    /* Project timeline: sticky label column and one day column per scale (frontend.md §3.3). */
+    --timeline-label-width: 9rem;
+    --timeline-day-week: 3rem;
+    --timeline-day-fortnight: 2rem;
+    --timeline-day-month: 0.75rem;
     --project-cover-ratio: 3 / 1;
     /* Marca (inalterada — SPEC §9.1) */
     --brand-cream: 38.4615 90.6977% 91.5686%;
@@ -172,6 +177,9 @@
 }
 
 /* Page gutters grow with the canvas; overlays retain their compact inset. */
+@media (min-width: 640px) {
+  :root { --timeline-label-width: 16rem; }
+}
 @media (min-width: 768px) {
   :root { --page-gutter: 2rem; --overlay-gutter: 2rem; }
 }
