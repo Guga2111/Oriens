@@ -70,8 +70,9 @@ A stack vive em FutspringV2 `ops/observability/` e é publicada em `~/observabil
 `observability` e ganhando um job.
 
 **No Oriens** (`docker-compose-prod.yml`): o serviço `api` entra nas redes `default` e `observability`
-(esta declarada `external: true`; quem a cria é a stack). A 8081 continua fora de `ports:`. O deploy
-do Oriens não muda.
+(declarada `external: true`). Como no deploy do Futspring, o `deploy.yml` roda
+`docker network create observability || true` antes do `compose up`, então não importa quem sobe
+primeiro. A 8081 continua fora de `ports:`.
 
 **No FutspringV2** (PR para `dev`):
 - `prometheus/prometheus.yml`: job `oriens-api`, `metrics_path: /actuator/prometheus`, alvo
@@ -127,6 +128,17 @@ revisão; só a stack que coleta passou a ser a compartilhada.
   anônimo → 401. Todas as 23 consultas do painel retornam dados. A única exceção é "Taxa de 5xx
   por rota", que fica vazia quando não há erro 5xx (o stat geral mostra 0).
 - `promtool check config` e `docker compose -f docker-compose-prod.yml config` passaram.
+
+### Evidência local da topologia compartilhada (2026-11-20)
+
+Imagem da API construída do branch e subida pelo próprio `docker-compose-prod.yml` (rede externa
+`observability`), mais Prometheus v3.15.1 e Grafana OSS 13.0.2 (as versões da stack), com o
+`prometheus.yml` e o provisionamento de datasources/dashboards do branch do FutspringV2.
+- `docker port oriens-api`: só a 8080; a 8081 não é publicada. `:API_PORT/actuator/prometheus` → 401.
+- Alvo `oriens-api` → `http://oriens-api:8081/actuator/prometheus` **up**, resolvido pelo nome do
+  container na rede `observability`. Os alvos da stack que não existem localmente aparecem fora do ar, como esperado.
+- Grafana: "Oriens API" provisionado; as 23 consultas, feitas pelo proxy do datasource `prometheus`,
+  retornam dados. A única vazia é "Taxa de 5xx por rota", porque não houve erro 5xx.
 
 ## Fora de escopo
 

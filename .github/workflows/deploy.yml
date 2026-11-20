@@ -126,6 +126,8 @@ jobs:
             docker tag oriens-api:latest oriens-api:previous
           fi
           docker tag "oriens-api:${IMAGE_TAG}" oriens-api:latest
+          # Shared with the VPS observability stack (FutspringV2 ops/observability); whoever deploys first creates it.
+          docker network create observability >/dev/null 2>&1 || true
           compose up -d --force-recreate --remove-orphans
 
           echo "Aguardando a API responder em 127.0.0.1:${API_PORT}..."
