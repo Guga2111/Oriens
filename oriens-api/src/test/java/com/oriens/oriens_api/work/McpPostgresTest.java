@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  "JWT_SECRET=synthetic-mcp-only-not-a-production-secret-0123456789-abcdefghijklmnopqrstuvwxyz",
  "spring.datasource.url=${MCP_JDBC_URL}","spring.datasource.username=postgres","spring.datasource.password=",
  "spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false","spring.jpa.show-sql=false",
- "server.port=${MCP_HTTP_PORT:8764}","oriens.mcp.enabled=true","oriens.mcp.issuer=http://127.0.0.1:${MCP_HTTP_PORT:8764}","oriens.mcp.frontend=http://127.0.0.1:${MCP_FRONTEND_PORT:5173}",
+ "server.port=${MCP_HTTP_PORT:8764}","management.server.port=0","oriens.mcp.enabled=true","oriens.mcp.issuer=http://127.0.0.1:${MCP_HTTP_PORT:8764}","oriens.mcp.frontend=http://127.0.0.1:${MCP_FRONTEND_PORT:5173}",
  "oriens.mcp.encryption-password=synthetic-encryption-password-only-1234567890","oriens.mcp.encryption-salt=0123456789abcdef0123456789abcdef",
  "oriens.mcp.codex-redirects=http://127.0.0.1/callback","oriens.mcp.claude-redirects=http://localhost:8765/callback",
  "spring.task.scheduling.enabled=false"})
@@ -247,7 +247,7 @@ class McpPostgresTest {
   var delegated=authorizations.authenticate(token,properties);
   Map<String,Object> settings=new HashMap<>();
   for(String key:List.of("JWT_SECRET","spring.datasource.url","spring.datasource.username","spring.datasource.password","oriens.mcp.enabled","oriens.mcp.issuer","oriens.mcp.frontend","oriens.mcp.encryption-password","oriens.mcp.encryption-salt","oriens.mcp.codex-redirects","oriens.mcp.claude-redirects"))settings.put(key,environment.getRequiredProperty(key));
-  settings.put("server.port",0);settings.put("spring.jpa.hibernate.ddl-auto","validate");settings.put("spring.jpa.open-in-view",false);settings.put("spring.main.banner-mode","off");
+  settings.put("server.port",0);settings.put("management.server.port",0);settings.put("spring.jpa.hibernate.ddl-auto","validate");settings.put("spring.jpa.open-in-view",false);settings.put("spring.main.banner-mode","off");
   // Independent full application instances: deterministic client registration and key survive restart.
   try(var second=new org.springframework.boot.builder.SpringApplicationBuilder(App.class).properties(settings).run()){
    var fresh=second.getBean(McpAuthorizations.class);assertThat(fresh.authenticate(token,properties).userId()).isEqualTo(owner);
