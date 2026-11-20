@@ -21,60 +21,18 @@ services:
       - "${API_PORT:-8080}:8080"
     volumes:
       - /opt/oriens-uploads:/opt/oriens-uploads
+    # The shared Prometheus of the VPS (FutspringV2 ops/observability) scrapes oriens-api:8081 over this
+    # network; the management port is never published on the host.
+    networks:
+      - default
+      - observability
     deploy:
       resources:
         limits:
           cpus: "1.0"
           memory: 512M
 
-  # Scrapes the API management port (8081) over this compose network; publishes no port.
-  prometheus:
-    image: prom/prometheus:v3.16.0
-    container_name: oriens-prometheus
-    restart: unless-stopped
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
-      - --storage.tsdb.retention.time=15d
-      - --storage.tsdb.retention.size=1GB
-    volumes:
-      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data:/prometheus
-    depends_on:
-      - api
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-
-  # Reached only through the host nginx (grafana.luisgosampaio.com); bound to loopback.
-  grafana:
-    image: grafana/grafana:13.3.1
-    container_name: oriens-grafana
-    restart: unless-stopped
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Configure GRAFANA_ADMIN_PASSWORD no ambiente}
-      GF_SERVER_ROOT_URL: https://grafana.luisgosampaio.com
-      GF_SECURITY_COOKIE_SECURE: "true"
-      GF_USERS_ALLOW_SIGN_UP: "false"
-      GF_AUTH_ANONYMOUS_ENABLED: "false"
-      GF_ANALYTICS_REPORTING_ENABLED: "false"
-      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
-    ports:
-      - "127.0.0.1:3000:3000"
-    volumes:
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
-      - grafana-data:/var/lib/grafana
-    depends_on:
-      - prometheus
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-
-volumes:
-  prometheus-data:
-  grafana-data:
+networks:
+  observability:
+    # Created and owned by the shared observability stack on the VPS.
+    external: true

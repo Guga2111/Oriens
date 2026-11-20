@@ -77,13 +77,11 @@ jobs:
             StrictHostKeyChecking yes
           EOF
 
-      - name: Upload API image, compose file and observability config
+      - name: Upload API image and compose file
         run: |
           ssh vps "mkdir -p ~/${REMOTE_DIR} ${WEB_ROOT} /opt/oriens-uploads"
           docker save "oriens-api:${IMAGE_TAG}" | gzip | ssh vps 'gunzip | docker load'
           scp docker-compose-prod.yml "vps:${REMOTE_DIR}/docker-compose-prod.yml"
-          # Replace the whole directory so files removed from the repo do not linger on the VPS.
-          tar -czf - observability | ssh vps "cd ~/${REMOTE_DIR} && rm -rf observability && tar -xzf -"
 
       - name: Write production .env on VPS
         env:
@@ -98,9 +96,8 @@ jobs:
           ORIENS_MCP_FRONTEND: https://oriens.luisgosampaio.com
           ORIENS_MCP_ENCRYPTION_PASSWORD: ${{ secrets.ORIENS_MCP_ENCRYPTION_PASSWORD }}
           ORIENS_MCP_ENCRYPTION_SALT: ${{ secrets.ORIENS_MCP_ENCRYPTION_SALT }}
-          GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
         run: |
-          names="DB_URL DB_USER DB_PASSWORD JWT_SECRET API_PORT ORIENS_MCP_ENABLED GRAFANA_ADMIN_PASSWORD"
+          names="DB_URL DB_USER DB_PASSWORD JWT_SECRET API_PORT ORIENS_MCP_ENABLED"
           if [ "$ORIENS_MCP_ENABLED" = "true" ]; then
             names="$names ORIENS_MCP_ISSUER ORIENS_MCP_FRONTEND ORIENS_MCP_ENCRYPTION_PASSWORD ORIENS_MCP_ENCRYPTION_SALT"
           fi
