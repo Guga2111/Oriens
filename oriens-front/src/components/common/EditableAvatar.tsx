@@ -6,6 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+// Same allowlist as the API (ImageUploads): no SVG, which would be served as a scriptable document.
+const IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+
 interface EditableAvatarProps {
   src?: string;
   fallback: string;
@@ -25,9 +28,9 @@ export function EditableAvatar({ src, fallback, alt, onImageChange, isLoading }:
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
+      if (!IMAGE_TYPES.includes(file.type)) {
         toast.error("Erro", {
-          description: "Por favor, selecione um arquivo de imagem válido.",
+          description: "Use uma imagem JPG, PNG, GIF ou WebP.",
         });
         return;
       }
@@ -68,7 +71,7 @@ export function EditableAvatar({ src, fallback, alt, onImageChange, isLoading }:
         type="file"
         ref={fileInputRef}
         className="hidden"
-        accept="image/*"
+        accept={IMAGE_TYPES.join(",")}
         onChange={handleFileChange}
         disabled={isLoading}
       />

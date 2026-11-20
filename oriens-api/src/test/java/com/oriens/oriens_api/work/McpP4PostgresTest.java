@@ -16,7 +16,7 @@ class McpP4PostgresTest extends McpP3PostgresTest {
         var delegated=authorizations.authenticate(token,properties);var connection=store.find(delegated.connectionId(),false);
         Map<String,Object> settings=new HashMap<>();
         for(String key:List.of("JWT_SECRET","spring.datasource.url","spring.datasource.username","spring.datasource.password"))settings.put(key,environment.getRequiredProperty(key));
-        settings.put("server.port",0);settings.put("spring.jpa.hibernate.ddl-auto","validate");settings.put("spring.jpa.open-in-view",false);settings.put("spring.main.banner-mode","off");
+        settings.put("server.port",0);settings.put("management.server.port",0);settings.put("spring.jpa.hibernate.ddl-auto","validate");settings.put("spring.jpa.open-in-view",false);settings.put("spring.main.banner-mode","off");
         settings.put("oriens.mcp.enabled",false);
         var http=java.net.http.HttpClient.newHttpClient();
         try(var disabled=new org.springframework.boot.builder.SpringApplicationBuilder(App.class).properties(settings).run()) {

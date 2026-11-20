@@ -46,6 +46,7 @@ docs/
 # Sem Postgres de prova, McpP2/P3/P4PostgresTest falham (dívida conhecida). Para a suíte local:
 ./mvnw test '-Dtest=!McpP2PostgresTest,!McpP3PostgresTest,!McpP4PostgresTest' -Dsurefire.failIfNoSpecifiedTests=false
 ops/postgres-tests.sh [Classe…]     # *PostgresTest em PostgreSQL descartável (Docker); Flyway cria o schema
+# O CI (.github/workflows/checks.yml) roda as duas suítes e o lint/testes/build do front em todo PR para dev/main.
 docker compose -f docker-compose.dev.yml up -d   # API + Postgres locais (JWT_SECRET obrigatório)
 
 # Frontend (a partir de oriens-front/)

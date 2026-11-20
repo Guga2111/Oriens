@@ -21,8 +21,18 @@ services:
       - "${API_PORT:-8080}:8080"
     volumes:
       - /opt/oriens-uploads:/opt/oriens-uploads
+    # The shared Prometheus of the VPS (FutspringV2 ops/observability) scrapes oriens-api:8081 over this
+    # network; the management port is never published on the host.
+    networks:
+      - default
+      - observability
     deploy:
       resources:
         limits:
           cpus: "1.0"
           memory: 512M
+
+networks:
+  observability:
+    # Created and owned by the shared observability stack on the VPS.
+    external: true

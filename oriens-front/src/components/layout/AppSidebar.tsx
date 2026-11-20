@@ -267,8 +267,8 @@ export function AppSidebar({ projectsVersion = 0 }: AppSidebarProps) {
                           );
                           updateProfileImage(response.data.profileImageUrl);
                         } catch (error) {
-                          console.error("Erro ao fazer upload da imagem: ", error);
-                          toast.error("Não foi possivel atualizar sua imagem.");
+                          const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+                          toast.error(message ?? "Não foi possível atualizar sua imagem.");
                         }
                       }}
                     />

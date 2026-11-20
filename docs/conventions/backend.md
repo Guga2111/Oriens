@@ -370,7 +370,6 @@ IDOR), porque muda contrato com o front.
 | Onde | Problema | Risco |
 |---|---|---|
 | `src/main/resources/application.properties` | Usuário e **senha SMTP commitados em texto puro** (estão no histórico do git) | **Crítico** — rotacionar a senha e mover para variável de ambiente |
-| `UserController` `PUT /user/{id}/avatar` + `FileStorageService` | Sem lista permitida de tipo/extensão; arquivo servido publicamente em `/profile-pictures/**` (um `.html`/`.svg` vira XSS armazenado); `catch` vazio em `storeFile` | Alto |
 | `exception/config/GlobalExceptionHandler` + `ErrorResponse` | Formata `Instant` com padrão sem fuso: o Jackson falha ao serializar e a exceção original vaza como erro do servlet em todos os controllers legados | Alto |
 | JWT | Papel lido do *claim*: admin rebaixado mantém acesso até o token expirar; `updateUserRole` não impede remover o último admin | Médio |
 | `UserController`, `NotificationController`, `SupportController` | Entidade JPA na resposta e `@RequestBody User`/`SupportTicketDTO` sem validação; `clearAll` responde 204 com corpo | Médio (vazamento / mass assignment) |
@@ -379,10 +378,15 @@ IDOR), porque muda contrato com o front.
 | `application-*.properties` | `spring.jpa.open-in-view` não desligado em dev/prod | Médio (N+1 escondido) |
 | `WorkExceptionHandler` | Código `FORBIDDEN` fora do `switch` (um `WorkDomainException("FORBIDDEN")` vira 422); o 403 de papel vem do handler de `AccessDeniedException` | Baixo |
 | `McpP2/P3/P4PostgresTest` | Não usam `@EnabledIfEnvironmentVariable`: sem `MCP_JDBC_URL`, `./mvnw test` falha com 113 erros | Médio (suíte sempre vermelha) |
-| `MvcConfig` | `System.out.println` | Baixo |
 
 **Resolvido em 2026-11-16** (branch `fix/security-and-ui-conventions`): IDOR em `UserController`
 (perfil, preferências, avatar, exclusão e busca por e-mail), `NotificationController` e `SupportController`,
 e as ações de admin de suporte sem `@PreAuthorize`. As rotas agora passam por `WorkOwner` (404 para recurso
 alheio) e por `WorkExceptionHandler`, com testes em `UserControllerOwnershipTest` e
 `NotificationSupportAccessTest`. Use esses testes como modelo.
+
+**Resolvido em 2026-11-19** (branch `fix/avatar-upload-allowlist`): upload de avatar e de imagem de projeto
+passam por `ImageUploads` (só JPG/PNG/GIF/WebP, conferidos pela assinatura do conteúdo; SVG/HTML recusados
+com 422), e `/profile-pictures/**` e `/projects-pictures/**` só servem essas extensões, de modo que arquivos
+gravados antes da correção deixam de ser servidos. `System.out.println` removido do `MvcConfig`. Testes em
+`ImageUploadsTest` e `ProfilePictureUploadTest`.

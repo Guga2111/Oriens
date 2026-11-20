@@ -2,7 +2,6 @@ package com.oriens.oriens_api.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -22,17 +21,11 @@ public class FileStorageService {
         Files.createDirectories(this.fileStorageLocation);
     }
 
+    /** Same limit as spring.servlet.multipart.max-file-size. */
+    private static final long MAX_BYTES = 2 * 1024 * 1024;
+
     public String storeFile (MultipartFile file, Long userId) throws IOException {
-        String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-
-        String fileExtension = "";
-
-        try {
-            fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-        } catch (Exception e) {
-
-        }
-
+        String fileExtension = ImageUploads.extension(file, MAX_BYTES, "profileImage");
         String fileName = userId + "_" + UUID.randomUUID().toString() + fileExtension;
 
         Path targetLocation = this.fileStorageLocation.resolve(fileName);
