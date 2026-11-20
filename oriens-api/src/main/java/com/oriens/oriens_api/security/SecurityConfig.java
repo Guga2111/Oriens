@@ -6,8 +6,13 @@ import com.oriens.oriens_api.security.filters.JWTAuthorizationFilter;
 import com.oriens.oriens_api.security.manager.CustomAuthManager;
 import com.oriens.oriens_api.service.UserServiceImpl;
 import lombok.AllArgsConstructor;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.actuate.autoconfigure.web.server.ConditionalOnManagementPort;
+import org.springframework.boot.actuate.autoconfigure.web.server.ManagementPortType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -25,6 +30,25 @@ public class SecurityConfig {
 
     private final CustomAuthManager customAuthManager;
     private UserServiceImpl userService;
+
+    /**
+     * Management port only (never published nor proxied): Prometheus scrapes without a user token, so only
+     * health and the scrape endpoint are open there and anything else exposed later stays denied. Absent
+     * when management shares the public port, so metrics then fall to the JWT chain instead of going public.
+     */
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @ConditionalOnManagementPort(ManagementPortType.DIFFERENT)
+    public SecurityFilterChain actuatorFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .securityMatcher(EndpointRequest.toAnyEndpoint())
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(EndpointRequest.to("health", "prometheus")).permitAll()
+                        .anyRequest().denyAll())
+                .build();
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, com.auth0.jwt.algorithms.Algorithm jwtAlgorithm) throws Exception {
