@@ -133,6 +133,35 @@
 		</dependency>
 	</dependencies>
 
+	<profiles>
+		<!-- Security tooling is opt-in; the normal test/build lifecycle stays offline-capable. -->
+		<profile>
+			<id>security-audit</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.owasp</groupId>
+						<artifactId>dependency-check-maven</artifactId>
+						<version>13.0.0</version>
+						<configuration>
+							<failBuildOnCVSS>7</failBuildOnCVSS>
+							<failOnError>true</failOnError>
+							<skipTestScope>false</skipTestScope>
+							<ossIndexAnalyzerEnabled>false</ossIndexAnalyzerEnabled>
+							<!-- Official feeds avoid API keys and anonymous API rate limits on PRs. -->
+							<nvdDatafeedUrl>https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-{0}.json.gz</nvdDatafeedUrl>
+							<dataDirectory>${project.build.directory}/dependency-check-data</dataDirectory>
+							<formats>
+								<format>HTML</format>
+								<format>JSON</format>
+								</formats>
+							</configuration>
+						</plugin>
+					</plugins>
+				</build>
+		</profile>
+	</profiles>
+
 	<build>
 		<plugins>
 			<plugin>

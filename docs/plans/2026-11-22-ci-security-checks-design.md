@@ -54,9 +54,10 @@ esta tarefa não reescreve Git nem altera credenciais externas.
   `security-audit`, fora da execução normal de testes. Configurar `failBuildOnCVSS=7`, incluir escopo
   de teste, gerar relatórios HTML/JSON e reprovar erro de execução.
 - Cache da base NVD não é evidência de sucesso: a atualização e a análise precisam completar.
-  Usar a API pública sem exigir chave em PRs; indisponibilidade ou rate limit reprovam e têm mensagem
-  acionável. Uma chave opcional só poderá ser incorporada futuramente a um fluxo confiável, sem
-  expor segredos ao código de PRs.
+  Usar os feeds públicos oficiais NVD JSON 2.0, pelo suporte nativo do Dependency-Check, sem exigir
+  chave em PRs; indisponibilidade reprova e tem mensagem acionável. Refinamento durante a prova:
+  a API anônima do release 13.0.0 falhou por chave vazia e a do 12.2.2 recebeu HTTP 429. O feed
+  conserva a mesma fonte NVD, evita credenciais em forks/bots e permite manter o release 13.0.0.
 - Não exigir credenciais de serviços auxiliares pagos. Desabilitar analisador opcional que exija
   autenticação quando a cobertura aprovada já estiver atendida pela NVD.
 
@@ -72,6 +73,7 @@ ou suprimidos; não depender somente das anotações de novas linhas do PR. Não
 do upload/análise com ausência de vulnerabilidades.
 
 O verificador valida o formato esperado, a presença de uma análise e diagnósticos de execução.
+O workflow exige também sucesso do step de análise, pois `invocations` é opcional no SARIF.
 Relatório ausente, malformado ou execução explicitamente malsucedida reprovam. Mensagens mostram
 contagens/IDs de regras, sem reproduzir trechos de código ou conteúdo controlado pelo PR.
 
