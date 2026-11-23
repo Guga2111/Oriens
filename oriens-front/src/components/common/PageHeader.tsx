@@ -18,7 +18,7 @@ interface PageHeaderProps {
 
 /**
  * Cabeçalho padrão de toda rota autenticada: exatamente um `h1` por rota,
- * título em 24/32 (SPEC §9.2) e ações que nunca são cortadas.
+ * título em 20/28 (spec do shell, §5.5) e ações que nunca são cortadas.
  */
 export function PageHeader({
   title,
@@ -37,7 +37,7 @@ export function PageHeader({
     >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-semibold leading-8 text-foreground">
+          <h1 className="text-xl font-semibold leading-7 text-foreground">
             {title}
           </h1>
           {isLoading && (

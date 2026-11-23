@@ -2,7 +2,7 @@
 
 **Data:** 2026-11-23  
 **Autor:** Claude Code  
-**Status:** aprovada — em implementação  
+**Status:** aprovada — implementada; [evidências de validação](2026-11-23-design-system-plane-so-shell-density-evidence.md)
 **Depende de:** [2026-11-22-design-system-plane-so-orange-design.md](2026-11-22-design-system-plane-so-orange-design.md)
 (fase 1, cores; PR #17)
 
@@ -228,21 +228,24 @@ Os `max-md:min-h-10` / `max-md:h-10` existentes ficam (toque no mobile).
 
 ## 9. Critérios de aceitação
 
-- [ ] Desktop (≥1100px): barra superior de 40px e trilho de 60px no canvas; painel branco com borda e raio de 8px, a 8px da direita e de baixo, com a sidebar dentro.
-- [ ] Trilho com Trabalho, Financeiro, Estatísticas e Configurações (embaixo); contexto ativo pela URL, com `aria-current`.
-- [ ] Sidebar mostra só os itens do contexto ativo; Administração só para `ADMIN`, dentro de Configurações.
-- [ ] Projeto aberto mostra Quadro, Objetivos e Linha do tempo como subitens, que abrem a aba certa.
-- [ ] "Nova tarefa" na sidebar de Trabalho abre o `TaskEditor`.
-- [ ] Menu do usuário e sino na barra superior, com os mesmos itens de hoje.
-- [ ] Esconder/mostrar a sidebar no desktop; no mobile, trilho + sidebar num Sheet.
-- [ ] Cabeçalho de 48px, `h1` de 20px, controles de 32/28px no desktop e ≥40px no mobile, gutter de 20px.
-- [ ] Nenhuma rota alterada; links antigos funcionam.
-- [ ] Testes novos:
+- [x] Desktop (≥1100px): barra superior de 40px e trilho de 60px no canvas; painel branco com borda e raio de 8px, a 8px da direita e de baixo, com a sidebar dentro.
+- [x] Trilho com Trabalho, Financeiro, Estatísticas e Configurações (embaixo); contexto ativo pela URL, com `aria-current`.
+- [x] Sidebar mostra só os itens do contexto ativo; Administração só para `ADMIN`, dentro de Configurações.
+- [x] Projeto aberto mostra Quadro, Objetivos e Linha do tempo como subitens, que abrem a aba certa.
+- [x] "Nova tarefa" na sidebar de Trabalho abre o `TaskEditor`.
+- [x] Menu do usuário e sino na barra superior, com os mesmos itens de hoje.
+- [x] Esconder/mostrar a sidebar no desktop; no mobile, trilho + sidebar num Sheet.
+- [x] Cabeçalho de 48px, `h1` de 20px, controles de 32/28px no desktop e ≥40px no mobile, gutter de 20px.
+- [x] Nenhuma rota alterada; links antigos funcionam.
+- [x] Testes novos:
   - `app-contexts`: caminho → contexto (cada rota de §5.2, inclusive `/tasks/project/:id` e `/admin/*`).
   - Trilho: contexto ativo com `aria-current`; Configurações por último.
   - Sidebar: itens por contexto; Administração escondida para não admin; subitens do projeto.
-- [ ] `npm run lint`, `npm test`, `npm run build`; e2e `shell`, `navigation` e `responsive` atualizados e passando.
+- [x] `npm run lint`, `npm test`, `npm run build`; e2e `shell`, `navigation` e `responsive` atualizados e passando.
 - [ ] Revisão visual nos dois temas, ao lado das capturas do Plane: Hoje, Semana, Projetos, projeto (kanban, objetivos, linha do tempo), Todos os dados, Financeiro, Estatísticas, Configurações; e mobile (≤640px).
+
+A revisão visual das telas e dos dois temas foi concluída. A comparação usou as medidas da §2;
+as capturas originais do Plane não estavam disponíveis nesta sessão. Ver ressalvas na evidência.
 
 ## 10. Riscos
 

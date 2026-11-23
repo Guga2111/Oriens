@@ -8,7 +8,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { NotificationBell } from "@/components/dashboard/NotificationBell";
+import { useSidebar } from "@/components/ui/sidebar";
 import { useWorkProject } from "@/hooks/useWork";
 
 const sectionNames: Record<string, string> = {
@@ -32,7 +32,7 @@ function ProjectBreadcrumb({ id }: { id: number }) {
     <>
       <BreadcrumbItem className="shrink-0">
         <BreadcrumbLink asChild>
-          <Link to="/projects" className="inline-flex min-h-11 items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Link to="/projects" className="inline-flex min-h-7 max-md:min-h-10 items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             Projetos
           </Link>
         </BreadcrumbLink>
@@ -51,14 +51,15 @@ function ProjectBreadcrumb({ id }: { id: number }) {
  */
 export function AppHeader() {
   const { pathname } = useLocation();
+  const { isMobile, open } = useSidebar();
   const projectMatch = useMatch("/tasks/project/:id");
   const projectId = Number(projectMatch?.params.id);
   const validProject = Number.isSafeInteger(projectId) && projectId > 0;
   const sectionName = sectionNames[pathname.replace(/\/$/, "")] ?? "Oriens";
 
   return (
-    <header className="sticky top-0 z-20 flex h-[--app-header-height] shrink-0 items-center gap-2 border-b border-sidebar-border bg-background px-4">
-      <SidebarTrigger className="size-11 shrink-0" aria-label="Alternar menu de navegação" />
+    <header className="flex h-app-header shrink-0 items-center gap-2 border-b border-sidebar-border bg-card px-5">
+      {!isMobile && <SidebarTrigger className="size-7 shrink-0" aria-label="Alternar menu de navegação" aria-expanded={open} />}
       <Breadcrumb aria-label="Breadcrumb" className="min-w-0 flex-1">
         <BreadcrumbList className="flex-nowrap">
           {projectMatch ? <ProjectBreadcrumb id={validProject ? projectId : 0} /> : (
@@ -68,7 +69,6 @@ export function AppHeader() {
           )}
         </BreadcrumbList>
       </Breadcrumb>
-      <NotificationBell />
     </header>
   );
 }

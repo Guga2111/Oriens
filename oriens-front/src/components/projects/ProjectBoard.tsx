@@ -103,7 +103,7 @@ export function ProjectBoard({ board, pendingColumnId, onOpen, onEdit, onAdd, on
           </BoardColumn>)}
         </div>
       </ScrollArea>
-      <DragOverlay>{activeTask && <div className="w-board-column rounded-md border bg-card p-4 text-sm font-medium shadow-lg">{activeTask.title}</div>}</DragOverlay>
+      <DragOverlay>{activeTask && <div className="w-board-column rounded-xl border bg-card p-3 text-sm font-medium shadow-lg">{activeTask.title}</div>}</DragOverlay>
     </DndContext>
     <ConfirmDialog open={!!deleting} onOpenChange={open => { if (!open) setDeleting(null); }} title="Excluir tarefa?" objectName={deleting?.title ?? ''} confirmLabel="Excluir tarefa" error={writes.remove.error}
       onConfirm={async () => {
@@ -118,7 +118,7 @@ function BoardColumn({ column, filtered, disabled, mobile, onAdd, children }: {
   column: Column; filtered: boolean; disabled: boolean; mobile: boolean; onAdd: (id: number) => void; children: React.ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `column-${column.id}`, disabled });
-  return <section ref={setNodeRef} className={cn('flex min-w-0 shrink-0 flex-col gap-3 rounded-lg bg-muted/40 p-3', mobile ? 'w-full' : 'w-board-column', isOver && 'ring-2 ring-ring')} aria-labelledby={`column-${column.id}`}>
+  return <section ref={setNodeRef} className={cn('flex min-w-0 shrink-0 flex-col gap-3 rounded-lg bg-background p-2', mobile ? 'w-full' : 'w-board-column', isOver && 'ring-2 ring-ring')} aria-labelledby={`column-${column.id}`}>
     <div className="flex items-center justify-between gap-2"><h2 id={`column-${column.id}`} className="min-w-0 break-words text-base font-semibold">{column.name}</h2><Badge variant="secondary">{filtered ? `${column.visibleCount} de ${column.totalCount}` : column.totalCount}</Badge></div>
     {column.name !== statusNames[column.kind] && <p className="text-xs text-muted-foreground">{statusNames[column.kind]}</p>}
     {!column.visibleCount && <p className="py-5 text-sm text-muted-foreground">{filtered ? 'Nenhuma tarefa com estes filtros.' : 'Nenhuma tarefa nesta coluna.'}</p>}
@@ -133,7 +133,7 @@ function BoardTask({ task, column, columns, tasks, index, filtered, disabled, bu
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: task.id, disabled: disabled || mobile, animateLayoutChanges: () => false });
   const overdue = isTaskOverdue(task, productNow().date);
-  return <article ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={cn('relative min-w-0 rounded-md border border-border/50 bg-card p-3 transition-colors hover:bg-accent/40', isDragging && 'opacity-40')} aria-busy={busy}>
+  return <article ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className={cn('relative min-w-0 rounded-xl border bg-card p-3 transition-colors hover:bg-accent/40', isDragging && 'opacity-40')} aria-busy={busy}>
     <div className="mb-2 flex items-center justify-between gap-2">
       <Badge variant={PRIORITY[task.priority].badge}>{PRIORITY[task.priority].label}</Badge>
       <div className="relative z-10 flex items-center">
@@ -154,7 +154,7 @@ function BoardTask({ task, column, columns, tasks, index, filtered, disabled, bu
     </div>
     <TaskLabels labels={task.labels} />
     {/* The title's ::after covers the card, so a click anywhere opens the details. No press transform: it would shrink the overlay to the title. */}
-    <Button variant="ghost" className="h-auto min-h-10 w-full justify-start whitespace-normal p-0 text-left after:absolute after:inset-0 after:rounded-md after:content-[''] hover:bg-transparent active:transform-none" aria-haspopup="dialog" onClick={() => onOpen(task)}>{task.title}</Button>
+    <Button variant="ghost" className="h-auto min-h-10 w-full justify-start whitespace-normal p-0 text-left text-sm font-medium after:absolute after:inset-0 after:rounded-xl after:content-[''] hover:bg-transparent active:transform-none" aria-haspopup="dialog" onClick={() => onOpen(task)}>{task.title}</Button>
     {task.objective && <Button variant="link" className="relative z-10 mt-1 h-auto min-h-10 w-full justify-start whitespace-normal px-0 text-left" onClick={() => onObjective(task.objectiveId!)}>{task.objective.title}</Button>}
     <div className="mt-3 flex flex-col gap-2 text-xs text-muted-foreground">
       <p className="flex items-center gap-2"><CalendarDays className="size-4 shrink-0" aria-hidden />{task.plannedDate ? `Planejada: ${formatDue(task.plannedDate)}` : 'Sem planejamento'}{task.startTime && <><Clock className="size-3 shrink-0" aria-hidden />{task.startTime.slice(0, 5)}</>}</p>

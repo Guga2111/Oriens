@@ -13,7 +13,10 @@
   :root {
     /* Geometry shared by work screens. Standard spacing uses the Tailwind scale. */
     --page-gutter: 1rem;
-    --app-header-height: 4rem;
+    --app-header-height: 3rem;
+    --top-bar-height: 2.5rem;
+    --rail-width: 3.75rem;
+    --mobile-navigation-width: calc(16rem + var(--rail-width));
     --overlay-gutter: 1rem;
     --dialog-max-height: 90dvh;
     --dialog-task-width: 40rem;
@@ -21,7 +24,7 @@
     --dialog-board-width: 42.5rem;
     --project-detail-columns: minmax(0, 1fr) 20rem;
     --task-details-columns: 9rem minmax(0, 1fr);
-    --board-column-width: 19rem;
+    --board-column-width: 21rem;
     /* Project timeline: sticky label column and one day column per scale (frontend.md §3.3). */
     --timeline-label-width: 9rem;
     --timeline-day-week: 3rem;
@@ -81,7 +84,7 @@
     --radius: 0.5rem;
 
     /* Sidebar clara (D1) — mesmos mapeamentos nos dois temas */
-    --sidebar-background: var(--background);
+    --sidebar-background: var(--card);
     --sidebar-foreground: var(--foreground);
     --sidebar-accent: var(--muted);
     --sidebar-accent-foreground: var(--foreground);
@@ -139,7 +142,7 @@
     --chart-4: 220 25% 70%;
     --chart-5: 30 25% 80%;
 
-    --sidebar-background: var(--background);
+    --sidebar-background: var(--card);
     --sidebar-foreground: var(--foreground);
     --sidebar-accent: var(--muted);
     --sidebar-accent-foreground: var(--foreground);
@@ -171,15 +174,12 @@
   }
 }
 
-/* Page gutters grow with the canvas; overlays retain their compact inset. */
+/* Desktop pages use a compact gutter; overlays keep their own inset. */
 @media (min-width: 640px) {
   :root { --timeline-label-width: 16rem; }
 }
 @media (min-width: 768px) {
-  :root { --page-gutter: 2rem; --overlay-gutter: 2rem; }
-}
-@media (min-width: 1024px) {
-  :root { --page-gutter: 4rem; }
+  :root { --page-gutter: 1.25rem; --overlay-gutter: 2rem; }
 }
 
 @keyframes task-complete {
