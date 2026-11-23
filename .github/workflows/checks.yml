@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
           cache: maven
       # McpP*PostgresTest fail without their Postgres; test-postgres runs them.
       - run: ./mvnw -B test '-Dtest=!McpP2PostgresTest,!McpP3PostgresTest,!McpP4PostgresTest' -Dsurefire.failIfNoSpecifiedTests=false
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
           cache: maven
       - run: oriens-api/ops/postgres-tests.sh
 
@@ -130,7 +130,7 @@ jobs:
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
           cache: maven
       - name: Identificar a atualização diária da base NVD
         id: nvd-date
@@ -192,7 +192,7 @@ jobs:
         if: matrix.language == 'java-kotlin'
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "25"
           cache: maven
       - uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4
         with:
