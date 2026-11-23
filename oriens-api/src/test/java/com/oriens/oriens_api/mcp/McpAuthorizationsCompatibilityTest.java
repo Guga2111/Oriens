@@ -47,7 +47,9 @@ class McpAuthorizationsCompatibilityTest {
         assertThat(restored.getAccessToken().getToken().getIssuedAt()).isEqualTo(Instant.parse("2026-11-22T00:00:00Z"));
         assertThat(restored.getAccessToken().getClaims()).containsEntry("iss", "https://oriens.example.invalid")
             .containsEntry("aud", List.of("https://oriens.example.invalid/mcp"));
-        assertThat(restored.getAccessToken().isActive()).isTrue();
+        // isActive() reads the wall clock; assert the persisted state instead so the fixture never expires.
+        assertThat(restored.getAccessToken().getToken().getExpiresAt()).isEqualTo(Instant.parse("2026-11-23T00:00:00Z"));
+        assertThat(restored.getAccessToken().isInvalidated()).isFalse();
     }
 
     @Test
