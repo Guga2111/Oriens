@@ -89,3 +89,11 @@ As capturas finais usam o Vite local em `localhost:5173` com a API em `127.0.0.1
 - O PR fica inicialmente empilhado sobre `feat/design-plane-orange`, para apresentar somente esta fase na revisão. Depois do merge do #17, deve ser redirecionado para `dev`.
 
 Merge e deploy não foram realizados.
+
+## Ajuste após revisão do botão da sidebar
+
+A referência enviada pelo usuário mostrou que a ação principal deveria usar uma superfície branca e uma borda mais suave. O `outline` original usava o fundo cinza do canvas e a borda mais forte dos campos. A variante `sidebar-action` agora usa `bg-sidebar`, `border-sidebar-border` e uma sombra discreta, com hover e tema escuro pelos tokens existentes. A mudança fica restrita à ação principal da sidebar.
+
+Capturas atualizadas desse detalhe: [claro](../screenshots/plane-shell/sidebar-action-light.png) e [escuro](../screenshots/plane-shell/sidebar-action-dark.png). As 42 capturas gerais acima documentam a entrega anterior a este ajuste.
+
+Verificado no navegador: fundo branco no tema claro, borda suave, altura desktop de 32px e tema escuro preservado. Os 10 testes da sidebar, lint (0 erros; mesmos 14 avisos), build e `git diff --check` passaram. Por ser um ajuste visual localizado, os demais testes não foram repetidos.

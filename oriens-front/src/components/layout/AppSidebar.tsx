@@ -136,7 +136,7 @@ export function AppSidebar({ projectsVersion = 0, onNewTask }: AppSidebarProps) 
         <nav aria-label={`Menu de ${context.label}`}>
           {context.id === 'work' && (
             <div className="px-3 pt-3">
-              <Button variant="outline" className="w-full justify-start max-desktop:min-h-10" onClick={onNewTask}>
+              <Button variant="sidebar-action" className="w-full justify-start max-desktop:min-h-10" onClick={onNewTask}>
                 <Plus aria-hidden />Nova tarefa
               </Button>
             </div>
