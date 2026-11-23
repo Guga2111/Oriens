@@ -32,7 +32,7 @@ os prefixos da chamada reutilizada quando aplicáveis. Esta mudança não config
 
 ## Execução local
 
-Com Node 22/npm e Java 17/Maven Wrapper:
+Com Node 22/npm e Java 25/Maven Wrapper:
 
 ```sh
 # Na raiz; sem rede ou dependências Python adicionais.

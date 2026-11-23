@@ -1,6 +1,6 @@
 # Backend — padrões e antipadrões (`oriens-api`)
 
-Stack: Spring Boot 3.5 · Java 17 · Spring Data JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) ·
+Stack: Spring Boot 4.2 · Java 25 · Spring Data JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) ·
 OAuth Authorization Server + MCP · Lombok · JUnit 5.
 
 Cada seção traz **✅ Padrão** (o que fazer, com referência ao código que já segue a regra) e
