@@ -4,9 +4,11 @@ Stack: Vite 5 · React 18 · TypeScript · Tailwind CSS 3 · shadcn/ui (Radix, e
 CSS variables) · TanStack Query 5 · Axios · date-fns · lucide-react · recharts · sonner · Vitest +
 Testing Library · Playwright.
 
-Decisões visuais (paleta Horizonte, tipografia, densidade, telas) estão em
-[docs/specs/oriens-frontend-refactor.md](../specs/oriens-frontend-refactor.md) §8–§13. Este guia trata de
-**como escrever o código**; a spec trata de **o que a tela deve ser**.
+Decisões visuais (tipografia, densidade, telas) estão em
+[docs/specs/oriens-frontend-refactor.md](../specs/oriens-frontend-refactor.md) §8–§13; a paleta e o logo
+vigentes (neutros do plane.so com primário laranja) estão em
+[docs/plans/2026-11-22-design-system-plane-so-orange-design.md](../plans/2026-11-22-design-system-plane-so-orange-design.md).
+Este guia trata de **como escrever o código**; a spec trata de **o que a tela deve ser**.
 
 Sumário: [1. Estrutura](#1-estrutura-de-pastas) · [2. shadcn primeiro](#2-shadcn-primeiro) ·
 [3. Tokens e Tailwind](#3-tokens-de-design-e-tailwind) · [4. Componentes](#4-componentes-react) ·
@@ -149,7 +151,6 @@ não a cor:
 | Dados específicos | `text-streak`, `text-now`, `bg-label-<cor>` + `text-label-<cor>-foreground` |
 | Gráficos | `chart-1` … `chart-5` (via `ChartConfig` do `ui/chart.tsx`) |
 | Bordas e foco | `border-border`, `border-input`, `ring-ring` |
-| Marca (páginas públicas) | `bg-background-brand`, `brand-cream`, `brand-burgundy`, `brand-yellow` |
 
 ❌ **Proibido**
 - Hex/rgb/hsl literal em classe ou estilo: `text-[#781336]`, `style={{ color: '#fff' }}`, `hsl(350 28% 14%)`.
