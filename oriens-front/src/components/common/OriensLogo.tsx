@@ -7,9 +7,9 @@ interface OriensLogoProps {
 }
 
 /**
- * Logo meio-sol do Oriens em SVG, usando os tokens da marca (SPEC §11.11/D5).
- * O sol é a metade de cima de um disco em `--brand-yellow`; o horizonte e as
- * linhas abaixo são `--brand-burgundy`.
+ * Logo meio-sol do Oriens em SVG: sol no primário, horizonte na cor do texto,
+ * para acompanhar os dois temas sem token próprio
+ * (docs/plans/2026-11-22-design-system-plane-so-orange-design.md §5.4).
  */
 export function OriensLogo({ className, title }: OriensLogoProps) {
   return (
@@ -21,14 +21,14 @@ export function OriensLogo({ className, title }: OriensLogoProps) {
       aria-label={title}
     >
       {title ? <title>{title}</title> : null}
-      <path d="M9 24a15 15 0 0 1 30 0Z" className="fill-brand-yellow" />
+      <path d="M9 24a15 15 0 0 1 30 0Z" className="fill-primary" />
       <rect
         x="5"
         y="22.5"
         width="38"
         height="3"
         rx="1.5"
-        className="fill-brand-burgundy"
+        className="fill-foreground"
       />
       <rect
         x="11"
@@ -36,7 +36,7 @@ export function OriensLogo({ className, title }: OriensLogoProps) {
         width="26"
         height="3"
         rx="1.5"
-        className="fill-brand-burgundy"
+        className="fill-foreground"
       />
       <rect
         x="15"
@@ -44,7 +44,7 @@ export function OriensLogo({ className, title }: OriensLogoProps) {
         width="18"
         height="3"
         rx="1.5"
-        className="fill-brand-burgundy"
+        className="fill-foreground"
       />
       <rect
         x="19"
@@ -52,7 +52,7 @@ export function OriensLogo({ className, title }: OriensLogoProps) {
         width="10"
         height="3"
         rx="1.5"
-        className="fill-brand-burgundy"
+        className="fill-foreground"
       />
     </svg>
   );
