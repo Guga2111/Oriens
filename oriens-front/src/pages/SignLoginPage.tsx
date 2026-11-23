@@ -10,7 +10,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { mcpResume } from '@/lib/mcp';
 import { useAuth } from "@/context/AuthContext";
 import apiClient from "@/services/api";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const SignLoginPage = () => {
@@ -22,9 +21,6 @@ const SignLoginPage = () => {
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
 
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false); 
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState(""); 
-  const [forgotEmailSent, setForgotEmailSent] = useState(false); 
 
   const [loginError, setLoginError] = useState('');
   const [registerError, setRegisterError] = useState('');
@@ -107,34 +103,6 @@ const SignLoginPage = () => {
       setIsLoading(false);
     }
 };
-
-const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!forgotPasswordEmail) return;
-
-    setIsLoading(true);
-    try {
-      await apiClient.post('/api/auth/forgot-password', {
-        email: forgotPasswordEmail,
-      });
-      
-      setForgotEmailSent(true);
-
-    } catch (error) {
-      console.error("Erro ao solicitar recuperação:", error);
-      setForgotEmailSent(true); 
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleModalOpenChange = (open: boolean) => {
-    setIsForgotModalOpen(open);
-    if (!open) {
-      setForgotPasswordEmail("");
-      setForgotEmailSent(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-page py-4 bg-background-brand">
@@ -225,63 +193,6 @@ const handleForgotPassword = async (e: React.FormEvent) => {
                   >
                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Entrar"}
                   </Button>
-                  <div className="text-center text-sm">
-                    <Dialog open={isForgotModalOpen} onOpenChange={handleModalOpenChange}>
-                      <DialogTrigger asChild>
-                        <Button type="button" variant="link" className="h-auto p-0 font-normal">
-                          Esqueceu sua senha?
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-md">
-                        {!forgotEmailSent ? (
-                          <>
-                            <DialogHeader>
-                              <DialogTitle>Recuperar Senha</DialogTitle>
-                              <DialogDescription>
-                                Digite seu e-mail para enviarmos um link de recuperação.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <form onSubmit={handleForgotPassword} className="flex flex-col gap-4">
-                              <div className="flex flex-col gap-2">
-                                <Label htmlFor="forgot-email" className="sr-only">E-mail</Label>
-                                <Input
-                                  id="forgot-email"
-                                  type="email"
-                                  placeholder="seu@email.com"
-                                  value={forgotPasswordEmail}
-                                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                                  required
-                                />
-                              </div>
-                              <DialogFooter>
-                                <Button
-                                  type="submit"
-                                  className="w-full text-primary-foreground bg-primary hover:opacity-80"
-                                  disabled={isLoading}
-                                >
-                                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Enviar link"}
-                                </Button>
-                              </DialogFooter>
-                            </form>
-                          </>
-                        ) : (
-                          <>
-                            <DialogHeader>
-                              <DialogTitle>Verifique seu E-mail</DialogTitle>
-                              <DialogDescription>
-                                Se uma conta com este e-mail existir, enviamos um link para você redefinir sua senha.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <Button variant="outline" onClick={() => setIsForgotModalOpen(false)}>
-                                Fechar
-                              </Button>
-                            </DialogFooter>
-                          </>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  </div>
                 </form>
               </TabsContent>
 
