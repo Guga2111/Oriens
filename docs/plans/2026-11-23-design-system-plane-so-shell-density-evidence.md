@@ -97,3 +97,7 @@ A referência enviada pelo usuário mostrou que a ação principal deveria usar 
 Capturas atualizadas desse detalhe: [claro](../screenshots/plane-shell/sidebar-action-light.png) e [escuro](../screenshots/plane-shell/sidebar-action-dark.png). As 42 capturas gerais acima documentam a entrega anterior a este ajuste.
 
 Verificado no navegador: fundo branco no tema claro, borda suave, altura desktop de 32px e tema escuro preservado. Os 10 testes da sidebar, lint (0 erros; mesmos 14 avisos), build e `git diff --check` passaram. Por ser um ajuste visual localizado, os demais testes não foram repetidos.
+
+### Movimento do botão após revisão
+
+A pedido do usuário, a variante `sidebar-action` ficou sem transições e sem encolhimento ao pressionar. O realce de hover muda imediatamente. O e2e de ponteiro verifica ausência de transição e animação no hover e dimensões idênticas durante a pressão: 1 cenário aprovado. Lint e build também passaram, com os avisos preexistentes. Este ajuste é restrito à ação principal da sidebar.

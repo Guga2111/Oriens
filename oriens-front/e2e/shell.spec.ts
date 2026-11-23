@@ -127,3 +127,22 @@ test('Nova tarefa da sidebar abre o TaskEditor e mantém o formulário ao fechar
   await editor.getByLabel('Título', { exact: true }).fill('Rascunho pelo menu');
   await expect(editor.getByLabel('Título', { exact: true })).toHaveValue('Rascunho pelo menu');
 });
+
+test('ação principal da sidebar não anima no hover nem muda de tamanho ao pressionar', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Interação de ponteiro no desktop');
+  await login(page);
+  const action = page.getByRole('navigation', { name: 'Menu de Trabalho' })
+    .getByRole('button', { name: 'Nova tarefa', exact: true });
+  const before = await action.boundingBox();
+  await action.hover();
+  await expect(action).toHaveCSS('transition-property', 'none');
+  await expect(action).toHaveCSS('animation-name', 'none');
+  await page.mouse.down();
+  try {
+    expect(await action.boundingBox()).toEqual(before);
+    await expect(action).toHaveCSS('transition-property', 'none');
+  } finally {
+    await page.mouse.move(0, 0);
+    await page.mouse.up();
+  }
+});
