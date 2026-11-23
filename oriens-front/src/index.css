@@ -28,11 +28,6 @@
     --timeline-day-fortnight: 2rem;
     --timeline-day-month: 0.75rem;
     --project-cover-ratio: 3 / 1;
-    /* Marca (inalterada — SPEC §9.1) */
-    --brand-cream: 38.4615 90.6977% 91.5686%;
-    --brand-burgundy: 346.875 71.6418% 26.2745%;
-    --brand-yellow: 45.679 99.1837% 51.9608%;
-
     /* Task labels are data colors; every swatch has its own contrasting text. */
     --label-red: 0 75% 93%; --label-red-foreground: 0 65% 28%;
     --label-orange: 24 90% 92%; --label-orange-foreground: 24 80% 25%;
@@ -41,42 +36,43 @@
     --label-blue: 210 80% 93%; --label-blue-foreground: 215 70% 28%;
     --label-gray: 30 10% 90%; --label-gray-foreground: 30 10% 28%;
 
-    /* §9.1 — claro */
-    --background: 38 40% 95%;
-    --background-brand: var(--brand-cream);
-    --foreground: 350 28% 14%;
+    /* Light theme: plane.so neutrals with an orange primary
+       (docs/plans/2026-11-22-design-system-plane-so-orange-design.md §5.1). */
+    --background: 240 4% 95%;
+    --foreground: 240 3% 6%;
 
-    --card: 38 50% 98.5%;
+    --card: 0 0% 100%;
     --card-foreground: var(--foreground);
 
     --popover: var(--card);
     --popover-foreground: var(--foreground);
 
-    --primary: var(--brand-burgundy);
-    --primary-foreground: var(--brand-cream);
+    --primary: 21 92% 38%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 36 32% 91%;
-    --secondary-foreground: var(--brand-burgundy);
+    --secondary: 210 5% 92%;
+    --secondary-foreground: var(--foreground);
 
-    --muted: 36 32% 91%;
-    --muted-foreground: 15 17% 36%;
+    --muted: 210 5% 92%;
+    --muted-foreground: 206 5% 30%;
 
-    --accent: 36 32% 91%;
-    --accent-foreground: var(--brand-burgundy);
+    --accent: 210 5% 92%;
+    --accent-foreground: var(--foreground);
 
     --negative: 6 72% 40%;
     /* Activity streak is a distinct data accent, never an error state. */
     --streak: 0 72% 40%;
     --positive: 158 52% 26%;
-    --now: 38 92% 36%;
+    --now: 38 92% 30%;
     --destructive: var(--negative);
     --destructive-foreground: 0 0% 100%;
 
-    --border: 33 24% 82%;
-    --input: var(--border);
-    --ring: var(--brand-burgundy);
+    --border: 210 3% 89%;
+    /* Field borders stay stronger than plane.so's subtle border. */
+    --input: 204 5% 80%;
+    --ring: var(--primary);
 
-    --chart-1: var(--brand-burgundy);
+    --chart-1: var(--primary);
     --chart-2: 38 92% 36%;
     --chart-3: 170 35% 32%;
     --chart-4: 220 25% 45%;
@@ -104,41 +100,40 @@
     --label-blue: 215 35% 25%; --label-blue-foreground: 210 85% 85%;
     --label-gray: 30 8% 25%; --label-gray-foreground: 30 12% 85%;
 
-    /* §9.1 — escuro */
-    --background: 350 18% 12%;
-    --background-brand: 350 18% 12%;
-    --foreground: var(--brand-cream);
+    /* Dark theme (docs/plans/2026-11-22-design-system-plane-so-orange-design.md §5.1). */
+    --background: 240 3% 6%;
+    --foreground: 200 6% 90%;
 
-    --card: 350 17% 16%;
+    --card: 240 2% 8%;
     --card-foreground: var(--foreground);
 
     --popover: var(--card);
     --popover-foreground: var(--foreground);
 
-    --primary: var(--brand-cream);
-    --primary-foreground: var(--brand-burgundy);
+    --primary: 24 95% 55%;
+    --primary-foreground: 240 3% 6%;
 
-    --secondary: 349 25% 22%;
-    --secondary-foreground: var(--brand-cream);
+    --secondary: 200 4% 14%;
+    --secondary-foreground: var(--foreground);
 
-    --muted: 349 25% 22%;
-    --muted-foreground: 30 24% 72%;
+    --muted: 200 4% 14%;
+    --muted-foreground: 206 5% 70%;
 
-    --accent: 349 25% 22%;
-    --accent-foreground: var(--brand-cream);
+    --accent: 200 4% 14%;
+    --accent-foreground: var(--foreground);
 
     --negative: 6 85% 70%;
     --streak: 0 90% 78%;
     --positive: 152 45% 62%;
-    --now: var(--brand-yellow);
+    --now: 45.7 99.2% 52%;
     --destructive: var(--negative);
     --destructive-foreground: 0 0% 98%;
 
-    --border: 347 17% 30%;
-    --input: var(--border);
-    --ring: var(--brand-yellow);
+    --border: 210 4% 18%;
+    --input: 204 3% 28%;
+    --ring: var(--primary);
 
-    --chart-1: var(--brand-yellow);
+    --chart-1: var(--primary);
     --chart-2: 38 92% 61%;
     --chart-3: 170 35% 57%;
     --chart-4: 220 25% 70%;
@@ -209,7 +204,7 @@
   .planning-screen button:not([role="checkbox"]) { min-height: 44px; min-width: 44px; }
 }
 
-/* Statistics: brand tokens, data-only intensity, and a locally scrolling annual grid. */
+/* Statistics: design tokens, data-only intensity, and a locally scrolling annual grid. */
 .statistics-screen { --activity-cell: 14px; --activity-gap: 3px; font-variant-numeric: tabular-nums; }
 .statistics-screen .text-xs { font-size: 13px; line-height: 1.25rem; }
 .statistics-screen [role="region"] { box-shadow: none; min-width: 0; border-color: hsl(var(--muted)); }
