@@ -21,7 +21,6 @@ public class SupportTicketServiceImpl implements SupportTicketService {
 
     private final SupportTicketRepository supportTicketRepository;
     private final UserRepository userRepository;
-    private final EmailService emailService;
 
     @Override
     public SupportTicket createTicket(Long userId, SupportTicketDTO supportTicketDTO) {
@@ -37,20 +36,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
                 .user(user)
                 .build();
 
-        SupportTicket savedTicket = supportTicketRepository.save(ticket);
-
-        try {
-            emailService.sendSupportTicketConfirmation(
-                    savedTicket.getUserEmail(),
-                    savedTicket.getId().toString(),
-                    savedTicket.getSubject()
-            );
-        } catch (Exception e) {
-            // Log email error but don't fail the ticket creation
-            System.err.println("Failed to send support ticket confirmation email: " + e.getMessage());
-        }
-
-        return savedTicket;
+        return supportTicketRepository.save(ticket);
     }
 
     @Override
@@ -79,20 +65,7 @@ public class SupportTicketServiceImpl implements SupportTicketService {
     public SupportTicket updateTicketStatus(Long ticketId, TicketStatus newStatus) {
         SupportTicket ticket = anyTicket(ticketId);
         ticket.setStatus(newStatus);
-        SupportTicket updatedTicket = supportTicketRepository.save(ticket);
-
-        try {
-            emailService.sendSupportTicketStatusUpdate(
-                    updatedTicket.getUserEmail(),
-                    updatedTicket.getId().toString(),
-                    newStatus.toString()
-            );
-        } catch (Exception e) {
-            // Log email error but don't fail the status update
-            System.err.println("Failed to send support ticket status update email: " + e.getMessage());
-        }
-
-        return updatedTicket;
+        return supportTicketRepository.save(ticket);
     }
 
     @Override

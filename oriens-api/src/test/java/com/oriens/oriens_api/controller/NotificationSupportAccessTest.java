@@ -11,7 +11,6 @@ import com.oriens.oriens_api.entity.enums.UserRole;
 import com.oriens.oriens_api.repository.NotificationRepository;
 import com.oriens.oriens_api.repository.SupportTicketRepository;
 import com.oriens.oriens_api.repository.UserRepository;
-import com.oriens.oriens_api.service.EmailService;
 import com.oriens.oriens_api.service.FileStorageProjectService;
 import com.oriens.oriens_api.service.FileStorageService;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +45,6 @@ class NotificationSupportAccessTest {
 
     @MockitoBean FileStorageProjectService projectFiles;
     @MockitoBean FileStorageService profileFiles;
-    @MockitoBean EmailService email;
 
     @Autowired MockMvc mvc;
     @Autowired Algorithm jwtAlgorithm;

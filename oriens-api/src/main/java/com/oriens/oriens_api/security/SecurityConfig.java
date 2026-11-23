@@ -66,8 +66,6 @@ public class SecurityConfig {
                         .requestMatchers("/profile-pictures/**").permitAll() // para conseguir pegar as imagens
                         .requestMatchers("/projects-pictures/**").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user/init-admin").denyAll()
                         // user routes
 

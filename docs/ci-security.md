@@ -71,9 +71,10 @@ contagens e diagnóstico fixo; não reproduzem mensagens/trechos do SARIF.
   do workflow por sete dias, inclusive quando achados reprovam. Relatório obrigatório ausente é erro.
 - Gitleaks só apresenta valores ocultos nos logs. Não gera artefato de segredos no CI.
 - `.gitleaks.toml` estende as regras padrão com `spring-mail-password`, porque a regra genérica não
-  cobre a senha SMTP literal em propriedades Spring. `${MAIL_PASSWORD}` continua permitido.
+  cobre a senha SMTP literal em propriedades Spring. Placeholder como `${MAIL_PASSWORD}` continua
+  permitido. O SMTP foi removido da API em 2026-11-23; a regra fica para barrar a reintrodução.
 - `.gitleaksignore` lista, por fingerprint, achados do histórico já triados: falsos positivos e a senha
-  SMTP antiga, rotacionada em 2026-11-22 e removida do HEAD (hoje `MAIL_PASSWORD`, secret do deploy).
+  SMTP antiga, rotacionada em 2026-11-22 e removida do HEAD junto com o envio por SMTP.
   Achado novo não entra nessa lista: remova o valor e rotacione o segredo primeiro. O histórico não é
   reescrito.
 - A base NVD usa cache diário, separado pela versão do Dependency-Check. Uma análise concluída que

@@ -14,7 +14,6 @@ import HelpSupportPage from "./pages/HelpSupportPage";
 import AdminSupportPage from "./pages/AdminSupportPage";
 import AdminManagementPage from "./pages/AdminManagementPage";
 import { StatisticsPage } from "./pages/StatisticsPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import { useEffect } from "react";
@@ -39,7 +38,6 @@ const App = () => {
               {/* Public routes */}
               <Route path="/auth" element={<SignLoginPage />} />
               <Route path="/" element={<LandingPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/terms" element={<TermsOfServicePage />} />
 
               {/* Protected Route / Tasks */}
