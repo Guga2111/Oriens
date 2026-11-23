@@ -65,6 +65,10 @@ contagens e diagnóstico fixo; não reproduzem mensagens/trechos do SARIF.
 - Gitleaks só apresenta valores ocultos nos logs. Não gera artefato de segredos no CI.
 - `.gitleaks.toml` estende as regras padrão com `spring-mail-password`, porque a regra genérica não
   cobre a senha SMTP literal em propriedades Spring. `${MAIL_PASSWORD}` continua permitido.
+- `.gitleaksignore` lista, por fingerprint, achados do histórico já triados: falsos positivos e a senha
+  SMTP antiga, rotacionada em 2026-11-22 e removida do HEAD (hoje `MAIL_PASSWORD`, secret do deploy).
+  Achado novo não entra nessa lista: remova o valor e rotacione o segredo primeiro. O histórico não é
+  reescrito.
 - A base NVD usa cache diário, separado pela versão do Dependency-Check. Uma análise concluída que
   reprova por achados ainda pode guardar a base; cache não dispensa atualização nem auditoria.
 - A carga NVD usa os feeds oficiais JSON 2.0, sem chave, pelo suporte nativo do Dependency-Check.

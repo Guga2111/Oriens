@@ -9,6 +9,7 @@ services:
     restart: always
     environment:
       JWT_SECRET: ${JWT_SECRET:?Configure JWT_SECRET no ambiente}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       SPRING_PROFILES_ACTIVE: dev
       ORIENS_MCP_ENABLED: ${ORIENS_MCP_ENABLED:-false}
       ORIENS_MCP_ISSUER: ${ORIENS_MCP_ISSUER:-http://127.0.0.1:8080}

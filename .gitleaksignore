@@ -1,0 +1,28 @@
+# Triaged Gitleaks findings (2026-11-22). One fingerprint per finding; never add live secrets here.
+# A new finding must be fixed (and its secret rotated) before it is considered for this file.
+
+# False positive: SHA-256 digests of build artifacts in P6 evidence.
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:150
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:18
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:183
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:188
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:201
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:205
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:222
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:244
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:245
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:285
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:300
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:308
+d63a750bc4854624c4b8c36e69b847b60ad24072:docs/screenshots/projects-refactor/p6/build.json:generic-api-key:41
+
+# False positive: the actuator/prometheus URL path.
+6d6eb017ec2f93f4b8b3ef2462c6b74573ddabde:docs/plans/2026-11-19-observability-design.md:generic-api-key:65
+77f9479494a8653e9a8ad86e085c0e275ee423dc:docs/plans/2026-11-19-observability-design.md:generic-api-key:138
+
+# False positive: synthetic test-only MCP encryption password.
+8fc63d44ab3923b6f44f8b61ad3beb195d55d55f:oriens-api/src/test/java/com/oriens/oriens_api/security/McpEnvironmentConfigurationTest.java:generic-api-key:52
+
+# Real SMTP app password committed in 2025-12; rotated by the owner on 2026-11-22 and removed from HEAD
+# (now ${MAIL_PASSWORD}). Kept only because history is not rewritten.
+21d3f19cfa222893c5de077a1bfd92cf92b73509:oriens-api/src/main/resources/application.properties:spring-mail-password:7
