@@ -102,7 +102,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
           style={{ left: `${position}%`, transform: position === 0 ? 'translate(0, -50%)' : position === 100 ? 'translate(-100%, -50%)' : 'translate(-50%, -50%)' }}
           aria-label={group.length > 1 ? `${minute}, ${group.length} tarefas` : label(task)} title={group.map(label).join(' · ')}
           onClick={group.length === 1 ? () => focusTask(task.id) : undefined}>
-          <span aria-hidden className={cn('h-4 w-1 rounded-full', task.status === 'CONCLUDED' ? 'bg-primary' : task.status === 'ON_DOING' ? 'bg-now' : 'bg-foreground/40')} />
+          <span aria-hidden className={cn('h-4 w-1 rounded-full', task.status === 'CONCLUDED' ? 'bg-muted-foreground' : task.status === 'ON_DOING' ? 'bg-primary' : 'bg-foreground/40')} />
           {group.length > 1 && <span className="ml-1 text-xs tabular-nums">{group.length}</span>}
         </button>;
         return group.length === 1 ? <span key={minute}>{marker}</span> : <DropdownMenu key={minute}><DropdownMenuTrigger asChild>{marker}</DropdownMenuTrigger><DropdownMenuContent className="max-sm:[&_[role=menuitem]]:min-h-11" onCloseAutoFocus={e => { if (selectedTask.current !== null) { e.preventDefault(); focusTask(selectedTask.current); selectedTask.current = null; } }}>{group.map(t => <DropdownMenuItem key={t.id} onSelect={() => { selectedTask.current = t.id; }}>{label(t)}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>;
