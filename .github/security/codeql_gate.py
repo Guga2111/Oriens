@@ -1,9 +1,15 @@
 """Apply the agreed severity threshold to complete CodeQL SARIF reports."""
 
+import datetime
 import json
 import math
 import sys
 from pathlib import Path
+
+# Versioned triage of reviewed false positives. SARIF suppressions are never trusted; only entries here,
+# matched by rule, file and line-content fingerprint, and only until their expiry date.
+TRIAGE_FILE = Path(__file__).with_name("codeql-triage.json")
+TRIAGE_FIELDS = ("rule", "file", "fingerprint", "until", "justification")
 
 
 def require(condition, message):
@@ -22,10 +28,22 @@ def check_invocations(run):
                     "CodeQL registrou um diagnóstico operacional; confira a análise.")
 
 
+def rule_catalog(run, reference):
+    """The CodeQL CLI keeps rules in its query pack (tool.extensions[n]) and points at it by index."""
+    component = reference.get("toolComponent")
+    if component is None:
+        return run["tool"]["driver"].get("rules")
+    require(isinstance(component, dict) and set(component) == {"index"}, "Referência de componente não suportada.")
+    extensions = run["tool"].get("extensions")
+    index = component["index"]
+    require(isinstance(extensions, list) and type(index) is int and 0 <= index < len(extensions),
+            "Componente de regra inválido.")
+    return extensions[index].get("rules")
+
+
 def result_rule(run, result):
     reference = result.get("rule", {})
-    require(not reference.get("toolComponent"), "Referência externa de regra não suportada.")
-    rules = run["tool"]["driver"].get("rules")
+    rules = rule_catalog(run, reference)
     require(isinstance(rules, list), "Catálogo de regras ausente.")
     rule_id = result.get("ruleId", reference.get("id"))
     index = result.get("ruleIndex", reference.get("index"))
@@ -54,7 +72,26 @@ def security_score(rule):
     return score
 
 
-def blocking_results(report):
+def load_triage(data, today):
+    """Return the (rule, file, fingerprint) keys of valid, unexpired triage entries."""
+    require(isinstance(data, dict) and isinstance(data.get("findings"), list), "Triagem CodeQL inválida.")
+    active = set()
+    for entry in data["findings"]:
+        require(isinstance(entry, dict), "Entrada de triagem inválida.")
+        require(all(isinstance(entry.get(field), str) and entry[field].strip() for field in TRIAGE_FIELDS),
+                "Entrada de triagem incompleta.")
+        if datetime.date.fromisoformat(entry["until"]) >= today:
+            active.add((entry["rule"], entry["file"], entry["fingerprint"]))
+    return active
+
+
+def triage_key(rule, result):
+    location = (result.get("locations") or [{}])[0].get("physicalLocation", {})
+    return (rule.get("id"), location.get("artifactLocation", {}).get("uri"),
+            result.get("partialFingerprints", {}).get("primaryLocationLineHash"))
+
+
+def blocking_results(report, triaged=frozenset()):
     require(report.get("version") == "2.1.0", "Versão SARIF inválida.")
     runs = report.get("runs")
     require(isinstance(runs, list) and runs, "Relatório sem análises.")
@@ -65,12 +102,14 @@ def blocking_results(report):
         check_invocations(run)
         results = run.get("results")
         require(isinstance(results, list), "Resultados da análise ausentes.")
-        # Do not filter baselineState or suppressions: existing findings also block.
-        blocked += sum(security_score(result_rule(run, result)) >= 7 for result in results)
+        # Do not filter baselineState or suppressions: existing findings also block unless triaged here.
+        for result in results:
+            rule = result_rule(run, result)
+            blocked += security_score(rule) >= 7 and triage_key(rule, result) not in triaged
     return blocked
 
 
-def main(arguments):
+def main(arguments, triage_file=TRIAGE_FILE, today=None):
     if len(arguments) != 1:
         print("Uso: python3 .github/security/codeql_gate.py <diretório-SARIF>", file=sys.stderr)
         return 2
@@ -79,7 +118,9 @@ def main(arguments):
         print("Relatório CodeQL obrigatório não encontrado.", file=sys.stderr)
         return 2
     try:
-        blocked = sum(blocking_results(json.loads(path.read_text(encoding="utf-8"))) for path in reports)
+        today = today or datetime.datetime.now(datetime.timezone.utc).date()
+        triaged = load_triage(json.loads(triage_file.read_text(encoding="utf-8")), today) if triage_file.exists() else set()
+        blocked = sum(blocking_results(json.loads(path.read_text(encoding="utf-8")), triaged) for path in reports)
     except (OSError, ValueError, KeyError, TypeError, AttributeError, OverflowError):
         # Neither exception text nor SARIF messages are safe to echo into Actions logs.
         print("Relatório CodeQL inválido ou análise incompleta; confira os relatórios.", file=sys.stderr)

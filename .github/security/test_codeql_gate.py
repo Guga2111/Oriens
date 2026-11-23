@@ -1,12 +1,13 @@
 import contextlib
 import copy
+import datetime
 import io
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from codeql_gate import blocking_results, main
+from codeql_gate import blocking_results, load_triage, main
 
 
 def report(score="7.0"):
@@ -119,6 +120,26 @@ class CodeqlGateTest(unittest.TestCase):
             with self.subTest(result=result), self.assertRaises(ValueError):
                 blocking_results(data)
 
+    def test_cli_rules_in_query_pack_extensions_resolve_by_component_index(self):
+        # Shape emitted by the CodeQL CLI: empty driver catalog, rules in tool.extensions[n].
+        data = report()
+        run = data["runs"][0]
+        rules = run["tool"]["driver"].pop("rules")
+        run["tool"]["extensions"] = [{"name": "codeql/java-queries", "rules": [{"id": "low", "properties": {"security-severity": "5.4"}}] + rules}]
+        for score_index, expected in ((1, 1), (0, 0)):
+            run["results"] = [{"ruleId": run["tool"]["extensions"][0]["rules"][score_index]["id"],
+                               "rule": {"id": run["tool"]["extensions"][0]["rules"][score_index]["id"], "index": score_index, "toolComponent": {"index": 0}}}]
+            with self.subTest(index=score_index):
+                self.assertEqual(expected, blocking_results(data))
+
+    def test_invalid_component_references_fail_closed(self):
+        data = report()
+        data["runs"][0]["tool"]["extensions"] = [{"name": "pack", "rules": data["runs"][0]["tool"]["driver"]["rules"]}]
+        for component in ({"index": 1}, {"index": True}, {"name": "pack"}, {"index": 0, "guid": "x"}, "pack"):
+            data["runs"][0]["results"] = [{"rule": {"index": 0, "toolComponent": component}}]
+            with self.subTest(component=component), self.assertRaises(ValueError):
+                blocking_results(data)
+
     def test_all_runs_and_files_contribute_to_the_gate(self):
         with tempfile.TemporaryDirectory() as directory, contextlib.redirect_stdout(io.StringIO()):
             first = report("1.0")
@@ -146,6 +167,62 @@ class CodeqlGateTest(unittest.TestCase):
             with contextlib.redirect_stdout(output):
                 self.assertEqual(1, main([directory]))
             self.assertNotIn("sensitive-content", output.getvalue())
+
+
+def located(file="src/App.java", fingerprint="abc:1"):
+    data = report()
+    data["runs"][0]["results"][0].update({
+        "locations": [{"physicalLocation": {"artifactLocation": {"uri": file}}}],
+        "partialFingerprints": {"primaryLocationLineHash": fingerprint},
+    })
+    return data
+
+
+def triage(**overrides):
+    entry = {"rule": "test/security-rule", "file": "src/App.java", "fingerprint": "abc:1",
+             "until": "2027-01-01", "justification": "Falso positivo revisado."}
+    entry.update(overrides)
+    return {"findings": [entry]}
+
+
+TODAY = datetime.date(2026, 11, 23)
+
+
+class CodeqlTriageTest(unittest.TestCase):
+    def test_triaged_finding_matching_rule_file_and_fingerprint_does_not_block(self):
+        self.assertEqual(0, blocking_results(located(), load_triage(triage(), TODAY)))
+
+    def test_any_mismatch_in_rule_file_or_fingerprint_still_blocks(self):
+        for override in ({"rule": "test/other"}, {"file": "src/Other.java"}, {"fingerprint": "changed:1"}):
+            with self.subTest(override=override):
+                self.assertEqual(1, blocking_results(located(), load_triage(triage(**override), TODAY)))
+
+    def test_expired_triage_blocks_again_and_expiry_day_still_counts(self):
+        self.assertEqual(1, blocking_results(located(), load_triage(triage(until="2026-11-22"), TODAY)))
+        self.assertEqual(0, blocking_results(located(), load_triage(triage(until="2026-11-23"), TODAY)))
+
+    def test_sarif_suppressions_without_triage_entry_still_block(self):
+        data = located()
+        data["runs"][0]["results"][0]["suppressions"] = [{"kind": "inSource", "status": "accepted"}]
+        self.assertEqual(1, blocking_results(data, load_triage(triage(fingerprint="other:1"), TODAY)))
+
+    def test_incomplete_or_malformed_triage_fails_closed(self):
+        broken = [[], {"findings": None}, {"findings": ["x"]}, triage(justification=" "), triage(until="logo")]
+        for content in broken:
+            with self.subTest(content=content), tempfile.TemporaryDirectory() as directory:
+                Path(directory, "java.sarif").write_text(json.dumps(located()))
+                triage_file = Path(directory, "triage.json")
+                triage_file.write_text(json.dumps(content))
+                with contextlib.redirect_stderr(io.StringIO()):
+                    self.assertEqual(2, main([directory], triage_file, TODAY))
+
+    def test_cli_applies_the_triage_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, "java.sarif").write_text(json.dumps(located()))
+            triage_file = Path(directory, "triage.json")
+            triage_file.write_text(json.dumps(triage()))
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(0, main([directory], triage_file, TODAY))
 
 
 if __name__ == "__main__":

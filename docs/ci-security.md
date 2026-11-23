@@ -21,6 +21,13 @@ Um diagnóstico operacional de nível warning/error no SARIF exige triagem e rep
 invocação se declara bem-sucedida. Regras de segurança sem severidade também reprovam: não se presume
 que um resultado desconhecido seja seguro.
 
+Supressões do próprio SARIF nunca são aceitas. Falso positivo revisado vai em
+`.github/security/codeql-triage.json`: regra, arquivo, fingerprint da linha (`primaryLocationLineHash`),
+justificativa e data `until`. A entrada só vale enquanto a linha não mudar e até vencer; depois o achado
+volta a reprovar e precisa de nova revisão. Achado real se corrige no código, não entra na triagem.
+O verificador lê as regras tanto em `tool.driver` quanto no pacote de consultas em `tool.extensions`
+(formato do CodeQL CLI); referência de componente inválida reprova.
+
 Concluir uma análise ou fazer upload de SARIF não significa que o código passou na política. O
 verificador `.github/security/codeql_gate.py` avalia os resultados completos depois da análise.
 O workflow também exige sucesso do step de análise: `invocations` é opcional no formato SARIF,

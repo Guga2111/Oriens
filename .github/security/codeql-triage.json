@@ -1,0 +1,61 @@
+{
+  "policy": "Somente falsos positivos revisados. Cada entrada vale para regra + arquivo + fingerprint da linha, até 'until'. Achado real se corrige; não entra aqui. Ver docs/ci-security.md.",
+  "findings": [
+    {
+      "rule": "java/spring-disabled-csrf-protection",
+      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpSecurity.java",
+      "line": 31,
+      "fingerprint": "ae10e2f071ce0870:1",
+      "until": "2027-05-23",
+      "justification": "O chain do MCP desligado nega tudo (denyAll), e o resource server MCP é stateless, aceita só Bearer no header e rejeita Origin diferente do frontend. Sem autenticação ambiente por cookie, não há CSRF."
+    },
+    {
+      "rule": "java/spring-disabled-csrf-protection",
+      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpSecurity.java",
+      "line": 108,
+      "fingerprint": "a951b33f8dbb8d69:1",
+      "until": "2027-05-23",
+      "justification": "O chain do MCP desligado nega tudo (denyAll), e o resource server MCP é stateless, aceita só Bearer no header e rejeita Origin diferente do frontend. Sem autenticação ambiente por cookie, não há CSRF."
+    },
+    {
+      "rule": "java/spring-disabled-csrf-protection",
+      "file": "oriens-api/src/main/java/com/oriens/oriens_api/security/SecurityConfig.java",
+      "line": 43,
+      "fingerprint": "6f8a31dadbc559cb:1",
+      "until": "2027-05-23",
+      "justification": "Chains stateless: a API autentica só pelo header Authorization (JWT), nunca por cookie ou sessão; o chain do actuator só libera health/prometheus na porta interna. O navegador não anexa esse header em requisição cross-site, então não há CSRF."
+    },
+    {
+      "rule": "java/spring-disabled-csrf-protection",
+      "file": "oriens-api/src/main/java/com/oriens/oriens_api/security/SecurityConfig.java",
+      "line": 58,
+      "fingerprint": "406b812a7c071c6e:1",
+      "until": "2027-05-23",
+      "justification": "Chains stateless: a API autentica só pelo header Authorization (JWT), nunca por cookie ou sessão; o chain do actuator só libera health/prometheus na porta interna. O navegador não anexa esse header em requisição cross-site, então não há CSRF."
+    },
+    {
+      "rule": "java/csrf-unprotected-request-type",
+      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpController.java",
+      "line": 57,
+      "fingerprint": "8bdfd62e03c0eb98:1",
+      "until": "2027-05-23",
+      "justification": "O GET grava o usuário no fluxo, mas /integrations/mcp/** passa pelo chain JWT: exige header Authorization (não enviado cross-site) e o CORS só libera as origens do frontend. Efeito colateral num GET, sem CSRF explorável."
+    },
+    {
+      "rule": "java/user-controlled-bypass",
+      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpFlows.java",
+      "line": 84,
+      "fingerprint": "99997b1b6d087dd1:1",
+      "until": "2027-05-23",
+      "justification": "A condição controlada pelo usuário é a decisão de aprovar ou recusar a conexão. Recusar sem emitir código é o comportamento pretendido; dono, cookie do navegador, versão e Origin já foram verificados antes."
+    },
+    {
+      "rule": "java/user-controlled-bypass",
+      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpFlows.java",
+      "line": 96,
+      "fingerprint": "4412885c80da2b4e:1",
+      "until": "2027-05-23",
+      "justification": "A condição controlada pelo usuário é a decisão de aprovar ou recusar a conexão. Recusar sem emitir código é o comportamento pretendido; dono, cookie do navegador, versão e Origin já foram verificados antes."
+    }
+  ]
+}
