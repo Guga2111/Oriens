@@ -1,6 +1,6 @@
 # Backend — padrões e antipadrões (`oriens-api`)
 
-Stack: Spring Boot 3.5 · Java 17 · Spring Data JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) ·
+Stack: Spring Boot 4.2 · Java 25 · Spring Data JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) ·
 OAuth Authorization Server + MCP · Lombok · JUnit 5.
 
 Cada seção traz **✅ Padrão** (o que fazer, com referência ao código que já segue a regra) e
@@ -369,7 +369,6 @@ IDOR), porque muda contrato com o front.
 
 | Onde | Problema | Risco |
 |---|---|---|
-| `src/main/resources/application.properties` | Usuário e **senha SMTP commitados em texto puro** (estão no histórico do git) | **Crítico** — rotacionar a senha e mover para variável de ambiente |
 | `exception/config/GlobalExceptionHandler` + `ErrorResponse` | Formata `Instant` com padrão sem fuso: o Jackson falha ao serializar e a exceção original vaza como erro do servlet em todos os controllers legados | Alto |
 | JWT | Papel lido do *claim*: admin rebaixado mantém acesso até o token expirar; `updateUserRole` não impede remover o último admin | Médio |
 | `UserController`, `NotificationController`, `SupportController` | Entidade JPA na resposta e `@RequestBody User`/`SupportTicketDTO` sem validação; `clearAll` responde 204 com corpo | Médio (vazamento / mass assignment) |

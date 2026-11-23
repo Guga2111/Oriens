@@ -1,7 +1,7 @@
 package com.oriens.oriens_api.service;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.node.*;
+import tools.jackson.databind.*;
+import tools.jackson.databind.node.*;
 import com.oriens.oriens_api.entity.*;
 import com.oriens.oriens_api.entity.dto.work.WorkCommands.*;
 import com.oriens.oriens_api.entity.enums.Priority;
@@ -109,7 +109,7 @@ public class WorkCreationService {
     private JsonNode sorted(JsonNode node) {
         if (node.isObject()) {
             ObjectNode result = mapper.createObjectNode();
-            List<String> names = new ArrayList<>(); node.fieldNames().forEachRemaining(names::add); Collections.sort(names);
+            List<String> names = new ArrayList<>(); node.propertyNames().iterator().forEachRemaining(names::add); Collections.sort(names);
             names.forEach(name -> result.set(name, sorted(node.get(name)))); return result;
         }
         if (node.isArray()) { ArrayNode result = mapper.createArrayNode(); node.forEach(value -> result.add(sorted(value))); return result; }

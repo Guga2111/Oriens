@@ -1,12 +1,12 @@
 package com.oriens.oriens_api.mcp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonParser;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.core.StreamReadFeature;
 import com.oriens.oriens_api.service.*;
 import io.modelcontextprotocol.common.McpTransportContext;
-import io.modelcontextprotocol.json.jackson.JacksonMcpJsonMapper;
+import io.modelcontextprotocol.json.jackson3.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.server.*;
-import io.modelcontextprotocol.server.transport.WebMvcStatelessServerTransport;
+import org.springframework.ai.mcp.server.webmvc.transport.WebMvcStatelessServerTransport;
 import io.modelcontextprotocol.spec.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.*;
@@ -18,19 +18,19 @@ import java.util.*;
 @Configuration(proxyBeanMethods=false)
 @ConditionalOnProperty(name="oriens.mcp.enabled",havingValue="true")
 public class McpTransport {
-    @Bean McpWorkTools mcpWorkTools(McpStore store,McpRateLimiter limits,ScopedWorkReadService read,ProjectWorkService work,WorkCreationService receipts,ObjectMapper json,Clock clock,FinancialEntryServiceImpl finance,FinancialStatisticsService statistics,org.springframework.jdbc.core.JdbcTemplate db) {
+    @Bean McpWorkTools mcpWorkTools(McpStore store,McpRateLimiter limits,ScopedWorkReadService read,ProjectWorkService work,WorkCreationService receipts,JsonMapper json,Clock clock,FinancialEntryServiceImpl finance,FinancialStatisticsService statistics,org.springframework.jdbc.core.JdbcTemplate db) {
         return new McpWorkTools(store,limits,read,work,receipts,json,clock,new McpFinancialTools(finance,statistics,db,json));
     }
     @Bean WebMvcStatelessServerTransport mcpHttpTransport() {
-        var mapper=new JacksonMcpJsonMapper(new ObjectMapper().enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION));
+        var mapper=new JacksonMcpJsonMapper(JsonMapper.builder().enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build());
         return WebMvcStatelessServerTransport.builder().jsonMapper(mapper).contextExtractor(request->{
             Object principal=request.servletRequest().getAttribute("oriens.mcp.principal");
             if(!(principal instanceof McpStore.Delegated))throw McpStore.denied();
             return McpTransportContext.create(Map.of("principal",principal));
         }).build();
     }
-    @Bean McpStatelessSyncServer mcpServer(WebMvcStatelessServerTransport transport,McpWorkTools tools,ObjectMapper json) {
-        // SDK 0.18 has a global registry. Decorate its transport SPI to filter discovery per
+    @Bean McpStatelessSyncServer mcpServer(WebMvcStatelessServerTransport transport,McpWorkTools tools,JsonMapper json) {
+        // The SDK has a global registry. Decorate its transport SPI to filter discovery per
         // request, without mutating that registry or implementing JSON-RPC.
         McpStatelessServerTransport scoped=new McpStatelessServerTransport() {
             public void setMcpHandler(McpStatelessServerHandler sdk) {
@@ -50,8 +50,10 @@ public class McpTransport {
             public Mono<Void> closeGracefully() {return transport.closeGracefully();}
             public List<String> protocolVersions() {return transport.protocolVersions();}
         };
+        // McpWorkTools owns strict input validation and the public error contract (PRECONDITION_REQUIRED,
+        // INVALID_REQUEST...). The SDK's schema pre-validation would answer first with its own format.
         var builder=McpServer.sync(scoped).serverInfo("oriens","1.0").jsonMapper(new JacksonMcpJsonMapper(json))
-            .requestTimeout(Duration.ofSeconds(15)).capabilities(McpSchema.ServerCapabilities.builder().tools(false).build());
+            .validateToolInputs(false).requestTimeout(Duration.ofSeconds(15)).capabilities(McpSchema.ServerCapabilities.builder().tools(false).build());
         for(var definition:McpWorkCatalog.ALL)builder.toolCall(definition.tool(),(ctx,request)->
             tools.call(definition,(McpStore.Delegated)ctx.get("principal"),request.arguments()));
         return builder.build();

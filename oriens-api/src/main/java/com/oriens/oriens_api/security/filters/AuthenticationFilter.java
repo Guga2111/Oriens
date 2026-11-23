@@ -1,8 +1,9 @@
 package com.oriens.oriens_api.security.filters;
 
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.core.JacksonException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.security.SecurityConstants;
 import com.oriens.oriens_api.security.manager.CustomAuthManager;
@@ -31,10 +32,10 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
-            User user = new ObjectMapper().readValue(request.getInputStream(), User.class);
+            User user = JsonMapper.builder().build().readValue(request.getInputStream(), User.class);
             Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail().toLowerCase(), user.getPassword());
             return customAuthManager.authenticate(authentication);
-        } catch (IOException e) {
+        } catch (IOException | JacksonException e) {
             throw new RuntimeException("Error on reading the request credentials", e);
         }
     }

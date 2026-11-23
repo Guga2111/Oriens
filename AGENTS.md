@@ -16,7 +16,7 @@ Gestão pessoal de tarefas, projetos (kanban com objetivos), hábitos, estatíst
 integração MCP para clientes como Claude e Codex. Monorepo com duas aplicações:
 
 ```
-oriens-api/     Spring Boot 3.5 · Java 17 · JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) · MCP
+oriens-api/     Spring Boot 4.2 · Java 25 · JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) · MCP
   src/main/java/com/oriens/oriens_api/
     controller/   HTTP: autenticação → dono → serviço → resposta (sem regra de negócio)
     service/      Regras de domínio e transações

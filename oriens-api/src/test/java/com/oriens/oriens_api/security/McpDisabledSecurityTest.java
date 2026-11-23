@@ -7,8 +7,8 @@ import com.oriens.oriens_api.security.manager.CustomAuthManager;
 import com.oriens.oriens_api.service.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +25,7 @@ class McpDisabledSecurityTest {
   @GetMapping("/ordinary-proof") String ordinary(){return "ok";}
   @GetMapping("/mcp") String reserved(){return "unreachable";}
  }
- @MockBean CustomAuthManager manager;@MockBean UserServiceImpl users;
+ @MockitoBean CustomAuthManager manager;@MockitoBean UserServiceImpl users;
  @Autowired MockMvc mvc;@Autowired Algorithm algorithm;
  @Test void disabledMcpNeverFallsThroughToJwtRestAndNeedsNoMcpSecret()throws Exception{
   String jwt="Bearer "+JWT.create().withSubject("synthetic@example.invalid").withClaim("role","USER").withExpiresAt(Instant.now().plusSeconds(60)).sign(algorithm);

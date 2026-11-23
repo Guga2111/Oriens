@@ -23,6 +23,11 @@ defaults:
 jobs:
   # Same checks a PR must pass (checks.yml); nothing is deployed unless they pass.
   checks:
+    # Reusable workflows cannot elevate the caller's token permissions.
+    # Only the CodeQL job in checks.yml actually requests security-events: write.
+    permissions:
+      contents: read
+      security-events: write
     uses: ./.github/workflows/checks.yml
 
   deploy:
@@ -36,8 +41,10 @@ jobs:
       REMOTE_DIR: projects/oriens
       WEB_ROOT: /var/www/oriens
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: npm
@@ -89,6 +96,7 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           API_PORT: ${{ vars.API_PORT || '8080' }}
           ORIENS_MCP_ENABLED: ${{ vars.ORIENS_MCP_ENABLED || 'false' }}
           # The API serves MCP/OAuth at the public site root (nginx routes /mcp, /oauth2 and /.well-known there).
@@ -97,7 +105,7 @@ jobs:
           ORIENS_MCP_ENCRYPTION_PASSWORD: ${{ secrets.ORIENS_MCP_ENCRYPTION_PASSWORD }}
           ORIENS_MCP_ENCRYPTION_SALT: ${{ secrets.ORIENS_MCP_ENCRYPTION_SALT }}
         run: |
-          names="DB_URL DB_USER DB_PASSWORD JWT_SECRET API_PORT ORIENS_MCP_ENABLED"
+          names="DB_URL DB_USER DB_PASSWORD JWT_SECRET MAIL_PASSWORD API_PORT ORIENS_MCP_ENABLED"
           if [ "$ORIENS_MCP_ENABLED" = "true" ]; then
             names="$names ORIENS_MCP_ISSUER ORIENS_MCP_FRONTEND ORIENS_MCP_ENCRYPTION_PASSWORD ORIENS_MCP_ENCRYPTION_SALT"
           fi

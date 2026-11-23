@@ -25,7 +25,7 @@ public class FinancialEntryController {
 
     private final FinancialEntryServiceImpl financialEntryService;
     private final com.oriens.oriens_api.security.WorkOwner owner;
-    private final com.fasterxml.jackson.databind.ObjectMapper json;
+    private final tools.jackson.databind.ObjectMapper json;
 
     @PostMapping("/user/{userId}/entries")
     public ResponseEntity<EntryDTO> createEntry(org.springframework.security.core.Authentication auth, @PathVariable Long userId, @RequestHeader(value="Idempotency-Key",required=false) String key, @Valid @RequestBody Input dto) {

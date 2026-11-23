@@ -55,16 +55,17 @@ public class McpConfiguration {
     }
     @Bean OAuth2AuthorizationCodeRequestAuthenticationProvider mcpCodeRequests(RegisteredClientRepository clients,McpAuthorizations authorizations,McpProperties properties) {
         var provider=new OAuth2AuthorizationCodeRequestAuthenticationProvider(clients,authorizations,new InMemoryOAuth2AuthorizationConsentService());
-        provider.setAuthenticationValidator(ctx->{
-            OAuth2AuthorizationCodeRequestAuthenticationValidator.DEFAULT_REDIRECT_URI_VALIDATOR.accept(ctx);
-            OAuth2AuthorizationCodeRequestAuthenticationValidator.DEFAULT_SCOPE_VALIDATOR.accept(ctx);
-            OAuth2AuthorizationCodeRequestAuthenticationToken request=ctx.getAuthentication();
-            if(request.getRedirectUri()==null || !request.getScopes().contains("mcp:context")
-                    || !"S256".equals(request.getAdditionalParameters().get("code_challenge_method"))
-                    || !properties.resource().equals(request.getAdditionalParameters().get("resource")))
-                throw new OAuth2AuthorizationCodeRequestAuthenticationException(new OAuth2Error("invalid_request"),request);
-        });
+        provider.setAuthenticationValidator(ctx->validateCodeRequest(ctx,properties));
         return provider;
+    }
+    static void validateCodeRequest(OAuth2AuthorizationCodeRequestAuthenticationContext context, McpProperties properties) {
+        OAuth2AuthorizationCodeRequestAuthenticationValidator.DEFAULT_REDIRECT_URI_VALIDATOR.accept(context);
+        OAuth2AuthorizationCodeRequestAuthenticationValidator.DEFAULT_SCOPE_VALIDATOR.accept(context);
+        OAuth2AuthorizationCodeRequestAuthenticationToken request=context.getAuthentication();
+        if(request.getRedirectUri()==null || !request.getScopes().contains("mcp:context")
+                || !"S256".equals(request.getAdditionalParameters().get("code_challenge_method"))
+                || !properties.resource().equals(request.getAdditionalParameters().get("resource")))
+            throw new OAuth2AuthorizationCodeRequestAuthenticationException(new OAuth2Error("invalid_request"),request);
     }
     /** Keep token validation, rotation, replay detection and revocation under the same DB transaction.
      * OAuth failures commit deliberate invalidations, then propagate; unrelated failures roll back. */

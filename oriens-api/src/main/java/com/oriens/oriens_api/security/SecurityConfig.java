@@ -6,7 +6,7 @@ import com.oriens.oriens_api.security.filters.JWTAuthorizationFilter;
 import com.oriens.oriens_api.security.manager.CustomAuthManager;
 import com.oriens.oriens_api.service.UserServiceImpl;
 import lombok.AllArgsConstructor;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.boot.actuate.autoconfigure.web.server.ConditionalOnManagementPort;
 import org.springframework.boot.actuate.autoconfigure.web.server.ManagementPortType;
 import org.springframework.context.annotation.Bean;

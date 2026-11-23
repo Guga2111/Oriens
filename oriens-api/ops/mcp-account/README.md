@@ -1,5 +1,9 @@
 # MCP da conta — P0/P1/P2/P3/P4
 
+> **Ambiente atual (22/11/2026):** Java 25 e Spring Boot 4.2.0. Execute as suítes atuais com
+> `ops/postgres-tests.sh`; as referências Java 17 abaixo descrevem as provas históricas anteriores
+> à migração. O formato e as autorizações MCP continuam compatíveis.
+
 > **Histórico (17/11/2026):** a instalação por runners selados descrita aqui foi substituída pelo
 > Flyway (`src/main/resources/db/migration/postgresql`, V1–V6, aplicado no startup da API). Os scripts
 > `*.py` de migração, os `.sha256` e os `test_*.py` citados foram removidos; para testes PostgreSQL use

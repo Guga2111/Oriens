@@ -1,6 +1,6 @@
 package com.oriens.oriens_api.work;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.oriens.oriens_api.entity.*;
 import com.oriens.oriens_api.entity.dto.work.WorkCommands.*;
 import com.oriens.oriens_api.entity.enums.*;

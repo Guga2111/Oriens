@@ -2,7 +2,7 @@ package com.oriens.oriens_api.work;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.oriens.oriens_api.controller.*;
 import com.oriens.oriens_api.entity.*;
 import com.oriens.oriens_api.repository.*;
@@ -14,10 +14,10 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.*;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.*;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.web.servlet.*;
@@ -53,13 +53,13 @@ class WorkApiPostgresTest {
         }
         @Bean Clock clock() { return Clock.fixed(Instant.parse("2026-11-14T02:30:00Z"), ZoneOffset.UTC); }
     }
-    @MockBean FileStorageService profileFiles;
-    @MockBean TaskServiceImpl legacy;
+    @MockitoBean FileStorageService profileFiles;
+    @MockitoBean TaskServiceImpl legacy;
     @Autowired StatisticsService statistics;
     @Autowired TaskReminderService reminders;
     @Autowired NotificationServiceImpl notificationService;
     @Autowired NotificationRepository notifications;
-    @MockBean FileStorageProjectService files;
+    @MockitoBean FileStorageProjectService files;
     @org.springframework.boot.test.web.server.LocalServerPort int httpPort;
     @Autowired Algorithm jwtAlgorithm;
     @Autowired MockMvc mvc;

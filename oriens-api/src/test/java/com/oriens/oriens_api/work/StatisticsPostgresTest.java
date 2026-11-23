@@ -2,7 +2,7 @@ package com.oriens.oriens_api.work;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.oriens.oriens_api.controller.*;
 import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.mapper.FinancialMapper;
@@ -12,9 +12,9 @@ import com.oriens.oriens_api.entity.enums.RecurrencePattern;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.*;
@@ -35,9 +35,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     TagController.class,TagServiceImpl.class,FinancialMapper.class,RecurringFinancialService.class})
 @EnabledIfEnvironmentVariable(named="P2_JDBC_URL",matches="jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_(p2|mcp)_proof")
 class StatisticsPostgresTest {
-    @MockBean FileStorageService profileFiles;
-    @MockBean FileStorageProjectService files;
-    @MockBean TaskServiceImpl legacy;
+    @MockitoBean FileStorageService profileFiles;
+    @MockitoBean FileStorageProjectService files;
+    @MockitoBean TaskServiceImpl legacy;
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired JdbcTemplate db;

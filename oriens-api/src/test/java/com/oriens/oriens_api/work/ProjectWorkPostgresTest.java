@@ -1,6 +1,7 @@
 package com.oriens.oriens_api.work;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.oriens.oriens_api.configuration.ProductClockConfiguration;
 import com.oriens.oriens_api.entity.*;
 import com.oriens.oriens_api.entity.dto.work.*;
@@ -13,8 +14,8 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -145,7 +146,7 @@ class ProjectWorkPostgresTest {
     @Test void editingObjectiveDoesNotToggleAndPatchPreservesAbsentFields() throws Exception {
         Project project = project(ProjectMode.SIMPLE);
         Objective objective = service.createObjective(owner, project.getId(), new CreateObjective(project.getVersion(), "Resultado", LocalDate.of(2028, 2, 29)));
-        ObjectMapper mapper = new ObjectMapper(); mapper.findAndRegisterModules();
+        ObjectMapper mapper = JsonMapper.builder().build();
         PatchObjective patch = mapper.readValue("{\"version\":0,\"title\":\"Novo nome\"}", PatchObjective.class);
         Objective edited = service.patchObjective(owner, project.getId(), objective.getId(), patch);
         assertThat(edited.getStatus()).isEqualTo(ObjectiveStatus.PENDING);
@@ -302,7 +303,7 @@ class ProjectWorkPostgresTest {
             CreationReceipt receipt = CreationReceipt.builder().user(users.findById(owner).orElseThrow())
                     .operation("task:create").idempotencyKey(key).payloadSha256("a".repeat(64))
                     .resourceId(999999L).responseStatus(201).resourceVersion(7)
-                    .responseBody(new ObjectMapper().createObjectNode().put("id", 999999).put("version", 7))
+                    .responseBody(JsonMapper.builder().build().createObjectNode().put("id", 999999).put("version", 7))
                     .createdAt(created).expiresAt(created.plus(Duration.ofHours(24))).build();
             em.persist(receipt); em.flush(); return receipt.getId();
         });
