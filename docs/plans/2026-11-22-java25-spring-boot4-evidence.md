@@ -32,7 +32,7 @@ Branch `ci/security-checks`, validação local em 2026-11-22 com OpenJDK 25 (bui
 | `WorkCreationCompatibilityTest` | Recibo de idempotência da stack anterior reaplica sem recriar recurso nem mudar o hash do payload |
 | `docker build` + execução `prod` com MCP ligado e PostgreSQL descartável | JRE 25.0.5; 7 migrações aplicadas; inicialização em ~4,2 s; health `UP` na porta 8081 |
 | Sondas HTTP na imagem | Metadados OAuth (`oauth-protected-resource`, `oauth-authorization-server`) 200; `/mcp` e `/tasks` sem token 401; Prometheus na porta de gestão e 401 na pública |
-| `./mvnw -Psecurity-audit dependency-check:check` | **Reprovado** por um achado (abaixo) |
+| `./mvnw -Psecurity-audit dependency-check:check` | Reprovado por um falso positivo; aprovado após a supressão documentada (abaixo) |
 
 Fixtures em `oriens-api/src/test/resources/mcp/` são sintéticas; nenhuma credencial ou dado real foi
 copiado.
@@ -42,8 +42,9 @@ copiado.
 Único achado ≥ 7,0: **CVE-2022-31691** (9,8) em `spring-boot-devtools-4.2.0.jar`. O CVE trata das
 extensões de IDE Spring Tools 4 (Eclipse/VSCode ≤ 4.16.0 / 1.39.0); o casamento veio pelo CPE genérico
 `vmware:spring_tools`, cuja faixa de versão contém 4.2.0. É falso positivo, e o devtools não entra no
-jar de produção. Conforme o desenho, não foi adicionada supressão automática: decidir supressão
-documentada no perfil `security-audit` ou aceitar o gate vermelho.
+jar de produção. Conforme o desenho, não houve supressão automática: o usuário decidiu por uma
+supressão documentada em `oriens-api/dependency-check-suppressions.xml`, restrita a esse CVE no pacote
+`spring-boot-devtools` e válida até 2027-05-22. Reexecução: aprovada, com o CVE listado como suprimido.
 
 Abaixo do limiar: `commons-io-2.7` (CVE-2024-47554, 4,3).
 

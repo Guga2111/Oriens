@@ -160,6 +160,7 @@
 							<!-- Official feeds avoid API keys and anonymous API rate limits on PRs. -->
 							<nvdDatafeedUrl>https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-{0}.json.gz</nvdDatafeedUrl>
 							<dataDirectory>${project.build.directory}/dependency-check-data</dataDirectory>
+							<suppressionFile>${project.basedir}/dependency-check-suppressions.xml</suppressionFile>
 							<formats>
 								<format>HTML</format>
 								<format>JSON</format>

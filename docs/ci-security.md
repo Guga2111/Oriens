@@ -71,6 +71,9 @@ contagens e diagnóstico fixo; não reproduzem mensagens/trechos do SARIF.
   A primeira carga é maior; as seguintes usam os metadados de atualização e o cache. Há timeout de
   45 minutos; falha de atualização reprova. Confira os logs e a disponibilidade da NVD antes de
   reexecutar. Nenhuma chave NVD é exigida em PRs ou armazenada no repositório.
+- Falsos positivos do Dependency-Check vão em `oriens-api/dependency-check-suppressions.xml`, um por
+  CVE e pacote (`packageUrl` + `cve`, nunca só CPE), com justificativa e data `until` para revisão.
+  Supressão vencida volta a reprovar. Não suprima achado real para destravar o gate.
 - O analisador opcional OSS Index fica desligado porque exige autenticação; a auditoria Java usa NVD.
 - Dependency-Check fica no release 13.0.0. A API anônima foi descartada na validação: o 13.0.0
   tentou usar um default de chave vazia, e o 12.2.2 chegou a baixar dados mas recebeu HTTP 429.
