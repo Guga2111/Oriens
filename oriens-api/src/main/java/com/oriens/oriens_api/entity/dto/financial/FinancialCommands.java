@@ -1,7 +1,7 @@
 package com.oriens.oriens_api.entity.dto.financial;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.oriens.oriens_api.entity.dto.work.PatchFields;
 import com.oriens.oriens_api.entity.enums.RecurrencePattern;
 import com.oriens.oriens_api.exception.WorkDomainException;

@@ -11,9 +11,9 @@ import com.oriens.oriens_api.service.FileStorageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -47,8 +47,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @AutoConfigureMockMvc
 class UserControllerOwnershipTest {
-    @MockBean FileStorageProjectService projectFiles;
-    @MockBean FileStorageService profileFiles;
+    @MockitoBean FileStorageProjectService projectFiles;
+    @MockitoBean FileStorageService profileFiles;
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
     @Autowired Algorithm jwtAlgorithm;
@@ -67,7 +67,7 @@ class UserControllerOwnershipTest {
     @Test
     void otherUserGetsNotFoundOnEveryOwnedRouteAndOwnerDataStaysIntact() throws Exception {
         String base = "/user/" + owner.getId();
-        List<MockHttpServletRequestBuilder> attempts = List.of(
+        List<org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder<?>> attempts = List.of(
             get(base),
             patch(base).contentType(MediaType.APPLICATION_JSON).content("{\"phoneNumber\":\"+5511988887777\"}"),
             get(base + "/preferences"),
@@ -75,7 +75,7 @@ class UserControllerOwnershipTest {
             multipart(HttpMethod.PUT, base + "/avatar").file(avatar()),
             delete(base));
 
-        for (MockHttpServletRequestBuilder attempt : attempts) {
+        for (org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder<?> attempt : attempts) {
             mvc.perform(as(attempt, strangerToken))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("NOT_FOUND"));
@@ -200,7 +200,7 @@ class UserControllerOwnershipTest {
             .withExpiresAt(new Date(System.currentTimeMillis() + 60_000)).sign(jwtAlgorithm);
     }
 
-    private static MockHttpServletRequestBuilder as(MockHttpServletRequestBuilder request, String token) {
+    private static org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder<?> as(org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder<?> request, String token) {
         return request.header("Authorization", token);
     }
 

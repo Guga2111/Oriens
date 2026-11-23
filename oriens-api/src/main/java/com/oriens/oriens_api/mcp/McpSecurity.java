@@ -1,6 +1,6 @@
 package com.oriens.oriens_api.mcp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -15,7 +15,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.server.authorization.authentication.*;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.web.*;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -41,13 +40,14 @@ public class McpSecurity {
     @Bean @Order(0) @ConditionalOnProperty(name="oriens.mcp.enabled",havingValue="true")
     SecurityFilterChain mcpOAuth(HttpSecurity http,McpProperties props,McpFlows flows,RegisteredClientRepository clients,
             McpAuthorizations auth,McpStore store,PlatformTransactionManager transactions,OAuth2AuthorizationCodeRequestAuthenticationProvider requests) throws Exception {
-        var oauth=OAuth2AuthorizationServerConfigurer.authorizationServer();
         http.securityMatcher("/oauth2/**","/.well-known/oauth-authorization-server").cors(Customizer.withDefaults())
             .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .csrf(c->c.ignoringRequestMatchers("/oauth2/token","/oauth2/revoke"))
             .requestCache(c->c.disable())
             .authorizeHttpRequests(a->a.requestMatchers("/oauth2/token","/oauth2/revoke","/.well-known/oauth-authorization-server").permitAll().requestMatchers("/oauth2/authorize").authenticated().anyRequest().denyAll())
-            .with(oauth,c->c.authorizationEndpoint(a->a.authenticationProviders(ps->{
+            .oauth2AuthorizationServer(c->c.authorizationEndpoint(a->a
+                .authorizationCodeRequestAuthenticationValidator(ctx->McpConfiguration.validateCodeRequest(ctx,props))
+                .authenticationProviders(ps->{
                     ps.removeIf(p->p instanceof OAuth2AuthorizationCodeRequestAuthenticationProvider);ps.add(0,requests);
                 }))
                 .authorizationServerMetadataEndpoint(m->m.authorizationServerMetadataCustomizer(b->b
