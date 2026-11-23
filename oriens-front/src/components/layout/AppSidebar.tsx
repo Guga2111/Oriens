@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { ChevronDown, Circle, PanelLeftClose, Plus, Star } from 'lucide-react';
+import { ChevronDown, ChevronRight, Circle, PanelLeftClose, Pin, PinOff, Plus } from 'lucide-react';
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem,
   SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, useSidebar,
 } from '@/components/ui/sidebar';
@@ -20,7 +20,7 @@ const projectTabs = [
   { value: 'timeline', label: 'Linha do tempo' },
 ];
 
-function SidebarProjects({ projectsVersion }: { projectsVersion: number }) {
+function SidebarProjects({ projectsVersion, onNewProject }: { projectsVersion: number; onNewProject: () => void }) {
   const sidebar = useWorkSidebar();
   const flags = useProjectFlags();
   const { pathname } = useLocation();
@@ -36,11 +36,14 @@ function SidebarProjects({ projectsVersion }: { projectsVersion: number }) {
     <Collapsible defaultOpen className="group/projects">
       <SidebarGroup>
         <SidebarGroupLabel asChild>
-          <CollapsibleTrigger className="max-desktop:min-h-10">
+          <CollapsibleTrigger className="relative pr-16 max-desktop:min-h-10 max-desktop:pr-24">
             Projetos
-            <ChevronDown aria-hidden className="ml-auto transition-transform group-data-[state=closed]/projects:-rotate-90 motion-reduce:transition-none" />
+            <ChevronDown aria-hidden className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition-transform group-data-[state=closed]/projects:-rotate-90 motion-reduce:transition-none" />
           </CollapsibleTrigger>
         </SidebarGroupLabel>
+        <SidebarGroupAction showOnHover type="button" className="right-9 top-2.5 size-7 after:inset-0 max-desktop:top-2 max-desktop:size-10" aria-label="Criar projeto" onClick={onNewProject}>
+          <Plus aria-hidden className="text-muted-foreground" />
+        </SidebarGroupAction>
         <CollapsibleContent>
           <SidebarGroupContent>
             <WorkFeedback error={sidebar.error || flags.error} retry={() => void sidebar.refetch()} />
@@ -51,34 +54,47 @@ function SidebarProjects({ projectsVersion }: { projectsVersion: number }) {
                 const active = pathname === `/tasks/project/${project.id}`;
                 return (
                   <SidebarMenuItem key={project.id}>
-                    <SidebarMenuButton asChild isActive={active} className="max-desktop:min-h-10">
-                      <Link to={`/tasks/project/${project.id}`} aria-current={active ? 'page' : undefined}>
-                        <Circle aria-hidden className={cn('size-3 shrink-0 fill-current', !project.color && 'text-muted-foreground')} style={project.color ? { color: project.color } : undefined} />
-                        <span className="truncate">{project.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    <SidebarMenuAction
-                      aria-label={`${project.favorite ? 'Desfavoritar' : 'Favoritar'} ${project.title}`}
-                      aria-pressed={project.favorite}
-                      disabled={flags.isPending}
-                      className="size-7 top-0.5 max-desktop:size-10 max-desktop:top-0 max-desktop:right-0"
-                      onClick={() => flags.mutate({ project, field: 'favorite', value: !project.favorite })}
-                    >
-                      <Star aria-hidden className={cn(project.favorite ? 'fill-current text-sidebar-primary' : 'text-muted-foreground')} />
-                    </SidebarMenuAction>
-                    {active && project.mode === 'DEVELOPMENT' && (
-                      <SidebarMenuSub>
-                        {projectTabs.map(item => (
-                          <SidebarMenuSubItem key={item.value}>
-                            <SidebarMenuSubButton asChild isActive={tab === item.value} className="max-desktop:min-h-10">
-                              <Link to={`/tasks/project/${project.id}?tab=${item.value}`} aria-current={tab === item.value ? 'page' : undefined}>
-                                {item.label}
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    )}
+                    {/* Route activation resets the disclosure so deep links reveal their destination. */}
+                    <Collapsible key={String(active)} defaultOpen={active} className="group/project">
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton className="relative group-has-[[data-sidebar=menu-action]]/menu-item:pr-14 max-desktop:group-has-[[data-sidebar=menu-action]]/menu-item:pr-20 max-desktop:min-h-10 [&>svg:last-child]:size-3.5">
+                          <Circle aria-hidden className={cn('size-3 shrink-0 fill-current', !project.color && 'text-muted-foreground')} style={project.color ? { color: project.color } : undefined} />
+                          <span className="truncate">{project.title}</span>
+                          <ChevronRight aria-hidden className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground group-data-[state=open]/project:rotate-90" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <SidebarMenuAction
+                        showOnHover={!project.favorite}
+                        className="right-7 max-desktop:right-10"
+                        aria-label={`${project.favorite ? 'Desafixar' : 'Fixar'} ${project.title}`}
+                        aria-pressed={project.favorite}
+                        disabled={flags.isPending}
+                        onClick={() => flags.mutate({ project, field: 'favorite', value: !project.favorite })}
+                      >
+                        {project.favorite ? <PinOff aria-hidden className="text-muted-foreground" /> : <Pin aria-hidden className="text-muted-foreground" />}
+                      </SidebarMenuAction>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {project.mode === 'DEVELOPMENT' ? projectTabs.map(item => (
+                            <SidebarMenuSubItem key={item.value}>
+                              <SidebarMenuSubButton asChild isActive={active && tab === item.value} className="max-desktop:min-h-10">
+                                <Link to={`/tasks/project/${project.id}?tab=${item.value}`} aria-current={active && tab === item.value ? 'page' : undefined}>
+                                  {item.label}
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )) : (
+                            <SidebarMenuSubItem>
+                              <SidebarMenuSubButton asChild isActive={active} className="max-desktop:min-h-10">
+                                <Link to={`/tasks/project/${project.id}`} aria-current={active ? 'page' : undefined}>
+                                  Visão geral
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </SidebarMenuItem>
                 );
               })}
@@ -96,9 +112,10 @@ function SidebarProjects({ projectsVersion }: { projectsVersion: number }) {
 type AppSidebarProps = {
   projectsVersion?: number;
   onNewTask: () => void;
+  onNewProject: () => void;
 };
 
-export function AppSidebar({ projectsVersion = 0, onNewTask }: AppSidebarProps) {
+export function AppSidebar({ projectsVersion = 0, onNewTask, onNewProject }: AppSidebarProps) {
   const { role } = useAuth();
   const { pathname } = useLocation();
   const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
@@ -124,7 +141,7 @@ export function AppSidebar({ projectsVersion = 0, onNewTask }: AppSidebarProps) 
 
   return (
     <Sidebar collapsible="none" data-sidebar="sidebar" className="min-w-0 shrink-0 border-r border-sidebar-border max-desktop:flex-1">
-      <SidebarHeader className="h-app-header shrink-0 justify-center border-b border-sidebar-border px-4 py-0">
+      <SidebarHeader className="h-app-header shrink-0 justify-center px-4 py-0">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-base font-semibold">{context.label}</span>
           <Button variant="ghost" size="icon" className="size-7 max-desktop:size-10" aria-label="Esconder menu" aria-expanded={isMobile ? openMobile : open} onClick={toggleSidebar}>
@@ -142,7 +159,7 @@ export function AppSidebar({ projectsVersion = 0, onNewTask }: AppSidebarProps) 
             </div>
           )}
           <SidebarGroup><SidebarGroupContent>{renderItems(context.items)}</SidebarGroupContent></SidebarGroup>
-          {context.id === 'work' && <SidebarProjects projectsVersion={projectsVersion} />}
+          {context.id === 'work' && <SidebarProjects projectsVersion={projectsVersion} onNewProject={onNewProject} />}
           {role === 'ADMIN' && context.adminItems && (
             <SidebarGroup>
               <SidebarGroupLabel>Administração</SidebarGroupLabel>

@@ -4,6 +4,7 @@ import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AppHeader } from "@/components/common/AppHeader";
 import { TaskEditor } from "@/components/tasks/TaskEditor";
+import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { AppSidebar } from "./AppSidebar";
 import { AppTopBar } from "./AppTopBar";
 import { AppContextRail } from "./AppContextRail";
@@ -51,6 +52,7 @@ function AppShell({ projectsVersion }: { projectsVersion: number }) {
   const { isMobile, open, openMobile, setOpenMobile } = useSidebar();
   const { pathname, search } = useLocation();
   const [taskOpen, setTaskOpen] = useState(false);
+  const [projectOpen, setProjectOpen] = useState(false);
 
   useEffect(() => {
     setOpenMobile(false);
@@ -61,13 +63,18 @@ function AppShell({ projectsVersion }: { projectsVersion: number }) {
     setTaskOpen(true);
   };
 
+  const createProject = () => {
+    setOpenMobile(false);
+    setProjectOpen(true);
+  };
+
   return (
     <>
       <AppTopBar />
       <div className="flex min-h-0 flex-1">
         {!isMobile && <AppContextRail />}
         <div data-app-panel className="flex min-w-0 flex-1 overflow-hidden bg-card desktop:mb-2 desktop:mr-2 desktop:rounded-lg desktop:border">
-          {!isMobile && open && <AppSidebar projectsVersion={projectsVersion} onNewTask={createTask} />}
+          {!isMobile && open && <AppSidebar projectsVersion={projectsVersion} onNewTask={createTask} onNewProject={createProject} />}
           <main className="flex min-w-0 flex-1 flex-col overflow-x-clip">
             <AppHeader />
             <div data-page-content className="min-h-0 min-w-0 flex-1 overflow-y-auto px-page py-4 md:py-5">
@@ -81,11 +88,12 @@ function AppShell({ projectsVersion }: { projectsVersion: number }) {
           <SheetContent id="app-navigation-mobile" side="left" aria-describedby={undefined} className="flex w-mobile-navigation max-w-full gap-0 p-0 sm:max-w-none [&>button]:hidden">
             <SheetTitle className="sr-only">Navegação Oriens</SheetTitle>
             <AppContextRail />
-            <AppSidebar projectsVersion={projectsVersion} onNewTask={createTask} />
+            <AppSidebar projectsVersion={projectsVersion} onNewTask={createTask} onNewProject={createProject} />
           </SheetContent>
         </Sheet>
       )}
       <TaskEditor open={taskOpen} onOpenChange={setTaskOpen} />
+      <CreateProjectDialog open={projectOpen} onOpenChange={setProjectOpen} onSuccess={() => {}} />
     </>
   );
 }

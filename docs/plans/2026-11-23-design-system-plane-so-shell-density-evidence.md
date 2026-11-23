@@ -16,7 +16,7 @@
 - Controles compactos, gutter de 20px, título de 20px e kanban com colunas de 336px, padding de 8px e cards de raio de 12px.
 - Upload do avatar foi movido com o menu, passando por hook e serviço para manter a separação de camadas.
 
-Rotas, contratos, backend, paleta e dependências foram preservados. `ui/sidebar.tsx` não foi alterado.
+Rotas, contratos, backend, paleta e dependências foram preservados. Na entrega inicial, `ui/sidebar.tsx` não foi alterado; o ajuste da seção final o adapta.
 
 ## Provas automáticas
 
@@ -101,3 +101,42 @@ Verificado no navegador: fundo branco no tema claro, borda suave, altura desktop
 ### Movimento do botão após revisão
 
 A pedido do usuário, a variante `sidebar-action` ficou sem transições e sem encolhimento ao pressionar. O realce de hover muda imediatamente. O e2e de ponteiro verifica ausência de transição e animação no hover e dimensões idênticas durante a pressão: 1 cenário aprovado. Lint e build também passaram, com os avisos preexistentes. Este ajuste é restrito à ação principal da sidebar.
+
+## Ajuste da lista de projetos da sidebar
+
+A lista de projetos passou a seguir o comportamento do Plane:
+- **Projeto como seletor.** Clicar no projeto expande e recolhe os subitens, sem navegar. A página abre só pelo subitem: Quadro, Objetivos e Linha do tempo em projetos de desenvolvimento, e "Visão geral" em projetos simples. Um link direto para o projeto já abre o item expandido.
+- **Fixar no lugar de favoritar.** A ação usa alfinete (`Fixar`/`Desafixar`, com `aria-pressed`) e o mesmo campo `favorite` da API. Ela aparece no hover ou no foco da própria linha, e fica sempre visível no projeto fixado.
+- **Atalho "Criar projeto"** no grupo Projetos. Abre o `CreateProjectDialog` existente pelo shell, funciona com o grupo recolhido e fecha o Sheet no mobile. A rota atual não muda.
+- **Hover mais discreto que o item ativo.** O cabeçalho da sidebar ficou sem borda, e o espaçamento dos itens foi alinhado ao botão "Nova tarefa".
+
+### Desvios da spec
+
+- **Token novo `--sidebar-hover`** (claro `210 5% 96%`, escuro `200 4% 11%`). A D9 previa nenhum token de cor novo, mas o `--sidebar-accent` deixava o hover igual ao item ativo. O token é um fundo de interação, definido nos dois temas e mapeado no Tailwind. Contrastes:
+
+  | Par | Claro | Escuro |
+  |---|---|---|
+  | texto / hover | 17,55 | 13,59 |
+  | hover / card | 1,09 | 1,08 |
+  | ativo / card | 1,20 | 1,18 |
+
+  O hover fica abaixo do ativo nos dois temas e não carrega informação sozinho, porque o item ativo também tem `aria-current` e peso de fonte.
+- **`ui/sidebar.tsx` adaptado**, como permite o frontend.md §1:
+  - espaçamento de grupo e itens;
+  - `showOnHover` também no `SidebarGroupAction`;
+  - ações centralizadas na linha, com 28px no desktop e 40px no mobile;
+  - hover pelo token novo.
+
+### Provas
+
+| Comando | Resultado |
+|---|---|
+| `npm run lint` | 0 erros; mesmos 14 avisos preexistentes |
+| `npm test` | 41 arquivos, 248 testes aprovados |
+| `npm run build` | Sucesso |
+| `E2E_API_BASE_URL=http://127.0.0.1:18080 npx playwright test shell.spec.ts navigation.spec.ts responsive.spec.ts --workers=2` | 25 aprovados, 13 ignorados por projeto, 0 falhas |
+| `git diff --check` | Sem problemas |
+
+Na primeira execução, o e2e "atalho da sidebar cria projeto" falhou no mobile: o teste media o alinhamento enquanto o Sheet ainda deslizava (x de −228 contra −227,2). O teste agora espera as animações do Sheet terminarem antes de medir. Depois disso, passou nas 6 de 6 repetições (`--repeat-each=3`, desktop e mobile).
+
+Também conferido no navegador nos dois temas: "+" do grupo no hover, alfinete no projeto fixado, seletor expandindo sem navegar e subitens com linha-guia. Não foram geradas novas capturas no repositório para este ajuste.

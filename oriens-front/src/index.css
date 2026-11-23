@@ -87,6 +87,8 @@
     --sidebar-background: var(--card);
     --sidebar-foreground: var(--foreground);
     --sidebar-accent: var(--muted);
+    /* Hover stays subtler than the selected navigation item. */
+    --sidebar-hover: 210 5% 96%;
     --sidebar-accent-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
@@ -145,6 +147,7 @@
     --sidebar-background: var(--card);
     --sidebar-foreground: var(--foreground);
     --sidebar-accent: var(--muted);
+    --sidebar-hover: 200 4% 11%;
     --sidebar-accent-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
