@@ -91,13 +91,21 @@ public class WorkCreationService {
         if (payload instanceof CreateTask t) {
             List<Long> ids = t.labelIds() == null ? List.of() : t.labelIds().stream().sorted(Comparator.nullsFirst(Comparator.naturalOrder())).toList();
             ObjectNode normalized = mapper.valueToTree(new CreateTask(trim(t.title()), t.description(), t.projectId(), t.projectVersion(), t.objectiveId(), t.columnId(),
-                t.plannedDate(), t.startTime(), t.dueDate(), t.priority() == null ? Priority.MEDIUM : t.priority(), t.location(), ids));
+                t.plannedDate(), t.startTime(), t.dueDate(), t.priority() == null ? Priority.NONE : t.priority(), t.location(), ids));
             // Preserve the hash of pre-label creation receipts for uncertain retries after upgrade.
             if (ids.isEmpty()) normalized.remove("labelIds");
             return normalized;
         }
         if (payload instanceof LabelInput l) return new LabelInput(trim(l.name()), l.color());
-        if (payload instanceof CreateObjective o) return new CreateObjective(o.projectVersion(), trim(o.title()), o.dueDate());
+        if (payload instanceof CreateObjective o) {
+            ObjectNode normalized = mapper.valueToTree(new CreateObjective(o.projectVersion(), trim(o.title()), o.dueDate(),
+                o.description(), o.startDate(), o.status()));
+            // Keep existing receipts replayable when old clients omit the additive fields.
+            if (o.description() == null) normalized.remove("description");
+            if (o.startDate() == null) normalized.remove("startDate");
+            if (o.status() == null) normalized.remove("status");
+            return normalized;
+        }
         if (payload instanceof CreateColumn c) return new CreateColumn(c.projectVersion(), trim(c.name()), c.kind());
         return payload;
     }

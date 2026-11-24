@@ -99,6 +99,10 @@ public class ProjectWorkService {
         Project project = project(ownerId, projectId);
         version(project.getVersion(), command.projectVersion());
         Objective objective = addObjective(project, command.title(), command.dueDate());
+        objective.setDescription(description(command.description()));
+        objective.setStartDate(command.startDate());
+        if (command.status() != null) objective.setStatus(command.status());
+        validateObjectivePeriod(objective);
         structuralChange(project);
         return objective;
     }
@@ -117,10 +121,21 @@ public class ProjectWorkService {
         Objective objective = objective(projectId, id);
         version(objective.getVersion(), command.getVersion());
         if (command.has("title")) objective.setTitle(title(command.getTitle(), 200, "title"));
+        if (command.has("description")) objective.setDescription(description(command.getDescription()));
+        if (command.has("startDate")) objective.setStartDate(command.getStartDate());
         if (command.has("dueDate")) objective.setDueDate(command.getDueDate());
         if (command.has("status")) objective.setStatus(require(command.getStatus(), "status"));
+        if (command.has("favorite")) objective.setFavorite(require(command.getFavorite(), "favorite"));
+        validateObjectivePeriod(objective);
         em.flush();
         return objective;
+    }
+
+    private static void validateObjectivePeriod(Objective objective) {
+        if (objective.getStartDate() != null && objective.getDueDate() != null
+                && objective.getDueDate().isBefore(objective.getStartDate())) {
+            invalid("dueDate", "O término deve ser igual ou posterior ao início.");
+        }
     }
 
     public void deleteObjective(Long ownerId, Long projectId, Long id, Long expectedVersion, Long projectVersion) {
@@ -241,7 +256,7 @@ public class ProjectWorkService {
         Project project = command.projectId() == null ? null : development(ownerId, command.projectId());
         if (project != null) version(project.getVersion(), command.projectVersion());
         Task task = Task.builder().user(owner(ownerId)).title(title(command.title(), 200, "title"))
-                .description(description(command.description())).priority(command.priority() == null ? Priority.MEDIUM : command.priority())
+                .description(description(command.description())).priority(command.priority() == null ? Priority.NONE : command.priority())
                 .plannedDate(command.plannedDate()).startTime(command.startTime()).dueDate(command.dueDate())
                 .location(command.location()).build();
         validatePlanning(task);

@@ -147,8 +147,8 @@ public class ScopedWorkReadService {
             "defaultCompletedColumnId",id(p.getDefaultCompletedColumnId())));return out;
     }
     public Map<String,Object> objectiveView(Access a,Objective o) {
-        var out=fields("id",id(o.getId()),"projectId",id(o.getProject().getId()),"title",o.getTitle(),"dueDate",o.getDueDate(),
-            "status",o.getStatus(),"position",o.getPosition(),"version",o.getVersion());
+        var out=fields("id",id(o.getId()),"projectId",id(o.getProject().getId()),"title",o.getTitle(),"description",o.getDescription(),"startDate",o.getStartDate(),"dueDate",o.getDueDate(),
+            "status",o.getStatus(),"favorite",o.isFavorite(),"position",o.getPosition(),"version",o.getVersion());
         if(a.taskRead()) out.put("taskCounts",counts(taskScope(a).and(equal("projectId",o.getProject().getId())).and(equal("objectiveId",o.getId()))));
         return out;
     }

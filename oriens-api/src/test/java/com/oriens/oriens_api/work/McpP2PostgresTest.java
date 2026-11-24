@@ -99,6 +99,35 @@ class McpP2PostgresTest extends McpPostgresTest {
         assertThat(current(p).getLastAccessed()).isNull();
     }
 
+    @Test void objectiveDetailsAreWritableAndReadableThroughMcpWithoutTaskScopes() throws Exception {
+        var p = project("Objetivos detalhados");
+        var g = grant(Set.of("mcp:context", "projects:read", "objectives:create", "objectives:update"), Set.of(p.getId()), false);
+        var created = repeat(g, "create_objective", intent("projectId", id(p.getId()), "expectedProjectVersion", current(p).getVersion(),
+            "title", "Entrega", "description", "Resultado esperado", "startDate", "2026-11-01", "dueDate", "2026-11-28", "status", "BACKLOG"));
+        var goal = created.path("resource");
+        assertThat(goal.path("description").asText()).isEqualTo("Resultado esperado");
+        assertThat(goal.path("startDate").asText()).isEqualTo("2026-11-01");
+        assertThat(goal.has("taskCounts")).isFalse();
+        var updated = repeat(g, "update_objective", intent("projectId", id(p.getId()), "objectiveId", created.path("resourceId").asText(),
+            "expectedVersion", goal.path("version").asLong(), "description", null, "startDate", null, "status", "PAUSED"));
+        assertThat(updated.path("resource").path("description").isNull()).isTrue();
+        assertThat(updated.path("resource").path("startDate").isNull()).isTrue();
+        assertThat(updated.path("resource").path("status").asText()).isEqualTo("PAUSED");
+        assertThat(updated.path("resource").path("dueDate").asText()).isEqualTo("2026-11-28");
+        assertThat(updated.path("resource").path("favorite").asBoolean()).isFalse();
+        var pinned = repeat(g, "update_objective", intent("projectId", id(p.getId()), "objectiveId", created.path("resourceId").asText(),
+            "expectedVersion", updated.path("resource").path("version").asLong(), "favorite", true));
+        assertThat(pinned.path("resource").path("favorite").asBoolean()).isTrue();
+        assertThat(pinned.path("resource").path("status").asText()).isEqualTo("PAUSED");
+        // Description and start date alone are enough to update.
+        var described = repeat(g, "update_objective", intent("projectId", id(p.getId()), "objectiveId", created.path("resourceId").asText(),
+            "expectedVersion", pinned.path("resource").path("version").asLong(), "description", "Só a descrição"));
+        assertThat(described.path("resource").path("description").asText()).isEqualTo("Só a descrição");
+        var started = repeat(g, "update_objective", intent("projectId", id(p.getId()), "objectiveId", created.path("resourceId").asText(),
+            "expectedVersion", described.path("resource").path("version").asLong(), "startDate", "2026-11-03"));
+        assertThat(started.path("resource").path("startDate").asText()).isEqualTo("2026-11-03");
+    }
+
     @Test void everyProjectAndObjectiveMutationReplaysOnceAndCreationDoesNotAuthorize()throws Exception {
         var p=project("Projeto selecionado");var g=grant(FULL,Set.of(p.getId()),true);
         var create=intent("title","Criado pela IA","mode","SIMPLE");var created=repeat(g,"create_project",create);

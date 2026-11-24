@@ -42,7 +42,7 @@ public class Task {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority", nullable = false)
-    @Builder.Default private Priority priority = Priority.MEDIUM;
+    @Builder.Default private Priority priority = Priority.NONE;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

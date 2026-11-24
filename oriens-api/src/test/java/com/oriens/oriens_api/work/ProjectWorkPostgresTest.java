@@ -110,11 +110,23 @@ class ProjectWorkPostgresTest {
         assertThat(task(development, null, null, null, null).getStatus()).isEqualTo(Status.BACKLOG);
     }
 
+    @Test void noPriorityAndUrgentAreStoredByTheDatabase() {
+        Task task = task(null, null, null, null, null);
+        assertThat(storedPriority(task)).isEqualTo("NONE");
+        PatchTask patch = patch(task); patch.setPriority(Priority.URGENT);
+        service.patchTask(owner, task.getId(), patch);
+        assertThat(storedPriority(task)).isEqualTo("URGENT");
+    }
+
+    private Object storedPriority(Task task) {
+        return em.createNativeQuery("select priority from tasks where id = ?1").setParameter(1, task.getId()).getSingleResult();
+    }
+
     @Test void nullableDatesPriorityInstantAndPlanningAreIndependent() {
         Project project = project(ProjectMode.DEVELOPMENT);
         Task unscheduled = task(project, null, null, null, null);
         assertThat(unscheduled.getPlannedDate()).isNull(); assertThat(unscheduled.getStartTime()).isNull();
-        assertThat(unscheduled.getDueDate()).isNull(); assertThat(unscheduled.getPriority()).isEqualTo(Priority.MEDIUM);
+        assertThat(unscheduled.getDueDate()).isNull(); assertThat(unscheduled.getPriority()).isEqualTo(Priority.NONE);
         assertThat(unscheduled.getCreatedAt()).isNotNull();
         LocalDate due = LocalDate.of(2026, 11, 20);
         Task scheduled = task(null, null, due.minusDays(2), LocalTime.NOON, due);

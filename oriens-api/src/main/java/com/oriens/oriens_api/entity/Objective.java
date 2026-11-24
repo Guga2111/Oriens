@@ -17,9 +17,13 @@ public class Objective {
     private Project project;
     @Column(nullable = false, length = 200)
     private String title;
+    @Column(columnDefinition = "text")
+    private String description;
+    private LocalDate startDate;
     private LocalDate dueDate;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20)
     @Builder.Default private ObjectiveStatus status = ObjectiveStatus.PENDING;
     @Column(nullable = false) private int position;
+    @Column(name = "is_favorite", nullable = false) private boolean favorite;
     @Version @Column(nullable = false) private long version;
 }

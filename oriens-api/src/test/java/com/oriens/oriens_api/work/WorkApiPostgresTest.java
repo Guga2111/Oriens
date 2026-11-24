@@ -327,7 +327,9 @@ class WorkApiPostgresTest {
     @Test void creationReplayCanonicalPayloadConflictsExpiredDeletedAndConcurrentKeys() throws Exception {
         String key=UUID.randomUUID().toString(), value="{\"title\":\"Ação\"}";
         MvcResult first=send("POST","/task/user/"+owner,value,key,token,201);
-        MvcResult again=send("POST","/task/user/"+owner,"{\"priority\":\"MEDIUM\",\"title\":\" Ação \"}",key,token,201);
+        MvcResult again=send("POST","/task/user/"+owner,"{\"priority\":\"NONE\",\"title\":\" Ação \"}",key,token,201);
+        // An explicit priority other than the default is a different request under the same key.
+        send("POST","/task/user/"+owner,"{\"priority\":\"MEDIUM\",\"title\":\"Ação\"}",key,token,409);
         assertThat(body(again)).isEqualTo(body(first)); assertThat(again.getResponse().getHeader("ETag")).isEqualTo(first.getResponse().getHeader("ETag"));
         send("POST","/task/user/"+owner,"{\"title\":\"Outra\"}",key,token,409);
         long id=body(first).path("task").path("id").asLong();
@@ -531,7 +533,8 @@ class WorkApiPostgresTest {
         assertThat(replay.path("id")).isEqualTo(created.path("id"));
         Map<String,Object> legacy = new TreeMap<>();
         for (String field : List.of("description","projectId","projectVersion","objectiveId","columnId","plannedDate","startTime","dueDate","location")) legacy.put(field,null);
-        legacy.put("title","Legado"); legacy.put("priority","MEDIUM");
+        // An omitted priority is hashed as its effective value, NONE since V12.
+        legacy.put("title","Legado"); legacy.put("priority","NONE");
         String expected = HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(json.writeValueAsBytes(legacy)));
         assertThat(receipts.findByUserIdAndOperationAndIdempotencyKey(owner,"task:create",UUID.fromString(key)).orElseThrow().getPayloadSha256()).isEqualTo(expected);
         JsonNode label = body(send("POST", "/task-labels/user/"+owner, "{\"name\":\"Pesquisa\",\"color\":\"YELLOW\"}", UUID.randomUUID().toString(), token, 201));
