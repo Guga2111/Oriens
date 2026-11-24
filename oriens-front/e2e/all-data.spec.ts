@@ -19,7 +19,7 @@ test("abas e arquivados vivem na URL", async ({ page }) => {
 
   await page.goto("/all-data");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Todos os dados" })
+    page.getByRole("heading", { level: 1, name: "Explorar" })
   ).toBeVisible();
 
   await page.getByRole("tab", { name: "Projetos" }).click();

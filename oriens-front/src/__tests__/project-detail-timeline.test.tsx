@@ -171,3 +171,28 @@ it('a visão escolhida fica marcada no próprio item, e o tooltip abre pelo tecl
   screen.getByRole('radio', { name: 'Calendário (em breve)' }).focus();
   expect(await screen.findByRole('tooltip')).toHaveTextContent('Calendário · em breve');
 });
+
+it('guarda a visão dos objetivos na URL e volta à lista sem parâmetro', async () => {
+  show('/tasks/project/9?tab=objectives');
+  const views = await screen.findByRole('group', { name: 'Visão dos objetivos' });
+  await userEvent.click(within(views).getByRole('radio', { name: 'Galeria' }));
+  expect(screen.getByRole('status', { name: 'url' })).toHaveTextContent('layout=gallery');
+  expect(screen.getByRole('list', { name: 'Galeria de objetivos' })).toBeInTheDocument();
+  await userEvent.click(within(views).getByRole('radio', { name: 'Timeline' }));
+  expect(screen.getByRole('region', { name: 'Timeline dos objetivos' })).toBeInTheDocument();
+  await userEvent.click(within(views).getByRole('radio', { name: 'Lista' }));
+  expect(screen.getByRole('status', { name: 'url' })).not.toHaveTextContent('layout=');
+  expect(screen.getByRole('list', { name: 'Lista de objetivos' })).toBeInTheDocument();
+});
+
+it('mostra as ações do projeto em Panorama e Itens de trabalho, mas não em Objetivos', async () => {
+  const first = show('/tasks/project/9?tab=objectives');
+  await screen.findByRole('group', { name: 'Visão dos objetivos' });
+  expect(screen.queryByRole('button', { name: 'Ações do projeto' })).not.toBeInTheDocument();
+  first.unmount();
+  const second = show('/tasks/project/9?tab=overview');
+  expect(await screen.findByRole('button', { name: 'Ações do projeto' })).toBeInTheDocument();
+  second.unmount();
+  show('/tasks/project/9?tab=board');
+  expect(await screen.findByRole('button', { name: 'Ações do projeto' })).toBeInTheDocument();
+});

@@ -29,7 +29,7 @@ it('cria tarefa pelo objetivo sem datas artificiais; vínculo pode ser removido'
   await userEvent.click(screen.getByRole('combobox', { name: 'Objetivo da tarefa' }));
   await userEvent.click(screen.getByRole('option', { name: 'Sem objetivo' }));
   await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
-  await waitFor(() => expect(api.post).toHaveBeenCalledWith('/task/user/7', expect.objectContaining({ objectiveId: null, columnId: 11, projectId: 9, projectVersion: 4, plannedDate: null, startTime: null, dueDate: null, priority: 'MEDIUM' }), expect.any(Object)));
+  await waitFor(() => expect(api.post).toHaveBeenCalledWith('/task/user/7', expect.objectContaining({ objectiveId: null, columnId: 11, projectId: 9, projectVersion: 4, plannedDate: null, startTime: null, dueDate: null, priority: 'NONE' }), expect.any(Object)));
 });
 it('timeout reenvia exatamente o mesmo payload e chave, preservando o rascunho', async () => {
   vi.mocked(api.post).mockRejectedValueOnce(new Error('timeout'));

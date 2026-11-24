@@ -1,4 +1,5 @@
-import { CalendarDays, ChartGantt, Kanban, LayoutDashboard, Layers2, List, Sheet, Target, type LucideIcon } from 'lucide-react';
+import { CalendarDays, ChartGantt, Kanban, LayoutGrid, Layers2, List, Sheet, Target, type LucideIcon } from 'lucide-react';
+import { OverviewIcon } from '@/components/icons/OverviewIcon';
 
 /** How the work items of a project can be laid out, in plane.so's order. Only board and timeline exist so far. */
 export const WORK_VIEWS = [
@@ -12,7 +13,7 @@ export type WorkView = typeof WORK_VIEWS[number]['value'];
 
 /** The pages of a development project, as the sidebar lists them. "Itens de trabalho" holds every view. */
 export const PROJECT_SECTIONS = [
-  { value: 'overview', label: 'Panorama', icon: LayoutDashboard },
+  { value: 'overview', label: 'Panorama', icon: OverviewIcon },
   { value: 'work', label: 'Itens de trabalho', icon: Layers2 },
   { value: 'objectives', label: 'Objetivos', icon: Target },
 ] as const satisfies readonly { value: string; label: string; icon: LucideIcon }[];
@@ -30,3 +31,18 @@ export const projectTabFrom = (value: string | null): ProjectTab =>
 export const projectSectionOf = (tab: ProjectTab): ProjectSection => tab === 'overview' || tab === 'objectives' ? tab : 'work';
 
 export const workViewOf = (tab: ProjectTab): WorkView | null => isWorkView(tab) ? tab : null;
+
+/** How the Objectives page lays out its objectives (`?layout=`), as plane.so's modules. The list is the default. */
+export const OBJECTIVE_LAYOUTS = [
+  { value: 'list', label: 'Lista', icon: List },
+  { value: 'gallery', label: 'Galeria', icon: LayoutGrid },
+  { value: 'timeline', label: 'Timeline', icon: ChartGantt },
+] as const satisfies readonly { value: string; label: string; icon: LucideIcon }[];
+export type ObjectiveLayout = typeof OBJECTIVE_LAYOUTS[number]['value'];
+
+export const objectiveLayoutFrom = (value: string | null): ObjectiveLayout =>
+  OBJECTIVE_LAYOUTS.find(layout => layout.value === value)?.value ?? 'list';
+
+/** The project's work items on the board, filtered by one objective. */
+export const objectiveWorkItemsHref = (projectId: number, objectiveId: number) =>
+  `/tasks/project/${projectId}?tab=board&objective=${objectiveId}`;

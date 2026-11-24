@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Oriens">
   <style>
-    .sun { fill: #BA4608 } .ink { fill: #0F0F10 }
-    @media (prefers-color-scheme: dark) { .sun { fill: #F9761F } .ink { fill: #E4E6E7 } }
+    .sun { fill: #C24400 } .ink { fill: #0F0F10 }
+    @media (prefers-color-scheme: dark) { .sun { fill: #FF751A } .ink { fill: #E4E6E7 } }
   </style>
   <path class="sun" d="M32.33 136A96 96 0 1 1 223.67 136L177.36 136A50 50 0 1 0 78.64 136Z"/>
   <path class="ink" d="M39.84 166A96 96 0 0 0 216.16 166L160.5 166A50 50 0 0 1 95.5 166Z"/>

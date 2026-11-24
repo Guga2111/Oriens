@@ -16,12 +16,13 @@ import { PROJECT_SECTIONS, projectSectionOf, projectTabFrom } from "@/lib/projec
 import { HeaderActionsSlot } from "./HeaderActions";
 
 const sectionNames: Record<string, string> = {
+  "/home": "Início",
   "/tasks": "Hoje",
   "/projects": "Projetos",
   "/stats": "Estatísticas",
   "/config": "Configurações",
   "/financial": "Financeiro",
-  "/all-data": "Todos os dados",
+  "/all-data": "Explorar",
   "/support": "Ajuda & Suporte",
   "/admin/support": "Dashboard de Suporte",
   "/admin/management": "Gerenciar Admins",

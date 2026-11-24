@@ -26,7 +26,7 @@ describe('sidebar por contexto', () => {
     const nav = screen.getByRole('navigation', { name: 'Menu de Trabalho' });
     expect(within(nav).getByRole('link', { name: 'Hoje' })).toHaveAttribute('aria-current', 'page');
     expect(within(nav).getByRole('link', { name: 'Projetos' })).toBeInTheDocument();
-    expect(within(nav).getByRole('link', { name: 'Todos os dados' })).toBeInTheDocument();
+    expect(within(nav).getByRole('link', { name: 'Explorar' })).toBeInTheDocument();
     expect(within(nav).queryByRole('link', { name: 'Visão geral' })).not.toBeInTheDocument();
     expect(screen.queryByText('Administração')).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Nova tarefa' }));

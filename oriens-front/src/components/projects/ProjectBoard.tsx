@@ -86,7 +86,6 @@ export function ProjectBoard({ board, pendingColumnId, onOpen, onEdit, onAdd, on
   return <div className="min-w-0 max-sm:[&_button]:min-h-11" ref={region} tabIndex={-1} aria-label="Quadro de tarefas">
     <WorkFeedback error={writes.patch.error} />
     <p className="sr-only" role="status">{announcement}</p>
-    {board.filtered && <p className="mb-3 text-sm text-muted-foreground">Movimentos entre colunas vão para o final. Reordenação desativada enquanto houver filtros.</p>}
     {mobile && <div className="mb-4"><WorkSelect label="Coluna do quadro" value={current} onChange={setSelected} options={board.columns.map(c => ({ value: String(c.id), label: `${c.name} (${c.visibleCount})` }))} /></div>}
     <DndContext sensors={sensors} collisionDetection={boardCollision} onDragStart={({ active }) => setActiveId(Number(active.id))} onDragEnd={drop} onDragCancel={() => setActiveId(null)}
       accessibility={{ screenReaderInstructions: { draggable: 'Pressione espaço para pegar a tarefa, use as setas para mover, espaço para soltar ou Escape para cancelar.' },

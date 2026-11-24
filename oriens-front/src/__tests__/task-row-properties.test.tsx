@@ -51,6 +51,20 @@ it('troca a prioridade pelo popover do chip', async () => {
   await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', { priority: 'HIGH', ...versions }));
 });
 
+it('oferece urgente e sem prioridade, do mais urgente ao sem prioridade', async () => {
+  renderWork(<DashboardPage />);
+  await userEvent.click(within(await row()).getByRole('button', { name: 'Prioridade média' }));
+  const options = await screen.findAllByRole('option');
+  expect(options.map(option => option.textContent?.replace('(atual)', '').trim()))
+    .toEqual(['Urgente', 'Alta', 'Média', 'Baixa', 'Sem prioridade']);
+  await userEvent.click(screen.getByRole('option', { name: 'Urgente' }));
+  await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', { priority: 'URGENT', ...versions }));
+  await userEvent.click(within(await row()).getByRole('button', { name: 'Prioridade urgente' }));
+  await userEvent.click(await screen.findByRole('option', { name: 'Sem prioridade' }));
+  await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', { priority: 'NONE', version: 3, projectVersion: 4 }));
+  expect(await within(await row()).findByRole('button', { name: 'Sem prioridade' })).toBeInTheDocument();
+});
+
 it('marca uma etiqueta do catálogo e envia a lista completa', async () => {
   renderWork(<DashboardPage />);
   await userEvent.click(within(await row()).getByRole('button', { name: /Etiquetas:/ }));

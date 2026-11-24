@@ -39,7 +39,9 @@ export function ActivityCalendar({ period, today, tasks, habits, onWindowChange,
   const failed = tasks.isError || habits.isError;
   const months = weeks.map((w, i) => {
     const day = w.find(d => d >= period.startDate && d <= period.endDate && (d.slice(8) === '01' || i === 0));
-    return day ? format(productDate(day), 'MMM', { locale: ptBR }) : '';
+    // The opening partial month needs enough columns before the next label.
+    const shortOpeningMonth = i === 0 && weeks.slice(1, 3).some(week => week.some(date => date.slice(8) === '01'));
+    return day && !shortOpeningMonth ? format(productDate(day), 'MMM', { locale: ptBR }) : '';
   });
   return <AnalysisPanel title="Calendário de atividade" description={`Janela própria · ${intervalLabel(period)}`} action={<div className="flex gap-1">
     <Popover open={lookupOpen} onOpenChange={next => { if (next) lookupSelection.current = false; setLookupOpen(next); }}><PopoverTrigger asChild><Button ref={lookupTrigger} variant="ghost" size="icon" aria-label="Consultar atividade por data"><CalendarDays data-icon="inline-start" /></Button></PopoverTrigger><PopoverContent align="end" className="w-auto p-0" onCloseAutoFocus={event => { if (lookupSelection.current) event.preventDefault(); }}>

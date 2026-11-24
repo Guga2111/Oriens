@@ -3,8 +3,8 @@ import { ChartDonutIcon } from '@phosphor-icons/react/dist/csr/ChartDonut';
 import { ReadCvLogoIcon } from '@phosphor-icons/react/dist/csr/ReadCvLogo';
 import { TipJarIcon } from '@phosphor-icons/react/dist/csr/TipJar';
 import {
-  ChartLine, Database, FolderOpenDot, Headset,
-  House, LifeBuoy, PiggyBank, Settings, Shield, type LucideIcon,
+  Briefcase, CalendarCheck, ChartLine, Headset,
+  House, LifeBuoy, PiggyBank, Settings, Shield, Telescope, type LucideIcon,
 } from 'lucide-react';
 
 type ContextNavItem = {
@@ -27,11 +27,12 @@ type AppContext = {
 export const appContexts: AppContext[] = [
   {
     id: 'work', label: 'Trabalho', railLabel: 'Trabalho', icon: ReadCvLogoIcon,
-    prefixes: ['/tasks', '/projects', '/all-data'],
+    prefixes: ['/home', '/tasks', '/projects', '/all-data'],
     items: [
-      { label: 'Hoje', icon: House, url: '/tasks' },
-      { label: 'Projetos', icon: FolderOpenDot, url: '/projects', prefixes: ['/tasks/project'] },
-      { label: 'Todos os dados', icon: Database, url: '/all-data' },
+      { label: 'Início', icon: House, url: '/home' },
+      { label: 'Hoje', icon: CalendarCheck, url: '/tasks' },
+      { label: 'Projetos', icon: Briefcase, url: '/projects', prefixes: ['/tasks/project'] },
+      { label: 'Explorar', icon: Telescope, url: '/all-data' },
     ],
   },
   {

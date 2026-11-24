@@ -13,7 +13,10 @@ export interface WorkTask {
 }
 export interface WorkObjective {
   id: number; projectId: number; title: string; dueDate: string | null;
-  status: 'PENDING' | 'CONCLUDED'; position: number; version: number;
+  description?: string | null; startDate?: string | null;
+  status: 'BACKLOG' | 'PENDING' | 'ON_DOING' | 'PAUSED' | 'CONCLUDED' | 'CANCELLED'; position: number; version: number;
+  /** Pinned: shown first in every view of the Objectives page. */
+  favorite: boolean;
   nonCancelledTasks: number | null; completedTasks: number | null; cancelledTasks: number | null;
 }
 export interface WorkColumn {
@@ -71,8 +74,8 @@ export type ProjectWrite =
   | { action: 'convert'; id: number; version: number }
   | { action: 'delete'; id: number; version: number }
   | { action: 'picture'; id: number; version: number; file: File }
-  | { action: 'objective-create'; id: number; body: { projectVersion: number; title: string; dueDate: string | null }; key: string }
-  | { action: 'objective-patch'; id: number; objectiveId: number; body: { version: number; title?: string; dueDate?: string | null; status?: WorkObjective['status'] } }
+  | { action: 'objective-create'; id: number; body: { projectVersion: number; title: string; dueDate: string | null; description?: string | null; startDate?: string | null; status?: WorkObjective['status'] }; key: string }
+  | { action: 'objective-patch'; id: number; objectiveId: number; body: { version: number; title?: string; description?: string | null; startDate?: string | null; dueDate?: string | null; status?: WorkObjective['status']; favorite?: boolean } }
   | { action: 'objective-delete'; id: number; objective: WorkObjective; projectVersion: number }
   | { action: 'column-create'; id: number; body: { projectVersion: number; name: string; kind: TaskStatus }; key: string }
   | { action: 'column-patch'; id: number; columnId: number; body: { projectVersion: number; version: number; name: string; kind: TaskStatus } }

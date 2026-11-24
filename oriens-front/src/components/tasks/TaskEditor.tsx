@@ -1,3 +1,4 @@
+import { useRecordVisit } from '@/hooks/useHome';
 import { useEffect, useRef, useState } from 'react';
 import { TaskLabelPicker } from './TaskLabelPicker';
 import { Clock, X } from 'lucide-react';
@@ -17,6 +18,7 @@ import { useGoogleMapsScript } from '@/hooks/useGoogleMapsScript';
 import { usePlanningCount, useProjectBoard, useTaskWrites, useWorkProject, useWorkProjects } from '@/hooks/useWork';
 import { useCreationAttempt } from '@/hooks/useCreationAttempt';
 import { validCalendarDate, statusNames } from '@/lib/work-form';
+import { PRIORITY, PRIORITY_ORDER } from '@/lib/labels';
 import type { LocationDTO, TaskPriority } from '@/types/task';
 import type { TaskCreation, TaskPatch, WorkTask } from '@/types/work';
 
@@ -32,10 +34,11 @@ export function TaskEditor(props: TaskEditorProps) {
 }
 function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: TaskEditorProps) {
   const [base, setBase] = useState(task);
+  useRecordVisit('TASK', task?.id);
   const initial: Draft = { labelIds: (task?.labels ?? []).map(label => label.id).sort((a, b) => a - b), title: task?.title ?? '', description: task?.description ?? '',
     projectId: task?.projectId ?? defaults.projectId ?? null, objectiveId: task?.objectiveId ?? defaults.objectiveId ?? null,
     columnId: task?.columnId ?? defaults.columnId ?? null, plannedDate: task?.plannedDate ?? defaults.plannedDate ?? '',
-    startTime: (task?.startTime ?? defaults.startTime ?? '').slice(0, 5), dueDate: task?.dueDate ?? '', priority: task?.priority ?? 'MEDIUM', location: task?.location ?? null };
+    startTime: (task?.startTime ?? defaults.startTime ?? '').slice(0, 5), dueDate: task?.dueDate ?? '', priority: task?.priority ?? 'NONE', location: task?.location ?? null };
   const [draft, setDraft] = useState<Draft>(initial);
   const [original, setOriginal] = useState(JSON.stringify(initial));
   const autoDestination = useRef(false);
@@ -143,7 +146,7 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
       <FieldSet className="gap-3"><FieldLegend>Prazo e detalhes</FieldLegend><FieldGroup className="grid gap-4 sm:grid-cols-2">
       <Field><FieldLabel htmlFor="task-due">Prazo final (opcional)</FieldLabel><WorkDatePicker id="task-due" label="Prazo final" value={draft.dueDate} onChange={value => change('dueDate', value)} /><FieldDescription>Até quando a tarefa precisa estar pronta.</FieldDescription></Field>
       {draft.plannedDate && draft.dueDate && draft.plannedDate > draft.dueDate && <WorkFeedback message="O dia planejado é posterior ao prazo final. Você pode salvar assim." />}
-      <Field><FieldLabel>Prioridade</FieldLabel><WorkSelect label="Prioridade" value={draft.priority} options={[{ value: 'LOW', label: 'Baixa' }, { value: 'MEDIUM', label: 'Média' }, { value: 'HIGH', label: 'Alta' }]} onChange={v => change('priority', v as TaskPriority)} /></Field>
+      <Field><FieldLabel>Prioridade</FieldLabel><WorkSelect label="Prioridade" value={draft.priority} options={PRIORITY_ORDER.map(value => ({ value, label: PRIORITY[value].label }))} onChange={v => change('priority', v as TaskPriority)} /></Field>
       <Field className="sm:col-span-2"><FieldLabel htmlFor="task-address">Localização (opcional)</FieldLabel><Input id="task-address" value={draft.location?.address ?? ''} onChange={e => change('location', e.target.value ? { address: e.target.value } : null)} />
         {isLoaded && <LocationInput id="task-place-search" aria-label="Buscar endereço no mapa" isLoaded={isLoaded} onPlaceSelect={v => change('location', v)} />}
         {loadError && <p className="text-sm text-muted-foreground">Busca no mapa indisponível. Você pode informar o endereço acima.</p>}

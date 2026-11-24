@@ -3,7 +3,7 @@ import { login } from "./helpers";
 
 const DESTINATIONS = [
   { context: 'Trabalho', name: 'Projetos', path: '/projects' },
-  { context: 'Trabalho', name: 'Todos os dados', path: '/all-data' },
+  { context: 'Trabalho', name: 'Explorar', path: '/all-data' },
   { context: 'Financeiro', name: 'Visão geral', path: '/financial' },
   { context: 'Estatísticas', name: 'Visão geral', path: '/stats' },
   { context: 'Configurações', name: 'Configurações', path: '/config' },

@@ -59,7 +59,7 @@ export default function AllDataPage() {
   return (
     <div className="min-w-0 w-full">
       <div className="flex min-w-0 w-full flex-col gap-6">
-        <PageHeader title="Todos os dados" description="Visualize todas as suas tarefas e projetos em um só lugar." />
+        <PageHeader title="Explorar" description="Busque e filtre todas as suas tarefas e projetos, inclusive os arquivados." />
         <Tabs value={tab} onValueChange={value => setParams(current => {
           const next = new URLSearchParams(current); next.set("tab", value); return next;
         }, { replace: true })}>

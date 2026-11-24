@@ -1,3 +1,4 @@
+import { useRecordVisit } from '@/hooks/useHome';
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { isAxiosError } from "axios";
@@ -238,6 +239,7 @@ export function TaskPeek({ taskId, placeholder, onClose, onEdit }: {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const task = detail.data;
+  useRecordVisit("TASK", detail.isSuccess && !detail.isPlaceholderData ? taskId : undefined);
   const missing = isAxiosError(detail.error) && detail.error.response?.status === 404;
 
   const save: SaveTask = async body => {

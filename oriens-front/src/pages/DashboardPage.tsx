@@ -8,6 +8,8 @@ import {
   LayoutGrid,
   AlertCircle,
 } from "lucide-react";
+import { TodayHeaderActions } from "@/components/dashboard/TodayHeaderActions";
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { CreateTaskDialog } from "@/components/dashboard/CreateTaskDialog";
 import { useMemo, useRef, useState } from "react";
 import { useTaskDay, useTaskWeek } from "@/hooks/useWork";
@@ -38,6 +40,7 @@ import type { Task } from "@/types/task";
 
 export function DashboardPage() {
   const today = useProductToday();
+  const [taskSearch, setTaskSearch] = useState('');
   const [search, setSearch] = useSearchParams();
   const rawDate = search.get('date');
   const selectedDate = rawDate && validCalendarDate(rawDate) ? productDate(rawDate) : null;
@@ -88,12 +91,19 @@ export function DashboardPage() {
     setIsCreateTaskOpen(true);
   };
 
-  const periods = useMemo(() => groupTasksByPeriod(tasks), [tasks]);
+  const searchTerm = taskSearch.trim().toLocaleLowerCase('pt-BR');
+  const matchesSearch = (task: Task) => !searchTerm || [task.title, task.description].some(value => value?.toLocaleLowerCase('pt-BR').includes(searchTerm));
+  const visibleTasks = tasks.filter(matchesSearch);
+  const previousPlans = (day.data?.previousPlans ?? []).filter(matchesSearch);
+  const deadlineAttention = (day.data?.deadlineAttention ?? []).filter(matchesSearch);
+  const periods = groupTasksByPeriod(visibleTasks);
   const openTaskPlaceholder = useMemo(() => openTaskId
     ? [...tasks, ...(day.data?.previousPlans ?? []), ...(day.data?.deadlineAttention ?? [])].find(task => task.id === openTaskId)
     : undefined, [openTaskId, tasks, day.data]);
 
   const isToday = isSameDay(currentDate, productDate(today));
+  const hasSearchResults = visibleTasks.length > 0 || (viewMode === 'day' && isToday && (previousPlans.length > 0 || deadlineAttention.length > 0));
+  const noSearchResults = !!searchTerm && !isInitialLoading && !error && !hasSearchResults;
   const longDate = format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR });
   const longDateCapitalized =
     longDate.charAt(0).toUpperCase() + longDate.slice(1);
@@ -117,6 +127,7 @@ export function DashboardPage() {
 
   return (
     <>
+      <TodayHeaderActions search={taskSearch} onSearchChange={setTaskSearch} />
       <div className="planning-screen min-w-0 w-full">
         <div className="min-w-0 w-full">
           <PageHeader
@@ -191,7 +202,7 @@ export function DashboardPage() {
           />
 
           {viewMode === "day" && !isInitialLoading && (
-            <DayLine tasks={tasks} date={currentDate} />
+            <DayLine tasks={visibleTasks} date={currentDate} />
           )}
 
           {error && (
@@ -211,7 +222,16 @@ export function DashboardPage() {
             </Alert>
           )}
 
-          {viewMode === "day" ? (
+          {noSearchResults && (
+            <Empty role="status">
+              <EmptyHeader>
+                <EmptyTitle>Nenhuma tarefa encontrada</EmptyTitle>
+                <EmptyDescription>Tente outro termo ou limpe a busca.</EmptyDescription>
+              </EmptyHeader>
+              <Button variant="outline" onClick={() => setTaskSearch('')}>Limpar busca</Button>
+            </Empty>
+          )}
+          {!noSearchResults && (viewMode === "day" ? (
             <div
               ref={contentRef} tabIndex={-1} aria-label="Planejamento do dia"
               className="mt-6 flex flex-col gap-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -233,10 +253,10 @@ export function DashboardPage() {
                   isLoading={isInitialLoading}
                 />
               ))}
-              <TaskSection title="Sem horário" emptyLabel="Nenhuma tarefa sem horário." tasks={[...tasks].filter(t => !t.startTime).sort(compareTaskPriority)} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onOpenTask={openTask} onAddTask={() => openCreateTask()} isLoading={isInitialLoading} />
+              <TaskSection title="Sem horário" emptyLabel="Nenhuma tarefa sem horário." tasks={visibleTasks.filter(t => !t.startTime).sort(compareTaskPriority)} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onOpenTask={openTask} onAddTask={() => openCreateTask()} isLoading={isInitialLoading} />
               {isToday && <>
-                <TaskSection title="Pendentes de dias anteriores" timeRange="Planejamento anterior preservado até você reagendar." emptyLabel="Nenhuma pendência de dias anteriores." tasks={day.data?.previousPlans ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onOpenTask={openTask} isLoading={isInitialLoading} />
-                <TaskSection title="Prazos que precisam de atenção" timeRange="Prazo final hoje ou ultrapassado; o planejamento não muda." emptyLabel="Nenhum prazo precisando de atenção." tasks={day.data?.deadlineAttention ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onOpenTask={openTask} isLoading={isInitialLoading} />
+                <TaskSection title="Pendentes de dias anteriores" timeRange="Planejamento anterior preservado até você reagendar." emptyLabel="Nenhuma pendência de dias anteriores." tasks={previousPlans} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onOpenTask={openTask} isLoading={isInitialLoading} />
+                <TaskSection title="Prazos que precisam de atenção" timeRange="Prazo final hoje ou ultrapassado; o planejamento não muda." emptyLabel="Nenhum prazo precisando de atenção." tasks={deadlineAttention} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onOpenTask={openTask} isLoading={isInitialLoading} />
               </>}
             </div>
           ) : (
@@ -250,7 +270,7 @@ export function DashboardPage() {
                 </div>
               ) : (
                 <WeekView
-                  tasks={tasks}
+                  tasks={visibleTasks}
                   currentDate={currentDate}
                   onUpdateTasks={afterWrite}
                   onEditTask={setEditingTask}
@@ -260,7 +280,7 @@ export function DashboardPage() {
                 />
               )}
             </div>
-          )}
+          ))}
         </div>
       </div>
 

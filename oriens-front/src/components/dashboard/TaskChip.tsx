@@ -21,9 +21,11 @@ import type { Task, TaskPriority, TaskStatus } from "@/types/task";
 import { toast } from "sonner";
 
 const PRIORITY_DOT: Record<TaskPriority, string> = {
+  URGENT: "bg-priority-urgent",
   HIGH: "bg-negative",
   MEDIUM: "bg-now",
   LOW: "bg-muted-foreground",
+  NONE: "bg-border",
 };
 
 interface TaskChipProps {

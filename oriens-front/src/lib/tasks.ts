@@ -1,4 +1,5 @@
 import type { Task, TaskStatus } from "@/types/task";
+import { PRIORITY_ORDER } from "@/lib/labels";
 
 export interface TaskPeriod {
   id: "morning" | "afternoon" | "night";
@@ -40,9 +41,8 @@ export const TASK_PERIODS: readonly TaskPeriod[] = [
   },
 ];
 
-const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 export function compareTaskPriority(a: Task, b: Task) {
-  return priorityOrder[a.priority] - priorityOrder[b.priority] || a.id - b.id;
+  return PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority) || a.id - b.id;
 }
 export function compareTaskTime(a: Task, b: Task) {
   return (a.startTime ?? '24:00:00').localeCompare(b.startTime ?? '24:00:00') || compareTaskPriority(a, b);

@@ -1,8 +1,9 @@
 import { useEffect, type CSSProperties } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import {
-  ChevronDown, ChevronRight, Circle, LayoutDashboard, PanelLeftClose, Pin, PinOff, Plus,
+  ChevronDown, ChevronRight, Circle, PanelLeftClose, Pin, PinOff, Plus,
 } from 'lucide-react';
+import { OverviewIcon } from '@/components/icons/OverviewIcon';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem,
@@ -89,7 +90,7 @@ function SidebarProjects({ projectsVersion, onNewProject }: { projectsVersion: n
                             <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild isActive={active} className="max-desktop:min-h-10">
                                 <Link to={`/tasks/project/${project.id}`} aria-current={active ? 'page' : undefined}>
-                                  <LayoutDashboard aria-hidden />
+                                  <OverviewIcon aria-hidden />
                                   <span>Visão geral</span>
                                 </Link>
                               </SidebarMenuSubButton>
@@ -156,7 +157,7 @@ export function AppSidebar({ projectsVersion = 0, onNewTask, onNewProject }: App
         <nav aria-label={`Menu de ${context.label}`}>
           {context.id === 'work' && (
             <div className="px-3 pb-2 pt-3">
-              <Button variant="sidebar-action" className="w-full justify-start pl-2 max-desktop:min-h-10" onClick={onNewTask}>
+              <Button variant="sidebar-action" className="w-full justify-start pl-2 font-normal max-desktop:min-h-10" onClick={onNewTask}>
                 <Plus aria-hidden />Nova tarefa
               </Button>
             </div>

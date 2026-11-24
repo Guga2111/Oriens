@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useTaskLabels } from "@/hooks/useTaskLabels";
 import { useProductToday } from "@/hooks/useProductToday";
 import { parseLocalDate } from "@/lib/date";
-import { PRIORITY } from "@/lib/labels";
+import { PRIORITY, PRIORITY_ORDER } from "@/lib/labels";
 import { productDate, productNow } from "@/lib/product-time";
 import { HALF_HOURS, nextHalfHour, parseTimeOfDay } from "@/lib/time-of-day";
 import { LABEL_COLORS } from "@/lib/task-labels";
@@ -26,15 +26,22 @@ import type { TaskPatch } from "@/types/work";
 /** Saves the given fields; resolves `true` when the task was saved. */
 export type SaveTask = (body: Partial<TaskPatch>) => Promise<boolean>;
 
-const PRIORITY_BARS: Record<TaskPriority, { level: number; tone: string }> = {
+const PRIORITY_BARS: Record<Exclude<TaskPriority, "URGENT">, { level: number; tone: string }> = {
   HIGH: { level: 3, tone: "text-priority-high" },
   MEDIUM: { level: 2, tone: "text-priority-medium" },
   LOW: { level: 1, tone: "text-priority-low" },
+  NONE: { level: 0, tone: "text-muted-foreground" },
 };
-const PRIORITIES: TaskPriority[] = ["HIGH", "MEDIUM", "LOW"];
 
-/** Plane-style priority mark: three rising bars over the full icon height; the first `level` are solid, the rest a tint of the same hue. */
+/** Plane-style priority mark: three rising bars over the full icon height; the first `level` are solid, the rest a tint of the same hue. Urgent is a filled alert square. */
 function PriorityBars({ priority }: { priority: TaskPriority }) {
+  if (priority === "URGENT") return (
+    <svg viewBox="0 0 12 12" aria-hidden className="text-priority-urgent">
+      <rect x="0.5" y="0.5" width="11" height="11" rx="2.5" className="fill-current" />
+      <rect x="5.25" y="2.5" width="1.5" height="4.75" rx="0.75" className="fill-background" />
+      <circle cx="6" cy="9.1" r="0.9" className="fill-background" />
+    </svg>
+  );
   const { level, tone } = PRIORITY_BARS[priority];
   return (
     <svg viewBox="0 0 12 12" aria-hidden className={tone}>
@@ -202,7 +209,7 @@ export function PriorityProperty({ task, onSave, disabled, bare = false }: { tas
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled}>
-        <ChipButton label={`Prioridade ${priority.label.toLowerCase()}`} icon={<PriorityBars priority={task.priority} />} bare={bare}>
+        <ChipButton label={task.priority === "NONE" ? priority.label : `Prioridade ${priority.label.toLowerCase()}`} icon={<PriorityBars priority={task.priority} />} bare={bare}>
           {priority.label}
         </ChipButton>
       </PopoverTrigger>
@@ -210,7 +217,7 @@ export function PriorityProperty({ task, onSave, disabled, bare = false }: { tas
         <Command aria-label="Prioridade">
           <CommandList>
             <CommandGroup>
-              {PRIORITIES.map(value => (
+              {PRIORITY_ORDER.map(value => (
                 <CommandItem key={value} value={PRIORITY[value].label} disabled={disabled}
                   onSelect={async () => { if (value === task.priority || await onSave({ priority: value })) setOpen(false); }}>
                   <span aria-hidden className="flex [&_svg]:size-3"><PriorityBars priority={value} /></span>

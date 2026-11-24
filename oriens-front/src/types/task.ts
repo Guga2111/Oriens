@@ -2,7 +2,9 @@ import type { TaskLabel } from './task-label';
 export enum Priority {
   LOW = "LOW",
   MEDIUM = "MEDIUM",
-  HIGH = "HIGH"
+  HIGH = "HIGH",
+  URGENT = "URGENT",
+  NONE = "NONE"
 }
 
 export enum Status {

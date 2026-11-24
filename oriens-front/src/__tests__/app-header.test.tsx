@@ -69,7 +69,7 @@ describe('AppHeader — navegação de contexto', () => {
     try {
       const open = renderWork(<SidebarProvider><AppHeader /></SidebarProvider>, '/projects');
       expect(screen.queryByRole('button', { name: 'Alternar menu de navegação' })).not.toBeInTheDocument();
-      expect(open.container.querySelector('[data-page-icon]')).toHaveClass('lucide-folder-open-dot');
+      expect(open.container.querySelector('[data-page-icon]')).toHaveClass('lucide-briefcase');
       open.unmount();
 
       const closed = renderWork(<SidebarProvider defaultOpen={false}><AppHeader /></SidebarProvider>, '/projects');

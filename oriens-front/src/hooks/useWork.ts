@@ -77,6 +77,7 @@ export function taskAffectsKey(key: QueryKey, user: number, result: TaskMutation
     case 'tasks/week': return dates.some(d => d >= (key[3] as string) && d <= (key[4] as string));
     case 'planning/count': return dates.includes(key[3] as string);
     case 'tasks/all': case 'projects/list': case 'projects/sidebar': return true;
+    case 'home': return key[3] === 'recents';
     case 'statistics': return key.length === 3 || ['activity', 'planning', 'task-evidence', 'streak'].includes(key[3] as string);
     case 'projects/detail': case 'projects/board': case 'projects/objectives':
       return result.affectedProjectIds.includes(key[3] as number);
@@ -128,6 +129,7 @@ export function useProjectFlags() {
           const k = q.queryKey;
           if (k[0] !== 'work' || k[1] !== userId) return false;
           if (['projects/list', 'projects/sidebar', 'statistics'].includes(k[2] as string)) return true;
+          if (k[2] === 'home' && k[3] === 'recents') return true;
           if (['projects/board', 'projects/objectives'].includes(k[2] as string)) return k[3] === result.id;
           return field === 'archive' && (k[2] as string).startsWith('tasks/');
         } }, { throwOnError: true });
@@ -165,6 +167,7 @@ export function useProjectWrites() {
         const k = q.queryKey;
         if (k[0] !== 'work' || k[1] !== userId) return false;
         if (['projects/list', 'projects/sidebar', 'statistics'].includes(k[2] as string)) return true;
+        if (k[2] === 'home' && k[3] === 'recents') return true;
         if ((k[2] as string).startsWith('projects/')) return k[3] === id && command.action !== 'delete';
         // Structural changes can update projections, links and states without changing planned dates.
         return command.action !== 'create' && ((k[2] as string).startsWith('tasks/') || k[2] === 'planning/count');

@@ -1,3 +1,4 @@
+import { useRecordVisit } from '@/hooks/useHome';
 import { useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ImagePlus, MoreHorizontal, Pencil, Plus, Trash2, Settings2, Star, Archive } from 'lucide-react';
@@ -15,7 +16,7 @@ import { ProjectTimeline } from '@/components/projects/ProjectTimeline';
 import { ProjectSummaryCard } from '@/components/projects/ProjectSummaryCard';
 import { BoardFilterMenu } from '@/components/projects/BoardFilterMenu';
 import { ComingSoonView } from '@/components/projects/ComingSoonView';
-import { WorkViewSwitcher } from '@/components/projects/WorkViewSwitcher';
+import { ViewSwitcher } from '@/components/common/ViewSwitcher';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
 import { TaskPeek } from '@/components/tasks/TaskPeek';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -25,7 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useProjectBoard, useProjectFlags, useProjectWrites, useWorkProject } from '@/hooks/useWork';
 import { useTimelineBoard } from '@/hooks/useTimelineBoard';
 import type { BoardFilters } from '@/services/projectService';
-import { projectSectionOf, projectTabFrom, WORK_VIEWS, workViewOf } from '@/lib/project-tabs';
+import { objectiveLayoutFrom, projectSectionOf, projectTabFrom, WORK_VIEWS, workViewOf } from '@/lib/project-tabs';
 import type { WorkTask } from '@/types/work';
 
 export default function ProjectDetailPage() {
@@ -35,6 +36,7 @@ export default function ProjectDetailPage() {
 }
 function ProjectDetail({ id }: { id: number }) {
   const query = useWorkProject(id); const project = query.data;
+  useRecordVisit('PROJECT', query.isSuccess ? id : undefined);
   const [params, setParams] = useSearchParams(); const navigate = useNavigate();
   const tab = projectTabFrom(params.get('tab'));
   const filters: BoardFilters = { ...(params.get('objective') ? { objectiveId: Number(params.get('objective')) } : {}),
@@ -62,17 +64,18 @@ function ProjectDetail({ id }: { id: number }) {
   const newTask = () => setEditor({ columnId: project.defaultPendingColumnId! });
   return <div className="min-w-0 w-full tabular-nums">
     <HeaderActions>
-      {development && view && <WorkViewSwitcher value={view} onChange={next => setParam('tab', next)} />}
+      {development && view && <ViewSwitcher label="Visão dos itens de trabalho" views={WORK_VIEWS} value={view} onChange={next => setParam('tab', next)} />}
       {development && view === 'board' && <BoardFilterMenu filters={filters} objectives={project.objectives ?? []} onChange={setParam} onClear={clearFilters} />}
-      {development && <Button size="sm" onClick={newTask}><Plus aria-hidden /><span className="max-md:sr-only">Nova tarefa</span></Button>}
-      <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Ações do projeto"><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="max-sm:[&_[role=menuitem]]:min-h-11"><DropdownMenuGroup>
+      {development && section !== 'objectives' && <Button size="sm" onClick={newTask}><Plus aria-hidden /><span className="max-md:sr-only">Nova tarefa</span></Button>}
+      {/* Project actions belong to Panorama and the work items; the Objectives page keeps only its own actions. */}
+      {!(development && section === 'objectives') && <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Ações do projeto"><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="max-sm:[&_[role=menuitem]]:min-h-11"><DropdownMenuGroup>
         <DropdownMenuItem disabled={write.isPending} onSelect={() => file.current?.click()}><ImagePlus aria-hidden />{project.imageUrl ? 'Trocar capa' : 'Adicionar capa'}</DropdownMenuItem>
         <DropdownMenuItem onSelect={() => setEdit(true)}><Pencil aria-hidden />Editar projeto</DropdownMenuItem>
         <DropdownMenuItem disabled={flags.isPending} onSelect={() => flags.mutate({ project, field: 'favorite', value: !project.favorite })}><Star aria-hidden />{project.favorite ? 'Desfavoritar' : 'Favoritar'}</DropdownMenuItem>
         <DropdownMenuItem disabled={flags.isPending} onSelect={() => flags.mutate({ project, field: 'archive', value: !project.archived })}><Archive aria-hidden />{project.archived ? 'Desarquivar' : 'Arquivar'}</DropdownMenuItem>
         {development && <DropdownMenuItem onSelect={() => setSettings(true)}><Settings2 aria-hidden />Configurar quadro</DropdownMenuItem>}
         <DropdownMenuItem onSelect={() => setDeleting(true)}><Trash2 aria-hidden />Excluir projeto</DropdownMenuItem>
-      </DropdownMenuGroup></DropdownMenuContent></DropdownMenu>
+      </DropdownMenuGroup></DropdownMenuContent></DropdownMenu>}
     </HeaderActions>
     {project.imageUrl && <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="mb-6 aspect-project-cover w-full rounded-lg object-cover" />}
     {/* The breadcrumb names the project, as on plane.so; the h1 stays for screen readers and page structure. */}
@@ -82,11 +85,12 @@ function ProjectDetail({ id }: { id: number }) {
     {development ? <div>
       {/* Panorama, the work items and Objetivos are pages of the project, chosen in the sidebar; the views of the work items are chosen in the header. */}
       {section === 'overview' && <ProjectSummaryCard project={project} className="max-w-md" />}
-      {section === 'objectives' && <><WorkFeedback error={allBoard.error} retry={() => void allBoard.refetch()} /><ProjectObjectives project={project} tasks={allBoard.data?.tasks} onAddTask={objectiveId => setEditor({ objectiveId, columnId: project.defaultPendingColumnId! })} onEditTask={showTask} selectedObjective={Number(params.get('selectedObjective')) || undefined} /></>}
+      {section === 'objectives' && <ProjectObjectives project={project} tasks={allBoard.data?.tasks} tasksLoading={allBoard.isPending} tasksError={allBoard.error} onReloadTasks={() => void allBoard.refetch()} onSelectObjective={objectiveId => setParam('selectedObjective', objectiveId ? String(objectiveId) : '')} onAddTask={objectiveId => setEditor({ objectiveId, columnId: project.defaultPendingColumnId! })} onEditTask={showTask} selectedObjective={Number(params.get('selectedObjective')) || undefined}
+        layout={objectiveLayoutFrom(params.get('layout'))} onLayoutChange={layout => setParam('layout', layout === 'list' ? '' : layout)} />}
       {view === 'board' && <section aria-label="Quadro do projeto">
         <WorkFeedback error={board.error} retry={() => void board.refetch()} />
         {board.isPending && <Skeleton className="h-64 w-full" />}
-        {board.data && <><p className="mb-3 text-sm text-muted-foreground">{board.data.visible.totalTasks} de {board.data.total.totalTasks} tarefas visíveis{Object.keys(filters).length > 0 && <> · <Button variant="link" className="h-auto p-0 text-sm" onClick={clearFilters}>Limpar filtros</Button></>}</p><ProjectBoard board={board.data} pendingColumnId={project.defaultPendingColumnId!} onOpen={showTask} onEdit={editTask} onAdd={columnId => setEditor({ columnId })} onObjective={showObjective} /></>}
+        {board.data && <ProjectBoard board={board.data} pendingColumnId={project.defaultPendingColumnId!} onOpen={showTask} onEdit={editTask} onAdd={columnId => setEditor({ columnId })} onObjective={showObjective} />}
       </section>}
       {view === 'timeline' && <ProjectTimeline project={project} onOpen={showTask} onAdd={newTask} />}
       {view && !WORK_VIEWS.find(item => item.value === view)!.ready && <ComingSoonView view={view} onPick={next => setParam('tab', next)} />}
@@ -94,7 +98,7 @@ function ProjectDetail({ id }: { id: number }) {
       <ProjectObjectives project={project} onAddTask={() => {}} onEditTask={() => {}} />
       <ProjectSummaryCard project={project}><Button variant="outline" onClick={() => setConverting(true)}>Usar quadro de tarefas</Button></ProjectSummaryCard>
     </div>}
-    <div className="mt-4"><WorkFeedback message={uploadError} />
+    <div className={uploadError ? "mt-4" : undefined}><WorkFeedback message={uploadError} />
       <Input ref={file} className="hidden" type="file" accept="image/png,image/jpeg,image/webp" onChange={async e => { const picture = e.target.files?.[0]; if (!picture) return;
         setUploadError(''); if (!['image/png', 'image/jpeg', 'image/webp'].includes(picture.type) || picture.size > 5 * 1024 * 1024) { setUploadError('Use uma imagem PNG, JPEG ou WebP de até 5 MB.'); return; }
         try { await write.mutateAsync({ action: 'picture', id, version: project.version, file: picture }); toast.success('Capa salva.'); } catch { /* Error is shown near project actions. */ } finally { if (file.current) file.current.value = ''; }

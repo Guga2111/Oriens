@@ -82,3 +82,45 @@ it('vira Hoje no instante da meia-noite em Recife', () => {
   act(() => vi.advanceTimersByTime(1000));
   expect(result.current).toBe('2026-11-14');
 });
+
+it('busca localmente nas partições do dia e limpa o filtro sem novas requisições', async () => {
+  const today = productNow().date;
+  vi.mocked(api.get).mockImplementation(async url => ({ data: url.includes('label') ? [] : { ...emptyDay(today),
+    planned: [{ ...task, title: 'Preparar entrega', plannedDate: today }],
+    previousPlans: [{ ...task, id: 2, title: 'Revisar orçamento', plannedDate: '2000-01-01' }],
+    deadlineAttention: [{ ...task, id: 3, title: 'Enviar orçamento', dueDate: today }],
+  } }));
+  renderWork(<DashboardPage />, '/tasks');
+  await screen.findByText('Preparar entrega');
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar tarefas' }));
+  const input = screen.getByRole('searchbox', { name: 'Buscar nas tarefas carregadas' });
+  expect(input).toHaveFocus();
+  const taskRequests = () => vi.mocked(api.get).mock.calls.filter(([url]) => url.startsWith('/task/')).length;
+  const requestCount = taskRequests();
+  await userEvent.type(input, 'ORÇAMENTO');
+  expect(screen.queryByText('Preparar entrega')).not.toBeInTheDocument();
+  expect(screen.getByText('Revisar orçamento')).toBeInTheDocument();
+  expect(screen.getByText('Enviar orçamento')).toBeInTheDocument();
+  await userEvent.clear(input);
+  await userEvent.type(input, 'inexistente');
+  expect(screen.getByText('Nenhuma tarefa encontrada')).toBeInTheDocument();
+  await userEvent.click(within(screen.getByRole('search')).getByRole('button', { name: 'Limpar busca' }));
+  expect(screen.getByText('Preparar entrega')).toBeInTheDocument();
+  expect(taskRequests()).toBe(requestCount);
+});
+
+it('filtra também a visão semanal sem buscar no servidor', async () => {
+  vi.mocked(api.get).mockResolvedValue({ data: { tasks: [
+    { ...task, title: 'Revisar documento', plannedDate: '2026-10-26' },
+    { ...task, id: 2, title: 'Outra tarefa', plannedDate: '2026-10-27' },
+  ] } });
+  renderWork(<DashboardPage />, '/tasks?date=2026-10-25&view=week');
+  await screen.findByText('Outra tarefa');
+  const taskRequests = () => vi.mocked(api.get).mock.calls.filter(([url]) => url.startsWith('/task/')).length;
+  const requestCount = taskRequests();
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar tarefas' }));
+  await userEvent.type(screen.getByRole('searchbox'), 'Revisar');
+  expect(screen.getByText('Revisar documento')).toBeInTheDocument();
+  expect(screen.queryByText('Outra tarefa')).not.toBeInTheDocument();
+  expect(taskRequests()).toBe(requestCount);
+});
