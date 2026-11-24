@@ -1,4 +1,5 @@
-import { screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import { ChartDonutIcon } from '@phosphor-icons/react/dist/csr/ChartDonut';
 import { describe, expect, it } from 'vitest';
 import { AppContextRail } from '@/components/layout/AppContextRail';
 import { getAppContext } from '@/components/layout/app-contexts';
@@ -23,8 +24,18 @@ describe('contextos do shell', () => {
     renderWork(<AppContextRail />, path);
     const rail = screen.getByRole('navigation', { name: 'Contextos' });
     const links = within(rail).getAllByRole('link');
-    expect(links.map(link => link.textContent)).toEqual(['Trab.', 'Finan.', 'Estat.', 'Config.']);
+    expect(links.map(link => link.textContent)).toEqual(['Trabalho', 'Finanças', 'Métricas', '']);
     expect(within(rail).getByRole('link', { current: 'page' })).toHaveAccessibleName(label);
+    expect(links[3]).toHaveAccessibleName('Configurações');
     expect(links[3]).toHaveAttribute('href', '/config');
+  });
+
+  it('preenche os ícones Phosphor e mantém o traço do ícone lucide de Ajustes', () => {
+    const filled = render(<ChartDonutIcon weight="fill" />).container.querySelector('svg')!.innerHTML;
+    renderWork(<AppContextRail />, '/tasks');
+    const icon = (name: string) => screen.getByRole('link', { name }).querySelector('svg')!;
+    expect(icon('Estatísticas').innerHTML).toBe(filled);
+    expect(icon('Configurações')).toHaveClass('lucide-settings');
+    expect(icon('Configurações')).not.toHaveAttribute('weight');
   });
 });

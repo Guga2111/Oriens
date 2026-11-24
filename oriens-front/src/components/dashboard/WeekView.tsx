@@ -67,14 +67,14 @@ export function WeekView({
           return (
             <section key={headingId} aria-labelledby={headingId}>
               <div className="flex items-center gap-3 border-b pb-2">
-                <h2 id={headingId} className="text-base font-semibold">
+                <h2 id={headingId} className="text-base font-medium">
                   <Button
                     type="button"
                     variant="ghost"
                     onClick={() => onSelectDay(day)}
                     aria-label={`Ver ${fullDate}`}
                     aria-current={isToday ? "date" : undefined}
-                    className="h-auto min-h-11 justify-start rounded-sm px-0 py-0 text-left text-base font-semibold hover:bg-transparent hover:text-primary"
+                    className="h-auto min-h-11 justify-start px-0 py-0 text-left text-base font-medium hover:bg-transparent hover:text-primary"
                   >
                     {shortWeekday(day)}, {format(day, "d")}
                   </Button>

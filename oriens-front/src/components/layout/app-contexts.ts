@@ -1,6 +1,10 @@
+import type { Icon } from '@phosphor-icons/react';
+import { ChartDonutIcon } from '@phosphor-icons/react/dist/csr/ChartDonut';
+import { ReadCvLogoIcon } from '@phosphor-icons/react/dist/csr/ReadCvLogo';
+import { TipJarIcon } from '@phosphor-icons/react/dist/csr/TipJar';
 import {
-  BriefcaseBusiness, ChartLine, Database, FolderOpenDot, Headset,
-  Home, LifeBuoy, PiggyBank, Settings, Shield, type LucideIcon,
+  ChartLine, Database, FolderOpenDot, Headset,
+  House, LifeBuoy, PiggyBank, Settings, Shield, type LucideIcon,
 } from 'lucide-react';
 
 type ContextNavItem = {
@@ -14,7 +18,7 @@ type AppContext = {
   id: 'work' | 'financial' | 'statistics' | 'settings';
   label: string;
   railLabel: string;
-  icon: LucideIcon;
+  icon: Icon | LucideIcon;
   prefixes: string[];
   items: ContextNavItem[];
   adminItems?: ContextNavItem[];
@@ -22,24 +26,24 @@ type AppContext = {
 
 export const appContexts: AppContext[] = [
   {
-    id: 'work', label: 'Trabalho', railLabel: 'Trab.', icon: BriefcaseBusiness,
+    id: 'work', label: 'Trabalho', railLabel: 'Trabalho', icon: ReadCvLogoIcon,
     prefixes: ['/tasks', '/projects', '/all-data'],
     items: [
-      { label: 'Hoje', icon: Home, url: '/tasks' },
+      { label: 'Hoje', icon: House, url: '/tasks' },
       { label: 'Projetos', icon: FolderOpenDot, url: '/projects', prefixes: ['/tasks/project'] },
       { label: 'Todos os dados', icon: Database, url: '/all-data' },
     ],
   },
   {
-    id: 'financial', label: 'Financeiro', railLabel: 'Finan.', icon: PiggyBank, prefixes: ['/financial'],
+    id: 'financial', label: 'Financeiro', railLabel: 'Finanças', icon: TipJarIcon, prefixes: ['/financial'],
     items: [{ label: 'Visão geral', icon: PiggyBank, url: '/financial' }],
   },
   {
-    id: 'statistics', label: 'Estatísticas', railLabel: 'Estat.', icon: ChartLine, prefixes: ['/stats'],
+    id: 'statistics', label: 'Estatísticas', railLabel: 'Métricas', icon: ChartDonutIcon, prefixes: ['/stats'],
     items: [{ label: 'Visão geral', icon: ChartLine, url: '/stats' }],
   },
   {
-    id: 'settings', label: 'Configurações', railLabel: 'Config.', icon: Settings,
+    id: 'settings', label: 'Configurações', railLabel: 'Ajustes', icon: Settings,
     prefixes: ['/config', '/support', '/admin'],
     items: [
       { label: 'Configurações', icon: Settings, url: '/config' },
@@ -62,4 +66,11 @@ export function getAppContext(pathname: string) {
 
 export function isContextItemActive(item: ContextNavItem, pathname: string) {
   return pathname.replace(/\/$/, '') === item.url || item.prefixes?.some(prefix => matchesPrefix(pathname, prefix)) === true;
+}
+
+/** The navigation item for the current page, across every context, so the header can show its icon. */
+export function getContextItem(pathname: string) {
+  return appContexts
+    .flatMap(context => [...context.items, ...(context.adminItems ?? [])])
+    .find(item => isContextItemActive(item, pathname));
 }

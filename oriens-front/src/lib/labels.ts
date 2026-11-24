@@ -9,6 +9,7 @@ export const PRIORITY = {
 
 /** Vocabulário único de status de tarefa (SPEC §10.4, D9). */
 export const TASK_STATUS = {
+  BACKLOG: { label: "Backlog", badge: "outline" },
   PENDING: { label: "A fazer", badge: "outline" },
   ON_DOING: { label: "Em andamento", badge: "warning" },
   CANCELLED: { label: "Cancelada", badge: "secondary" },

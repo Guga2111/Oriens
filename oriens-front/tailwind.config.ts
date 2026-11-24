@@ -15,6 +15,7 @@ export default {
   		}
   	},
   	extend: {
+        fontSize: { '2xs': ['0.6875rem', { lineHeight: '1rem' }], 'page-title': ['1.75rem', { lineHeight: '2.25rem' }] },
         screens: { desktop: '1100px' },
         spacing: { rail: 'var(--rail-width)', 'top-bar': 'var(--top-bar-height)', 'app-header': 'var(--app-header-height)', page: 'var(--page-gutter)', overlay: 'var(--overlay-gutter)' },
         maxHeight: { dialog: 'var(--dialog-max-height)' },
@@ -43,6 +44,8 @@ export default {
    			negative: 'hsl(var(--negative))',
             streak: 'hsl(var(--streak))',
    			now: 'hsl(var(--now))',
+   			priority: { high: 'hsl(var(--priority-high))', medium: 'hsl(var(--priority-medium))', low: 'hsl(var(--priority-low))' },
+   			state: { started: 'hsl(var(--state-started))', completed: 'hsl(var(--state-completed))', cancelled: 'hsl(var(--state-cancelled))' },
    			'chart-1': 'hsl(var(--chart-1))',
    			'chart-2': 'hsl(var(--chart-2))',
    			'chart-3': 'hsl(var(--chart-3))',

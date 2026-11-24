@@ -109,7 +109,10 @@ export function describeWeek(tasks: Task[]): string {
   return `${concluded} de ${tasks.length} concluídas nesta semana`;
 }
 
-/** Open (pending or in progress) with a deadline before the product's today (YYYY-MM-DD). */
+/** Work still to be done: backlog, to do or in progress. */
+export const isOpenStatus = (status: TaskStatus) => status === "BACKLOG" || status === "PENDING" || status === "ON_DOING";
+
+/** Open with a deadline before the product's today (YYYY-MM-DD). */
 export function isTaskOverdue(task: { dueDate: string | null; status: TaskStatus }, today: string): boolean {
-  return !!task.dueDate && task.dueDate < today && (task.status === "PENDING" || task.status === "ON_DOING");
+  return !!task.dueDate && task.dueDate < today && isOpenStatus(task.status);
 }

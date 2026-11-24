@@ -98,7 +98,7 @@ export function DayLine({ tasks, date }: DayLineProps) {
         const task = group[0];
         const label = (t: Task) => `${t.startTime!.slice(0, 5)}, ${t.title}, ${TASK_STATUS[t.status].label.toLowerCase()}`;
         // eslint-disable-next-line no-restricted-syntax -- shadcn-exception: timeline marker positioned by runtime left/transform; Button padding, gap and active scale would displace it
-        const marker = <button type="button" className="absolute top-1/2 z-10 flex h-11 min-w-11 items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        const marker = <button type="button" className="absolute top-1/2 z-10 flex h-11 min-w-11 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           style={{ left: `${position}%`, transform: position === 0 ? 'translate(0, -50%)' : position === 100 ? 'translate(-100%, -50%)' : 'translate(-50%, -50%)' }}
           aria-label={group.length > 1 ? `${minute}, ${group.length} tarefas` : label(task)} title={group.map(label).join(' · ')}
           onClick={group.length === 1 ? () => focusTask(task.id) : undefined}>

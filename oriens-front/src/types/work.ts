@@ -57,7 +57,6 @@ export interface TaskPatch {
 }
 export type TaskCreation = Omit<TaskPatch, 'version' | 'targetProjectVersion' | 'beforeTaskId' | 'status'> & { title: string };
 
-export interface ProjectTotals { totalProjects: number; activeProjects: number; favoriteProjects: number; archivedProjects: number }
 export interface WeeklyResponse { startDate: string; endDate: string; timezone: string; completedTasks: number; totalTasks: number }
 export type SidebarProject = Pick<WorkProject, 'id' | 'title' | 'color' | 'mode' | 'favorite' | 'archived' | 'lastAccessed' | 'version'>;
 

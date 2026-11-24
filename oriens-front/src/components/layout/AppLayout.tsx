@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AppHeader } from "@/components/common/AppHeader";
+import { HeaderActionsProvider } from "@/components/common/HeaderActions";
 import { TaskEditor } from "@/components/tasks/TaskEditor";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { AppSidebar } from "./AppSidebar";
@@ -76,10 +77,12 @@ function AppShell({ projectsVersion }: { projectsVersion: number }) {
         <div data-app-panel className="flex min-w-0 flex-1 overflow-hidden bg-card desktop:mb-2 desktop:mr-2 desktop:rounded-lg desktop:border">
           {!isMobile && open && <AppSidebar projectsVersion={projectsVersion} onNewTask={createTask} onNewProject={createProject} />}
           <main className="flex min-w-0 flex-1 flex-col overflow-x-clip">
-            <AppHeader />
-            <div data-page-content className="min-h-0 min-w-0 flex-1 overflow-y-auto px-page py-4 md:py-5">
-              <Outlet />
-            </div>
+            <HeaderActionsProvider>
+              <AppHeader />
+              <div data-page-content className="min-h-0 min-w-0 flex-1 overflow-y-auto px-page py-4 md:px-12 md:pb-6 md:pt-9">
+                <Outlet />
+              </div>
+            </HeaderActionsProvider>
           </main>
         </div>
       </div>

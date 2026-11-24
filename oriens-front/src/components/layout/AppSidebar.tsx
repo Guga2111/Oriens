@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Circle, PanelLeftClose, Pin, PinOff, Plus } from 'lucide-react';
+import {
+  ChevronDown, ChevronRight, Circle, LayoutDashboard, PanelLeftClose, Pin, PinOff, Plus,
+} from 'lucide-react';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem,
@@ -11,14 +13,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { WorkFeedback } from '@/components/common/WorkFeedback';
 import { useAuth } from '@/context/AuthContext';
 import { useProjectFlags, useWorkSidebar } from '@/hooks/useWork';
+import { PROJECT_SECTIONS, projectSectionOf, projectTabFrom, workViewOf } from '@/lib/project-tabs';
 import { cn } from '@/lib/utils';
 import { getAppContext, isContextItemActive } from './app-contexts';
 
-const projectTabs = [
-  { value: 'board', label: 'Quadro' },
-  { value: 'objectives', label: 'Objetivos' },
-  { value: 'timeline', label: 'Linha do tempo' },
-];
 
 function SidebarProjects({ projectsVersion, onNewProject }: { projectsVersion: number; onNewProject: () => void }) {
   const sidebar = useWorkSidebar();
@@ -26,7 +24,10 @@ function SidebarProjects({ projectsVersion, onNewProject }: { projectsVersion: n
   const { pathname } = useLocation();
   const [params] = useSearchParams();
   const { refetch } = sidebar;
-  const tab = projectTabs.some(item => item.value === params.get('tab')) ? params.get('tab') : 'board';
+  const tab = projectTabFrom(params.get('tab'));
+  const section = projectSectionOf(tab);
+  // "Itens de trabalho" keeps the view being used; from elsewhere it opens on the board.
+  const sectionTab = (value: string) => value === 'work' ? workViewOf(tab) ?? 'board' : value;
 
   useEffect(() => {
     if (projectsVersion > 0) void refetch();
@@ -75,11 +76,12 @@ function SidebarProjects({ projectsVersion, onNewProject }: { projectsVersion: n
                       </SidebarMenuAction>
                       <CollapsibleContent>
                         <SidebarMenuSub>
-                          {project.mode === 'DEVELOPMENT' ? projectTabs.map(item => (
+                          {project.mode === 'DEVELOPMENT' ? PROJECT_SECTIONS.map(item => (
                             <SidebarMenuSubItem key={item.value}>
-                              <SidebarMenuSubButton asChild isActive={active && tab === item.value} className="max-desktop:min-h-10">
-                                <Link to={`/tasks/project/${project.id}?tab=${item.value}`} aria-current={active && tab === item.value ? 'page' : undefined}>
-                                  {item.label}
+                              <SidebarMenuSubButton asChild isActive={active && section === item.value} className="max-desktop:min-h-10">
+                                <Link to={`/tasks/project/${project.id}?tab=${active ? sectionTab(item.value) : item.value === 'work' ? 'board' : item.value}`} aria-current={active && section === item.value ? 'page' : undefined}>
+                                  <item.icon aria-hidden />
+                                  <span>{item.label}</span>
                                 </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
@@ -87,7 +89,8 @@ function SidebarProjects({ projectsVersion, onNewProject }: { projectsVersion: n
                             <SidebarMenuSubItem>
                               <SidebarMenuSubButton asChild isActive={active} className="max-desktop:min-h-10">
                                 <Link to={`/tasks/project/${project.id}`} aria-current={active ? 'page' : undefined}>
-                                  Visão geral
+                                  <LayoutDashboard aria-hidden />
+                                  <span>Visão geral</span>
                                 </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
@@ -143,7 +146,7 @@ export function AppSidebar({ projectsVersion = 0, onNewTask, onNewProject }: App
     <Sidebar collapsible="none" data-sidebar="sidebar" className="min-w-0 shrink-0 border-r border-sidebar-border max-desktop:flex-1">
       <SidebarHeader className="h-app-header shrink-0 justify-center px-4 py-0">
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-base font-semibold">{context.label}</span>
+          <span className="truncate text-base">{context.label}</span>
           <Button variant="ghost" size="icon" className="size-7 max-desktop:size-10" aria-label="Esconder menu" aria-expanded={isMobile ? openMobile : open} onClick={toggleSidebar}>
             <PanelLeftClose aria-hidden />
           </Button>
@@ -152,8 +155,8 @@ export function AppSidebar({ projectsVersion = 0, onNewTask, onNewProject }: App
       <SidebarContent>
         <nav aria-label={`Menu de ${context.label}`}>
           {context.id === 'work' && (
-            <div className="px-3 pt-3">
-              <Button variant="sidebar-action" className="w-full justify-start max-desktop:min-h-10" onClick={onNewTask}>
+            <div className="px-3 pb-2 pt-3">
+              <Button variant="sidebar-action" className="w-full justify-start pl-2 max-desktop:min-h-10" onClick={onNewTask}>
                 <Plus aria-hidden />Nova tarefa
               </Button>
             </div>

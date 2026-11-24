@@ -6,6 +6,7 @@ export enum Priority {
 }
 
 export enum Status {
+  BACKLOG = "BACKLOG",
   PENDING = "PENDING",
   ON_DOING = "ON_DOING",
   CONCLUDED = "CONCLUDED",

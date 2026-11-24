@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
+import { isOpenStatus } from '@/lib/tasks';
 import { format, parseISO } from 'date-fns';
 import { productNow } from '@/lib/product-time';
 import type { Task } from '@/types/task';
 
 export function TaskContext({ task, compact = false }: { task: Task; compact?: boolean }) {
-  const active = task.status === 'PENDING' || task.status === 'ON_DOING';
+  const active = isOpenStatus(task.status);
   const today = productNow().date;
   const date = (value: string) => format(parseISO(value), 'dd/MM/yyyy');
   return <div className="mt-1 space-y-1 break-words text-sm text-muted-foreground">

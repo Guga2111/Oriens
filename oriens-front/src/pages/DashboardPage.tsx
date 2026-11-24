@@ -27,6 +27,7 @@ import { WeekView } from "@/components/dashboard/WeekView";
 import { TaskSection } from "@/components/dashboard/TaskSection";
 import { DayLine } from "@/components/dashboard/DayLine";
 import { PageHeader } from "@/components/common/PageHeader";
+import { TaskPeek } from "@/components/tasks/TaskPeek";
 import { describeDay, describeWeek, groupTasksByPeriod } from "@/lib/tasks";
 import { useSearchParams } from 'react-router-dom';
 import { validCalendarDate } from '@/lib/work-form';
@@ -53,6 +54,11 @@ export function DashboardPage() {
     startTime?: string;
   }>({ date: productDate(today) });
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  // The open task lives in the URL (?task=ID) so the panel survives reloads and can be shared.
+  const taskParam = Number(search.get('task'));
+  const openTaskId = Number.isSafeInteger(taskParam) && taskParam > 0 ? taskParam : 0;
+  const openTask = (task: Task) => setSearch(previous => { previous.set('task', String(task.id)); return previous; });
+  const closeTask = () => setSearch(previous => { previous.delete('task'); return previous; }, { replace: true });
 
   const weekStart = startOfWeek(currentDate, { locale: ptBR });
   const weekEnd = endOfWeek(currentDate, { locale: ptBR });
@@ -83,6 +89,9 @@ export function DashboardPage() {
   };
 
   const periods = useMemo(() => groupTasksByPeriod(tasks), [tasks]);
+  const openTaskPlaceholder = useMemo(() => openTaskId
+    ? [...tasks, ...(day.data?.previousPlans ?? []), ...(day.data?.deadlineAttention ?? [])].find(task => task.id === openTaskId)
+    : undefined, [openTaskId, tasks, day.data]);
 
   const isToday = isSameDay(currentDate, productDate(today));
   const longDate = format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR });
@@ -111,7 +120,6 @@ export function DashboardPage() {
       <div className="planning-screen min-w-0 w-full">
         <div className="min-w-0 w-full">
           <PageHeader
-            className="md:flex-col lg:flex-row"
             title={title}
             description={description}
             meta={meta}
@@ -210,8 +218,7 @@ export function DashboardPage() {
               aria-busy={isRefreshing}
               aria-live="polite"
             >
-              <h2 className="text-lg font-semibold">{isToday ? 'Planejado para hoje' : 'Planejado para este dia'}</h2>
-              <TaskSection title="Sem horário" emptyLabel="Nenhuma tarefa sem horário." tasks={[...tasks].filter(t => !t.startTime).sort(compareTaskPriority)} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onAddTask={() => openCreateTask()} isLoading={isInitialLoading} />
+              <h2 className="text-lg font-medium">{isToday ? 'Planejado para hoje' : 'Planejado para este dia'}</h2>
               {periods.map((period) => (
                 <TaskSection
                   key={period.id}
@@ -221,13 +228,15 @@ export function DashboardPage() {
                   tasks={period.tasks}
                   onUpdateTasks={afterWrite}
                   onEditTask={setEditingTask}
+                  onOpenTask={openTask}
                   onAddTask={() => openCreateTask(currentDate)}
                   isLoading={isInitialLoading}
                 />
               ))}
+              <TaskSection title="Sem horário" emptyLabel="Nenhuma tarefa sem horário." tasks={[...tasks].filter(t => !t.startTime).sort(compareTaskPriority)} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onOpenTask={openTask} onAddTask={() => openCreateTask()} isLoading={isInitialLoading} />
               {isToday && <>
-                <TaskSection title="Pendentes de dias anteriores" timeRange="Planejamento anterior preservado até você reagendar." emptyLabel="Nenhuma pendência de dias anteriores." tasks={day.data?.previousPlans ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} isLoading={isInitialLoading} />
-                <TaskSection title="Prazos que precisam de atenção" timeRange="Prazo final hoje ou ultrapassado; o planejamento não muda." emptyLabel="Nenhum prazo precisando de atenção." tasks={day.data?.deadlineAttention ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} isLoading={isInitialLoading} />
+                <TaskSection title="Pendentes de dias anteriores" timeRange="Planejamento anterior preservado até você reagendar." emptyLabel="Nenhuma pendência de dias anteriores." tasks={day.data?.previousPlans ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onOpenTask={openTask} isLoading={isInitialLoading} />
+                <TaskSection title="Prazos que precisam de atenção" timeRange="Prazo final hoje ou ultrapassado; o planejamento não muda." emptyLabel="Nenhum prazo precisando de atenção." tasks={day.data?.deadlineAttention ?? []} onUpdateTasks={afterWrite} onEditTask={setEditingTask} onOpenTask={openTask} isLoading={isInitialLoading} />
               </>}
             </div>
           ) : (
@@ -262,6 +271,9 @@ export function DashboardPage() {
         defaultDate={createTaskDefaults.date}
         defaultStartTime={createTaskDefaults.startTime}
       />
+      {openTaskId > 0 && (
+        <TaskPeek key={openTaskId} taskId={openTaskId} placeholder={openTaskPlaceholder} onClose={closeTask} onEdit={setEditingTask} />
+      )}
       {editingTask && (
         <EditTaskDialog
           task={editingTask}

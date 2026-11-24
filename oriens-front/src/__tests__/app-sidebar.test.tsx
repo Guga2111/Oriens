@@ -71,14 +71,28 @@ describe('sidebar por contexto', () => {
     state.role = 'USER';
   });
 
-  it.each(['board', 'objectives', 'timeline'])('abre as abas do projeto por URL e marca %s', tab => {
+  it.each([
+    ['overview', 'Panorama'], ['board', 'Itens de trabalho'], ['timeline', 'Itens de trabalho'],
+    ['list', 'Itens de trabalho'], ['objectives', 'Objetivos'],
+  ])('com ?tab=%s marca só %s', (tab, current) => {
     renderSidebar(`/tasks/project/9?tab=${tab}`);
-    const links = ['Quadro', 'Objetivos', 'Linha do tempo'].map(name => screen.getByRole('link', { name }));
-    expect(links.map(link => link.getAttribute('href'))).toEqual([
-      '/tasks/project/9?tab=board', '/tasks/project/9?tab=objectives', '/tasks/project/9?tab=timeline',
-    ]);
+    const links = ['Panorama', 'Itens de trabalho', 'Objetivos'].map(name => screen.getByRole('link', { name }));
     expect(links.filter(link => link.getAttribute('aria-current') === 'page')).toHaveLength(1);
-    expect(links[['board', 'objectives', 'timeline'].indexOf(tab)]).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: current })).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByRole('link', { name: 'Quadro' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Timeline' })).not.toBeInTheDocument();
+  });
+
+  it('"Itens de trabalho" agrupa quadro e timeline e mantém a visão em uso', () => {
+    renderSidebar('/tasks/project/9?tab=timeline');
+    expect(screen.getByRole('link', { name: 'Panorama' })).toHaveAttribute('href', '/tasks/project/9?tab=overview');
+    expect(screen.getByRole('link', { name: 'Itens de trabalho' })).toHaveAttribute('href', '/tasks/project/9?tab=timeline');
+    expect(screen.getByRole('link', { name: 'Objetivos' })).toHaveAttribute('href', '/tasks/project/9?tab=objectives');
+  });
+
+  it('de outra seção, "Itens de trabalho" abre no quadro', () => {
+    renderSidebar('/tasks/project/9?tab=objectives');
+    expect(screen.getByRole('link', { name: 'Itens de trabalho' })).toHaveAttribute('href', '/tasks/project/9?tab=board');
   });
 
   it('mantém fixação independente do seletor e grupo de projetos recolhível', async () => {
@@ -87,7 +101,7 @@ describe('sidebar por contexto', () => {
     const selector = screen.getByRole('button', { name: 'Site pessoal' });
     expect(selector).toHaveAttribute('aria-expanded', 'true');
     expect(selector).toHaveAttribute('data-active', 'false');
-    expect(screen.getByRole('link', { name: 'Quadro' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Itens de trabalho' })).toHaveAttribute('aria-current', 'page');
     const pin = screen.getByRole('button', { name: 'Fixar Site pessoal' });
     expect(pin).toHaveAttribute('aria-pressed', 'false');
     await userEvent.click(pin);
@@ -101,11 +115,11 @@ describe('sidebar por contexto', () => {
     renderSidebar('/tasks');
     const selector = screen.getByRole('button', { name: 'Site pessoal' });
     expect(selector).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByRole('link', { name: 'Quadro' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Itens de trabalho' })).not.toBeInTheDocument();
     await userEvent.click(selector);
     expect(selector).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('link', { name: 'Hoje' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Quadro' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Itens de trabalho' })).not.toHaveAttribute('aria-current');
     await userEvent.click(screen.getByRole('link', { name: 'Objetivos' }));
     expect(screen.getByRole('link', { name: 'Objetivos' })).toHaveAttribute('aria-current', 'page');
     await userEvent.click(screen.getByRole('button', { name: 'Site pessoal' }));
@@ -134,7 +148,7 @@ describe('sidebar por contexto', () => {
 
   it('não oferece abas de desenvolvimento para projeto simples', () => {
     renderSidebar('/tasks/project/10');
-    expect(screen.queryByRole('link', { name: 'Quadro' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Itens de trabalho' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Visão geral' })).toHaveAttribute('href', '/tasks/project/10');
     expect(screen.getByRole('link', { name: 'Visão geral' })).toHaveAttribute('aria-current', 'page');
   });

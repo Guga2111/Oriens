@@ -19,11 +19,6 @@ export function useWorkSidebar() {
   return useQuery({ queryKey: workKey(userId, 'projects/sidebar'), enabled: userId !== null,
     queryFn: ({ signal }) => projectService.sidebar(userId!, signal) });
 }
-export function useProjectTotals() {
-  const { userId } = useAuth();
-  return useQuery({ queryKey: workKey(userId, 'projects/list', 'summary'), enabled: userId !== null,
-    queryFn: ({ signal }) => projectService.totals(userId!, signal) });
-}
 export function useWeeklySummary(start: string, end: string) {
   const { userId } = useAuth();
   return useQuery({ queryKey: workKey(userId, 'tasks/week', start, end, 'summary'), enabled: userId !== null,

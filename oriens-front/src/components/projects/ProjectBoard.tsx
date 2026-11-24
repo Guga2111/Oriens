@@ -5,6 +5,7 @@ import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { ArrowDown, ArrowRight, ArrowUp, CalendarDays, Clock, Flag, GripVertical, MoreHorizontal, Pencil, Plus, Trash2, Undo2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { StatusIcon } from '@/components/tasks/StatusIcon';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -118,9 +119,13 @@ function BoardColumn({ column, filtered, disabled, mobile, onAdd, children }: {
   column: Column; filtered: boolean; disabled: boolean; mobile: boolean; onAdd: (id: number) => void; children: React.ReactNode;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `column-${column.id}`, disabled });
-  return <section ref={setNodeRef} className={cn('flex min-w-0 shrink-0 flex-col gap-3 rounded-lg bg-background p-2', mobile ? 'w-full' : 'w-board-column', isOver && 'ring-2 ring-ring')} aria-labelledby={`column-${column.id}`}>
-    <div className="flex items-center justify-between gap-2"><h2 id={`column-${column.id}`} className="min-w-0 break-words text-base font-semibold">{column.name}</h2><Badge variant="secondary">{filtered ? `${column.visibleCount} de ${column.totalCount}` : column.totalCount}</Badge></div>
-    {column.name !== statusNames[column.kind] && <p className="text-xs text-muted-foreground">{statusNames[column.kind]}</p>}
+  // plane.so's column: a light surface, the state icon, the name in regular weight and a quiet count.
+  return <section ref={setNodeRef} className={cn('flex min-w-0 shrink-0 flex-col gap-3 rounded-lg bg-muted/40 p-2', mobile ? 'w-full' : 'w-board-column', isOver && 'ring-2 ring-ring')} aria-labelledby={`column-${column.id}`}>
+    <div className="flex min-h-7 items-center gap-2 px-1">
+      <StatusIcon status={column.kind} className="size-4" role="img" aria-label={statusNames[column.kind]} />
+      <h2 id={`column-${column.id}`} className="min-w-0 break-words text-sm font-normal">{column.name}</h2>
+      <span className="text-sm tabular-nums text-muted-foreground">{filtered ? `${column.visibleCount} de ${column.totalCount}` : column.totalCount}</span>
+    </div>
     {!column.visibleCount && <p className="py-5 text-sm text-muted-foreground">{filtered ? 'Nenhuma tarefa com estes filtros.' : 'Nenhuma tarefa nesta coluna.'}</p>}
     {children}
     <Button variant="ghost" className="w-full justify-start" onClick={() => onAdd(column.id)}><Plus aria-hidden />Adicionar tarefa</Button>

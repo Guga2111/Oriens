@@ -34,11 +34,15 @@ const show = (route: string) => renderWork(<TooltipProvider><Routes><Route path=
 
 beforeEach(() => { vi.clearAllMocks(); serve(); });
 
-it('?tab=timeline selects the Timeline tab and renders the timeline region', async () => {
+// The page's header actions render in place here: the shell's header slot is not mounted.
+const viewIs = (name: string, hidden = false) => expect(screen.getByRole('radio', { name, hidden })).toHaveAttribute('aria-checked', 'true');
+
+it('?tab=timeline shows the timeline as the work items view, without tabs or board filters', async () => {
   show('/tasks/project/9?tab=timeline');
   expect(await screen.findByRole('region', { name: 'Timeline do projeto' })).toBeInTheDocument();
-  expect(screen.getByRole('tab', { name: 'Timeline' })).toHaveAttribute('aria-selected', 'true');
-  expect(screen.queryByRole('combobox', { name: 'Filtrar por objetivo' })).not.toBeInTheDocument();
+  viewIs('Timeline');
+  expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Filtros do quadro/ })).not.toBeInTheDocument();
 });
 
 it('clicking a bar puts ?task in the URL and opens the details with the timeline placeholder', async () => {
@@ -58,29 +62,99 @@ it('a deep link with ?tab=timeline&task=ID opens the details dialog', async () =
   const dialog = await screen.findByRole('dialog', { name: scheduled.title });
   expect(within(dialog).getByRole('button', { name: /Editar/ })).toBeInTheDocument();
   // The modal dialog hides the page behind it from the accessibility tree.
-  expect(screen.getByRole('tab', { name: 'Timeline', hidden: true })).toHaveAttribute('aria-selected', 'true');
+  viewIs('Timeline', true);
 });
 
 it('"Nova tarefa" in the empty timeline opens the page TaskEditor', async () => {
   const none = { totalTasks: 0, nonCancelledTasks: 0, completedTasks: 0, cancelledTasks: 0 };
   serve(project, { ...windowed, tasks: [], total: none, visible: none });
   show('/tasks/project/9?tab=timeline');
-  const panel = await screen.findByRole('tabpanel', { name: 'Timeline' });
-  await within(panel).findByText('Nenhuma tarefa neste projeto');
-  await userEvent.click(within(panel).getByRole('button', { name: 'Nova tarefa' }));
+  const empty = (await screen.findByText('Nenhuma tarefa neste projeto')).closest<HTMLElement>('[data-slot="empty"]')!;
+  await userEvent.click(within(empty).getByRole('button', { name: 'Nova tarefa' }));
   expect(await screen.findByRole('dialog', { name: 'Nova tarefa' })).toBeInTheDocument();
 });
 
 it('an unknown ?tab falls back to the board', async () => {
   show('/tasks/project/9?tab=gantt');
-  expect(await screen.findByRole('tab', { name: 'Quadro' })).toHaveAttribute('aria-selected', 'true');
+  expect(await screen.findByRole('region', { name: 'Quadro do projeto' })).toBeInTheDocument();
+  viewIs('Quadro');
   expect(screen.queryByRole('region', { name: 'Timeline do projeto' })).not.toBeInTheDocument();
 });
 
-it('a SIMPLE project has no Timeline tab', async () => {
+it('a SIMPLE project has no work item views', async () => {
   serve({ ...project, mode: 'SIMPLE' });
   show('/tasks/project/9?tab=timeline');
   expect(await screen.findByRole('heading', { name: project.title })).toBeInTheDocument();
-  expect(screen.queryByRole('tab', { name: 'Timeline' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('group', { name: 'Visão dos itens de trabalho' })).not.toBeInTheDocument();
   expect(screen.queryByRole('region', { name: 'Timeline do projeto' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Ações do projeto' })).toBeInTheDocument();
+});
+
+it('?tab=overview shows the project summary, without work item views', async () => {
+  show('/tasks/project/9?tab=overview');
+  const summary = await screen.findByRole('complementary', { name: 'Informações do projeto' });
+  expect(within(summary).getByRole('heading', { name: 'Resumo' })).toBeInTheDocument();
+  expect(within(summary).queryByRole('button', { name: 'Usar quadro de tarefas' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('group', { name: 'Visão dos itens de trabalho' })).not.toBeInTheDocument();
+  expect(screen.getAllByRole('button', { name: 'Nova tarefa' }).length).toBeGreaterThan(0);
+});
+
+it.each([['Lista', 'list'], ['Calendário', 'calendar'], ['Tabela', 'table']])('a visão %s ainda não existe: avisa "em breve" e volta ao quadro', async (label, tab) => {
+  show('/tasks/project/9?tab=board');
+  await screen.findByRole('region', { name: 'Quadro do projeto' });
+  await userEvent.click(screen.getByRole('radio', { name: `${label} (em breve)` }));
+  expect(screen.getByLabelText('url')).toHaveTextContent(`tab=${tab}`);
+  const soon = screen.getByRole('region', { name: `Visão ${label}` });
+  expect(within(soon).getByText(`${label} em breve`)).toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Quadro do projeto' })).not.toBeInTheDocument();
+  await userEvent.click(within(soon).getByRole('button', { name: 'Abrir quadro' }));
+  expect(screen.getByLabelText('url')).toHaveTextContent('tab=board');
+  expect(await screen.findByRole('region', { name: 'Quadro do projeto' })).toBeInTheDocument();
+});
+
+it('os filtros do quadro ficam no botão de filtro e vão para a URL', async () => {
+  show('/tasks/project/9?tab=board');
+  await screen.findByRole('region', { name: 'Quadro do projeto' });
+  await userEvent.click(screen.getByRole('button', { name: 'Filtros do quadro' }));
+  await userEvent.click(await screen.findByRole('checkbox', { name: 'Somente abertas' }));
+  expect(screen.getByLabelText('url')).toHaveTextContent('open=1');
+  expect(screen.getByRole('button', { name: 'Filtros do quadro (1 ativo)' })).toBeInTheDocument();
+  await userEvent.click(within(screen.getByRole('dialog', { name: 'Filtros do quadro' })).getByRole('button', { name: 'Limpar filtros' }));
+  expect(screen.getByLabelText('url')).not.toHaveTextContent('open=1');
+});
+
+it('o breadcrumb nomeia o projeto: título e descrição saem da página e o h1 fica para leitores de tela', async () => {
+  serve({ ...project, description: 'Portfólio e blog pessoal' });
+  show('/tasks/project/9?tab=board');
+  await screen.findByRole('region', { name: 'Quadro do projeto' });
+  expect(screen.getByRole('heading', { level: 1, name: project.title })).toHaveClass('sr-only');
+  expect(screen.queryByText('Portfólio e blog pessoal')).not.toBeInTheDocument();
+});
+
+it('cada coluna do quadro mostra o ícone do seu estado, o nome sem negrito e a contagem', async () => {
+  show('/tasks/project/9?tab=board');
+  const board = await screen.findByRole('region', { name: 'Quadro do projeto' });
+  await within(board).findByRole('region', { name: 'A fazer' });
+  for (const [name, kind, count] of [['A fazer', 'A fazer', '1'], ['Fazendo', 'Em andamento', '0'], ['Concluídas', 'Concluída', '0']]) {
+    const column = within(board).getByRole('region', { name });
+    expect(within(column).getByRole('img', { name: kind })).toBeInTheDocument();
+    expect(within(column).getByRole('heading', { name })).toHaveClass('font-normal');
+    expect(within(column).getByText(count, { selector: 'span' })).toBeInTheDocument();
+  }
+});
+
+it('a coluna Backlog tem o ícone tracejado, separado de A fazer', async () => {
+  const withBacklog = { ...board, columns: [{ ...board.columns[0], id: 10, name: 'Backlog', kind: 'BACKLOG' as const, position: 0, totalCount: 0, visibleCount: 0 }, ...board.columns] };
+  vi.mocked(api.get).mockImplementation(async (url, config) => {
+    const path = String(url);
+    if (path.startsWith('/task-labels/')) return { data: [] };
+    if (path.endsWith('/board')) return { data: config?.params?.startDate ? windowed : withBacklog };
+    if (path.includes('/project/user/')) return { data: pageOf([project]) };
+    return { data: project };
+  });
+  show('/tasks/project/9?tab=board');
+  const column = await screen.findByRole('region', { name: 'Backlog' });
+  const icon = within(column).getByRole('img', { name: 'Backlog' });
+  expect(icon).toHaveClass('lucide-circle-dashed');
+  expect(within(await screen.findByRole('region', { name: 'A fazer' })).getByRole('img', { name: 'A fazer' })).not.toHaveClass('lucide-circle-dashed');
 });

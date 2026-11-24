@@ -190,7 +190,9 @@ Valores padrão dessas cores ficam em uma constante nomeada em `lib/`, não repe
 - Raio: `rounded-lg`/`rounded-md`/`rounded-sm` (derivados de `--radius`). Não use `rounded-[10px]`.
 - Tipografia: escala do Tailwind (`text-sm`, `text-base`, `text-2xl`) e pesos (`font-medium`,
   `font-semibold`). Números tabulares com `tabular-nums`.
-- Ícones: `lucide-react`, tamanho por classe (`size-4`), nunca SVG colado.
+- Ícones: `lucide-react` na interface; no trilho de contextos, `@phosphor-icons/react` com
+  `weight="fill"` para glifos preenchidos. Importe cada ícone Phosphor por `dist/csr/<Nome>` para
+  evitar carregar o catálogo inteiro no desenvolvimento. Tamanho por classe (`size-4`), nunca SVG colado.
 
 ### 3.3 Valores arbitrários (`[…]`)
 

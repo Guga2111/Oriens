@@ -69,20 +69,22 @@ test("cada rota autenticada tem exatamente um h1", async ({ page }, testInfo) =>
   await projectSelector.click();
   await expect(projectSelector).toHaveAttribute('aria-expanded', 'true');
   await expect(page).toHaveURL(beforeExpansion);
-  await page.getByRole('navigation', { name: 'Menu de Trabalho' }).getByRole('link', { name: 'Quadro', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Menu de Trabalho' }).getByRole('link', { name: 'Itens de trabalho', exact: true }).click();
   await page.waitForURL(/\/tasks\/project\/\d+/);
   if (testInfo.project.name === 'desktop') {
     await page.mouse.move(0, 0);
     await expect(projectSelector).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   }
   const detailPath = new URL(page.url()).pathname;
-  for (const [name, value, tab] of [['Objetivos', 'objectives', 'Objetivos'], ['Linha do tempo', 'timeline', 'Timeline'], ['Quadro', 'board', 'Quadro']]) {
+  // Panorama, Itens de trabalho and Objetivos are pages of the project, reached from the sidebar; the
+  // breadcrumb names the one open.
+  for (const [name, value] of [['Panorama', 'overview'], ['Objetivos', 'objectives'], ['Itens de trabalho', 'board']]) {
     if (testInfo.project.name === 'mobile') {
       await page.getByRole('button', { name: 'Alternar menu de navegação' }).click();
     }
     await page.getByRole('navigation', { name: 'Menu de Trabalho' }).getByRole('link', { name, exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`tab=${value}$`));
-    await expect(page.getByRole('tab', { name: tab, exact: true })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('navigation', { name: 'Breadcrumb' }).locator('[aria-current="page"]')).toContainText(name);
   }
 
   for (const route of [...ROUTES, detailPath]) {
@@ -136,7 +138,7 @@ test('shell mantém medidas aprovadas e permite esconder a sidebar', async ({ pa
   expect(box?.height).toBe(900 - 40 - 8);
   const header = page.getByRole('navigation', { name: 'Breadcrumb' }).locator('..');
   expect((await header.boundingBox())?.height).toBe(48);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('font-size', '20px');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('font-size', '28px');
   await expect(page.getByRole('button', { name: 'Nova tarefa', exact: true })).toHaveCSS('height', '32px');
   await page.getByRole('button', { name: 'Esconder menu' }).click();
   await expect(page.getByRole('navigation', { name: 'Menu de Trabalho' })).toBeHidden();
@@ -287,7 +289,8 @@ test('ações da sidebar aparecem somente no hover da própria linha ou no foco 
   const header = page.getByRole('button', { name: 'Projetos', exact: true });
   const create = page.getByRole('button', { name: 'Criar projeto', exact: true });
   const selector = page.getByRole('button', { name: title, exact: true });
-  const pin = page.getByRole('button', { name: `Fixar ${title}`, exact: true });
+  // The project card on the page has a pin of the same name; this test is about the sidebar's.
+  const pin = page.getByRole('navigation', { name: 'Menu de Trabalho' }).getByRole('button', { name: `Fixar ${title}`, exact: true });
   await expect(selector).toBeVisible();
   await page.mouse.move(0, 0);
   await expect(create).toHaveCSS('opacity', '0');

@@ -67,6 +67,14 @@
     --streak: 0 72% 40%;
     --positive: 158 52% 26%;
     --now: 38 92% 30%;
+    /* Task priority marks (Plane-style bars): orange-red, vivid amber and electric blue. */
+    --priority-high: 12 90% 52%;
+    --priority-medium: 40 100% 48%;
+    --priority-low: 222 100% 56%;
+    /* Task state icons, in plane.so's hues: started, completed and cancelled. */
+    --state-started: 38 95% 50%;
+    --state-completed: 142 71% 38%;
+    --state-cancelled: 0 84% 58%;
     --destructive: var(--negative);
     --destructive-foreground: 0 0% 100%;
 
@@ -131,6 +139,12 @@
     --streak: 0 90% 78%;
     --positive: 152 45% 62%;
     --now: 45.7 99.2% 52%;
+    --priority-high: 12 95% 62%;
+    --priority-medium: 44 100% 55%;
+    --priority-low: 220 100% 68%;
+    --state-started: 40 100% 58%;
+    --state-completed: 142 60% 50%;
+    --state-cancelled: 0 85% 66%;
     --destructive: var(--negative);
     --destructive-foreground: 0 0% 98%;
 
@@ -167,6 +181,15 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Plane-style chrome: content still scrolls by wheel, touch and keyboard, but no scrollbar is drawn. */
+  * {
+    scrollbar-width: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
   }
 }
 

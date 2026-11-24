@@ -9,7 +9,7 @@ test("cria projeto com objetivo e alterna o objetivo", async ({ page }) => {
   const projectName = `Projeto E2E ${Date.now()}`;
   // Título único: desktop e mobile compartilham a conta no mesmo run.
   const objectiveTitle = `Objetivo E2E ${Date.now()}`;
-  const dialog = page.getByRole("dialog", { name: "Criar Novo Projeto" });
+  const dialog = page.getByRole("dialog", { name: "Novo projeto" });
 
   await page.getByRole("button", { name: "Novo projeto" }).click();
   await expect(dialog).toBeVisible();

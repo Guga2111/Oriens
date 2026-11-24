@@ -168,6 +168,7 @@ export function TasksDataTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value={Status.BACKLOG}>{TASK_STATUS.BACKLOG.label}</SelectItem>
             <SelectItem value={Status.PENDING}>
               {TASK_STATUS.PENDING.label}
             </SelectItem>

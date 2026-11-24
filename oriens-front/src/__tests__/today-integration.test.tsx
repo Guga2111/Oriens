@@ -28,11 +28,13 @@ it('renderiza as partições autorizadas, contexto arquivado, prazo único e sem
   const row = (await screen.findByText('Sem hora')).closest('li')!;
   expect(within(row).getByText(/Projeto arquivado/)).toBeInTheDocument();
   expect(within(row).getByRole('link', { name: 'Site pessoal' })).toHaveAttribute('href', '/tasks/project/9');
-  expect(within(row).getByText(/Prazo ultrapassado/)).toBeInTheDocument();
+  expect(within(row).getByRole('button', { name: /Prazo ultrapassado/ })).toBeInTheDocument();
   expect(screen.getAllByText('Sem hora')).toHaveLength(1);
   expect(screen.getByText('Plano anterior')).toBeInTheDocument();
-  expect(screen.getByText('Planejada para 01/01/2099')).toBeInTheDocument();
-  expect(screen.getByText(/Prazo termina hoje/)).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Planejada para 01/01/2099' })).toHaveTextContent('01/01/2099');
+  // A plan for today reads as "Hoje" and stays editable from the row.
+  expect(within(row).getByRole('button', { name: 'Planejada para hoje' })).toHaveTextContent('Hoje');
+  expect(screen.getByRole('button', { name: /Prazo termina hoje/ })).toBeInTheDocument();
   expect(within(screen.getByRole('list', { name: 'Linha do dia' })).getByRole('button', { name: /Feita/ })).toBeInTheDocument();
   expect(await screen.findByText('Feita')).toBeInTheDocument();
   expect(within(screen.getByRole('list', { name: 'Linha do dia' })).getByRole('button', { name: /Feita/ })).toBeInTheDocument();

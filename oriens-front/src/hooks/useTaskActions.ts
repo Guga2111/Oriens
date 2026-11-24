@@ -41,6 +41,8 @@ export function useTaskActions() {
     planning: (task: Task, today: boolean) => patch(task, { plannedDate: today ? productNow().date : null, startTime: null }),
     error: localError || writes.patch.error || writes.remove.error,
     status: (task: Task, status: TaskStatus) => patch(task, { status }),
+    /** Saves any subset of the task's fields with its current version. */
+    update: (task: Task, body: Partial<TaskPatch>) => patch(task, body),
     remove: async (task: Task) => {
       const result = await writes.remove.mutateAsync(requireSnapshot(task));
       if (result.refreshFailed) toast.warning('Tarefa excluída; não foi possível atualizar a lista.');

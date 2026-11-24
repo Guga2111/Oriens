@@ -3,13 +3,13 @@ import { describe, expect, it } from "vitest";
 import { OriensLogo } from "@/components/common/OriensLogo";
 
 describe("OriensLogo", () => {
-  it("pinta o sol com o primário e o horizonte com a cor do texto", () => {
+  it("pinta o sol com o primário e a parte sob o horizonte com a cor do texto", () => {
     const { container } = render(<OriensLogo />);
 
-    expect(container.querySelector("path")).toHaveClass("fill-primary");
-    const lines = container.querySelectorAll("rect");
-    expect(lines).toHaveLength(4);
-    lines.forEach((line) => expect(line).toHaveClass("fill-foreground"));
+    const [sun, below] = container.querySelectorAll("path");
+    expect(container.querySelectorAll("path")).toHaveLength(2);
+    expect(sun).toHaveClass("fill-primary");
+    expect(below).toHaveClass("fill-foreground");
   });
 
   it("com title, é uma imagem com nome acessível", () => {
