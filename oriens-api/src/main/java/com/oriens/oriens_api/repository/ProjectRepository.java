@@ -32,14 +32,18 @@ public interface ProjectRepository extends org.springframework.data.jpa.reposito
     // Paginated query to find all projects (including archived) by user
     Page<Project> findByUserId(Long userId, Pageable pageable);
 
-    // Paginated query with search filter
+    // Paginated query with search, pinned and mode filters, so pages stay complete for each filter
     @Query("SELECT p FROM Project p WHERE p.user.id = :userId " +
            "AND (:includeArchived = true OR p.archived = false OR p.archived IS NULL) " +
-           "AND (:search IS NULL OR :search = '' OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "AND (:search IS NULL OR :search = '' OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (:favoriteOnly = false OR p.favorite = true) " +
+           "AND (:mode IS NULL OR p.mode = :mode)")
     Page<Project> findAllFiltered(
             @Param("userId") Long userId,
             @Param("includeArchived") Boolean includeArchived,
             @Param("search") String search,
+            @Param("favoriteOnly") boolean favoriteOnly,
+            @Param("mode") com.oriens.oriens_api.entity.enums.ProjectMode mode,
             Pageable pageable
     );
 }

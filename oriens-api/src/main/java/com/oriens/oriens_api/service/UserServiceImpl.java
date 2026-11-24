@@ -18,6 +18,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    private static final java.util.Set<String> TASK_VIEWS = java.util.Set.of("peek", "modal", "full");
+
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
@@ -53,13 +55,14 @@ public class UserServiceImpl implements UserService {
 
         UserPreferences userPreferences = user.getUserPreferences();
         if (userPreferences == null) {
-            userPreferences = new UserPreferences(true, true, "light");
+            userPreferences = new UserPreferences(true, true, "light", null);
         }
 
         return UserPreferencesDTO.builder()
                 .notifications(userPreferences.getNotifications())
                 .sound(userPreferences.getSound())
                 .theme(userPreferences.getTheme())
+                .taskView(userPreferences.getTaskView() == null ? "peek" : userPreferences.getTaskView())
                 .build();
     }
 
@@ -107,6 +110,11 @@ public class UserServiceImpl implements UserService {
             userPreferences.setTheme(theme);
         }
 
+        String taskView = userPreferencesDTO.getTaskView();
+        if (taskView != null && TASK_VIEWS.contains(taskView)) {
+            userPreferences.setTaskView(taskView);
+        }
+
         if (userPreferencesDTO.getNotifications() != null) {
             userPreferences.setNotifications(userPreferencesDTO.getNotifications());
         }
@@ -122,6 +130,7 @@ public class UserServiceImpl implements UserService {
                 .notifications(userPreferences.getNotifications())
                 .sound(userPreferences.getSound())
                 .theme(userPreferences.getTheme())
+                .taskView(userPreferences.getTaskView() == null ? "peek" : userPreferences.getTaskView())
                 .build();
     }
 

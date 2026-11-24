@@ -191,7 +191,7 @@ class UserControllerOwnershipTest {
         u.setPassword("synthetic");
         u.setRole(role);
         u.setPhoneNumber(phoneNumber);
-        u.setUserPreferences(new UserPreferences(true, true, "light"));
+        u.setUserPreferences(new UserPreferences(true, true, "light", null));
         return users.save(u);
     }
 

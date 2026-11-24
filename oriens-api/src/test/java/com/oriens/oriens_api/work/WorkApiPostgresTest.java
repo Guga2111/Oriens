@@ -412,6 +412,20 @@ class WorkApiPostgresTest {
         assertThat(project(pid).path("defaultPendingColumnId").asLong()).isEqualTo(cid);
     }
 
+    @Test void projectListFiltersPinnedAndModeOnTheServerSoPagesStayComplete() throws Exception {
+        JsonNode simple=project("SIMPLE"), development=project("DEVELOPMENT");
+        send("PATCH","/project/"+simple.path("id")+"/favorite","{\"version\":"+project(simple.path("id").asLong()).path("version")+",\"favorite\":true}",null,token,200);
+        JsonNode bySimple=getJson("/project/user/"+owner+"?mode=SIMPLE");
+        assertThat(bySimple.path("totalElements").asLong()).isEqualTo(1);
+        assertThat(bySimple.path("content").get(0).path("id").asLong()).isEqualTo(simple.path("id").asLong());
+        JsonNode byDevelopment=getJson("/project/user/"+owner+"?mode=DEVELOPMENT");
+        assertThat(byDevelopment.path("content").get(0).path("id").asLong()).isEqualTo(development.path("id").asLong());
+        JsonNode pinned=getJson("/project/user/"+owner+"?favorite=true");
+        assertThat(pinned.path("totalElements").asLong()).isEqualTo(1);
+        assertThat(getJson("/project/user/"+owner+"?favorite=true&mode=DEVELOPMENT").path("totalElements").asLong()).isZero();
+        assertThat(getJson("/project/user/"+owner).path("totalElements").asLong()).isEqualTo(2);
+    }
+
     @Test void backlogIsItsOwnStateAndStillOpenWork() throws Exception {
         JsonNode p=project("DEVELOPMENT"); JsonNode t=task(p);
         assertThat(t.path("status").asText()).isEqualTo("BACKLOG");

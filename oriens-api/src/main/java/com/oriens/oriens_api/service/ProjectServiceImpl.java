@@ -299,7 +299,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProjectDTO> findAllProjectsByUser(Long userId, Boolean includeArchived, String search, Pageable pageable) {
-        Page<Project> projects = projectRepository.findAllFiltered(userId, includeArchived, search, pageable);
+        Page<Project> projects = projectRepository.findAllFiltered(userId, includeArchived, search, false, null, pageable);
         return projects.map(this::convertProjectToDTO);
     }
 

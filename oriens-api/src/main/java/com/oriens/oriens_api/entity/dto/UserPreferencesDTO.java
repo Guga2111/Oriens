@@ -21,4 +21,7 @@ public class UserPreferencesDTO {
 
     @JsonProperty(required = false)
     private String theme;
+
+    @JsonProperty(required = false)
+    private String taskView;
 }
