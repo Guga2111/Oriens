@@ -17,3 +17,11 @@ Preservar primário laranja, tipografia, raios e tokens vigentes. Usar controles
 ## Provas
 
 Testes de criação/edição, seis estados, limpeza parcial e validação cruzada de datas, posse, concorrência e compatibilidade de idempotência. Testes de UI para criação, filtros, edição direta, detalhe e tarefas. Lint/build e verificação visual desktop/mobile com os dois temas. Migrações apenas em PostgreSQL descartável, nunca no banco compartilhado.
+
+## Ajuste solicitado em 24/11/2026 — consulta antes da edição
+
+Clicar no objetivo da lista abre sheet lateral de informações, seguindo a referência adicional enviada pelo usuário. Título e descrição em leitura, propriedades de status/período com edição direta, progresso e distribuição das tarefas por estado, além das tarefas vinculadas. Seções recolhíveis. A edição completa fica em uma ação explícita no menu da lista ou do sheet e abre diálogo com proteção de rascunho; cancelar retorna ao sheet quando aberto. Não adicionar responsáveis, membros ou bloqueios sem suporte no domínio. Sem mudança de design system ou backend.
+
+## Distribuição e comportamento do sheet
+
+Solicitado pelo usuário: seção Distribuição (equivalente a Breakdown), com abas Estado, Etiquetas e Prioridades, baseada no Tabs existente do shadcn. Cada grupo mostra contagem, percentual e barra proporcional. Denominador: todas as tarefas vinculadas, incluindo canceladas. Etiquetas podem se sobrepor; informar essa regra e incluir Sem etiquetas. O progresso geral mantém seu denominador anterior, sem canceladas. Usar o Sheet em modo não modal (`modal={false}`), como TaskPeek: fundo sem overlay escuro e lista acessível. Nenhuma alteração no componente base ou design system.

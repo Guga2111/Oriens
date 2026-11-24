@@ -11,6 +11,13 @@
 - v2 (2026-11-23): tokens do plane.so lidos em produção (§2); valores finais por tema com contraste
   medido (§5–§6); correções de logo, favicon, páginas públicas e conflitos de matiz.
 
+### Ajuste de saturação — 2026-11-24
+
+A pedido do usuário, o primário passa a `21 100% 38%` no claro (#C24400) e
+`24 100% 55%` no escuro (#FF751A), preservando matiz e luminosidade. O favicon
+acompanha os tokens; foco, gráficos e sidebar herdam o ajuste pelas referências existentes.
+Os valores nas tabelas abaixo registram a decisão original de novembro de 2026.
+
 ## 1. Contexto
 
 O usuário pediu que o design system do `oriens-front` replique o do
