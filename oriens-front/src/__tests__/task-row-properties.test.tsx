@@ -10,6 +10,14 @@ import { useLocation } from 'react-router-dom';
 
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7 }) }));
 vi.mock('@/hooks/useSound', () => ({ useSound: () => vi.fn() }));
+// The task view is a user preference; this fake keeps it like the settings context would.
+const settings = vi.hoisted(() => ({ taskView: 'peek' as string, update: [] as unknown[][] }));
+vi.mock('@/context/SettingsContext', () => ({
+  useSettings: () => ({
+    preferences: { notifications: true, sound: false, theme: 'light', taskView: settings.taskView },
+    updatePreference: async (key: string, value: string) => { settings.update.push([key, value]); settings.taskView = value; },
+  }),
+}));
 vi.mock('@/services/api', () => ({ default: { get: vi.fn(), patch: vi.fn() } }));
 
 const catalog = [{ id: 1, name: 'Frontend', color: 'RED' }, { id: 2, name: 'Pesquisa', color: 'BLUE' }];
@@ -17,7 +25,7 @@ let current = task;
 
 beforeEach(() => {
   vi.clearAllMocks();
-  window.localStorage?.clear();
+  settings.taskView = 'peek'; settings.update = [];
   const today = productNow().date;
   current = { ...task, plannedDate: today, startTime: null, dueDate: '2099-01-10', labels: [catalog[0]] } as typeof task;
   vi.mocked(api.get).mockImplementation(async (url: string, config?: { params?: { date?: string } }) => {
@@ -196,30 +204,19 @@ it('move a tarefa de coluna pelo painel', async () => {
   await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', { columnId: 12, beforeTaskId: null, ...versions }));
 });
 
-it('troca o modo de visualização para modal e lembra a escolha', async () => {
-  // The test environment has no Web Storage, so this test brings its own.
-  const saved = new Map<string, string>();
-  const storage = { getItem: (key: string) => saved.get(key) ?? null, setItem: (key: string, value: string) => void saved.set(key, value) };
-  const original = Object.getOwnPropertyDescriptor(window, 'localStorage');
-  Object.defineProperty(window, 'localStorage', { configurable: true, value: storage });
-  try {
-    const first = renderWork(<DashboardPage />);
-    const panel = await openPanel();
-    const trigger = within(panel).getByRole('button', { name: 'Modo de visualização: Painel lateral' });
-    trigger.focus();
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('Modo de visualização');
-    await userEvent.click(trigger);
-    await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Modal' }));
-    const modal = await screen.findByRole('dialog', { name: task.title });
-    expect(within(modal).getByRole('button', { name: 'Modo de visualização: Modal' })).toBeInTheDocument();
-    expect(saved.get('oriens.taskView')).toBe('modal');
-    first.unmount();
+it('troca o modo de visualização para modal e guarda a escolha nas preferências', async () => {
+  const first = renderWork(<DashboardPage />);
+  const panel = await openPanel();
+  const trigger = within(panel).getByRole('button', { name: 'Modo de visualização: Painel lateral' });
+  trigger.focus();
+  expect(await screen.findByRole('tooltip')).toHaveTextContent('Modo de visualização');
+  await userEvent.click(trigger);
+  await userEvent.click(await screen.findByRole('menuitemradio', { name: 'Modal' }));
+  expect(settings.update).toEqual([['taskView', 'modal']]);
+  first.unmount();
 
-    renderWork(<DashboardPage />);
-    const reopened = await openPanel();
-    expect(within(reopened).getByRole('button', { name: 'Modo de visualização: Modal' })).toBeInTheDocument();
-  } finally {
-    if (original) Object.defineProperty(window, 'localStorage', original);
-    else delete (window as { localStorage?: Storage }).localStorage;
-  }
+  // The next task opens as the preference says.
+  renderWork(<DashboardPage />);
+  const reopened = await openPanel();
+  expect(within(reopened).getByRole('button', { name: 'Modo de visualização: Modal' })).toBeInTheDocument();
 });

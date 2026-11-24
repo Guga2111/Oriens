@@ -80,7 +80,7 @@ test("timeline: escala, Hoje, ‹ ›, detalhe pela barra e deep link", async ({
   await expect(page).not.toHaveURL(/[?&]anchor=/);
   await expect(page).toHaveURL(/[?&]scale=month/);
 
-  // The bar opens the TaskDetailsDialog through ?task.
+  // The bar opens the task panel (the same as on Hoje) through ?task.
   await barButton.click();
   const dialog = page.getByRole("dialog", { name: bar.title });
   await expect(dialog).toBeVisible();
@@ -90,7 +90,7 @@ test("timeline: escala, Hoje, ‹ ›, detalhe pela barra e deep link", async ({
   await page.goto(`/tasks/project/${projectId}?tab=timeline&task=${bar.id}`);
   await page.reload();
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole("button", { name: /Editar/ })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: `Ações da tarefa ${bar.title}` })).toBeVisible();
 });
 
 test("timeline: cabeçalho do app, foco e título ficam visíveis apesar da coluna fixa", async ({ page, request }, testInfo) => {

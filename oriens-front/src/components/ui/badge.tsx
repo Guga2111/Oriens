@@ -12,6 +12,8 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
+        // plane.so's read-only property chip: quiet border, regular weight, muted icon.
+        property: "h-8 gap-1.5 whitespace-nowrap rounded-md border-border bg-card px-2.5 py-0 text-sm font-normal text-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground",
         streak: "border-streak/20 bg-streak/10 text-streak",
         "label-red": "border-transparent bg-label-red text-label-red-foreground",
         "label-orange": "border-transparent bg-label-orange text-label-orange-foreground",

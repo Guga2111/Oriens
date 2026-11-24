@@ -11,6 +11,9 @@ export interface ProjectFilters {
   direction?: 'ASC' | 'DESC';
   includeArchived?: boolean;
   search?: string;
+  /** Only pinned projects. */
+  favorite?: boolean;
+  mode?: WorkProject['mode'];
 }
 
 export const projectService = {

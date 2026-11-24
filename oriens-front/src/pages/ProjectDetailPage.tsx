@@ -17,7 +17,7 @@ import { BoardFilterMenu } from '@/components/projects/BoardFilterMenu';
 import { ComingSoonView } from '@/components/projects/ComingSoonView';
 import { WorkViewSwitcher } from '@/components/projects/WorkViewSwitcher';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
-import { TaskDetailsDialog } from '@/components/tasks/TaskDetailsDialog';
+import { TaskPeek } from '@/components/tasks/TaskPeek';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -105,9 +105,10 @@ function ProjectDetail({ id }: { id: number }) {
     <ConfirmDialog error={write.error} open={converting} onOpenChange={setConverting} title="Usar quadro de tarefas?" objectName={project.title} confirmLabel="Converter para desenvolvimento" description="Seus objetivos serão preservados. O quadro começa com A fazer, Fazendo e Concluídas, sem criar tarefas. A conversão não pode ser desfeita."
       onConfirm={async () => { try { await write.mutateAsync({ action: 'convert', id, version: project.version }); return true; } catch { return false; } }} />
     {settings && board.data && <BoardSettings project={project} board={board.data} onReload={async () => { await query.refetch(); return (await board.refetch()).data; }} onClose={() => setSettings(false)} />}
-    {development && openTask > 0 && !editor && <TaskDetailsDialog key={openTask} taskId={openTask} projectId={project.id} columns={board.data?.columns}
+    {/* The same task view as Hoje: side panel, modal or full screen, as set in Configurações. */}
+    {development && openTask > 0 && !editor && <TaskPeek key={openTask} taskId={openTask}
       placeholder={[board, allBoard, timeline].map(b => b.data?.tasks.find(t => t.id === openTask)).find(Boolean)}
-      onClose={closeTask} onEdit={editTask} onObjective={showObjective} />}
+      onClose={closeTask} onEdit={editTask} />}
     {editor && <TaskEditor open onOpenChange={v => { if (!v) setEditor(null); }} task={editor.task} projectId={project.id} columnId={editor.columnId} objectiveId={editor.objectiveId} />}
   </div>;
 }

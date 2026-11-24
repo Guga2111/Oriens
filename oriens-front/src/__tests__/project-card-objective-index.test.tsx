@@ -31,14 +31,18 @@ describe('P4 cards — contagens e próximo passo', () => {
     expect(screen.getByRole('button', { name: 'Fixar Site pessoal' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByRole('button', { name: 'Ações do projeto Site pessoal' })).toBeInTheDocument();
   });
-  it('cada chip explica o que mostra em um tooltip, também pelo teclado', async () => {
-    renderWork(<ProjectCard project={{ ...project, summary: { ...project.summary, overdueTaskCount: 1 } }} onEdit={vi.fn()} onDelete={vi.fn()} />);
+  it('cada chip explica o que mostra: tooltip ao passar o mouse e leitura completa para leitores de tela', async () => {
+    const { container } = renderWork(<ProjectCard project={{ ...project, color: '#e5484d', summary: { ...project.summary, overdueTaskCount: 1 } }} onEdit={vi.fn()} onDelete={vi.fn()} />);
     const tasks = chip('Tarefas concluídas: 0 de 1');
     const attention = chip('Atenção: 1 tarefa com prazo ultrapassado');
+    // Read-only facts stay out of the tab order; screen readers get the full reading from the chip itself.
+    expect(tasks).not.toHaveAttribute('tabindex');
     await userEvent.hover(tasks);
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Tarefas concluídas: 0 de 1');
     await userEvent.unhover(tasks);
-    attention.focus();
+    await userEvent.hover(attention);
     await waitFor(() => expect(screen.getByRole('tooltip')).toHaveTextContent('Atenção: 1 tarefa com prazo ultrapassado'));
+    // The project's colour reaches the card as a CSS variable, not as an inline colour.
+    expect(container.querySelector<HTMLElement>('[style*="--project-color"]')?.style.getPropertyValue('--project-color')).toBe('#e5484d');
   });
 });

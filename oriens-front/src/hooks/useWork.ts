@@ -139,10 +139,11 @@ export function useProjectFlags() {
   });
 }
 
-export function useProjectPages() {
+/** The projects page, filtered by the API so every page is complete for the filters. */
+export function useProjectPages(filters: Pick<ProjectFilters, 'favorite' | 'mode'> = {}) {
   const { userId } = useAuth();
-  return useInfiniteQuery({ queryKey: workKey(userId, 'projects/list', 'pages'), enabled: userId !== null,
-    initialPageParam: 0, queryFn: ({ pageParam, signal }) => projectService.projects(userId!, { page: pageParam, size: 6 }, signal),
+  return useInfiniteQuery({ queryKey: workKey(userId, 'projects/list', 'pages', filters), enabled: userId !== null,
+    initialPageParam: 0, queryFn: ({ pageParam, signal }) => projectService.projects(userId!, { ...filters, page: pageParam, size: 6 }, signal),
     getNextPageParam: page => page.number + 1 < page.totalPages ? page.number + 1 : undefined });
 }
 export function useDeletionPreview(id: number) {

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { isAxiosError } from "axios";
 import {
   ArrowRight, CalendarCheck, CalendarPlus, Check, ChevronDown, Circle, Columns3, Folder,
-  Link2, MapPin, Maximize, MoreHorizontal, PanelRight, Pencil, SquareDot, Tag, Target, Trash2, X,
+  Link2, MapPin, MoreHorizontal, Pencil, Tag, Target, Trash2, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
@@ -16,18 +16,23 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetClose, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusIcon } from "@/components/tasks/StatusIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useSettings } from "@/context/SettingsContext";
 import { useTaskActions } from "@/hooks/useTaskActions";
 import { useProjectBoard, useTaskDetail } from "@/hooks/useWork";
 import { formatLongDate } from "@/lib/date";
 import { isEditingInline } from "@/lib/inline-edit";
+import { DEFAULT_TASK_VIEW, TASK_VIEWS } from "@/lib/task-view";
 import { TASK_STATUS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
+import type { TaskView } from "@/types/settings";
 import type { TaskStatus } from "@/types/task";
 import type { WorkTask } from "@/types/work";
 
@@ -182,32 +187,17 @@ function PeekBody({ task, onSave, disabled }: { task: WorkTask; onSave: SaveTask
   );
 }
 
-type ViewMode = "peek" | "modal" | "full";
-
-const VIEW_MODES: { value: ViewMode; label: string; icon: typeof PanelRight }[] = [
-  { value: "peek", label: "Painel lateral", icon: PanelRight },
-  { value: "modal", label: "Modal", icon: SquareDot },
-  { value: "full", label: "Tela cheia", icon: Maximize },
-];
-const VIEW_MODE_KEY = "oriens.taskView";
-
-/** The last chosen view is a per-browser convenience; without storage the panel opens on the side. */
-function useViewMode() {
-  const [mode, setMode] = useState<ViewMode>(() => {
-    try {
-      const saved = window.localStorage.getItem(VIEW_MODE_KEY);
-      return VIEW_MODES.find(view => view.value === saved)?.value ?? "peek";
-    } catch { return "peek"; }
-  });
-  const choose = (next: ViewMode) => {
-    setMode(next);
-    try { window.localStorage.setItem(VIEW_MODE_KEY, next); } catch { /* The choice still applies to this visit. */ }
-  };
-  return [mode, choose] as const;
+/** The task view is a user preference kept by the API, shared with Configurações › Aparência. */
+function useTaskView() {
+  const { preferences, updatePreference } = useSettings();
+  const view: TaskView = preferences?.taskView ?? DEFAULT_TASK_VIEW;
+  // A failed save is reported by the settings context and the previous view comes back.
+  const choose = (next: TaskView) => { if (next !== view) void updatePreference("taskView", next).catch(() => {}); };
+  return [view, choose] as const;
 }
 
-function ViewModeMenu({ mode, onChange }: { mode: ViewMode; onChange: (mode: ViewMode) => void }) {
-  const current = VIEW_MODES.find(view => view.value === mode)!;
+function ViewModeMenu({ mode, onChange }: { mode: TaskView; onChange: (mode: TaskView) => void }) {
+  const current = TASK_VIEWS.find(view => view.value === mode)!;
   return (
     <DropdownMenu>
       <Tooltip>
@@ -219,12 +209,13 @@ function ViewModeMenu({ mode, onChange }: { mode: ViewMode; onChange: (mode: Vie
         <TooltipContent className="px-2 py-1 text-xs">Modo de visualização</TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="start" className="w-44">
-        {VIEW_MODES.map(view => (
-          <DropdownMenuItem key={view.value} role="menuitemradio" aria-checked={view.value === mode} onSelect={() => onChange(view.value)}>
-            <view.icon aria-hidden className="text-muted-foreground" />{view.label}
-            {view.value === mode && <Check aria-hidden className="ml-auto" />}
-          </DropdownMenuItem>
-        ))}
+        <DropdownMenuRadioGroup value={mode} onValueChange={next => onChange(next as TaskView)}>
+          {TASK_VIEWS.map(view => (
+            <DropdownMenuRadioItem key={view.value} value={view.value}>
+              <view.icon aria-hidden className="text-muted-foreground" />{view.label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -243,7 +234,7 @@ export function TaskPeek({ taskId, placeholder, onClose, onEdit }: {
 }) {
   const detail = useTaskDetail(taskId, placeholder);
   const actions = useTaskActions();
-  const [mode, setMode] = useViewMode();
+  const [mode, setMode] = useTaskView();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const task = detail.data;
@@ -314,12 +305,12 @@ export function TaskPeek({ taskId, placeholder, onClose, onEdit }: {
           )}
         </div>
       </div>
+      {/* Inside the panel, so the confirmation counts as part of it and does not dismiss it as an outside click. */}
+      <ConfirmDialog open={deleting} onOpenChange={setDeleting} title="Excluir tarefa?" objectName={task?.title ?? ""} confirmLabel="Excluir tarefa" error={actions.error} onConfirm={remove} />
     </>
   );
 
-  return (
-    <>
-      {mode === "peek" ? (
+  return mode === "peek" ? (
         <Sheet open modal={false} onOpenChange={onOpenChange}>
           <SheetContent side="right" showClose={false} aria-describedby={undefined} onEscapeKeyDown={keepOpenWhileEditing}
             className="flex w-full flex-col gap-0 bg-card p-0 sm:max-w-xl lg:max-w-2xl">
@@ -334,8 +325,5 @@ export function TaskPeek({ taskId, placeholder, onClose, onEdit }: {
             {content}
           </DialogContent>
         </Dialog>
-      )}
-      <ConfirmDialog open={deleting} onOpenChange={setDeleting} title="Excluir tarefa?" objectName={task?.title ?? ""} confirmLabel="Excluir tarefa" error={actions.error} onConfirm={remove} />
-    </>
-  );
+      );
 }

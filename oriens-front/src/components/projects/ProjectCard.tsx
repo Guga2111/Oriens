@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDays, CalendarPlus, CircleCheck, Kanban, ListChecks, MoreHorizontal, Pin, Pencil, Target, Trash2, TriangleAlert } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -11,21 +12,19 @@ import { formatDue } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import type { WorkProject } from '@/types/work';
 
-const chip = 'inline-flex h-8 flex-none items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-card px-2.5 text-sm text-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground';
 const overlayButton = 'size-8 rounded-md border border-border bg-card shadow-sm hover:bg-accent';
 
-/** A read-only property; `label` is the full reading, shown in a tooltip on hover or focus and read by screen readers. */
+/** A read-only property; `label` is the full reading, shown in a tooltip on hover and read by screen readers. */
 function Property({ label, icon, className, children }: { label: string; icon: ReactNode; className?: string; children: ReactNode }) {
   return (
     <li>
       <Tooltip>
         <TooltipTrigger asChild>
-          {/* Focusable so keyboard users can reach the tooltip too. */}
-          <span tabIndex={0} className={cn(chip, 'cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', className)}>
+          <Badge variant="property" className={className}>
             {icon}
             <span aria-hidden>{children}</span>
             <span className="sr-only">{label}</span>
-          </span>
+          </Badge>
         </TooltipTrigger>
         <TooltipContent className="px-2 py-1 text-xs">{label}</TooltipContent>
       </Tooltip>
@@ -60,19 +59,21 @@ export function ProjectCard({ project, onEdit, onDelete }: {
     : s.nextObjective
       ? { label: `Próximo objetivo: ${s.nextObjective.title} · ${formatDue(s.nextObjective.dueDate)}`, short: formatDue(s.nextObjective.dueDate) ?? '' }
       : s.totalObjectives > s.completedObjectives ? { label: 'Objetivos sem prazo', short: 'Sem prazo' } : null;
-  // A tint of the project's own colour stands in for a cover picture; it is user data, hence inline.
-  const tint = !project.imageUrl && project.color ? { backgroundColor: `color-mix(in srgb, ${project.color} 22%, hsl(var(--card)))` } : undefined;
+  // The project's colour is user data, so it travels as a CSS variable (frontend.md §3.1).
+  const color = project.color ? { '--project-color': project.color } as CSSProperties : undefined;
 
   return (
-    <Card className="group/card relative flex min-w-0 flex-col overflow-hidden border-border shadow-none transition-colors hover:border-foreground/20">
-      <div className={cn('relative h-32 shrink-0', !project.imageUrl && !project.color && 'bg-muted')} style={tint}>
+    <Card className="group/card relative flex min-w-0 flex-col overflow-hidden border-border shadow-none transition-colors hover:border-foreground/20" style={color}>
+      <div className={cn('relative h-32 shrink-0', !project.imageUrl && !project.color && 'bg-muted')}>
+        {/* Without a picture, a light tint of the project's colour stands in for the cover. */}
+        {!project.imageUrl && project.color && <div aria-hidden className="absolute inset-0 bg-[var(--project-color)] opacity-20" />}
         {project.imageUrl && <>
           <img src={project.imageUrl} alt="" className="size-full object-cover" />
           {/* A neutral scrim lets the picture settle into the card, as on plane.so. */}
           <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-card to-transparent" />
         </>}
         <span aria-hidden className="absolute left-3 top-3 flex size-9 items-center justify-center rounded-md border border-border bg-card shadow-sm">
-          <span className={cn('size-3.5 rounded-full', !project.color && 'bg-muted-foreground')} style={project.color ? { backgroundColor: project.color } : undefined} />
+          <span className={cn('size-3.5 rounded-full', project.color ? 'bg-[var(--project-color)]' : 'bg-muted-foreground')} />
         </span>
         <div className="absolute right-3 top-3 z-10 flex gap-1.5">
           <DropdownMenu>
@@ -116,9 +117,9 @@ export function ProjectCard({ project, onEdit, onDelete }: {
             <li>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link to={`${href}?planning=unscheduled&open=1`} aria-label="Planejar próxima tarefa" className={cn(chip, 'w-8 justify-center px-0 hover:bg-accent')}>
-                    <CalendarPlus aria-hidden />
-                  </Link>
+                  <Button asChild variant="outline" size="icon" className="size-8 text-muted-foreground">
+                    <Link to={`${href}?planning=unscheduled&open=1`} aria-label="Planejar próxima tarefa"><CalendarPlus aria-hidden /></Link>
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent className="px-2 py-1 text-xs">Planejar próxima tarefa</TooltipContent>
               </Tooltip>
