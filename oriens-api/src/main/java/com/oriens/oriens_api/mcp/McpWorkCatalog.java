@@ -15,7 +15,7 @@ public final class McpWorkCatalog {
         UUID_SCHEMA=Map.of("type","string","format","uuid","pattern","^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
     private static final Map<String,Object> TITLE=Map.of("type","string","minLength",1,"maxLength",200),
         DESCRIPTION=Map.of("type","string","maxLength",10000),COLOR=Map.of("type","string","maxLength",255),
-        STATUS=choices("PENDING","ON_DOING","CANCELLED","CONCLUDED"),PRIORITY=choices("LOW","MEDIUM","HIGH"),MODE=choices("SIMPLE","DEVELOPMENT"),
+        STATUS=choices("BACKLOG","PENDING","ON_DOING","CANCELLED","CONCLUDED"),PRIORITY=choices("LOW","MEDIUM","HIGH"),MODE=choices("SIMPLE","DEVELOPMENT"),
         LOCATION=object(fields("address",nullable(Map.of("type","string","maxLength",255)),
             "latitude",nullable(Map.of("type","number","minimum",-90,"maximum",90)),
             "longitude",nullable(Map.of("type","number","minimum",-180,"maximum",180))));

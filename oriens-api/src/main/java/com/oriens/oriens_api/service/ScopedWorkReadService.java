@@ -106,7 +106,7 @@ public class ScopedWorkReadService {
         Specification<Task> all=taskScope(a).and(equal("projectId",id)), visible=all;
         if(objectiveId!=null) visible=visible.and(equal("objectiveId",objectiveId));
         if(planning!=null) visible=visible.and(equal("plannedDate",planning.equals("today")?today():null));
-        if(open||overdue) visible=visible.and((r,q,b)->r.get("status").in(Status.PENDING,Status.ON_DOING));
+        if(open||overdue) visible=visible.and((r,q,b)->r.get("status").in(Status.BACKLOG,Status.PENDING,Status.ON_DOING));
         if(overdue) visible=visible.and((r,q,b)->b.lessThan(r.get("dueDate"),today()));
         if(window!=null) visible=visible.and(window.specification());
         Specification<Task> filtered=visible;

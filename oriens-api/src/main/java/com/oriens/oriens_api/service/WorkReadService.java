@@ -56,7 +56,7 @@ public class WorkReadService {
         }).toList();
     }
     private LocalDate today() { return LocalDate.now(clock.withZone(ProductClockConfiguration.ZONE)); }
-    private static boolean active(TaskView t) { return t.status() == Status.PENDING || t.status() == Status.ON_DOING; }
+    private static boolean active(TaskView t) { return t.status().open(); }
     private static final Comparator<TaskView> PRIORITY = Comparator.comparingInt((TaskView t) -> switch(t.priority()) {
         case HIGH -> 0; case MEDIUM -> 1; case LOW -> 2;
     }).thenComparing(TaskView::id);

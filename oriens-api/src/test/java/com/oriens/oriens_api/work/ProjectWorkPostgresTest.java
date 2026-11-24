@@ -96,13 +96,18 @@ class ProjectWorkPostgresTest {
         Objective objective = service.createObjective(owner, simple.getId(), new CreateObjective(simple.getVersion(), "Resultado", null));
         assertThat(objective.getId()).isPositive();
         Project converted = service.convertProject(owner, simple.getId(), current(simple).getVersion(), ProjectMode.DEVELOPMENT);
-        assertThat(board(converted)).extracting(ProjectColumn::getName).containsExactly("A fazer", "Fazendo", "Concluídas");
-        assertThat(board(converted)).extracting(ProjectColumn::getKind).containsExactly(Status.PENDING, Status.ON_DOING, Status.CONCLUDED);
+        assertThat(board(converted)).extracting(ProjectColumn::getName).containsExactly("Backlog", "To-Do", "In Progress", "Done", "Cancelled");
+        assertThat(board(converted)).extracting(ProjectColumn::getKind)
+            .containsExactly(Status.BACKLOG, Status.PENDING, Status.ON_DOING, Status.CONCLUDED, Status.CANCELLED);
         assertThat(objectives.findById(objective.getId())).isPresent();
         service.convertProject(owner, simple.getId(), current(simple).getVersion(), ProjectMode.DEVELOPMENT);
-        assertThat(board(simple)).hasSize(3);
+        assertThat(board(simple)).hasSize(5);
         assertThat(current(simple).getDefaultPendingColumnId()).isEqualTo(board(simple).get(0).getId());
-        assertThat(board(project(ProjectMode.DEVELOPMENT))).hasSize(3);
+        assertThat(current(simple).getDefaultCompletedColumnId()).isEqualTo(board(simple).get(3).getId());
+        Project development = project(ProjectMode.DEVELOPMENT);
+        assertThat(board(development)).hasSize(5);
+        // A new project task lands in the backlog, a state of its own.
+        assertThat(task(development, null, null, null, null).getStatus()).isEqualTo(Status.BACKLOG);
     }
 
     @Test void nullableDatesPriorityInstantAndPlanningAreIndependent() {
@@ -137,7 +142,14 @@ class ProjectWorkPostgresTest {
         PatchTask reopen = patch(repeated); reopen.setProjectVersion(current(project).getVersion()); reopen.setStatus(Status.PENDING);
         Task reopened = service.patchTask(owner, task.getId(), reopen);
         assertThat(reopened.getCompletedAt()).isNull();
-        assertThat(reopened.getColumnId()).isEqualTo(project.getDefaultPendingColumnId());
+        // Asking for To-Do (not the backlog) finds the board's first To-Do column.
+        assertThat(reopened.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(reopened.getColumnId()).isEqualTo(board(project).stream().filter(c -> c.getKind() == Status.PENDING).findFirst().orElseThrow().getId());
+        PatchTask shelve = patch(reopened); shelve.setProjectVersion(current(project).getVersion()); shelve.setStatus(Status.BACKLOG);
+        Task shelved = service.patchTask(owner, task.getId(), shelve);
+        assertThat(shelved.getStatus()).isEqualTo(Status.BACKLOG);
+        assertThat(shelved.getColumnId()).isEqualTo(project.getDefaultPendingColumnId());
+        reopened = shelved;
         PatchTask cancel = patch(reopened); cancel.setProjectId(null); cancel.setStatus(Status.CANCELLED);
         cancel.setProjectVersion(current(project).getVersion());
         assertThat(service.patchTask(owner, task.getId(), cancel).getCompletedAt()).isNull();
@@ -166,7 +178,7 @@ class ProjectWorkPostgresTest {
         rejected(() -> service.patchColumn(owner, project.getId(), source.getId(), occupied), "DOMAIN_VIOLATION");
         rejected(() -> service.removeColumn(owner, project.getId(), source.getId(), source.getVersion(),
                 new RemoveColumn(current(project).getVersion(), null, null, null)), "DOMAIN_VIOLATION");
-        ProjectColumn backlog = service.createColumn(owner, project.getId(), new CreateColumn(current(project).getVersion(), "Backlog", Status.PENDING));
+        ProjectColumn backlog = service.createColumn(owner, project.getId(), new CreateColumn(current(project).getVersion(), "Triagem", Status.PENDING));
         PatchColumn rename = new PatchColumn(); rename.setVersion(backlog.getVersion());
         rename.setProjectVersion(current(project).getVersion()); rename.setName("Bloqueadas");
         service.patchColumn(owner, project.getId(), backlog.getId(), rename);
@@ -174,7 +186,7 @@ class ProjectWorkPostgresTest {
         Collections.reverse(order);
         service.orderColumns(owner, project.getId(), new OrderColumns(current(project).getVersion(), order));
         assertThat(board(project)).extracting(ProjectColumn::getId).containsExactlyElementsOf(order);
-        assertThat(tasks.findById(task.getId()).orElseThrow().getStatus()).isEqualTo(Status.PENDING);
+        assertThat(tasks.findById(task.getId()).orElseThrow().getStatus()).isEqualTo(Status.BACKLOG);
         service.removeColumn(owner, project.getId(), source.getId(), columns.findById(source.getId()).orElseThrow().getVersion(),
                 new RemoveColumn(current(project).getVersion(), backlog.getId(), backlog.getId(), null));
         Task moved = tasks.findById(task.getId()).orElseThrow();

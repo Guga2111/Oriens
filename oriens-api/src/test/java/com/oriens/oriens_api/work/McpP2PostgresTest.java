@@ -88,7 +88,7 @@ class McpP2PostgresTest extends McpPostgresTest {
         assertThat(detail.path("objectives").path("items")).hasSize(5);assertThat(detail.path("objectives").path("totalElements").asLong()).isEqualTo(105);
         assertThat(detail.toString()).doesNotContain("taskCounts","taskSummary","totalTasks","Tarefa");
         var board=success(metadata,"get_board",fields("projectId",id(p.getId()),"columnsPageSize",2)).path("data");
-        assertThat(board.path("columns").path("items")).hasSize(2);assertThat(board.path("columns").path("totalElements").asLong()).isEqualTo(108);
+        assertThat(board.path("columns").path("items")).hasSize(2);assertThat(board.path("columns").path("totalElements").asLong()).isEqualTo(110);
         assertThat(board.toString()).doesNotContain("\"tasks\"","totalCount","visibleCount","TaskCounts");
         var rows=grant(Set.of("mcp:context","projects:read","tasks:read"),Set.of(p.getId()),false);
         board=success(rows,"get_board",fields("projectId",id(p.getId()),"columnsPage",1,"columnsPageSize",2,"tasksPage",1,"tasksPageSize",20,"planning","unscheduled")).path("data");

@@ -2,7 +2,6 @@ package com.oriens.oriens_api.service;
 
 import com.oriens.oriens_api.configuration.ProductClockConfiguration;
 import com.oriens.oriens_api.entity.Task;
-import com.oriens.oriens_api.entity.enums.Status;
 import com.oriens.oriens_api.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,7 @@ public class TaskReminderService {
     @Transactional
     public void emit(Long id, boolean deadline) {
         Task t = tasks.lockReminder(id).orElse(null);
-        if (t == null || (t.getStatus() != Status.PENDING && t.getStatus() != Status.ON_DOING)) return;
+        if (t == null || !t.getStatus().open()) return;
         LocalDateTime now = LocalDateTime.now(clock.withZone(ProductClockConfiguration.ZONE));
         if (deadline) {
             if (t.isOverdueNotificationSent() || t.getDueDate() == null || !t.getDueDate().isBefore(now.toLocalDate())) return;

@@ -125,7 +125,7 @@ public class TaskServiceImpl implements TaskService {
 
         if (!oldStatus.equals(newStatus) && newStatus.equals(Status.CONCLUDED)) {
             existingTask.setCompletedAt(LocalDate.now());
-        } else if (newStatus.equals(Status.PENDING) && oldStatus.equals(Status.CONCLUDED)) {
+        } else if (newStatus.open() && oldStatus.equals(Status.CONCLUDED)) {
             existingTask.setCompletedAt(null);
         }
 

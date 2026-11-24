@@ -85,10 +85,13 @@ public class ProjectWorkService {
 
     private void initializeBoard(Project project) {
         project.setMode(ProjectMode.DEVELOPMENT);
-        ProjectColumn pending = addColumn(project, "A fazer", Status.PENDING, 0);
-        addColumn(project, "Fazendo", Status.ON_DOING, 1);
-        ProjectColumn completed = addColumn(project, "Concluídas", Status.CONCLUDED, 2);
-        project.setDefaultPendingColumnId(pending.getId());
+        // The industry's default workflow; new tasks land in the backlog.
+        ProjectColumn backlog = addColumn(project, "Backlog", Status.BACKLOG, 0);
+        addColumn(project, "To-Do", Status.PENDING, 1);
+        addColumn(project, "In Progress", Status.ON_DOING, 2);
+        ProjectColumn completed = addColumn(project, "Done", Status.CONCLUDED, 3);
+        addColumn(project, "Cancelled", Status.CANCELLED, 4);
+        project.setDefaultPendingColumnId(backlog.getId());
         project.setDefaultCompletedColumnId(completed.getId());
     }
 
@@ -297,15 +300,11 @@ public class ProjectWorkService {
             if (command.has("columnId")) destinationId = require(command.getColumnId(), "columnId");
             else if (command.has("status")) {
                 Status desired = require(command.getStatus(), "status");
-                if (desired == Status.PENDING) destinationId = target.getDefaultPendingColumnId();
-                else if (desired == Status.CONCLUDED) destinationId = target.getDefaultCompletedColumnId();
-                else invalid("columnId", "Escolha a coluna para este estado.");
+                destinationId = columnFor(target, desired);
+                if (destinationId == null) invalid("columnId", "Escolha a coluna para este estado.");
             } else if (transfer) {
-                destinationId = switch (task.getStatus()) {
-                    case PENDING -> target.getDefaultPendingColumnId();
-                    case CONCLUDED -> target.getDefaultCompletedColumnId();
-                    default -> throw failure("DOMAIN_VIOLATION", "columnId", "Escolha a coluna de destino.");
-                };
+                destinationId = columnFor(target, task.getStatus());
+                if (destinationId == null) throw failure("DOMAIN_VIOLATION", "columnId", "Escolha a coluna de destino.");
             }
             ProjectColumn destination = column(target, destinationId);
             if (command.has("status") && command.getStatus() != destination.getKind()) invalid("status", "O estado deve corresponder à coluna.");
@@ -398,8 +397,7 @@ public class ProjectWorkService {
         if (status == Status.CONCLUDED) {
             if (task.getStatus() != Status.CONCLUDED) task.setCompletedAt(LocalDate.now(clock.withZone(ProductClockConfiguration.ZONE)));
         } else task.setCompletedAt(null);
-        if ((task.getStatus() == Status.CONCLUDED || task.getStatus() == Status.CANCELLED)
-                && (status == Status.PENDING || status == Status.ON_DOING)) {
+        if (!task.getStatus().open() && status.open()) {
             task.setReminderSent(false); task.setOverdueNotificationSent(false);
         }
         task.setStatus(status);
@@ -446,10 +444,21 @@ public class ProjectWorkService {
         return column;
     }
     private void validateDefaults(Project project) {
-        if (column(project, project.getDefaultPendingColumnId()).getKind() != Status.PENDING
+        Status pending = column(project, project.getDefaultPendingColumnId()).getKind();
+        if ((pending != Status.BACKLOG && pending != Status.PENDING)
                 || column(project, project.getDefaultCompletedColumnId()).getKind() != Status.CONCLUDED) {
-            invalid("defaults", "Padrões devem apontar para colunas A fazer e Concluídas do projeto.");
+            invalid("defaults", "Padrões devem apontar para colunas Backlog ou To-Do e Done do projeto.");
         }
+    }
+    /**
+     * The column a task goes to when only its state is asked for: the defaults for the state they hold, else the
+     * first column of that state for backlog and to-do. Started and cancelled work needs an explicit column.
+     */
+    private Long columnFor(Project project, Status status) {
+        if (status == Status.CONCLUDED) return project.getDefaultCompletedColumnId();
+        if (status != Status.BACKLOG && status != Status.PENDING) return null;
+        if (column(project, project.getDefaultPendingColumnId()).getKind() == status) return project.getDefaultPendingColumnId();
+        return board(project).stream().filter(c -> c.getKind() == status).map(ProjectColumn::getId).findFirst().orElse(null);
     }
     private void uniqueName(Project project, String name, Long exceptId) {
         if (board(project).stream().anyMatch(c -> !Objects.equals(c.getId(), exceptId) && c.getName().trim().equalsIgnoreCase(name))) {
