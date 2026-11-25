@@ -94,3 +94,5 @@ As rotas partem de `/financial/user/{userId}/investments`. As escritas exigem `I
 - Ao concluir as tarefas, um PR leva `refac/financial-features-2` para `dev`, com revisão de todo o intervalo.
 
 A validação final cobre desktop e celular, temas claro e escuro, navegação por teclado e recuperação de erro. Os critérios observáveis por entrega estão nas descrições das tarefas. A revisão usa as [convenções de frontend](../conventions/frontend/structure.md), o [guia de regressão visual](../guides/visual-regression.md) e o [fluxo de revisão do Oriens](../guides/pull-request-review.md).
+
+A [evidência da tarefa #121](2026-11-25-finance-redesign-evidence.md) registra os cenários executados e as capturas.

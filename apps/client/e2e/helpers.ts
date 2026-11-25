@@ -9,10 +9,10 @@ function requireEnv(name: string): string {
 }
 
 /** Faz login pela UI e espera o Dashboard (Dia) carregar. */
-export async function login(page: Page): Promise<void> {
+export async function login(page: Page, credentials?: { email: string; password: string }): Promise<void> {
   await page.goto("/auth");
-  await page.locator("#login-email").fill(requireEnv("E2E_EMAIL"));
-  await page.locator("#login-password").fill(requireEnv("E2E_PASSWORD"));
+  await page.locator("#login-email").fill(credentials?.email ?? requireEnv("E2E_EMAIL"));
+  await page.locator("#login-password").fill(credentials?.password ?? requireEnv("E2E_PASSWORD"));
   await page.getByRole("button", { name: "Entrar" }).click();
   await page.waitForURL("**/tasks");
   await expect(page.getByRole("heading", { level: 2, name: "Manhã" })).toBeVisible();
