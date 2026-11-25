@@ -4,7 +4,7 @@
 |---|---|
 | Status | **Fechada — v1.1 (2026-11-11).** Direção visual aprovada em 2026-11-10; questões Q1–Q10 respondidas em 2026-11-11; plano de PRs aprovado em 2026-11-11 (§20). Mudanças a partir daqui entram como revisão registrada no histórico abaixo. A implementação depende de uma autorização explícita. |
 | Histórico | v0.1 (2026-11-10): auditoria e direções · v0.9 (2026-11-11): decisões D1–D14 e dependências BE1–BE6 · v1.0 (2026-11-11): fechada · **v1.1 (2026-11-11): plano de 4 PRs com prompts de execução (§20)** |
-| Escopo | `oriens-front/`, todas as rotas. As páginas públicas entram como P2 de marca. |
+| Escopo | `apps/client/`, todas as rotas. As páginas públicas entram como P2 de marca. |
 | Direção | **A — "Horizonte"** |
 | Base de evidência | Código em `main` (1e79639) mais as mudanças não commitadas do rebrand (cream/bordô/amarelo). Telas inspecionadas em 1440, 820 e 490 px. |
 
@@ -994,7 +994,7 @@ flowchart LR
 
 **Regras comuns a todos os PRs:**
 - **Commits:** um por entrega, com a mensagem `feat(front): P0.1 tokens e shadcn` (o id da entrega sempre no título). O build, o lint e os testes passam **em cada commit**, não só no fim.
-- **Escopo:** o PR não toca em `oriens-api/` nem muda URLs de API ou rotas. Também não adiciona dependências fora das autorizadas (§3).
+- **Escopo:** o PR não toca em `apps/api/` nem muda URLs de API ou rotas. Também não adiciona dependências fora das autorizadas (§3).
 - **Descrição do PR:** lista de entregas com os critérios de aceite de §15 marcados, screenshots antes/depois (1440 e 390, claro e escuro), saída de `npm run build`, `lint`, `test`, `test:e2e`, e os desvios da SPEC com justificativa.
 - **Revisão:** commit a commit. Um problema numa entrega é corrigido com um commit `fixup!` daquela entrega, sem misturar entregas.
 
@@ -1005,7 +1005,7 @@ O rebrand cream/bordô/amarelo está hoje **só no working tree** (`index.css`, 
 
 ### 20.3 Prompt — PR 1.1 (Foundations: testes + tokens)
 ```text
-Você vai implementar o PR 1.1 da SPEC docs/specs/oriens-frontend-refactor.md (v1.1) no projeto Oriens (frontend em oriens-front/).
+Você vai implementar o PR 1.1 da SPEC docs/specs/oriens-frontend-refactor.md (v1.1) no projeto Oriens (frontend em apps/client/).
 
 Antes de começar:
 1. Leia a SPEC inteira, com atenção a §3 (restrições), §4 (stack), §9 (tokens), §13.3 (qualidade), §14 (referências) e §15 (entregas P0.0 e P0.1).
@@ -1049,7 +1049,7 @@ Ao final: abra o PR com título "Frontend refactor PR 1.1 — testes de caracter
 
 ### 20.4 Prompt — PR 1.2 (Shell único, bugs P0, toast)
 ```text
-Você vai implementar o PR 1.2 da SPEC docs/specs/oriens-frontend-refactor.md (v1.1) no Oriens (oriens-front/).
+Você vai implementar o PR 1.2 da SPEC docs/specs/oriens-frontend-refactor.md (v1.1) no Oriens (apps/client/).
 
 Antes de começar:
 1. Leia a SPEC, com atenção a §6.1 (A1–A10), §10.2 (shell único), §10.3 (linhas AppLayout, AppSidebar, AppHeader, UserProfileNav, PageHeader, ConfirmDialog, Toasts, KpiCard, SummaryAside), §11.1 (título e responsivo), §13 e §15 (P0.2, P0.3, P0.4).
@@ -1096,7 +1096,7 @@ Ao final: abra o PR "Frontend refactor PR 1.2 — shell único, bugs P0 e toast 
 
 ### 20.5 Prompt — PR 2 (Core Experience)
 ```text
-Você vai implementar o PR 2 da SPEC docs/specs/oriens-frontend-refactor.md (v1.1) no Oriens (oriens-front/).
+Você vai implementar o PR 2 da SPEC docs/specs/oriens-frontend-refactor.md (v1.1) no Oriens (apps/client/).
 
 Antes de começar:
 1. Leia a SPEC, com atenção a §8 (D3, D8–D12), §10.3, §10.4, §11.1 a §11.7, §12, §13 e §15 (P1.1 a P1.6) e §18.2 (BE2, BE3, BE4: o front NÃO espera nenhum deles; use o comportamento "até lá").
@@ -1147,7 +1147,7 @@ Ao final: abra o PR "Frontend refactor PR 2 — core experience (P1.1–P1.6)".
 
 ### 20.6 Prompt — PR 3 (Polish & Consistency)
 ```text
-Você vai implementar o PR 3 da SPEC docs/specs/oriens-frontend-refactor.md (v1.1) no Oriens (oriens-front/).
+Você vai implementar o PR 3 da SPEC docs/specs/oriens-frontend-refactor.md (v1.1) no Oriens (apps/client/).
 
 Antes de começar:
 1. Leia a SPEC, com atenção a §8 (D2, D5, D6, D8), §11.2 (<1024), §11.7 (mobile), §11.8 a §11.11, §13 (R4–R6, A10), §15 (P2.0–P2.7) e §18.2 (BE1).

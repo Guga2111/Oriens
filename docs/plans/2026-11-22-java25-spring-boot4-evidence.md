@@ -27,14 +27,14 @@ Branch `ci/security-checks`, validação local em 2026-11-22 com OpenJDK 25 (bui
 | Prova | Resultado |
 |---|---|
 | `./mvnw test` (H2, sem McpP2–P4) em JDK 25 | 158 testes, 0 falhas (63 pulados: `*PostgresTest`) |
-| `ops/postgres-tests.sh` (7 classes, PostgreSQL 15 descartável, Flyway) | Todas aprovadas após a correção MCP |
+| `scripts/postgres-tests.sh` (7 classes, PostgreSQL 15 descartável, Flyway) | Todas aprovadas após a correção MCP |
 | `McpAuthorizationsCompatibilityTest` | Autorização OAuth gravada por Boot 3/Jackson 2 é lida sem perda de escopos, claims e principal; tipo polimórfico fora da allowlist é rejeitado |
 | `WorkCreationCompatibilityTest` | Recibo de idempotência da stack anterior reaplica sem recriar recurso nem mudar o hash do payload |
 | `docker build` + execução `prod` com MCP ligado e PostgreSQL descartável | JRE 25.0.5; 7 migrações aplicadas; inicialização em ~4,2 s; health `UP` na porta 8081 |
 | Sondas HTTP na imagem | Metadados OAuth (`oauth-protected-resource`, `oauth-authorization-server`) 200; `/mcp` e `/tasks` sem token 401; Prometheus na porta de gestão e 401 na pública |
 | `./mvnw -Psecurity-audit dependency-check:check` | Reprovado por um falso positivo; aprovado após a supressão documentada (abaixo) |
 
-Fixtures em `oriens-api/src/test/resources/mcp/` são sintéticas; nenhuma credencial ou dado real foi
+Fixtures em `apps/api/src/test/resources/mcp/` são sintéticas; nenhuma credencial ou dado real foi
 copiado.
 
 ## 3. Auditoria de dependências

@@ -1,5 +1,5 @@
 // Additional release states; request failures and empty projections are scoped to this browser.
-import { chromium } from '../../../../oriens-front/node_modules/playwright/index.mjs';
+import { chromium } from '../../../../apps/client/node_modules/playwright/index.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const base=process.argv[2]||'http://127.0.0.1:4196';

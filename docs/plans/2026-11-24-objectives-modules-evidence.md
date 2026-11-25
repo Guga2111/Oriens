@@ -20,9 +20,9 @@ Data: 24/11/2026. Design e nome aprovados em [objetivos](2026-11-24-objectives-m
 | `npm test` | 46 arquivos, 331 testes passando |
 | Testes focados após ajuste de foco ao abrir o painel | 13 testes passando |
 | `npm run build` | Passou; avisos existentes de tamanho do bundle e classe de duração |
-| `ops/postgres-tests.sh ProjectWorkPostgresTest WorkApiPostgresTest McpP2PostgresTest` | Passou; PostgreSQL 15 descartável, migrações V1–V10 e Hibernate validate |
-| `ops/postgres-tests.sh ObjectiveDetailsPostgresTest` | 6 testes passando: dados, seis estados, período, PATCH parcial, posse, versão, idempotência e indicadores |
-| `ops/postgres-tests.sh McpP2PostgresTest` após novo teste MCP | 30 executados passando; 2 verificações opcionais desativadas |
+| `scripts/postgres-tests.sh ProjectWorkPostgresTest WorkApiPostgresTest McpP2PostgresTest` | Passou; PostgreSQL 15 descartável, migrações V1–V10 e Hibernate validate |
+| `scripts/postgres-tests.sh ObjectiveDetailsPostgresTest` | 6 testes passando: dados, seis estados, período, PATCH parcial, posse, versão, idempotência e indicadores |
+| `scripts/postgres-tests.sh McpP2PostgresTest` após novo teste MCP | 30 executados passando; 2 verificações opcionais desativadas |
 | `./mvnw -q test -Dtest=WorkCreationCompatibilityTest` | 2 testes passando, incluindo replay de recibo anterior aos novos campos |
 | Total das suítes selecionadas de backend/MCP | 71 executados passando; 4 verificações opcionais desativadas |
 | Detector Impeccable nos três componentes de objetivos | Nenhum achado (`[]`) |

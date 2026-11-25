@@ -1,4 +1,4 @@
-import { chromium } from '../../../oriens-front/node_modules/playwright/index.mjs';
+import { chromium } from '../../../apps/client/node_modules/playwright/index.mjs';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const base = process.argv[2] || 'http://127.0.0.1:4201';

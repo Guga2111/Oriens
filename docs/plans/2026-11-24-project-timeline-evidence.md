@@ -37,7 +37,7 @@ igual a 18 nov 2026 (`America/Recife`).
 ## 2. O que não rodou
 
 - `McpP2PostgresTest`, `McpP3PostgresTest` e `McpP4PostgresTest`: precisam do Postgres de prova
-  (`ops/postgres-tests.sh`). O backend não mudou na task 30; a janela do board foi coberta na task 26
+  (`scripts/postgres-tests.sh`). O backend não mudou na task 30; a janela do board foi coberta na task 26
   (`BoardWindowTest` e `McpP2PostgresTest`).
 - Os 62 testes pulados do `./mvnw test` são os `*PostgresTest`, que exigem variáveis de ambiente próprias.
 - A validação visual em produção (§8, "depois do deploy") fica para depois do merge. Nada foi para a `main`.

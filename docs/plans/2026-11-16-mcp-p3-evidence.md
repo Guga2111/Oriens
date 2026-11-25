@@ -3,7 +3,7 @@
 Data: 2026-11-16. [Desenho aprovado](2026-11-16-mcp-p3-design.md), commit `8ed77fc`.
 Contrato: [SPEC](2026-11-16-mcp-account-spec.md).
 Resultados sanitizados: [JSON](2026-11-16-mcp-p3-evidence.json).
-Operação: [README](../../oriens-api/ops/mcp-account/README.md).
+Operação: [README](../../ops/mcp-account/README.md).
 
 ## Entrega
 
