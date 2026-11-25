@@ -55,3 +55,24 @@ SSH, SCP e sondagem. Valide na raiz com os comandos abaixo.
 bash -n scripts/deploy.sh
 python3 -B -m unittest discover -s scripts/tests -p 'test_deploy.py' -v
 ```
+
+## Anexos privados de tarefas
+
+A API guarda os arquivos em `/opt/oriens-uploads/task-attachments`, no volume
+persistente do Compose. O diretório precisa ser gravável pelo container e fica
+fora dos diretórios estáticos do Nginx. O backup precisa incluir esse diretório
+e os metadados do PostgreSQL do mesmo ponto de recuperação. Teste o restore
+com os dois antes de depender dele. [Backup e restore do banco](database-operations.md)
+
+O Nginx precisa encaminhar `/api/task/` para a API com o prefixo `/api` removido.
+Na rota de upload de anexos, permita corpo de pelo menos 20 MiB
+(`client_max_body_size 20m`). Valide e recarregue a configuração do proxy antes
+da publicação. Mantenha o `Range` para vídeo. Nas rotas de conteúdo assinado,
+registre apenas o caminho, sem a query string que contém a assinatura.
+
+Para verificar o ambiente, envie e abra uma imagem e um vídeo com uma conta
+de teste. Em seguida, resolva um anexo pelo MCP e confirme o download por HTTPS.
+O diretório e as referências persistem ao recriar a API.
+Arquivos removidos do documento ou uploads pendentes ficam disponíveis para
+reedição por 24 horas. A rotina de limpeza também recolhe arquivos de tarefas
+excluídas.

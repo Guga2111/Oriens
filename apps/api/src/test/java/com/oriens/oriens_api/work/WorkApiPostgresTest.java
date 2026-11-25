@@ -43,11 +43,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @EnabledIfEnvironmentVariable(named="P2_JDBC_URL", matches="jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_(p2|mcp)_proof")
 class WorkApiPostgresTest {
+    @org.junit.jupiter.api.io.TempDir static java.nio.file.Path attachmentDirectory;
+    @org.springframework.test.context.DynamicPropertySource
+    static void attachmentStorage(org.springframework.test.context.DynamicPropertyRegistry properties) {
+        properties.add("file.upload-task-dir", () -> attachmentDirectory.toString());
+    }
     @Configuration(proxyBeanMethods=false) @org.springframework.boot.test.context.TestComponent @EnableAutoConfiguration
     @EntityScan(basePackageClasses=Project.class)
     @EnableJpaRepositories(basePackageClasses=ProjectRepository.class)
     @Import({UserController.class, UserServiceImpl.class, CustomAuthManager.class, ProjectController.class, TaskController.class, StatisticsController.class, WorkExceptionHandler.class,
         WorkRequestBodyAdvice.class, WorkOwner.class, WorkReadService.class, WorkCreationService.class,
+        TaskDescriptionCodec.class, TaskAttachmentService.class, TaskAttachmentController.class,
         TaskLabelController.class, TaskLabelService.class, ProjectWorkService.class, StatisticsService.class, StatisticsReadService.class, FinancialStatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, JwtConfiguration.class, SecurityConfig.class})
     static class App {
         @Bean org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder() {
@@ -66,6 +72,7 @@ class WorkApiPostgresTest {
     @Autowired Algorithm jwtAlgorithm;
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate db;
     @Autowired UserRepository users;
     @Autowired ProjectRepository projects;
     @Autowired TaskRepository tasks;
@@ -116,6 +123,81 @@ class WorkApiPostgresTest {
 
     JsonNode getJson(String url) throws Exception {
         return body(mvc.perform(get(url).header("Authorization",token)).andExpect(status().isOk()).andReturn());
+    }
+
+    @Test void legacyDescriptionSurvivesMigrationAndVersionedUpdates() throws Exception {
+        var initial = task(null);
+        long id = initial.path("id").asLong();
+        String path = "/task/" + id;
+        var legacy = body(send("PATCH", path,
+            "{\"version\":" + initial.path("version") + ",\"description\":\"# Texto literal\\nLinha 2\"}", null, token, 200)).path("task");
+        assertThat(task(id).path("description").asText()).isEqualTo("# Texto literal\nLinha 2");
+        assertThat(task(id).has("descriptionDoc")).isFalse();
+        String rich = """
+            {"version":%d,"descriptionDoc":{"schemaVersion":1,"content":{"type":"doc","content":[
+              {"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Título"}]}
+            ]}}}
+            """.formatted(legacy.path("version").asLong());
+        send("PATCH", path, rich, null, other, 404);
+        send("PATCH", path, rich, null, token, 200);
+        send("PATCH", path, rich, null, token, 409);
+        assertThat(task(id).at("/descriptionDoc/content/content/0/type").asText()).isEqualTo("heading");
+        assertThat(task(id).path("description").asText()).isEqualTo("## Título");
+        assertThat(getJson("/task/user/" + owner + "/all").at("/content/0/descriptionText").asText()).isEqualTo("Título");
+        assertThat(getJson("/task/user/" + owner + "/all").at("/content/0").has("descriptionDoc")).isFalse();
+        db.update("update tasks set description = ?, version = version + 1 where id = ? and user_id = ?", "Editada no rollback", id, owner);
+        assertThat(task(id).path("description").asText()).isEqualTo("Editada no rollback");
+        assertThat(task(id).has("descriptionDoc")).isFalse();
+    }
+
+    @Test void privateAttachmentRequiresOwnershipAndAValidTimeLimitedSignature() throws Exception {
+        var first = task(null);
+        long taskId = first.path("id").asLong();
+        String path = "/task/" + taskId + "/attachments";
+        byte[] png = Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJk0AAAAASUVORK5CYII=");
+        mvc.perform(post(path).queryParam("kind", "image").header("Authorization", other)
+            .contentType("application/octet-stream").content(png)).andExpect(status().isNotFound());
+        mvc.perform(post(path).queryParam("kind", "image").header("Authorization", token)
+            .contentType("application/octet-stream").content("Arquivo sem assinatura de imagem")).andExpect(status().isUnprocessableContent());
+        mvc.perform(post(path).queryParam("kind", "image").header("Authorization", token)
+            .contentType("application/octet-stream").content(new byte[2 * 1024 * 1024 + 1])).andExpect(status().isUnprocessableContent());
+        var uploaded = body(mvc.perform(post(path).queryParam("kind", "image").header("Authorization", token)
+            .contentType("application/octet-stream").content(png)).andExpect(status().isCreated()).andReturn());
+        String assetId = uploaded.path("id").asText();
+        mvc.perform(get(path + "/" + assetId).header("Authorization", other)).andExpect(status().isNotFound());
+        var signed = getJson(path + "/" + assetId);
+        String url = signed.path("url").asText();
+        assertThat(signed.path("expiresAt").asText()).isEqualTo("2026-11-14T02:35:00Z");
+        mvc.perform(get(url.substring(0, url.indexOf('?')))).andExpect(status().isNotFound());
+        mvc.perform(get(url)).andExpect(status().isOk()).andExpect(content().bytes(png)).andExpect(header().string("Cache-Control", "no-store"));
+        mvc.perform(get(url).header("Range", "bytes=0-7")).andExpect(status().isPartialContent()).andExpect(content().bytes(Arrays.copyOf(png, 8)));
+        mvc.perform(get(url.replace("owner=" + owner, "owner=" + stranger))).andExpect(status().isNotFound());
+        mvc.perform(get(url.replaceFirst("expires=\\d+", "expires=1"))).andExpect(status().isNotFound());
+
+        long otherTask = task(null).path("id").asLong();
+        String document = """
+            {"version":%d,"descriptionDoc":{"schemaVersion":1,"content":{"type":"doc","content":[
+              {"type":"paragraph","content":[{"type":"media","attrs":{"kind":"image","label":"Calendário de revisão","src":"oriens-attachment:%s"}}]}
+            ]}}}
+            """.formatted(first.path("version").asLong(), assetId);
+        send("PATCH", "/task/" + otherTask, document, null, token, 404);
+        send("PATCH", "/task/" + taskId, document, null, token, 200);
+        assertThat(task(taskId).path("description").asText()).contains("![Calendário de revisão](oriens-attachment:", assetId).doesNotContain("signature=");
+    }
+
+    @Test void webmAttachmentCanBeReadAsVideoWithByteRanges() throws Exception {
+        long taskId = task(null).path("id").asLong();
+        String path = "/task/" + taskId + "/attachments";
+        byte[] video;
+        try (var fixture = getClass().getResourceAsStream("/fixtures/task-description-video.webm")) {
+            video = Objects.requireNonNull(fixture).readAllBytes();
+        }
+        var uploaded = body(mvc.perform(post(path).queryParam("kind", "video").header("Authorization", token)
+            .contentType("application/octet-stream").content(video)).andExpect(status().isCreated()).andReturn());
+        assertThat(uploaded.path("contentType").asText()).isEqualTo("video/webm");
+        String url = getJson(path + "/" + uploaded.path("id").asText()).path("url").asText();
+        mvc.perform(get(url).header("Range", "bytes=100-199")).andExpect(status().isPartialContent())
+            .andExpect(content().contentTypeCompatibleWith("video/webm")).andExpect(content().bytes(Arrays.copyOfRange(video, 100, 200)));
     }
 
     @Test void exploreSortsTaskPriorityAndStatusAcrossPagesWithinOwner() throws Exception {

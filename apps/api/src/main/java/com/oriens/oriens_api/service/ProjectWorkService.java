@@ -25,6 +25,8 @@ import java.util.*;
 @Transactional
 @RequiredArgsConstructor
 public class ProjectWorkService {
+    private final TaskDescriptionCodec descriptions;
+    private final TaskAttachmentService attachments;
     private final ProjectRepository projects;
     private final ObjectiveRepository objectives;
     private final ProjectColumnRepository columns;
@@ -256,9 +258,10 @@ public class ProjectWorkService {
         Project project = command.projectId() == null ? null : development(ownerId, command.projectId());
         if (project != null) version(project.getVersion(), command.projectVersion());
         Task task = Task.builder().user(owner(ownerId)).title(title(command.title(), 200, "title"))
-                .description(description(command.description())).priority(command.priority() == null ? Priority.NONE : command.priority())
+                .priority(command.priority() == null ? Priority.NONE : command.priority())
                 .plannedDate(command.plannedDate()).startTime(command.startTime()).dueDate(command.dueDate())
                 .location(command.location()).build();
+        applyDescription(task, ownerId, command.description(), command.descriptionDoc(), command.description() != null);
         validatePlanning(task);
         if (project == null) {
             if (command.columnId() != null || command.objectiveId() != null) invalid("projectId", "Vínculos exigem um projeto.");
@@ -331,7 +334,10 @@ public class ProjectWorkService {
             }
         }
         if (command.has("title")) task.setTitle(title(command.getTitle(), 200, "title"));
-        if (command.has("description")) task.setDescription(description(command.getDescription()));
+        if (command.has("description") || command.has("descriptionDoc")) {
+            if (command.has("description") && command.has("descriptionDoc")) throw TaskDescriptionCodec.invalid("Envie apenas um campo de descrição.");
+            applyDescription(task, ownerId, command.getDescription(), command.getDescriptionDoc(), command.has("description"));
+        }
         if (command.has("priority")) task.setPriority(require(command.getPriority(), "priority"));
         if (command.has("location")) task.setLocation(command.getLocation());
         LocalDate previousPlan = task.getPlannedDate();
@@ -488,6 +494,15 @@ public class ProjectWorkService {
         if (value == null || value.trim().isEmpty() || value.trim().length() > max) invalid(field, "Informe entre 1 e " + max + " caracteres.");
         return value.trim();
     }
+    private void applyDescription(Task task, Long owner, String legacy, TaskDescriptionDocument document, boolean hasLegacy) {
+        if (document != null && hasLegacy) throw TaskDescriptionCodec.invalid("Envie apenas um campo de descrição.");
+        var encoded = descriptions.encode(document);
+        if (!encoded.attachments().isEmpty() || task.getDescriptionDoc() != null)
+            attachments.reconcile(owner, task.getId(), encoded.attachments());
+        task.setDescription(hasLegacy ? description(legacy) : encoded.markdown());
+        task.setDescriptionDoc(encoded.document());
+    }
+
     private static String description(String value) {
         if (value != null && value.length() > 10000) invalid("description", "Use até 10000 caracteres.");
         return value;

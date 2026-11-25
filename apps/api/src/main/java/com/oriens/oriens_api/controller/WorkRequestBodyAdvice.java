@@ -47,9 +47,10 @@ public class WorkRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override public boolean supports(MethodParameter parameter, Type type, Class<? extends HttpMessageConverter<?>> converter) { return true; }
     @Override public HttpInputMessage beforeBodyRead(HttpInputMessage input, MethodParameter parameter, Type type,
             Class<? extends HttpMessageConverter<?>> converter) throws IOException {
-        byte[] bytes = parameter.getDeclaringClass() == com.oriens.oriens_api.mcp.McpController.class
-            ? input.getBody().readNBytes(262145) : input.getBody().readAllBytes();
-        if (parameter.getDeclaringClass() == com.oriens.oriens_api.mcp.McpController.class && bytes.length > 262144)
+        boolean bounded = parameter.getDeclaringClass() == com.oriens.oriens_api.mcp.McpController.class
+            || parameter.getDeclaringClass() == TaskController.class;
+        byte[] bytes = bounded ? input.getBody().readNBytes(262145) : input.getBody().readAllBytes();
+        if (bounded && bytes.length > 262144)
             throw new com.oriens.oriens_api.exception.WorkDomainException("PAYLOAD_TOO_LARGE", null, "A solicitação excede 256 KiB.");
         try {
             strict.readValue(bytes, strict.constructType(type));

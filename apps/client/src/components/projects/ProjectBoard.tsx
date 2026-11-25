@@ -159,6 +159,7 @@ function BoardTask({ task, column, columns, tasks, index, filtered, disabled, bu
     <TaskLabels labels={task.labels} />
     {/* The title's ::after covers the card, so a click anywhere opens the details. No press transform: it would shrink the overlay to the title. */}
     <Button variant="ghost" className="h-auto min-h-10 w-full justify-start whitespace-normal p-0 text-left text-sm font-medium after:absolute after:inset-0 after:rounded-xl after:content-[''] hover:bg-transparent active:transform-none" aria-haspopup="dialog" onClick={() => onOpen(task)}>{task.title}</Button>
+    {(task.descriptionText ?? task.description) && <p className="line-clamp-2 break-words text-xs text-muted-foreground">{task.descriptionText ?? task.description}</p>}
     {task.objective && <Button variant="link" className="relative z-10 mt-1 h-auto min-h-10 w-full justify-start whitespace-normal px-0 text-left" onClick={() => onObjective(task.objectiveId!)}>{task.objective.title}</Button>}
     <div className="mt-3 flex flex-col gap-2 text-xs text-muted-foreground">
       <p className="flex items-center gap-2"><CalendarDays className="size-4 shrink-0" aria-hidden />{task.plannedDate ? `Planejada: ${formatDue(task.plannedDate)}` : 'Sem planejamento'}{task.startTime && <><Clock className="size-3 shrink-0" aria-hidden />{task.startTime.slice(0, 5)}</>}</p>

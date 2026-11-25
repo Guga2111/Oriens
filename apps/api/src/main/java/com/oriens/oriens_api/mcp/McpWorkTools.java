@@ -31,8 +31,15 @@ public class McpWorkTools {
     private final DefaultJsonSchemaValidator schemas;
     private final Clock clock;
     private final McpFinancialTools finance;
-    public McpWorkTools(McpStore store,McpRateLimiter limits,ScopedWorkReadService read,ProjectWorkService work,WorkCreationService receipts,JsonMapper json,Clock clock,McpFinancialTools finance) {
+    private final TaskDescriptionCodec descriptions;
+    private final TaskAttachmentService attachments;
+    private final String publicApiBase;
+    public McpWorkTools(McpStore store,McpRateLimiter limits,ScopedWorkReadService read,ProjectWorkService work,WorkCreationService receipts,JsonMapper json,Clock clock,McpFinancialTools finance,
+                        TaskDescriptionCodec descriptions, TaskAttachmentService attachments, String publicApiBase) {
         this.finance=finance;this.store=store;this.limits=limits;this.read=read;this.work=work;this.receipts=receipts;this.json=json;this.clock=clock;schemas=new DefaultJsonSchemaValidator(json);
+        this.descriptions = descriptions;
+        this.attachments = attachments;
+        this.publicApiBase = publicApiBase;
     }
     private static Access access(McpStore.Policy p) {
         return new Access(p.userId(),p.allowedProjectIds(),p.allowStandaloneTasks(),p.scopes().contains("projects:read"),p.scopes().contains("tasks:read"));
@@ -108,7 +115,7 @@ public class McpWorkTools {
         while(keys.hasNext()) {
             String key=keys.next();JsonNode value=n.get(key);
             if(value.isNull())continue;
-            if(key.endsWith("Id"))id(n,key);
+            if(key.endsWith("Id")&&!key.equals("attachmentId"))id(n,key);
             if(key.startsWith("expected")||key.equals("page")||key.endsWith("Page")||key.endsWith("PageSize")||key.equals("pageSize")) {
                 if(!value.isIntegralNumber()||!value.canConvertToLong())throw McpStore.invalid("Inteiro fora de faixa.");
             }
@@ -140,6 +147,13 @@ public class McpWorkTools {
             case "oriens_list_tasks" -> read.listTasks(a,new ScopedWorkReadService.TaskFilter(id(n,"projectId"),bool(n,"standaloneOnly"),id(n,"columnId"),enumeration(n,"status",Status.class),
                 enumeration(n,"priority",Priority.class),text(n,"search"),text(n,"dateField"),date(n,"startDate"),date(n,"endDate")),page(n,"","createdAt"));
             case "oriens_get_task" -> read.getTask(a,id(n,"taskId"));
+            case "oriens_get_task_attachment" -> {
+                long taskId = id(n, "taskId");
+                read.task(a, taskId);
+                var link = attachments.issue(p.userId(), taskId, UUID.fromString(text(n, "attachmentId")), true);
+                yield fields("id", link.id().toString(), "contentType", link.contentType(),
+                    "expiresAt", link.expiresAt().toString(), "url", publicApiBase + link.url());
+            }
             default -> throw new IllegalStateException("Unregistered read");
         };
     }
@@ -205,8 +219,8 @@ public class McpWorkTools {
             if(name.equals("oriens_create_task")) {
                 Long projectId=id(n,"projectId");p.task(projectId);standalone=projectId==null;
                 if(projectId!=null) {read.project(a,projectId);projectIds.add(projectId);validateLinks(a,n,projectId);}
-                changed=work.createTask(p.userId(),new CreateTask(text(n,"title"),text(n,"description"),projectId,projectId==null?null:version(n,"expectedProjectVersion"),id(n,"objectiveId"),id(n,"columnId"),
-                    date(n,"plannedDate"),time(n,"startTime"),date(n,"dueDate"),enumeration(n,"priority",Priority.class),location(n),null));
+                changed=work.createTask(p.userId(),new CreateTask(text(n,"title"),null,projectId,projectId==null?null:version(n,"expectedProjectVersion"),id(n,"objectiveId"),id(n,"columnId"),
+                    date(n,"plannedDate"),time(n,"startTime"),date(n,"dueDate"),enumeration(n,"priority",Priority.class),location(n),null,descriptions.fromMarkdown(text(n,"description"))));
                 resourceId=changed.getId();
             } else {
                 resourceId=id(n,"taskId");Task before=read.task(a,resourceId);Long source=before.getProjectId();standalone=source==null;
@@ -231,7 +245,7 @@ public class McpWorkTools {
                         patch.setProjectId(target);if(n.has("columnId"))patch.setColumnId(id(n,"columnId"));
                     } else {
                         if(source!=null)validateLinks(a,n,source);
-                        if(n.has("title"))patch.setTitle(text(n,"title"));if(n.has("description"))patch.setDescription(text(n,"description"));
+                        if(n.has("title"))patch.setTitle(text(n,"title"));if(n.has("description"))patch.setDescriptionDoc(descriptions.fromMarkdown(text(n,"description")));
                         if(n.has("plannedDate"))patch.setPlannedDate(date(n,"plannedDate"));if(n.has("startTime"))patch.setStartTime(time(n,"startTime"));
                         if(n.has("dueDate"))patch.setDueDate(date(n,"dueDate"));if(n.has("priority"))patch.setPriority(enumeration(n,"priority",Priority.class));
                         if(n.has("location"))patch.setLocation(location(n));if(n.has("status"))patch.setStatus(enumeration(n,"status",Status.class));

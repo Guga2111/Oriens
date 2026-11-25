@@ -220,7 +220,7 @@ export function TaskRow({ task, onUpdate, onEdit, onOpen }: TaskRowProps) {
                 lat={task.location.latitude ?? 0}
                 lng={task.location.longitude ?? 0}
                 taskTitle={task.title}
-                taskSubtitle={task.description}
+                taskSubtitle={task.descriptionText ?? task.description}
                 priority={task.priority}
               />
             </div>

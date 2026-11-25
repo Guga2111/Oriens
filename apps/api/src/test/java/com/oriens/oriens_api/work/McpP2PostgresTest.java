@@ -26,6 +26,11 @@ class McpP2PostgresTest extends McpPostgresTest {
     @Autowired TaskRepository tasks;
     @Autowired ObjectiveRepository objectives;
     @Autowired McpWorkTools tools;
+    @org.junit.jupiter.api.io.TempDir static java.nio.file.Path attachmentDirectory;
+    @org.springframework.test.context.DynamicPropertySource
+    static void attachmentStorage(org.springframework.test.context.DynamicPropertyRegistry properties) {
+        properties.add("file.upload-task-dir", () -> attachmentDirectory.toString());
+    }
     private static final Set<String> FULL=Set.of("mcp:context","projects:read","projects:create","projects:update","projects:delete",
         "objectives:create","objectives:update","objectives:delete","tasks:read","tasks:create","tasks:update","tasks:delete");
     record Grant(String bearer,McpStore.Delegated delegated) {}
@@ -71,11 +76,65 @@ class McpP2PostgresTest extends McpPostgresTest {
         var page=success(g,"list_projects",fields("includeArchived",true)).path("data");
         assertThat(page.path("totalElements").asLong()).isEqualTo(1);assertThat(page.toString()).contains("Permitido").doesNotContain("Segredo","userId","summary");
         var otherConnection=grant(Set.of("mcp:context","tasks:read"),Set.of(),true);
-        assertThat(body(rpc(otherConnection.bearer(),"tools/list","{}",200)).path("result").path("tools")).hasSize(3);
+        JsonNode taskTools = body(rpc(otherConnection.bearer(),"tools/list","{}",200)).path("result").path("tools");
+        assertThat(taskTools).hasSize(4);
+        assertThat(taskTools.toString()).contains("oriens_get_task_attachment");
         assertThat(body(rpc(g.bearer(),"tools/list","{}",200)).path("result").path("tools")).hasSize(4);
         store.patch(owner,g.delegated().connectionId(),0L,null,Set.of("mcp:context"),Set.of(),false);
         assertThat(body(rpc(g.bearer(),"tools/list","{}",200)).path("result").path("tools")).hasSize(1);
         denied(g,"list_projects",fields(),"INSUFFICIENT_SCOPE");
+    }
+
+    @Test void markdownAndEditorDocumentCrossTheRestAndMcpBoundary() throws Exception {
+        var grant = grant(FULL, Set.of(), true);
+        var fromMcp = success(grant, "create_task", intent("title", "Revisar documento",
+            "description", "## Verificação\n\n- [x] Conferido\n\n```mermaid\nflowchart LR\nA --> B\n```")).path("data");
+        String taskId = fromMcp.path("resourceId").asText();
+        var editor = body(mvc.perform(get("/task/" + taskId).header("Authorization", jwt)).andExpect(status().isOk()).andReturn());
+        assertThat(editor.at("/descriptionDoc/content/content/0/type").asText()).isEqualTo("heading");
+        assertThat(editor.at("/descriptionDoc/content/content/1/content/0/attrs/checked").asBoolean()).isTrue();
+        assertThat(editor.at("/descriptionDoc/content/content/2/attrs/language").asText()).isEqualTo("mermaid");
+
+        var patch = json.readTree("""
+            {"descriptionDoc":{"schemaVersion":1,"content":{"type":"doc","content":[
+              {"type":"heading","attrs":{"level":3},"content":[{"type":"text","text":"Mudança no painel"}]},
+              {"type":"paragraph","content":[{"type":"text","text":"Dado visível","marks":[{"type":"highlightTone","attrs":{"tone":"blue"}}]}]}
+            ]}}}
+            """).deepCopy();
+        ((tools.jackson.databind.node.ObjectNode) patch).put("version", editor.path("version").asLong());
+        var edited = body(mvc.perform(patch("/task/" + taskId).header("Authorization", jwt)
+            .contentType("application/json").content(str(patch))).andExpect(status().isOk()).andReturn()).path("task");
+        String markdown = "### Mudança no painel\n\nDado visível";
+        assertThat(success(grant, "get_task", fields("taskId", taskId)).path("data").path("description").asText()).isEqualTo(markdown);
+        var listed = success(grant, "list_tasks", fields("search", "Revisar documento")).path("data").path("items").get(0);
+        assertThat(listed.path("description").asText()).isEqualTo(markdown);
+        assertThat(listed.has("descriptionDoc")).isFalse();
+
+        success(grant, "update_task", intent("taskId", taskId, "expectedVersion", edited.path("version").asLong(),
+            "description", "> **Nota:** texto de atualização"));
+        var updated = body(mvc.perform(get("/task/" + taskId).header("Authorization", jwt)).andExpect(status().isOk()).andReturn());
+        assertThat(updated.at("/descriptionDoc/content/content/0/type").asText()).isEqualTo("callout");
+        assertThat(updated.path("descriptionText").asText()).isEqualTo("texto de atualização");
+    }
+
+    @Test void attachmentToolResolvesOnlyActiveAttachmentsOfAuthorizedTasks() throws Exception {
+        var visible = task(null, "Mídia privada");
+        String taskId = id(visible.getId());
+        var grant = grant(FULL, Set.of(), true);
+        byte[] png = Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJk0AAAAASUVORK5CYII=");
+        var uploaded = body(mvc.perform(post("/task/" + taskId + "/attachments").queryParam("kind", "image")
+            .header("Authorization", jwt).contentType("application/octet-stream").content(png)).andExpect(status().isCreated()).andReturn());
+        String attachmentId = uploaded.path("id").asText();
+        Map<String, Object> args = fields("taskId", taskId, "attachmentId", attachmentId);
+        denied(grant, "get_task_attachment", args, "NOT_FOUND");
+        var linked = success(grant, "update_task", intent("taskId", taskId, "expectedVersion", visible.getVersion(),
+            "description", "![Visão do contrato](oriens-attachment:" + attachmentId + ")")).path("data");
+        assertThat(linked.at("/resource/description").asText()).contains("oriens-attachment:" + attachmentId);
+        var url = java.net.URI.create(success(grant, "get_task_attachment", args).at("/data/url").asText());
+        assertThat(url.toString()).startsWith(properties.base() + "/task/attachments/content/");
+        mvc.perform(get(url.getRawPath() + "?" + url.getRawQuery())).andExpect(status().isOk()).andExpect(content().bytes(png));
+        denied(grant(Set.of("mcp:context", "tasks:read"), Set.of(), false), "get_task_attachment", args, "NOT_FOUND");
+        denied(grant(Set.of("mcp:context"), Set.of(), false), "get_task_attachment", args, "INSUFFICIENT_SCOPE");
     }
 
     @Test void nestedReadsAreBoundedAndTaskSectionsAreOmitted()throws Exception {

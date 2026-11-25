@@ -1,5 +1,6 @@
 package com.oriens.oriens_api.entity.dto.work;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.oriens.oriens_api.entity.enums.*;
 import com.oriens.oriens_api.entity.embeddable.Location;
 import java.time.*;
@@ -25,5 +26,13 @@ public final class WorkCommands {
                                Long replacementPendingColumnId, Long replacementCompletedColumnId) {}
     public record CreateTask(String title, String description, Long projectId, Long projectVersion,
                              Long objectiveId, Long columnId, LocalDate plannedDate, LocalTime startTime,
-                             LocalDate dueDate, Priority priority, Location location, List<Long> labelIds) {}
+                             LocalDate dueDate, Priority priority, Location location, List<Long> labelIds,
+                             @JsonInclude(JsonInclude.Include.NON_NULL) TaskDescriptionDocument descriptionDoc) {
+        public CreateTask(String title, String description, Long projectId, Long projectVersion,
+                          Long objectiveId, Long columnId, LocalDate plannedDate, LocalTime startTime,
+                          LocalDate dueDate, Priority priority, Location location, List<Long> labelIds) {
+            this(title, description, projectId, projectVersion, objectiveId, columnId, plannedDate, startTime,
+                dueDate, priority, location, labelIds, null);
+        }
+    }
 }

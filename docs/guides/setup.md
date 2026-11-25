@@ -16,6 +16,11 @@ docker compose -f ops/compose/docker-compose.dev.yml up -d
 
 Para habilitar a integração, siga a [configuração local do MCP](mcp-operations.md#habilitar-no-docker-local).
 
+Ao criar a conta de demonstração, o perfil `dev` sem `prod` prepara a tarefa
+**Explorar o editor de descrição** em **Hoje** e no projeto **Lançamento do
+portfólio**. A descrição inclui um diagrama Mermaid e uma tabela. A criação
+das amostras ocorre só na inicialização da conta de demonstração.
+
 ## API
 
 Em `apps/api/`, use o Maven Wrapper.

@@ -40,11 +40,15 @@ import static org.assertj.core.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnabledIfEnvironmentVariable(named = "P1_JDBC_URL", matches = "jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_(p1|mcp)_proof")
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-@Import({com.oriens.oriens_api.service.TaskLabelService.class, ProjectWorkService.class, ProjectWorkPostgresTest.FixedClock.class})
+@Import({com.oriens.oriens_api.service.TaskLabelService.class, ProjectWorkService.class, ProjectWorkPostgresTest.FixedClock.class,
+    com.oriens.oriens_api.service.TaskDescriptionCodec.class})
 class ProjectWorkPostgresTest {
     @TestConfiguration static class FixedClock {
         @Bean Clock clock() { return Clock.fixed(Instant.parse("2026-11-14T02:30:00Z"), ZoneOffset.UTC); }
+        @Bean ObjectMapper objectMapper() { return JsonMapper.builder().build(); }
     }
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    com.oriens.oriens_api.service.TaskAttachmentService attachments;
     @Autowired ProjectWorkService service;
     @Autowired com.oriens.oriens_api.service.TaskLabelService taskLabels;
     @Autowired TaskLabelRepository labelRepository;

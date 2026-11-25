@@ -24,7 +24,10 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(response => {
-    if (/^\/(task|project)\//.test(response.config.url ?? '')) assertWorkIdentity(response.data);
+    const path = response.config.url ?? '';
+    if (/^\/(task|project)\//.test(path) && !/^\/task\/\d+\/attachments(?:\/|$)/.test(path)) {
+        assertWorkIdentity(response.data);
+    }
     return response;
 });
 
