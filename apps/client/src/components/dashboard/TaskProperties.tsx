@@ -22,7 +22,7 @@ import { HALF_HOURS, nextHalfHour, parseTimeOfDay } from "@/lib/time-of-day";
 import { LABEL_COLORS } from "@/lib/task-labels";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/types/task";
-import type { TaskPatch } from "@/types/work";
+import type { TaskPatch, WorkTask } from "@/types/work";
 
 /** Saves the given fields; resolves `true` when the task was saved. */
 export type SaveTask = (body: Partial<TaskPatch>) => Promise<boolean>;
@@ -178,13 +178,46 @@ export function TimeProperty({ task, onSave, disabled, bare = false }: { task: T
   );
 }
 
+const priorityLabel = (priority: Task['priority']) =>
+  priority === "NONE" ? PRIORITY[priority].label : `Prioridade ${PRIORITY[priority].label.toLowerCase()}`;
+
+function plannedText(plannedDate: string | null | undefined, today: string) {
+  return plannedDate === today ? "Hoje" : plannedDate ? shortDate(plannedDate) : "Sem planejamento";
+}
+
+function LabelChip({ label, className }: { label: NonNullable<Task['labels']>[number]; className?: string }) {
+  return (
+    <span className={cn(chip, "max-w-40", className)} title={label.name}>
+      <span aria-hidden className={cn("size-2 shrink-0 rounded-full", LABEL_COLORS[label.color]?.dot ?? "bg-muted-foreground")} />
+      <span className="truncate">{label.name}</span>
+    </span>
+  );
+}
+
+export function BoardTaskProperties({ task, today }: { task: Pick<WorkTask, 'priority' | 'plannedDate' | 'labels'>; today: string }) {
+  const planned = plannedText(task.plannedDate, today);
+  return (
+    <>
+      <Property label={priorityLabel(task.priority)} icon={<PriorityIcon priority={task.priority} />}>
+        {PRIORITY[task.priority].label}
+      </Property>
+      {task.plannedDate && (
+        <Property label={`Planejada para ${planned.toLowerCase()}`} icon={<CalendarDays />} className="tabular-nums">
+          {planned}
+        </Property>
+      )}
+      {task.labels?.map(label => <LabelChip key={label.id} label={label} />)}
+    </>
+  );
+}
+
 export function PriorityProperty({ task, onSave, disabled, bare = false }: { task: Task; onSave: SaveTask; disabled: boolean; bare?: boolean }) {
   const [open, setOpen] = useState(false);
   const priority = PRIORITY[task.priority];
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled}>
-        <ChipButton label={task.priority === "NONE" ? priority.label : `Prioridade ${priority.label.toLowerCase()}`} icon={<PriorityIcon priority={task.priority} />} bare={bare}>
+        <ChipButton label={priorityLabel(task.priority)} icon={<PriorityIcon priority={task.priority} />} bare={bare}>
           {priority.label}
         </ChipButton>
       </PopoverTrigger>
@@ -221,10 +254,7 @@ export function LabelsProperty({ task, onSave, disabled, bare = false }: { task:
             aria-label={`Etiquetas: ${labels.map(label => label.name).join(", ")}`}
             className="group/chip h-6 w-auto gap-1.5 p-0 font-normal hover:bg-transparent max-md:-my-2.5">
             {labels.map(label => (
-              <span key={label.id} className={cn(chip, "max-w-40 group-hover/chip:bg-accent group-data-[state=open]/chip:bg-accent")}>
-                <span aria-hidden className={cn("size-2 shrink-0 rounded-full", LABEL_COLORS[label.color]?.dot ?? "bg-muted-foreground")} />
-                <span className="truncate">{label.name}</span>
-              </span>
+              <LabelChip key={label.id} label={label} className="group-hover/chip:bg-accent group-data-[state=open]/chip:bg-accent" />
             ))}
           </Button>
         ) : (
@@ -255,15 +285,15 @@ export function LabelsProperty({ task, onSave, disabled, bare = false }: { task:
 
 export function PlannedProperty({ task, onSave, disabled, bare = false }: { task: Task; onSave: SaveTask; disabled: boolean; bare?: boolean }) {
   const today = useProductToday();
-  const plannedLabel = task.plannedDate === today ? "hoje" : task.plannedDate ? shortDate(task.plannedDate) : "";
+  const planned = plannedText(task.plannedDate, today);
   return (
     <DateProperty
       value={task.plannedDate} label="Dia planejado" clearLabel="Remover planejamento" disabled={disabled}
       onPick={plannedDate => onSave({ plannedDate })}
       onClear={() => onSave({ plannedDate: null, startTime: null })}
-      trigger={plannedLabel ? (
-        <ChipButton label={`Planejada para ${plannedLabel}`} icon={<CalendarDays />} chipClassName="tabular-nums" bare={bare}>
-          {plannedLabel === "hoje" ? "Hoje" : plannedLabel}
+      trigger={task.plannedDate ? (
+        <ChipButton label={`Planejada para ${planned.toLowerCase()}`} icon={<CalendarDays />} chipClassName="tabular-nums" bare={bare}>
+          {planned}
         </ChipButton>
       ) : (
         <ChipButton label="Sem planejamento" icon={<CalendarDays />} chipClassName="text-muted-foreground" bare={bare}>Sem planejamento</ChipButton>

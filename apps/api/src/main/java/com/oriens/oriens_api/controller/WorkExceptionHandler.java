@@ -12,7 +12,12 @@ import org.springframework.dao.*;
 import org.springframework.security.access.AccessDeniedException;
 import java.util.*;
 
-@RestControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, WorkHomeController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, InvestmentController.class, TagController.class, UserController.class, NotificationController.class, SupportController.class})
+@RestControllerAdvice(assignableTypes = {
+    com.oriens.oriens_api.mcp.McpController.class, WorkHomeController.class, ProjectController.class,
+    TaskController.class, TaskAttachmentController.class, TaskLabelController.class, StatisticsController.class,
+    HabitController.class, FinancialEntryController.class, InvestmentController.class, TagController.class,
+    UserController.class, NotificationController.class, SupportController.class
+})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class WorkExceptionHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WorkExceptionHandler.class);
@@ -25,6 +30,7 @@ public class WorkExceptionHandler {
             case "FORBIDDEN" -> 403;
             case "RATE_LIMITED" -> 429;
             case "PAYLOAD_TOO_LARGE" -> 413;
+            case "TEMPORARILY_UNAVAILABLE" -> 503;
             case "REAUTHORIZATION_REQUIRED" -> 409;
             case "UNAUTHENTICATED" -> 401;
             case "PRECONDITION_REQUIRED" -> 428;

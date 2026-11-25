@@ -41,6 +41,17 @@
     --label-green: 145 55% 91%; --label-green-foreground: 150 60% 23%; --label-green-dot: 145 60% 38%;
     --label-blue: 210 80% 93%; --label-blue-foreground: 215 70% 28%; --label-blue-dot: 215 80% 52%;
     --label-gray: 30 10% 90%; --label-gray-foreground: 30 10% 28%; --label-gray-dot: 30 8% 52%;
+    --description-ink-red: var(--label-red-foreground);
+    --description-ink-amber: var(--label-yellow-foreground);
+    --description-ink-green: var(--label-green-foreground);
+    --description-ink-blue: var(--label-blue-foreground);
+    --description-ink-violet: 266 54% 33%;
+    --description-highlight-red: var(--label-red);
+    --description-highlight-amber: var(--label-yellow);
+    --description-highlight-green: var(--label-green);
+    --description-highlight-blue: var(--label-blue);
+    --description-highlight-violet: 266 60% 93%;
+    --description-diagram-surface: 0 0% 100%;
 
     /* Light theme: plane.so neutrals with an orange primary
        (docs/plans/2026-11-22-design-system-plane-so-orange-design.md §5.1). */
@@ -117,6 +128,8 @@
     --label-green: 150 30% 21%; --label-green-foreground: 145 65% 80%; --label-green-dot: 145 55% 50%;
     --label-blue: 215 35% 25%; --label-blue-foreground: 210 85% 85%; --label-blue-dot: 212 90% 64%;
     --label-gray: 30 8% 25%; --label-gray-foreground: 30 12% 85%; --label-gray-dot: 30 8% 62%;
+    --description-ink-violet: 268 80% 86%;
+    --description-highlight-violet: 266 34% 28%;
 
     /* Dark theme (docs/plans/2026-11-22-design-system-plane-so-orange-design.md §5.1). */
     --background: 240 3% 6%;

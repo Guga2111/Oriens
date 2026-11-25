@@ -1,5 +1,6 @@
 package com.oriens.oriens_api.entity.dto.work;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.oriens.oriens_api.entity.*;
 import com.oriens.oriens_api.entity.enums.*;
 import com.oriens.oriens_api.entity.embeddable.Location;
@@ -45,7 +46,9 @@ public final class WorkResponses {
                            Long columnId, Integer position, LocalDate plannedDate, LocalTime startTime,
                            LocalDate dueDate, Priority priority, Status status, LocalDate completedAt,
                            Instant createdAt, Location location, long version, ProjectLink project,
-                           ObjectiveLink objective, ColumnLink column, List<LabelView> labels) {}
+                           ObjectiveLink objective, ColumnLink column, List<LabelView> labels,
+                           @JsonInclude(JsonInclude.Include.NON_NULL) String descriptionText,
+                           @JsonInclude(JsonInclude.Include.NON_NULL) TaskDescriptionDocument descriptionDoc) {}
     public record SidebarProject(Long id, String title, String color, ProjectMode mode, boolean favorite,
                                  Boolean archived, Instant lastAccessed, long version) {
         public static SidebarProject of(Project p) { return new SidebarProject(p.getId(), p.getTitle(), p.getColor(), p.getMode(), p.isFavorite(), p.getArchived(), p.getLastAccessed(), p.getVersion()); }

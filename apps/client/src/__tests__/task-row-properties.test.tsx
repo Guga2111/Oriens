@@ -123,7 +123,7 @@ it('abre o painel da tarefa pelo título, edita nele e fecha limpando a URL', as
   const panel = await screen.findByRole('dialog', { name: task.title });
   expect(screen.getByLabelText('url')).toHaveTextContent('task=42');
   expect(within(panel).getByText('Site pessoal · #42')).toBeInTheDocument();
-  expect(within(panel).getByText('Descrição original')).toBeInTheDocument();
+  expect(await within(panel).findByText('Descrição original')).toBeInTheDocument();
   expect(within(panel).getByRole('link', { name: 'Receber contatos pelo site' })).toBeInTheDocument();
 
   await userEvent.click(within(panel).getByRole('button', { name: 'Prioridade média' }));
@@ -190,23 +190,13 @@ it('edita o título no próprio painel: Enter salva, Esc desfaz sem fechar e vaz
   await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', { title: 'Formulário de contato', ...versions }));
 });
 
-it('edita a descrição livremente, com quebras de linha, e salva ao sair do campo', async () => {
+it('abre o editor de blocos mantendo a descrição legada', async () => {
   renderWork(<DashboardPage />);
   const panel = await openPanel();
-  const description = within(panel).getByRole('textbox', { name: 'Descrição' });
-  await userEvent.clear(description);
-  await userEvent.type(description, 'Primeira linha{Enter}Segunda linha');
+  await userEvent.click(await within(panel).findByRole('button', { name: 'Editar descrição' }));
+  const description = await within(panel).findByRole('textbox', { name: 'Descrição' });
+  expect(description).toHaveTextContent('Descrição original');
   expect(api.patch).not.toHaveBeenCalled();
-  await userEvent.click(within(panel).getByRole('heading', { name: 'Propriedades' }));
-  await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', { description: 'Primeira linha\nSegunda linha', ...versions }));
-});
-
-it('apagar a descrição envia null', async () => {
-  renderWork(<DashboardPage />);
-  const panel = await openPanel();
-  await userEvent.clear(within(panel).getByRole('textbox', { name: 'Descrição' }));
-  await userEvent.click(within(panel).getByRole('heading', { name: 'Propriedades' }));
-  await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', { description: null, ...versions }));
 });
 
 it('move a tarefa de coluna pelo painel', async () => {

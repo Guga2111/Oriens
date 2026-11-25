@@ -44,6 +44,19 @@ Regras:
 - Confiar no front para autorização. Esconder um botão é UX; a garantia é do backend.
 - Guardar no `localStorage` qualquer coisa além do token e preferências já existentes.
 
+## Movimentos no quadro
+
+No desktop, arraste pelo card ou use as ações do menu para mudar de coluna ou
+posição. Pelo teclado, use Espaço no título para pegar ou soltar, as setas para
+escolher o destino e Escape para cancelar. Enter abre os detalhes quando o card
+está em repouso. No celular, o movimento continua disponível pelo menu.
+
+O hook de movimento mantém a projeção otimista no cache do quadro e reserva
+apenas o card em salvamento no desktop. Os envios do mesmo projeto passam em
+sequência para usar as versões confirmadas do projeto e das tarefas. Em caso
+de erro, o hook restaura a posição anterior, reaplica os demais movimentos
+pendentes e mostra a mensagem de `workError` em um toast.
+
 ## Formulários
 
 ✅ **Padrão** (ex.: `TaskEditor`, diálogos financeiros):

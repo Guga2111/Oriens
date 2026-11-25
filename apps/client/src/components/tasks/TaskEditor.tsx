@@ -1,6 +1,7 @@
 import { useRecordVisit } from '@/hooks/useHome';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { TaskLabelPicker } from './TaskLabelPicker';
+import { emptyDescription, taskDescription } from './description/descriptionContent';
 import { Clock, X } from 'lucide-react';
 import { WorkDatePicker } from '@/components/common/WorkDatePicker';
 import { WorkCombobox } from '@/components/common/WorkCombobox';
@@ -15,12 +16,14 @@ import { WorkSelect } from '@/components/common/WorkSelect';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
 import { LocationInput } from '@/components/common/LocationInput';
 import { useGoogleMapsScript } from '@/hooks/useGoogleMapsScript';
-import { usePlanningCount, useProjectBoard, useTaskWrites, useWorkProject, useWorkProjects } from '@/hooks/useWork';
+import { usePlanningCount, useProjectBoard, useTaskDetail, useTaskWrites, useWorkProject, useWorkProjects } from '@/hooks/useWork';
 import { useCreationAttempt } from '@/hooks/useCreationAttempt';
 import { validCalendarDate, statusNames } from '@/lib/work-form';
 import { PRIORITY, PRIORITY_ORDER } from '@/lib/labels';
 import type { LocationDTO, TaskPriority } from '@/types/task';
-import type { TaskCreation, TaskPatch, WorkTask } from '@/types/work';
+import type { TaskCreation, TaskDescriptionDocument, TaskPatch, WorkTask } from '@/types/work';
+
+const TaskDescriptionEditor = lazy(() => import('./description/TaskDescriptionEditor').then(module => ({ default: module.TaskDescriptionEditor })));
 
 interface Draft { labelIds: number[]; title: string; description: string; projectId: number | null; objectiveId: number | null; columnId: number | null; plannedDate: string; startTime: string; dueDate: string; priority: TaskPriority; location: LocationDTO | null }
 export interface TaskEditorProps {
@@ -40,6 +43,8 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
     columnId: task?.columnId ?? defaults.columnId ?? null, plannedDate: task?.plannedDate ?? defaults.plannedDate ?? '',
     startTime: (task?.startTime ?? defaults.startTime ?? '').slice(0, 5), dueDate: task?.dueDate ?? '', priority: task?.priority ?? 'NONE', location: task?.location ?? null };
   const [draft, setDraft] = useState<Draft>(initial);
+  const [descriptionDraft, setDescriptionDraft] = useState<TaskDescriptionDocument | null>();
+  const descriptionDetail = useTaskDetail(task?.id ?? 0, task);
   const [original, setOriginal] = useState(JSON.stringify(initial));
   const titleInput = useRef<HTMLInputElement>(null);
   const autoDestination = useRef(false);
@@ -82,13 +87,14 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
     if ([draft.plannedDate, draft.dueDate].some(d => d && !validCalendarDate(d))) { setError('Informe datas de calendário válidas.'); return; }
     if (draft.startTime && (!draft.plannedDate || !/^([01]\d|2[0-3]):[0-5]\d$/.test(draft.startTime))) { setError('Horário válido exige um dia planejado.'); return; }
     if (draft.projectId && (!destination || activeProject?.mode !== 'DEVELOPMENT' || targetVersion === null)) { setError('Escolha uma coluna válida no projeto de destino.'); return; }
-    const common = { title: draft.title.trim(), description: draft.description.trim() || null,
+    const common = { title: draft.title.trim(),
       plannedDate: draft.plannedDate || null, startTime: draft.startTime ? `${draft.startTime}:00` : null,
       labelIds: draft.labelIds, dueDate: draft.dueDate || null, priority: draft.priority, location: draft.location };
     try {
       let result;
       if (base) {
         const body: TaskPatch = { ...common, version: base.version };
+        if (descriptionDraft !== undefined) body.descriptionDoc = descriptionDraft;
         if (base.projectId) body.projectVersion = base.project!.version;
         if (draft.projectId !== base.projectId) {
           body.projectId = draft.projectId;
@@ -102,7 +108,8 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
         }
         result = await writes.patch.mutateAsync({ id: base.id, body });
       } else {
-        const body: TaskCreation = { ...common, ...(draft.projectId ? { projectId: draft.projectId, projectVersion: targetVersion!, columnId: draft.columnId!, objectiveId: draft.objectiveId } : {}) };
+        const body: TaskCreation = { ...common, description: draft.description.trim() || null,
+          ...(draft.projectId ? { projectId: draft.projectId, projectVersion: targetVersion!, columnId: draft.columnId!, objectiveId: draft.objectiveId } : {}) };
         result = await writes.create.mutateAsync({ ...attempt.prepare(body) });
       }
       toast.success(result.refreshFailed ? 'Tarefa salva. Recarregue as listas para atualizar os dados.' : 'Tarefa salva.');
@@ -120,7 +127,7 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
     } setNotice('Dados recarregados. Revise o rascunho e o destino antes de salvar novamente.');
     writes.patch.reset(); writes.create.reset();
   }
-  return <DraftDialog uncertain={attempt.uncertain} open={open} onOpenChange={onOpenChange} dirty={JSON.stringify(draft) !== original} busy={pending}
+  return <DraftDialog uncertain={attempt.uncertain} open={open} onOpenChange={onOpenChange} dirty={descriptionDraft !== undefined || JSON.stringify(draft) !== original} busy={pending}
     title={base ? 'Editar tarefa' : 'Nova tarefa'} description="Planejamento e prazo final são independentes."
     className="sm:max-w-task-dialog" footer={<Button form="task-editor" type="submit" disabled={pending}>{pending ? 'Salvando…' : 'Salvar tarefa'}</Button>}>
     <form id="task-editor" onSubmit={save} noValidate><fieldset disabled={pending || attempt.uncertain} className="min-w-0"><FieldGroup className="gap-6">
@@ -139,7 +146,19 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
         />
         {error && <FieldError id="task-validation">{error}</FieldError>}
       </Field>
-      <Field><FieldLabel htmlFor="task-description">Descrição (opcional)</FieldLabel><Textarea id="task-description" value={draft.description} maxLength={10000} onChange={e => change('description', e.target.value)} /></Field>
+      <Field>{base ? <>
+        <FieldDescription>Descrição (opcional)</FieldDescription>
+        {descriptionDetail.isPlaceholderData
+          ? <p role="status" className="text-sm text-muted-foreground">Carregando descrição…</p>
+          : <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Carregando descrição…</p>}>
+              <TaskDescriptionEditor taskId={base.id} document={descriptionDraft === undefined
+                ? taskDescription(descriptionDetail.data ?? base) : descriptionDraft ?? emptyDescription}
+                editable={!pending} onChange={setDescriptionDraft} />
+            </Suspense>}
+      </> : <>
+        <FieldLabel htmlFor="task-description">Descrição (opcional)</FieldLabel>
+        <Textarea id="task-description" value={draft.description} maxLength={10000} onChange={e => change('description', e.target.value)} />
+      </>}</Field>
       <Field><FieldLabel htmlFor="task-labels">Etiquetas</FieldLabel><TaskLabelPicker value={draft.labelIds} onChange={ids => change('labelIds', ids)} onCatalogDelete={id => setOriginal(previous => { const saved: Draft = JSON.parse(previous); return JSON.stringify({ ...saved, labelIds: saved.labelIds.filter(current => current !== id) }); })} disabled={pending || attempt.uncertain} /></Field>
       </FieldGroup>
       <FieldSet className="gap-3"><FieldLegend>Projeto e objetivo</FieldLegend><FieldGroup className="gap-4">

@@ -109,7 +109,7 @@ function TaskIdentity({ task }: { task: TaskDTO }) {
         <p className="min-w-0 max-w-full font-medium">{task.title}</p>
         <TaskLabels labels={task.labels} inline />
       </div>
-      {task.description && <p className="line-clamp-2 text-xs text-muted-foreground">{task.description}</p>}
+      {(task.descriptionText ?? task.description) && <p className="line-clamp-2 text-xs text-muted-foreground">{task.descriptionText ?? task.description}</p>}
     </div>
   );
 }

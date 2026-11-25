@@ -135,7 +135,11 @@ public class ScopedWorkReadService {
         if(f.priority()!=null) spec=spec.and(equal("priority",f.priority()));
         if(f.search()!=null) spec=spec.and(titleSearch(f.search()));
         if(f.startDate()!=null) spec=spec.and((r,q,b)->b.between(r.get(f.dateField()),f.startDate(),f.endDate()));
-        return page(tasks.findAll(spec,page),this::taskBrief);
+        return page(tasks.findAll(spec,page),task -> {
+            var row = taskBrief(task);
+            row.put("description", task.getDescription());
+            return row;
+        });
     }
     public Map<String,Object> getTask(Access a,long id) { return taskDetail(a,task(a,id)); }
     public Map<String,Object> projectBrief(Project p) {

@@ -7,6 +7,8 @@ import com.oriens.oriens_api.entity.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -30,6 +32,10 @@ public class Task {
 
     @Column(name = "description", length = 10000)
     private String description;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "description_doc")
+    private String descriptionDoc;
 
     @Column(name = "start_time")
     private LocalTime startTime;

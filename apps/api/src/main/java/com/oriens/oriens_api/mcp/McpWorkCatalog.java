@@ -39,7 +39,15 @@ public final class McpWorkCatalog {
         "totalCount",COUNT,"visibleCount",COUNT),"id","projectId","name","kind","position","version");
     private static final Map<String,Object> TASK_FIELDS=fields("id",ID,"title",TEXT,"projectId",nullable(ID),"objectiveId",nullable(ID),"columnId",nullable(ID),
         "plannedDate",nullable(DATE),"startTime",nullable(TIME),"dueDate",nullable(DATE),"priority",PRIORITY,"status",STATUS,"version",VERSION);
-    private static final Map<String,Object> TASK_DETAIL=complete(extend(TASK_FIELDS,"description",nullable(TEXT),"position",nullable(COUNT),"completedAt",nullable(DATE),
+    private static final Map<String,Object> TASK_DESCRIPTION = extend(DESCRIPTION, "description",
+        "Descrição em Markdown CommonMark/GFM, até 10.000 caracteres com marcação. "
+        + "Use > **Nota:** para callout, > **Recolhível:** título e corpo citado para bloco recolhível, "
+        + "cerca mermaid para diagrama, ![texto alternativo](url) para imagem e [Vídeo — nome](url) para vídeo. "
+        + "Use HTTPS ou oriens-attachment:<uuid> para anexos da própria tarefa. "
+        + "Para abrir um anexo, chame oriens_get_task_attachment com os IDs de tarefa e anexo. "
+        + "Sublinhado e cores são omitidos no Markdown. O texto é preservado.");
+    private static final Map<String,Object> TASK_LIST_FIELDS = extend(TASK_FIELDS, "description", nullable(TASK_DESCRIPTION));
+    private static final Map<String,Object> TASK_DETAIL=complete(extend(TASK_LIST_FIELDS,"position",nullable(COUNT),"completedAt",nullable(DATE),
         "createdAt",Map.of("type","string","format","date-time"),"location",nullable(LOCATION),
         "project",nullable(complete(fields("id",ID,"title",TEXT,"version",VERSION))),
         "objective",nullable(complete(fields("id",ID,"title",TEXT,"version",VERSION))),
@@ -105,12 +113,15 @@ public final class McpWorkCatalog {
                 "projectId",ID,"objectiveId",ID,"planning",choices("today","unscheduled"),"overdue",BOOL,"open",BOOL,"startDate",DATE,"endDate",DATE),"projectId"),
             object(fields("projectId",ID,"projectVersion",VERSION,"columns",page(COLUMN),"tasks",page(complete(TASK_FIELDS)),"projectTaskCounts",COUNTS,"filteredTaskCounts",COUNTS,
                 "filtered",BOOL,"includedSections",array(TEXT)),"projectId","projectVersion","columns","filtered","includedSections")));
-        out.add(definition("list_tasks","tasks:read",false,false,"Consulta união dos projetos autorizados e avulsas permitidas. Prazo (dueDate) e dia planejado (plannedDate) são distintos. Intervalo exige dateField, startDate e endDate. Não aceita coluna sem projeto.",
+        out.add(definition("list_tasks","tasks:read",false,false,"Consulta união dos projetos autorizados e avulsas permitidas, com descrição em Markdown. Prazo (dueDate) e dia planejado (plannedDate) são distintos. Intervalo exige dateField, startDate e endDate. Não aceita coluna sem projeto.",
             object(extend(sortedPaging("createdAt","id","title","dueDate","plannedDate","startTime","priority","status","createdAt"),"projectId",ID,"standaloneOnly",BOOL,"columnId",ID,
-                "status",STATUS,"priority",PRIORITY,"search",TEXT,"dateField",choices("plannedDate","dueDate"),"startDate",DATE,"endDate",DATE)),page(complete(TASK_FIELDS))));
-        out.add(definition("get_task","tasks:read",false,false,"Detalhe autorizado incluindo descrição, localização, etiquetas atribuídas e referências/versionamento necessários para futuras alterações.",
+                "status",STATUS,"priority",PRIORITY,"search",TEXT,"dateField",choices("plannedDate","dueDate"),"startDate",DATE,"endDate",DATE)),page(complete(TASK_LIST_FIELDS))));
+        out.add(definition("get_task","tasks:read",false,false,"Detalhe autorizado incluindo descrição em Markdown, localização, etiquetas atribuídas e referências/versionamento necessários para futuras alterações.",
             object(fields("taskId",ID),"taskId"),TASK_DETAIL));
-        var taskInput=fields("title",TITLE,"description",nullable(DESCRIPTION),"objectiveId",nullable(ID),"plannedDate",nullable(DATE),"startTime",nullable(TIME),"dueDate",nullable(DATE),"priority",PRIORITY,"location",nullable(LOCATION));
+        out.add(definition("get_task_attachment","tasks:read",false,false,"Emite URL de leitura que expira em cinco minutos para um anexo referenciado na descrição de uma tarefa autorizada.",
+            object(fields("taskId", ID, "attachmentId", UUID_SCHEMA), "taskId", "attachmentId"),
+            complete(fields("id", UUID_SCHEMA, "contentType", TEXT, "expiresAt", Map.of("type", "string", "format", "date-time"), "url", TEXT))));
+        var taskInput=fields("title",TITLE,"description",nullable(TASK_DESCRIPTION),"objectiveId",nullable(ID),"plannedDate",nullable(DATE),"startTime",nullable(TIME),"dueDate",nullable(DATE),"priority",PRIORITY,"location",nullable(LOCATION));
         out.add(definition("create_task","tasks:create",true,false,"Cria tarefa avulsa ou em projeto DEVELOPMENT autorizado. Horário exige dia planejado; planejamento não altera prazo. Projeto exige expectedProjectVersion. Preserva regras de coluna e objetivo.",
             object(extend(taskInput,"idempotencyKey",UUID_SCHEMA,"projectId",nullable(ID),"expectedProjectVersion",VERSION,"columnId",ID),"idempotencyKey","title"),mutation(TASK_DETAIL)));
         out.add(definition("update_task","tasks:update",true,false,"Patch de tarefa, preservando etiquetas. Ausente preserva; null limpa campos anuláveis. Projeto atual exige expectedProjectVersion. Em projeto, a coluna governa o estado; use move_task para coluna específica.",
