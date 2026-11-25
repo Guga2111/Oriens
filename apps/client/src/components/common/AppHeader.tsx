@@ -22,6 +22,8 @@ const sectionNames: Record<string, string> = {
   "/stats": "Estatísticas",
   "/config": "Configurações",
   "/financial": "Financeiro",
+  "/financial/entries": "Lançamentos",
+  "/financial/investments": "Investimentos",
   "/all-data": "Explorar",
   "/support": "Ajuda & Suporte",
   "/admin/support": "Dashboard de Suporte",

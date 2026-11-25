@@ -49,5 +49,5 @@ python3 -B -m unittest discover -s scripts/tests -p 'test_check_docs_links.py' -
 ```
 
 O job `docs` do [workflow de checks](../.github/workflows/checks.yml) roda em
-todo PR para `dev` ou `main`, inclusive PR só de documentação, e no workflow
+todo PR para `dev`, `main` ou `refac/**`, inclusive PR só de documentação, e no workflow
 reutilizado pelo deploy.

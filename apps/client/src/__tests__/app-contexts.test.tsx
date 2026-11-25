@@ -8,7 +8,7 @@ import { renderWork } from './work-fixtures';
 describe('contextos do shell', () => {
   it.each([
     ['/tasks', 'work'], ['/tasks/', 'work'], ['/tasks/project/9', 'work'],
-    ['/projects', 'work'], ['/all-data', 'work'], ['/financial', 'financial'],
+    ['/projects', 'work'], ['/all-data', 'work'], ['/financial', 'financial'], ['/financial/entries', 'financial'],
     ['/financial/', 'financial'], ['/stats', 'statistics'], ['/config', 'settings'],
     ['/support', 'settings'], ['/admin/support', 'settings'], ['/admin/management', 'settings'],
     ['/admin/new-section', 'settings'], ['/financial-other', 'work'], ['/stats-other', 'work'],

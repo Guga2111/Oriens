@@ -16,7 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAd
 import java.lang.reflect.Type;
 import java.io.IOException;
 
-@ControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, FinancialEntryController.class, WorkHomeController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class})
+@ControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, FinancialEntryController.class, InvestmentController.class, WorkHomeController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class})
 public class WorkRequestBodyAdvice extends RequestBodyAdviceAdapter {
     private final ObjectMapper strict;
     public WorkRequestBodyAdvice(ObjectMapper mapper) {

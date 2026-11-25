@@ -29,7 +29,9 @@ Consulte as [skills do Oriens](docs/guides/agent-skills.md) para o fluxo da tare
 - Peça aprovação antes de decisões difíceis de reverter sobre schema, contrato
   público, auth, remoção de dados, novas dependências ou identidade visual.
 - Funcionalidade nova de grande porte segue spec datada em `docs/plans/`,
-  aprovação, implementação e evidência.
+  aprovação, implementação e evidência. A spec usa o
+  [template](.agents/skills/oriens-planejamento/spec-template.md), e cada tarefa
+  derivada dela abre com o bloco “Leitura obrigatória” da skill de planejamento.
 
 ## Critérios de pronto
 

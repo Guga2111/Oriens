@@ -33,7 +33,9 @@ public final class StatisticsViews {
                            List<OverdueGroup> overdueByProject) {}
     public record TaskEvidence(Long id, String title, LocalDate completedAt, LocalDate plannedDate,
                                LocalDate dueDate, String status, Long projectId, String projectTitle) {}
-    public record Money(@JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal income, @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal expenses, @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal result, long entries) {}
+    public record Money(@JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal income, @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal expenses, @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal result, long entries,
+                        /** Net investment transfers (withdrawals minus contributions): move the balance, never income or expenses. */
+                        @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal investmentTransfers) {}
     public record MoneyDay(LocalDate date, @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal income, @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal expenses) {}
     public record Category(Long tagId, String name, @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal amount, long entries) {}
     public record Finance(Period period, Money current, Money previous, List<MoneyDay> days,

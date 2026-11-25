@@ -28,6 +28,7 @@ public class UserCreatedListener {
         investments.setName("Investimentos");
         investments.setColor("#8B5CF6");
         investments.setIsDefault(true);
+        investments.setSystemKey("INVESTMENTS");
 
         Tag salary = new Tag();
         salary.setUserId(userId);

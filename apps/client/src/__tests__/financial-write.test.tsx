@@ -77,7 +77,7 @@ it('exclusão mantém a confirmação aberta e a chave quando a rede falha', asy
   const user = userEvent.setup(); const remove = vi.fn().mockRejectedValueOnce(network()).mockResolvedValueOnce(undefined);
   render(<EntryHistoryTable entries={[entry]} tags={tags} onEdit={vi.fn()} onDelete={remove}
     pagination={{ page: 0, totalPages: 1, totalElements: 1 }} onPageChange={vi.fn()}
-    filters={{ periodFilter: 'all', customStartDate: undefined, customEndDate: undefined, tagFilter: 'all', searchQuery: '' }} onFilterChange={vi.fn()} />);
+    onManageRecurrences={vi.fn()} onManageInvestments={vi.fn()} filtered={false} onClearFilters={vi.fn()} />);
   await user.click(screen.getAllByRole('button', { name: 'Excluir entrada: Café' })[0]);
   const dialog = await screen.findByRole('alertdialog');await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
   await within(dialog).findByRole('alert');await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));

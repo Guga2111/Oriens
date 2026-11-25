@@ -28,6 +28,11 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
     boolean existsByParentEntryId(Long parentEntryId);
     @Query(value="select exists(select 1 from financial_occurrences where parent_entry_id=:parent)",nativeQuery=true)
     boolean hasOccurrences(@Param("parent") Long parent);
+    @Query(value="select exists(select 1 from investment_movements where entry_id=:entry)",nativeQuery=true)
+    boolean ownedByInvestment(@Param("entry") Long entry);
+    /** Rows of [entry_id, investment_id] for the given entries, in one query. */
+    @Query(value="select entry_id,investment_id from investment_movements where user_id=:owner and entry_id in (:entries)",nativeQuery=true)
+    List<Object[]> investmentLinks(@Param("owner") Long owner,@Param("entries") java.util.Collection<Long> entries);
 
 
     Page<FinancialEntry> findByUserId(Long userId, Pageable pageable);

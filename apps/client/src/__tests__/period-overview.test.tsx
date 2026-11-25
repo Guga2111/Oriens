@@ -1,18 +1,26 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { PeriodOverview } from "@/components/financial/PeriodOverview";
-import type { EntryDTO } from "@/types/financial";
+import type { EntryDTO, TagDTO } from "@/types/financial";
+
+const tags: TagDTO[] = [
+  { id: 1, name: "Salário", color: "#111111" },
+  { id: 2, name: "Mercado", color: "#222222" },
+  { id: 3, name: "Casa", color: "#333333" },
+];
 
 const entries: EntryDTO[] = [
   { id: 1, version: 0, amount: 1500.5, entryDate: "2026-11-05", tagId: 1 },
+  // Rendimento recebido é uma receita comum na data do recebimento.
   { id: 2, version: 0, amount: 500, entryDate: "2026-11-10", tagId: 1 },
   { id: 3, version: 0, amount: -700.25, entryDate: "2026-11-12", tagId: 2 },
-  { id: 4, version: 0, amount: -300.75, entryDate: "2026-11-20", tagId: 2 },
-  // Valor zero não conta nem como receita nem como gasto.
+  { id: 4, version: 0, amount: -300.75, entryDate: "2026-11-20", tagId: 3 },
   { id: 5, version: 0, amount: 0, entryDate: "2026-11-21", tagId: 2 },
-  // Outro mês entra só no saldo acumulado.
+  // Outro mês entra só no saldo disponível.
   { id: 6, version: 0, amount: 1000, entryDate: "2026-10-01", tagId: 1 },
+  // Lançamento futuro não entra no saldo de novembro.
+  { id: 7, version: 0, amount: -50, entryDate: "2026-12-02", tagId: 2 },
 ];
 
 type Props = React.ComponentProps<typeof PeriodOverview>;
@@ -20,11 +28,14 @@ type Props = React.ComponentProps<typeof PeriodOverview>;
 function renderOverview(overrides: Partial<Props> = {}) {
   const props: Props = {
     entries,
+    tags,
     period: { month: 10, year: 2026 },
-    isLoadingMonth: false,
-    isLoadingAccumulated: false,
+    isLoading: false,
+    error: null,
+    onRetry: vi.fn(),
     onNewEntry: vi.fn(),
-    onPreviousMonth: vi.fn(),
+    onSelectCategory: vi.fn(),
+    onViewMonth: vi.fn(),
     ...overrides,
   };
 
@@ -32,31 +43,35 @@ function renderOverview(overrides: Partial<Props> = {}) {
   return props;
 }
 
-describe("PeriodOverview — resumo do mês", () => {
-  it("mostra saldo do mês, receitas, gastos e o acumulado", () => {
+function metric(label: string) {
+  return screen.getByText(label, { selector: "dt" }).nextElementSibling;
+}
+
+describe("PeriodOverview — indicadores do mês", () => {
+  it("mostra receitas, despesas, resultado e saldo disponível até o fim do mês", () => {
     renderOverview();
 
-    // receitas = 1500.50 + 500 = 2000.50
-    expect(screen.getByText("+ R$ 2.000,50")).toBeInTheDocument();
-    // gastos = |−700.25 + −300.75| = 1001.00
-    expect(screen.getByText("− R$ 1.001,00")).toBeInTheDocument();
-    // saldo do mês = receitas − gastos = 999.50
-    expect(screen.getByText("R$ 999,50")).toBeInTheDocument();
-    // acumulado inclui os 1000.00 de outubro
-    expect(screen.getByText("R$ 1.999,50")).toBeInTheDocument();
+    expect(metric("Receitas")).toHaveTextContent("R$ 2.000,50");
+    expect(metric("Despesas")).toHaveTextContent("R$ 1.001,00");
+    expect(metric("Resultado do mês")).toHaveTextContent("R$ 999,50");
+    expect(metric("Saldo disponível")).toHaveTextContent("R$ 1.999,50");
+    expect(screen.getByText("Acumulado até 30 de novembro de 2026, com aportes e resgates")).toBeInTheDocument();
   });
 
-  it("usa --negative quando o saldo do mês é negativo", () => {
+  it("muda indicadores e acumulado com o mês selecionado", () => {
+    renderOverview({ period: { month: 11, year: 2026 } });
+
+    expect(metric("Receitas")).toHaveTextContent("R$ 0,00");
+    expect(metric("Despesas")).toHaveTextContent("R$ 50,00");
+    expect(metric("Saldo disponível")).toHaveTextContent("R$ 1.949,50");
+  });
+
+  it("usa --negative quando o resultado do mês é negativo", () => {
     renderOverview({
-      entries: [{ id: 7, version: 0, amount: -100, entryDate: "2026-11-01", tagId: 2 }],
+      entries: [{ id: 8, version: 0, amount: -100, entryDate: "2026-11-01", tagId: 2 }],
     });
 
-    const balanceLabel = screen.getByText("Saldo do mês");
-    const balance = within(balanceLabel.parentElement!).getByText(
-      /-R\$\s*100,00/
-    );
-
-    expect(balance).toHaveClass("text-negative");
+    expect(metric("Resultado do mês")).toHaveClass("text-negative");
   });
 
   it("oculta os quatro valores ao mascarar", async () => {
@@ -64,44 +79,71 @@ describe("PeriodOverview — resumo do mês", () => {
     renderOverview();
 
     await user.click(screen.getByRole("button", { name: "Ocultar valores" }));
-
-    expect(screen.queryByText("R$ 999,50")).toBeNull();
-    expect(screen.queryByText("R$ 1.999,50")).toBeNull();
     expect(screen.getAllByText("R$ ••••••")).toHaveLength(4);
 
     await user.click(screen.getByRole("button", { name: "Exibir valores" }));
-    expect(screen.getByText("R$ 999,50")).toBeInTheDocument();
+    expect(metric("Resultado do mês")).toHaveTextContent("R$ 999,50");
   });
+});
 
-  it("mostra Skeleton inline no acumulado enquanto o histórico carrega", () => {
-    renderOverview({ isLoadingAccumulated: true });
-
-    expect(screen.getByTestId("accumulated-skeleton")).toBeInTheDocument();
-    expect(screen.queryByText("R$ 1.999,50")).toBeNull();
-  });
-
-  it("usa Empty com as duas ações quando o mês não tem entradas", async () => {
+describe("PeriodOverview — composição por categoria", () => {
+  it("abre o histórico da categoria pelo teclado", async () => {
     const user = userEvent.setup();
-    const props = renderOverview({
-      entries: [{ id: 8, version: 0, amount: 100, entryDate: "2026-10-01", tagId: 1 }],
-      period: { month: 11, year: 2026 },
-    });
+    const props = renderOverview();
 
-    expect(screen.getByText("Nenhuma entrada em dezembro")).toBeInTheDocument();
+    const mercado = screen.getByRole("button", { name: /^Mercado: R\$\s700,25, 70% das despesas/ });
+    const casa = screen.getByRole("button", { name: /^Casa: R\$\s300,75, 30% das despesas/ });
+    expect(mercado.compareDocumentPosition(casa) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    mercado.focus();
+    await user.keyboard("{Enter}");
+    expect(props.onSelectCategory).toHaveBeenCalledWith(2);
+
+    await user.click(screen.getByRole("button", { name: "Ver lançamentos do mês" }));
+    expect(props.onViewMonth).toHaveBeenCalledTimes(1);
+  });
+
+  it("não lista receitas na composição de despesas", () => {
+    renderOverview();
+    expect(screen.queryByRole("button", { name: /^Salário/ })).toBeNull();
+  });
+});
+
+describe("PeriodOverview — carregamento, vazio e erro", () => {
+  it("marca a seção como ocupada e não mostra valores durante a carga", () => {
+    renderOverview({ entries: undefined, isLoading: true });
+
+    expect(screen.getByRole("region", { name: "Resumo do mês" })).toHaveAttribute("aria-busy", "true");
+    expect(screen.queryByText("Receitas")).toBeNull();
+  });
+
+  it("sem leitura completa mostra o erro com tentar novamente e nenhum total", async () => {
+    const user = userEvent.setup();
+    const props = renderOverview({ entries: undefined, error: new Error("offline") });
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.queryByText("Saldo disponível")).toBeNull();
+    expect(screen.queryByText(/R\$/)).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    expect(props.onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it("falha na atualização avisa que os valores são da última leitura completa", () => {
+    renderOverview({ error: new Error("offline") });
+
+    expect(screen.getByText(/valores exibidos são da última leitura completa/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tentar novamente" })).toBeInTheDocument();
+  });
+
+  it("mês sem lançamentos mantém o saldo e oferece Nova entrada", async () => {
+    const user = userEvent.setup();
+    const props = renderOverview({ period: { month: 0, year: 2027 } });
+
+    expect(screen.getByText("Nenhum lançamento em janeiro")).toBeInTheDocument();
+    expect(metric("Saldo disponível")).toHaveTextContent("R$ 1.949,50");
 
     await user.click(screen.getByRole("button", { name: "Nova entrada" }));
     expect(props.onNewEntry).toHaveBeenCalledTimes(1);
-
-    await user.click(screen.getByRole("button", { name: "Ver outro mês" }));
-    expect(props.onPreviousMonth).toHaveBeenCalledTimes(1);
-  });
-
-  it("marca o card como ocupado durante a primeira carga", () => {
-    renderOverview({ isLoadingMonth: true });
-
-    expect(
-      screen.getByRole("region", { name: "Resumo do mês" })
-    ).toHaveAttribute("aria-busy", "true");
-    expect(screen.queryByText("Saldo do mês")).toBeNull();
   });
 });

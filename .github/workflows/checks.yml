@@ -4,7 +4,7 @@ name: Checks
 # what gates production. No path filter: a required check must always report, even on docs-only PRs.
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [dev, main, 'refac/**']
   workflow_call:
 
 permissions:
