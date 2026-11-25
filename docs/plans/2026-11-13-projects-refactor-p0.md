@@ -13,11 +13,11 @@ P1–P6 permanecem pendentes; não há nova API/interface de produto ativa nesta
   estratégia JPA/SQL, instalação, backup, restore, checkpoint de reset e rollback.
 - [Schema observado](../../ops/projects-refactor/observed-schema.sql): schema-only
   do PostgreSQL local 15.19, sem registros, credenciais, owners ou ACLs.
-- [Baseline](../../ops/projects-refactor/baseline.sql), checksum SHA-256
+- [Baseline histórica](https://github.com/Guga2111/Oriens/blob/8fc63d44ab3923b6f44f8b61ad3beb195d55d55f/oriens-api/ops/projects-refactor/baseline.sql), checksum SHA-256
   `6fa68a942c6ff5029b733ba34f8d33089168d75c209d04d427bbb434e2c3e704`,
   versão `oriens-projects-v2`; fora do diretório de migrations automáticas.
 - [Operações explícitas](../../scripts/projects-refactor/db.py) e
-  [prova PostgreSQL](../../ops/projects-refactor/test_p0.py), sem dependências Python extras.
+  [prova PostgreSQL histórica](https://github.com/Guga2111/Oriens/blob/8fc63d44ab3923b6f44f8b61ad3beb195d55d55f/oriens-api/ops/projects-refactor/test_p0.py), sem dependências Python extras.
 
 ## Rastreio e decisões
 
