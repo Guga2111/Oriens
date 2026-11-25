@@ -47,14 +47,13 @@ export function LandingPage() {
 
       {/* Main Content */}
       <main className="flex-1">
-        <section className="w-full py-20 text-center md:py-24">
+        <section className="w-full py-12 text-center sm:py-20 md:py-24">
           <div className="mx-auto max-w-[1120px] px-page">
             <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
               Organize suas tarefas com Oriens
             </h1>
-            <p className="mx-auto mt-4 max-w-[640px] text-foreground md:text-lg">
-              A solução completa e gratuita para gerenciar seu calendário e
-              tarefas diárias. Sem mensalidades, sem limitações.
+            <p className="mx-auto mt-4 max-w-[640px] text-pretty text-muted-foreground md:text-lg">
+              Planeje seu dia e acompanhe tarefas, projetos e gastos em um só lugar.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button size="lg" asChild><Link to="/auth">Começar agora</Link></Button>
@@ -91,7 +90,7 @@ export function LandingPage() {
               </h2>
               <p className="mt-4 max-w-[52ch] text-primary-foreground">
                 O Oriens organiza o dia como um horizonte: a linha do dia
-                mostra, de um vistazo, o que já passou e o que vem a seguir.
+                mostra, de relance, o que já passou e o que vem a seguir.
                 Cada marca é uma tarefa que você abre em um clique.
               </p>
 
