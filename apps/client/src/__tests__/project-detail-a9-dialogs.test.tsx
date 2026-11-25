@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { TaskEditor } from '@/components/tasks/TaskEditor';
 import { ProjectBoard } from '@/components/projects/ProjectBoard';
+import { useProjectBoard } from '@/hooks/useWork';
 import { BoardSettings } from '@/components/projects/BoardSettings';
 import { CreateProjectDialog } from '@/components/projects/CreateProjectDialog';
 import api from '@/services/api';
@@ -69,8 +70,15 @@ it('troca de projeto exige coluna explícita e remove objetivo com aviso', async
   await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', expect.objectContaining({ projectId: 10, objectiveId: null, columnId: 22, projectVersion: 4, targetProjectVersion: 6 })));
 });
 it('mover pelo menu usa o mesmo PATCH, e filtros retiram reordenação oculta', async () => {
-  renderWork(<ProjectBoard pendingColumnId={11} board={{ ...board, filtered: true }} onOpen={vi.fn()} onEdit={vi.fn()} onAdd={vi.fn()} onObjective={vi.fn()} />);
-  await userEvent.click(screen.getByRole('button', { name: `Ações da tarefa ${task.title}` }));
+  const filters = { open: true };
+  vi.mocked(api.get).mockResolvedValue({ data: { ...board, filtered: true } });
+  function FilteredBoard() {
+    const query = useProjectBoard(9, filters);
+    return query.data && <ProjectBoard pendingColumnId={11} board={query.data} filters={filters}
+      onOpen={vi.fn()} onEdit={vi.fn()} onAdd={vi.fn()} onObjective={vi.fn()} />;
+  }
+  renderWork(<FilteredBoard />);
+  await userEvent.click(await screen.findByRole('button', { name: `Ações da tarefa ${task.title}` }));
   expect(screen.queryByRole('menuitem', { name: 'Mover acima' })).toBeNull();
   await userEvent.click(screen.getByRole('menuitem', { name: 'Concluídas · Concluída' }));
   await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/task/42', { version: 2, projectVersion: 4, columnId: 13, beforeTaskId: null }));
