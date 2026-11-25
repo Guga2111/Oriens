@@ -62,4 +62,12 @@ A primeira versão apresenta posição atual, aportes líquidos, rendimentos rec
 | #120 | Fluxos e indicadores de carteira no Financeiro | #116, #119 |
 | #121 | Evidência de regressão e dos fluxos novos | #117, #118, #120 |
 
+## Fluxo de entrega
+
+- A branch de integração do objetivo é `refac/financial-features-2`. Cada tarefa parte dela e abre o PR contra ela, nunca contra `dev`.
+- Nomeie a branch da tarefa como `refac/finance-<tarefa>-<resumo>`, por exemplo `refac/finance-117-visao-geral`. Os checks do CI rodam em PRs para `refac/**`.
+- Antes de abrir o PR, rode `code-review` e `security-review` sobre o diff contra a branch de integração e registre o resultado na descrição, conforme o [fluxo de revisão](../guides/pull-request-review.md).
+- A #119 apresenta o modelo de dados e o contrato da API para aprovação antes de implementar persistência ou API.
+- Ao concluir as tarefas, um PR leva `refac/financial-features-2` para `dev`, com revisão de todo o intervalo.
+
 A validação final cobre desktop e celular, temas claro e escuro, navegação por teclado e recuperação de erro. Os critérios observáveis por entrega estão nas descrições das tarefas. A revisão usa as [convenções de frontend](../conventions/frontend/structure.md), o [guia de regressão visual](../guides/visual-regression.md) e o [fluxo de revisão do Oriens](../guides/pull-request-review.md).
