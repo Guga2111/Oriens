@@ -41,6 +41,7 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
     startTime: (task?.startTime ?? defaults.startTime ?? '').slice(0, 5), dueDate: task?.dueDate ?? '', priority: task?.priority ?? 'NONE', location: task?.location ?? null };
   const [draft, setDraft] = useState<Draft>(initial);
   const [original, setOriginal] = useState(JSON.stringify(initial));
+  const titleInput = useRef<HTMLInputElement>(null);
   const autoDestination = useRef(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -73,7 +74,11 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
   if (draft.projectId && !projectOptions.some(o => o.value === String(draft.projectId))) projectOptions.push({ value: String(draft.projectId), label: activeProject?.title ?? task?.project?.title ?? 'Projeto selecionado' });
   async function save(event: React.FormEvent) {
     event.preventDefault(); setError('');
-    if (!draft.title.trim()) { setError('Informe o título da tarefa.'); return; }
+    if (!draft.title.trim()) {
+      setError('Informe o título da tarefa.');
+      titleInput.current?.focus();
+      return;
+    }
     if ([draft.plannedDate, draft.dueDate].some(d => d && !validCalendarDate(d))) { setError('Informe datas de calendário válidas.'); return; }
     if (draft.startTime && (!draft.plannedDate || !/^([01]\d|2[0-3]):[0-5]\d$/.test(draft.startTime))) { setError('Horário válido exige um dia planejado.'); return; }
     if (draft.projectId && (!destination || activeProject?.mode !== 'DEVELOPMENT' || targetVersion === null)) { setError('Escolha uma coluna válida no projeto de destino.'); return; }
@@ -120,7 +125,20 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
     className="sm:max-w-task-dialog" footer={<Button form="task-editor" type="submit" disabled={pending}>{pending ? 'Salvando…' : 'Salvar tarefa'}</Button>}>
     <form id="task-editor" onSubmit={save} noValidate><fieldset disabled={pending || attempt.uncertain} className="min-w-0"><FieldGroup className="gap-6">
       <FieldGroup className="gap-4">
-      <Field data-invalid={!!error}><FieldLabel htmlFor="task-title">Título</FieldLabel><Input id="task-title" value={draft.title} onChange={e => change('title', e.target.value)} maxLength={200} required aria-invalid={!!error} aria-describedby={error ? 'task-validation' : undefined} />{error && <FieldError id="task-validation">{error}</FieldError>}</Field>
+      <Field data-invalid={!!error}>
+        <FieldLabel htmlFor="task-title">Título</FieldLabel>
+        <Input
+          ref={titleInput}
+          id="task-title"
+          value={draft.title}
+          onChange={e => change('title', e.target.value)}
+          maxLength={200}
+          required
+          aria-invalid={!!error}
+          aria-describedby={error ? 'task-validation' : undefined}
+        />
+        {error && <FieldError id="task-validation">{error}</FieldError>}
+      </Field>
       <Field><FieldLabel htmlFor="task-description">Descrição (opcional)</FieldLabel><Textarea id="task-description" value={draft.description} maxLength={10000} onChange={e => change('description', e.target.value)} /></Field>
       <Field><FieldLabel htmlFor="task-labels">Etiquetas</FieldLabel><TaskLabelPicker value={draft.labelIds} onChange={ids => change('labelIds', ids)} onCatalogDelete={id => setOriginal(previous => { const saved: Draft = JSON.parse(previous); return JSON.stringify({ ...saved, labelIds: saved.labelIds.filter(current => current !== id) }); })} disabled={pending || attempt.uncertain} /></Field>
       </FieldGroup>

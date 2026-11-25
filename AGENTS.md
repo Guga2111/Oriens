@@ -3,6 +3,7 @@
 Oriens reúne tarefas, projetos, hábitos, estatísticas e finanças, com integração MCP.
 Comece pelo [índice da documentação](docs/README.md) e leia as
 [convenções transversais](docs/conventions/clean-code.md) e os guias da sua mudança.
+Consulte as [skills do Oriens](docs/guides/agent-skills.md) para o fluxo da tarefa.
 
 | Mudança | Leitura obrigatória |
 |---|---|
@@ -32,6 +33,8 @@ Comece pelo [índice da documentação](docs/README.md) e leia as
 
 ## Critérios de pronto
 
+- Use `security-review` e `code-review` em todo PR conforme o
+  [fluxo de revisão](docs/guides/pull-request-review.md).
 - Mudança de comportamento tem teste. Correção tem teste que falhava antes.
   Cubra 404 entre usuários, consultas em lote e concorrência quando afetados.
 - Rode a [verificação mínima suficiente](docs/guides/setup.md) e reporte os

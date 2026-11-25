@@ -60,10 +60,12 @@ class CheckDocsLinksTest(unittest.TestCase):
 
     def test_active_guide_above_limit_fails_and_historical_size_can_exceed_it(self):
         self.write("docs/guides/setup.md", "linha\n" * 201)
+        self.write(".agents/skills/example/SKILL.md", "linha\n" * 201)
         self.write("docs/plans/old.md", "linha\n" * 400)
         result = self.check()
         self.assertEqual(result.returncode, 1)
         self.assertIn("docs/guides/setup.md: 201 linhas", result.stderr)
+        self.assertIn(".agents/skills/example/SKILL.md: 201 linhas", result.stderr)
         self.assertNotIn("docs/plans/old.md", result.stderr)
 
     def test_historical_relative_links_are_still_checked(self):

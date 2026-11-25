@@ -16,7 +16,7 @@ ACTIVE_FILES = {
     "AGENTS.md", "CLAUDE.md", "README.md", "apps/client/README.md", "docs/README.md",
     "docs/mcp.md", "docs/ci-security.md", "docs/brand/GUIA-DE-USO.md",
 }
-ACTIVE_DIRECTORIES = ("docs/conventions/", "docs/guides/")
+ACTIVE_DIRECTORIES = ("docs/conventions/", "docs/guides/", ".agents/skills/")
 FENCE = re.compile(r"^\s{0,3}(`{3,}|~{3,})(.*)$")
 INLINE_CODE = re.compile(r"(?<![`\\])(`+)(?!`).*?(?<!`)\1(?!`)", re.DOTALL)
 HTML_COMMENT = re.compile(r"<!--.*?(?:-->|\Z)", re.DOTALL)

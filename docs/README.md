@@ -5,12 +5,14 @@ Use os guias da tarefa para localizar a regra canônica.
 
 | Tarefa | Guias vigentes |
 |---|---|
+| Trabalhar com agentes de IA | [Skills do Oriens](guides/agent-skills.md) |
 | Instalar ou testar | [Setup e verificação](guides/setup.md) |
 | Mudar API | [Estrutura e datas](conventions/backend/structure.md), [autorização](conventions/backend/security.md), [contratos HTTP](conventions/backend/http.md), [testes](conventions/backend/tests.md) |
 | Mudar consultas, concorrência ou schema | [Persistência e migrações](conventions/backend/persistence.md), [inventário, backup e restore](guides/database-operations.md) |
-| Mudar UI | [Estrutura](conventions/frontend/structure.md), [shadcn](conventions/frontend/components.md), [tokens](conventions/frontend/design-tokens.md), [dados e formulários](conventions/frontend/data.md), [acessibilidade e testes](conventions/frontend/tests.md), [marca](brand/GUIA-DE-USO.md) |
+| Mudar UI | [Estrutura](conventions/frontend/structure.md), [shadcn](conventions/frontend/components.md), [tokens](conventions/frontend/design-tokens.md), [dados e formulários](conventions/frontend/data.md), [acessibilidade e testes](conventions/frontend/tests.md), [regressão visual](guides/visual-regression.md), [marca](brand/GUIA-DE-USO.md) |
 | Mudar MCP/OAuth | [Contratos e segurança](conventions/backend/mcp.md), [operação](guides/mcp-operations.md), [uso nos clientes de IA](mcp.md) |
 | Mudar deploy ou CI | [Deploy](guides/deploy.md), [checks de segurança](ci-security.md) |
+| Revisar um PR | [Fluxo de revisão](guides/pull-request-review.md) |
 | Revisar qualquer mudança | [Clean code](conventions/clean-code.md), [dívida conhecida](conventions/debt.md) |
 
 O [contrato de Projetos v2](contracts/projects-v2.md) documenta a interface HTTP
@@ -35,8 +37,9 @@ externas ficam disponíveis para consulta manual.
 
 A meta editorial é **150 linhas** por guia vigente, com **teto de 200**. O check
 aplica o teto aos Markdown em `docs/conventions/` e `docs/guides/`, aos índices
-de entrada e aos guias de acesso MCP, segurança do CI e marca. Contratos, specs,
-planos, provas e runbooks históricos seguem a validação de links e âncoras.
+de entrada, aos guias de acesso MCP, segurança do CI e marca e aos arquivos em
+`.agents/skills/`. Contratos, specs, planos, provas e runbooks históricos
+seguem a validação de links e âncoras.
 
 Execute os dois comandos na raiz antes de abrir o PR.
 

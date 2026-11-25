@@ -22,3 +22,6 @@ Mínimo para todo componente:
 - Bug corrigido ganha teste que falhava antes.
 - **Playwright** (`e2e/`) para fluxos ponta a ponta críticos (criar/editar/concluir tarefa, projeto, financeiro).
 - Rode `npm run lint && npm test` antes de abrir PR.
+
+Use a [regressão visual](../../guides/visual-regression.md) para comparar
+a renderização da landing e do editor de tarefas em temas e viewports fixos.
