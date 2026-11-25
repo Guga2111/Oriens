@@ -55,7 +55,7 @@ describe("PeriodOverview — indicadores do mês", () => {
     expect(metric("Despesas")).toHaveTextContent("R$ 1.001,00");
     expect(metric("Resultado do mês")).toHaveTextContent("R$ 999,50");
     expect(metric("Saldo disponível")).toHaveTextContent("R$ 1.999,50");
-    expect(screen.getByText("Acumulado até 30 de novembro de 2026")).toBeInTheDocument();
+    expect(screen.getByText("Acumulado até 30 de novembro de 2026, com aportes e resgates")).toBeInTheDocument();
   });
 
   it("muda indicadores e acumulado com o mês selecionado", () => {

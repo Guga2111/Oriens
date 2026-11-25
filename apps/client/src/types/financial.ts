@@ -8,10 +8,17 @@ export interface FinancialInput {
   recurrenceEndDate?: string | null;
 }
 
+/** Cash classification from the API; investment transfers move the balance, never income or expenses. */
+export type EntryKind = "STANDARD" | "INVESTMENT_TRANSFER" | "INVESTMENT_INCOME";
+
 export interface EntryDTO extends FinancialInput {
   id: number;
   version: number;
   parentEntryId?: number | null;
+  /** Absent on older payloads, which are all standard entries. */
+  kind?: EntryKind;
+  /** Set while an investment movement owns the entry; it changes only through the portfolio. */
+  investmentId?: number | null;
   createdAt?: string;
   updatedAt?: string | null;
 }

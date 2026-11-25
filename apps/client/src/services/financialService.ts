@@ -1,7 +1,8 @@
 import apiClient from './api';
 import { queryClient } from '@/lib/query-client';
 
-function financialChanged(userId: number) {
+/** Cash entries, statistics and the portfolio share the `financial` family: a write in one refreshes the others. */
+export function financialChanged(userId: number) {
   void queryClient.invalidateQueries({ predicate: query => query.queryKey[0] === 'work' && query.queryKey[1] === userId && (query.queryKey[2] === 'financial'
     || query.queryKey[2] === 'statistics' && ['finance', 'financial-evidence'].includes(String(query.queryKey[3]))) });
 }
@@ -13,7 +14,7 @@ function input(entry: FinancialInput) {
     tagId: entry.tagId, isRecurring: entry.isRecurring ?? false,
     recurrencePattern: entry.recurrencePattern ?? null, recurrenceEndDate: entry.recurrenceEndDate ?? null };
 }
-function preconditions(key: string, version?: number) {
+export function preconditions(key: string, version?: number) {
   if (!key) throw new Error('A intenção financeira precisa de uma chave de repetição.');
   if (version !== undefined && (!Number.isSafeInteger(version) || version < 0)) throw new Error('Recarregue o lançamento para obter sua versão.');
   return { 'Idempotency-Key': key, ...(version !== undefined ? { 'If-Match': `"${version}"` } : {}) };
