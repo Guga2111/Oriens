@@ -47,7 +47,7 @@ public class ProjectController {
             @RequestParam(defaultValue="false") boolean favorite, @RequestParam(required=false) ProjectMode mode) {
         Long user = owner.matching(auth, userId);
         Page<Project> result = projects.findAllFiltered(user, includeArchived, search, favorite, mode, WorkPagination.of(page, size, sortBy, direction,
-            "id", "title", "lastAccessed", "favorite", "archived"));
+            "id", "title", "description", "lastAccessed", "favorite", "archived"));
         return new PageImpl<>(read.projectViews(user, result.getContent(), false), result.getPageable(), result.getTotalElements());
     }
     @GetMapping("/user/{userId}/summary")

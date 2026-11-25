@@ -1,14 +1,13 @@
-import { BarChart3, ExternalLink, Link2, MoreHorizontal, Search, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { BarChart3, ExternalLink, Link2, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { HeaderActions } from '@/components/common/HeaderActions';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { HeaderSearch } from '@/components/common/HeaderSearch';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 type TodayHeaderActionsProps = {
   search: string;
@@ -17,7 +16,6 @@ type TodayHeaderActionsProps = {
 
 export function TodayHeaderActions({ search, onSearchChange }: TodayHeaderActionsProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const searchTrigger = useRef<HTMLButtonElement>(null);
   const { pathname, search: query, hash } = useLocation();
   const pagePath = `${pathname}${query}${hash}`;
 
@@ -32,47 +30,8 @@ export function TodayHeaderActions({ search, onSearchChange }: TodayHeaderAction
 
   return (
     <HeaderActions>
-      <div
-        role="search"
-        aria-label="Busca de tarefas"
-        className={cn('relative shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none', isSearchOpen ? 'w-36 sm:w-56' : 'w-10 md:w-8')}
-        onBlur={event => {
-          if (!event.currentTarget.contains(event.relatedTarget) && !search.trim()) setIsSearchOpen(false);
-        }}
-      >
-        {isSearchOpen ? (
-          <>
-            <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              autoFocus
-              type="search"
-              aria-label="Buscar nas tarefas carregadas"
-              placeholder="Buscar tarefas…"
-              className="h-7 pl-9 pr-10 focus-visible:ring-1 focus-visible:ring-offset-0"
-              value={search}
-              onChange={event => onSearchChange(event.target.value)}
-              onKeyDown={event => {
-                if (event.key === 'Escape') {
-                  event.preventDefault();
-                  onSearchChange('');
-                  setIsSearchOpen(false);
-                  requestAnimationFrame(() => searchTrigger.current?.focus());
-                }
-              }}
-            />
-            {search && <Button variant="ghost" size="icon" className="absolute right-0 top-1/2 -translate-y-1/2 md:size-7" aria-label="Limpar busca" onClick={() => onSearchChange('')}><X aria-hidden /></Button>}
-          </>
-        ) : (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button ref={searchTrigger} variant="ghost" size="icon" aria-label="Buscar tarefas" onClick={() => setIsSearchOpen(true)}>
-                <Search aria-hidden />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Buscar tarefas</TooltipContent>
-          </Tooltip>
-        )}
-      </div>
+      <HeaderSearch label="Buscar tarefas" inputLabel="Buscar nas tarefas carregadas" placeholder="Buscar tarefas…"
+        value={search} onChange={onSearchChange} open={isSearchOpen} onOpenChange={setIsSearchOpen} />
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="outline" size="sm" aria-label="Análises"><BarChart3 aria-hidden /><span className={cn(isSearchOpen && 'max-sm:hidden')}>Análises</span></Button>

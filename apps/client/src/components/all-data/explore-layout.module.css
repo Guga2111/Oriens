@@ -1,0 +1,18 @@
+.results {
+  container-type: inline-size;
+}
+
+.table {
+  display: none;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* As colunas de tarefas ocupam 38rem. A grade precisa de mais 14rem para a identidade. */
+@container (min-width: 52rem) {
+  .table { display: block; }
+  .list { display: none; }
+}

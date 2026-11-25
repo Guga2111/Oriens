@@ -12,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { PriorityIcon } from "@/components/tasks/PriorityIcon";
 import { useTaskLabels } from "@/hooks/useTaskLabels";
 import { useProductToday } from "@/hooks/useProductToday";
 import { parseLocalDate } from "@/lib/date";
@@ -20,37 +21,11 @@ import { productDate, productNow } from "@/lib/product-time";
 import { HALF_HOURS, nextHalfHour, parseTimeOfDay } from "@/lib/time-of-day";
 import { LABEL_COLORS } from "@/lib/task-labels";
 import { cn } from "@/lib/utils";
-import type { Task, TaskPriority } from "@/types/task";
+import type { Task } from "@/types/task";
 import type { TaskPatch } from "@/types/work";
 
 /** Saves the given fields; resolves `true` when the task was saved. */
 export type SaveTask = (body: Partial<TaskPatch>) => Promise<boolean>;
-
-const PRIORITY_BARS: Record<Exclude<TaskPriority, "URGENT">, { level: number; tone: string }> = {
-  HIGH: { level: 3, tone: "text-priority-high" },
-  MEDIUM: { level: 2, tone: "text-priority-medium" },
-  LOW: { level: 1, tone: "text-priority-low" },
-  NONE: { level: 0, tone: "text-muted-foreground" },
-};
-
-/** Plane-style priority mark: three rising bars over the full icon height; the first `level` are solid, the rest a tint of the same hue. Urgent is a filled alert square. */
-function PriorityBars({ priority }: { priority: TaskPriority }) {
-  if (priority === "URGENT") return (
-    <svg viewBox="0 0 12 12" aria-hidden className="text-priority-urgent">
-      <rect x="0.5" y="0.5" width="11" height="11" rx="2.5" className="fill-current" />
-      <rect x="5.25" y="2.5" width="1.5" height="4.75" rx="0.75" className="fill-background" />
-      <circle cx="6" cy="9.1" r="0.9" className="fill-background" />
-    </svg>
-  );
-  const { level, tone } = PRIORITY_BARS[priority];
-  return (
-    <svg viewBox="0 0 12 12" aria-hidden className={tone}>
-      {[{ x: 0.5, h: 5 }, { x: 4.75, h: 8 }, { x: 9, h: 11 }].map((bar, index) => (
-        <rect key={bar.x} x={bar.x} y={11.5 - bar.h} width="2.5" height={bar.h} rx="0.75" className={cn("fill-current", index >= level && "opacity-25")} />
-      ))}
-    </svg>
-  );
-}
 
 const chip = "inline-flex h-6 flex-none items-center gap-1 whitespace-nowrap rounded-md border border-border px-2 text-xs font-normal text-foreground [&_svg]:size-3 [&_svg]:shrink-0";
 
@@ -209,7 +184,7 @@ export function PriorityProperty({ task, onSave, disabled, bare = false }: { tas
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild disabled={disabled}>
-        <ChipButton label={task.priority === "NONE" ? priority.label : `Prioridade ${priority.label.toLowerCase()}`} icon={<PriorityBars priority={task.priority} />} bare={bare}>
+        <ChipButton label={task.priority === "NONE" ? priority.label : `Prioridade ${priority.label.toLowerCase()}`} icon={<PriorityIcon priority={task.priority} />} bare={bare}>
           {priority.label}
         </ChipButton>
       </PopoverTrigger>
@@ -220,7 +195,7 @@ export function PriorityProperty({ task, onSave, disabled, bare = false }: { tas
               {PRIORITY_ORDER.map(value => (
                 <CommandItem key={value} value={PRIORITY[value].label} disabled={disabled}
                   onSelect={async () => { if (value === task.priority || await onSave({ priority: value })) setOpen(false); }}>
-                  <span aria-hidden className="flex [&_svg]:size-3"><PriorityBars priority={value} /></span>
+                  <span aria-hidden className="flex [&_svg]:size-3"><PriorityIcon priority={value} /></span>
                   {PRIORITY[value].label}
                   {value === task.priority && <><Check aria-hidden className="ml-auto size-3.5" /><span className="sr-only">(atual)</span></>}
                 </CommandItem>

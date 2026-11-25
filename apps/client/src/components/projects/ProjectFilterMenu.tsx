@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Archive, Kanban, ListChecks, ListFilter, Pin, Shapes } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Archive, Kanban, ListChecks, Pin, Shapes } from 'lucide-react';
+import { HeaderFilterButton } from '@/components/common/HeaderFilterButton';
 import {
   DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
   DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger,
@@ -33,11 +33,7 @@ export function ProjectFilterMenu({ filters, onChange }: { filters: ProjectFilte
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative size-7 text-muted-foreground hover:text-foreground"
-          aria-label={active ? `Filtros (${active} ${active === 1 ? 'ativo' : 'ativos'})` : 'Filtros'}>
-          <ListFilter aria-hidden />
-          {active > 0 && <span aria-hidden className="absolute right-1 top-1 size-1.5 rounded-full bg-primary" />}
-        </Button>
+        <HeaderFilterButton count={active} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         {inline ? (

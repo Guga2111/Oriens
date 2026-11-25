@@ -1,87 +1,103 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { useSearchParams } from "react-router-dom";
-import { PageHeader } from "@/components/common/PageHeader";
+import { toast } from "sonner";
 import { useSidebarProjects } from "@/components/layout/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { Status, Priority } from "@/types/task";
-import { useAllTasks, useWorkProjects, useProjectFlags } from "@/hooks/useWork";
-import { TasksDataTable, type TasksFilters } from "@/components/all-data/TasksDataTable";
-import { ProjectsDataTable, type ProjectsFilters } from "@/components/all-data/ProjectsDataTable";
+import { TasksDataTable, type TasksFilters, type TaskSortField } from "@/components/all-data/TasksDataTable";
+import { ProjectsDataTable, type ProjectsFilters, type ProjectSortField } from "@/components/all-data/ProjectsDataTable";
+import type { ExploreOrder } from "@/components/all-data/ExploreSort";
+import { useAllTasks, useProjectFlags, useWorkProjects } from "@/hooks/useWork";
+import type { WorkProject } from "@/types/work";
 
-const INITIAL: TasksFilters = {
-  status: "all", priority: "all", searchQuery: "", startDate: undefined, endDate: undefined, dateField: "plannedDate",
-};
+const PAGE_SIZE = 20;
+const EMPTY_TASK_FILTERS: TasksFilters = { dateField: "plannedDate", status: "all", priority: "all", searchQuery: "" };
+
+function pagination(data: { totalPages: number; totalElements: number } | undefined, page: number) {
+  return { page, size: PAGE_SIZE, totalPages: data?.totalPages ?? 0, totalElements: data?.totalElements ?? 0 };
+}
+
 export default function AllDataPage() {
   const { refreshSidebarProjects } = useSidebarProjects();
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") === "projects" ? "projects" : "tasks";
   const includeArchived = params.get("archived") === "1";
-  const [filters, setFilters] = useState<TasksFilters>(INITIAL);
+  const [filters, setFilters] = useState<TasksFilters>(EMPTY_TASK_FILTERS);
   const [taskPage, setTaskPage] = useState(0);
   const [projectPage, setProjectPage] = useState(0);
   const [search, setSearch] = useState("");
+  const [taskOrder, setTaskOrder] = useState<ExploreOrder<TaskSortField>>({ sortBy: "plannedDate", direction: "DESC" });
+  const [projectOrder, setProjectOrder] = useState<ExploreOrder<ProjectSortField>>({ sortBy: "id", direction: "DESC" });
   const tasks = useAllTasks({
-    page: taskPage, size: 20, sortBy: "plannedDate", direction: "DESC",
-    status: filters.status === "all" ? undefined : filters.status as Status,
-    priority: filters.priority === "all" ? undefined : filters.priority as Priority,
+    page: taskPage, size: PAGE_SIZE, ...taskOrder,
+    status: filters.status === "all" ? undefined : filters.status,
+    priority: filters.priority === "all" ? undefined : filters.priority,
     search: filters.searchQuery || undefined, projectId: filters.projectId, dateField: filters.dateField,
     startDate: filters.startDate ? format(filters.startDate, "yyyy-MM-dd") : undefined,
     endDate: filters.endDate ? format(filters.endDate, "yyyy-MM-dd") : undefined,
   });
-  const projects = useWorkProjects({ page: projectPage, size: 20, sortBy: "id", direction: "DESC", includeArchived, search });
+  const projects = useWorkProjects({ page: projectPage, size: PAGE_SIZE, ...projectOrder, includeArchived, search });
   const updateProject = useProjectFlags();
-  const projectAction = (id: number, field: "favorite" | "archive", value?: boolean) => {
-    const project = projects.data?.content.find(p => p.id === id);
-    if (project && !updateProject.isPending) updateProject.mutate({ project, field, value: value ?? !project.favorite }, {
+
+  function toggleProjectFlag(project: WorkProject, field: "favorite" | "archive") {
+    if (updateProject.isPending) return;
+    const value = field === "favorite" ? !project.favorite : !project.archived;
+    updateProject.mutate({ project, field, value }, {
       onSuccess: result => {
         refreshSidebarProjects();
-        if (result.refreshFailed) toast.info("Alteração salva; atualize a lista para ver os dados recentes.");
+        if (result.refreshFailed) toast.info("Alteração salva. Atualize a lista para ver os dados recentes.");
         else toast.success("Alteração salva.");
       },
       onError: () => toast.error("Não foi possível salvar. Atualize os dados antes de tentar novamente."),
     });
-  };
-  const changeProjects = (update: Partial<ProjectsFilters>) => {
+  }
+
+  function changeTasks(update: Partial<TasksFilters>) {
+    setFilters(current => ({ ...current, ...update }));
+    setTaskPage(0);
+  }
+
+  function changeProjects(update: Partial<ProjectsFilters>) {
     setProjectPage(0);
     if (update.searchQuery !== undefined) setSearch(update.searchQuery);
     if (update.includeArchived !== undefined) setParams(current => {
       const next = new URLSearchParams(current);
       next.set("tab", "projects");
-      if (update.includeArchived) next.set("archived", "1"); else next.delete("archived");
+      if (update.includeArchived) next.set("archived", "1");
+      else next.delete("archived");
       return next;
     }, { replace: true });
-  };
-  const pagination = (data: { totalPages: number; totalElements: number } | undefined, page: number) =>
-    ({ page, totalPages: data?.totalPages ?? 0, totalElements: data?.totalElements ?? 0 });
+  }
+
   return (
     <div className="min-w-0 w-full">
-      <div className="flex min-w-0 w-full flex-col gap-6">
-        <PageHeader title="Explorar" description="Busque e filtre todas as suas tarefas e projetos, inclusive os arquivados." />
-        <Tabs value={tab} onValueChange={value => setParams(current => {
-          const next = new URLSearchParams(current); next.set("tab", value); return next;
-        }, { replace: true })}>
-          <TabsList><TabsTrigger value="tasks">Tarefas</TabsTrigger><TabsTrigger value="projects">Projetos</TabsTrigger></TabsList>
-          <TabsContent value="tasks" className="mt-6">
-            {tasks.isError ? <div role="alert" className="mb-4 text-sm">Não foi possível atualizar as tarefas.
-              <Button variant="link" onClick={() => void tasks.refetch()}>Tentar novamente</Button></div> : null}
-            {(!tasks.isError || tasks.data) && <TasksDataTable tasks={tasks.data?.content ?? []} isLoading={tasks.isPending}
-              pagination={pagination(tasks.data, taskPage)} onPageChange={setTaskPage} filters={filters}
-              onFilterChange={update => { setFilters(current => ({ ...current, ...update })); setTaskPage(0); }} />}
-          </TabsContent>
-          <TabsContent value="projects" className="mt-6">
-            {projects.isError ? <div role="alert" className="mb-4 text-sm">Não foi possível atualizar os projetos.
-              <Button variant="link" onClick={() => void projects.refetch()}>Tentar novamente</Button></div> : null}
-            {(!projects.isError || projects.data) && <ProjectsDataTable projects={projects.data?.content ?? []} isLoading={projects.isPending}
-              pagination={pagination(projects.data, projectPage)} onPageChange={setProjectPage}
-              filters={{ includeArchived, searchQuery: search }} onFilterChange={changeProjects}
-              onArchive={id => projectAction(id, "archive", true)}
-              onUnarchive={id => projectAction(id, "archive", false)} onToggleFavorite={id => projectAction(id, "favorite")} />}
-          </TabsContent>
-        </Tabs>
-      </div>
+      <h1 className="sr-only">Explorar</h1>
+      <Tabs value={tab} onValueChange={value => setParams(current => {
+        const next = new URLSearchParams(current);
+        next.set("tab", value);
+        return next;
+      }, { replace: true })}>
+        <TabsList variant="line" className="flex" aria-label="Tipo de resultado">
+          <TabsTrigger value="tasks">Tarefas</TabsTrigger>
+          <TabsTrigger value="projects">Projetos</TabsTrigger>
+        </TabsList>
+        <TabsContent value="tasks" className="mt-3">
+          <TasksDataTable tasks={tasks.data?.content ?? []} isLoading={tasks.isPending}
+            pagination={pagination(tasks.data, taskPage)} onPageChange={setTaskPage} filters={filters} onFilterChange={changeTasks}
+            onClearFilters={() => { setFilters(EMPTY_TASK_FILTERS); setTaskPage(0); }}
+            sorting={{ order: taskOrder, onChange: order => { setTaskOrder(order); setTaskPage(0); } }}
+            feedback={tasks.isError ? { error: tasks.error, retry: () => void tasks.refetch() } : undefined} />
+        </TabsContent>
+        <TabsContent value="projects" className="mt-3">
+          <ProjectsDataTable projects={projects.data?.content ?? []} isLoading={projects.isPending}
+            pagination={pagination(projects.data, projectPage)} onPageChange={setProjectPage}
+            filters={{ includeArchived, searchQuery: search }} onFilterChange={changeProjects}
+            sorting={{ order: projectOrder, onChange: order => { setProjectOrder(order); setProjectPage(0); } }}
+            onToggleArchive={project => toggleProjectFlag(project, "archive")}
+            onToggleFavorite={project => toggleProjectFlag(project, "favorite")}
+            feedback={projects.isError ? { error: projects.error, retry: () => void projects.refetch() } : undefined} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

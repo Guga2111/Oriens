@@ -5,19 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from "@/components/ui/command";
 
-export function ProjectFilter({ value, onChange }: { value?: number; onChange: (id?: number) => void }) {
+export function ProjectFilter({ id, value, onChange }: { id: string; value?: number; onChange: (id?: number) => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedTitle, setSelectedTitle] = useState("");
   const projects = useWorkProjects({ size: 100, includeArchived: true, search: search || undefined });
   return <Popover open={open} onOpenChange={setOpen}>
     <PopoverTrigger asChild>
-      <Button variant="outline" role="combobox" aria-expanded={open} aria-label="Projeto" className="w-full justify-between sm:w-[200px]">
+      <Button id={id} variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
         <span className="truncate">{value ? selectedTitle || projects.data?.content.find(p => p.id === value)?.title || "Projeto selecionado" : "Todos os projetos"}</span>
         <ChevronDown className="ml-2 h-4 w-4 shrink-0" aria-hidden />
       </Button>
     </PopoverTrigger>
-    <PopoverContent className="w-[280px] p-0" align="start">
+    <PopoverContent className="w-64 p-0" align="start">
       <Command shouldFilter={false}>
         <CommandInput placeholder="Buscar projeto" value={search} onValueChange={setSearch} />
         <CommandList>
