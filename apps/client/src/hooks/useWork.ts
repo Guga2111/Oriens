@@ -1,4 +1,8 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query';
+import { skipToken, useInfiniteQuery, useMutation, useMutationState, useQuery, useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { applyBoardMove, type BoardMove } from '@/lib/board-move';
+import { isOpenStatus } from '@/lib/tasks';
+import { workError } from '@/lib/work-form';
 import { productNow } from '@/lib/product-time';
 import { getDashboardData } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -114,6 +118,84 @@ export function useTaskWrites() {
     return { result, ...await refreshTask(client, user, result) };
   } });
   return { patch, create, remove };
+}
+
+/** The versioned server board stays available while pending moves are composed in its preview. */
+export function useBoardTaskMoves(projectId: number, filters: BoardFilters) {
+  const { userId, token } = useAuth();
+  const client = useQueryClient();
+  const boardPrefix = workKey(userId, 'projects/board', projectId);
+  const boardKey = workKey(userId, 'projects/board', projectId, filters);
+  const previewPrefix = workKey(userId, 'projects/board-preview', projectId);
+  const previewKey = [...previewPrefix, filters];
+  const mutationKey = workKey(userId, 'projects/board-move', projectId);
+  const pending = { mutationKey, status: 'pending' as const };
+  const preview = useQuery<BoardResponse | null>({ queryKey: previewKey, queryFn: skipToken });
+  const moving = useMutationState({ filters: pending, select: mutation => (mutation.state.variables as BoardMove).taskId });
+
+  function publishPreview(except?: BoardMove) {
+    const commands = client.getMutationCache().findAll(pending)
+      .map(mutation => mutation.state.variables as BoardMove)
+      .filter(command => command !== except);
+    // Replay remaining moves after rollback so one failure cannot undo another card's move.
+    for (const query of client.getQueryCache().findAll({ queryKey: previewPrefix })) {
+      const board = client.getQueryData<BoardResponse>([...boardPrefix, query.queryKey[4]]);
+      if (!board) continue;
+      client.setQueryData<BoardResponse | null>(query.queryKey, commands.length
+        ? commands.reduce((current, command) => applyBoardMove(current, command), board)
+        : null);
+    }
+  }
+
+  const sessionIsCurrent = () => userId !== null && (token ?? null) === window.localStorage.getItem('authToken');
+  const move = useMutation({
+    mutationKey,
+    // Reordering can bump neighboring task versions as well as the project's version.
+    scope: { id: `board-move:${userId}:${projectId}` },
+    retry: false,
+    onMutate: () => publishPreview(),
+    mutationFn: async (command: BoardMove) => {
+      if (!sessionIsCurrent()) throw new Error('Sessão necessária.');
+      const cached = client.getQueryState<BoardResponse>(boardKey);
+      // A queued move can outlive the filter that was open when it was submitted.
+      const board = cached?.data && !cached.isInvalidated ? cached.data
+        : await client.fetchQuery({ queryKey: boardKey, queryFn: ({ signal }) => projectService.board(projectId, filters, signal) });
+      if (!sessionIsCurrent()) throw new Error('Sessão necessária.');
+      const task = board.tasks.find(row => row.id === command.taskId);
+      if (!task) throw new Error('Tarefa indisponível no quadro.');
+      return taskService.patchTask(task.id, {
+        version: task.version, projectVersion: board.projectVersion,
+        columnId: command.columnId, beforeTaskId: command.beforeTaskId,
+      });
+    },
+    onSuccess: async (result, command) => {
+      if (userId === null || !sessionIsCurrent()) return;
+      const hidden = Boolean(filters.open || filters.overdue) && !isOpenStatus(result.task.status);
+      client.setQueryData<BoardResponse>(boardKey, board => {
+        if (!board || (result.task.project?.version ?? 0) <= board.projectVersion) return board;
+        return applyBoardMove(board, command, { task: result.task, hidden });
+      });
+      const { refreshFailed } = await refreshTask(client, userId, result);
+      if (refreshFailed && sessionIsCurrent()) toast.warning('Movimento salvo. Recarregue o quadro para atualizar.');
+    },
+    onError: async (error, command) => {
+      if (!sessionIsCurrent()) return;
+      publishPreview(command);
+      toast.error(workError(error));
+      await client.invalidateQueries({ queryKey: boardPrefix });
+    },
+    onSettled: (_result, _error, command) => {
+      if (sessionIsCurrent()) publishPreview(command);
+    },
+  });
+
+  function moveTask(command: BoardMove) {
+    const alreadyMoving = client.getMutationCache().findAll(pending)
+      .some(mutation => (mutation.state.variables as BoardMove).taskId === command.taskId);
+    if (!alreadyMoving) return move.mutateAsync(command);
+  }
+
+  return { preview: preview.data, moving, moveTask };
 }
 
 export function useProjectFlags() {

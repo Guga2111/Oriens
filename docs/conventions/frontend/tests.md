@@ -24,4 +24,4 @@ Mínimo para todo componente:
 - Rode `npm run lint && npm test` antes de abrir PR.
 
 Use a [regressão visual](../../guides/visual-regression.md) para comparar
-a renderização da landing e do editor de tarefas em temas e viewports fixos.
+a renderização da landing, do editor de tarefas e do quadro em temas e viewports fixos.

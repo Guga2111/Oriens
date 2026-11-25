@@ -4,7 +4,7 @@ Use o [guia de testes](../conventions/frontend/tests.md) e os
 [tokens vigentes](../conventions/frontend/design-tokens.md) na revisão.
 A [skill oriens-playwright](../../.agents/skills/oriens-playwright/SKILL.md)
 orienta a inspeção interativa. O teste automatizado compara as baselines
-versionadas da landing e do editor de tarefas dentro do fluxo de Hoje.
+versionadas da landing, do editor de tarefas em Hoje e do quadro de projetos.
 
 ## Executar e gerar baselines
 
@@ -21,7 +21,8 @@ docker run --rm --platform linux/amd64 --ipc=host \
   bash -euc 'npm ci --no-audit --no-fund; npm run test:visual'
 ```
 
-O [spec visual](../../apps/client/e2e/visual/surfaces.spec.ts) roda em desktop
+A suíte visual inclui os [fluxos de entrada e edição](../../apps/client/e2e/visual/surfaces.spec.ts)
+e o [quadro de projetos](../../apps/client/e2e/visual/project-board.spec.ts). Ela roda em desktop
 1440×900 e mobile 390×844, com tema claro e escuro, DPR 1, locale pt-BR,
 relógio fixo e movimento reduzido. As rotas de API usam respostas sintéticas
 no browser. As demais origens são bloqueadas, com a fonte Inter servida por
@@ -42,8 +43,8 @@ API de teste conforme o [setup](setup.md#cliente).
 3. Para uma mudança visual esperada, acrescente
    `-- --update-snapshots=all` à chamada de `npm run test:visual` dentro do
    comando Docker. Use `--grep` ou `--project` depois de `--` para limitar
-   o escopo quando fizer sentido. Revise os PNGs alterados em
-   `apps/client/e2e/visual/surfaces.spec.ts-snapshots/` e inclua-os com a mudança.
+   o escopo quando fizer sentido. Revise os PNGs alterados nas
+   pastas `*-snapshots/` em `apps/client/e2e/visual/` e inclua-os com a mudança.
 4. Execute a comparação normal em dois processos independentes. Para aferir o
    detector, altere temporariamente uma classe visual visível em uma cópia
    descartável, execute contra a baseline e confirme que o diff foi produzido.

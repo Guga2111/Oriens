@@ -90,7 +90,7 @@ function ProjectDetail({ id }: { id: number }) {
       {view === 'board' && <section aria-label="Quadro do projeto">
         <WorkFeedback error={board.error} retry={() => void board.refetch()} />
         {board.isPending && <Skeleton className="h-64 w-full" />}
-        {board.data && <ProjectBoard board={board.data} pendingColumnId={project.defaultPendingColumnId!} onOpen={showTask} onEdit={editTask} onAdd={columnId => setEditor({ columnId })} onObjective={showObjective} />}
+        {board.data && <ProjectBoard board={board.data} filters={filters} pendingColumnId={project.defaultPendingColumnId!} onOpen={showTask} onEdit={editTask} onAdd={columnId => setEditor({ columnId })} onObjective={showObjective} />}
       </section>}
       {view === 'timeline' && <ProjectTimeline project={project} onOpen={showTask} onAdd={newTask} />}
       {view && !WORK_VIEWS.find(item => item.value === view)!.ready && <ComingSoonView view={view} onPick={next => setParam('tab', next)} />}
