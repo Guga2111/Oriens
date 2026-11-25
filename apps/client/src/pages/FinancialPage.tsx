@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   addMonths,
   endOfMonth,
@@ -19,16 +19,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFinancialLedger } from "@/hooks/useFinancialLedger";
 import {
   deleteEntry,
   getAllEntries,
   getAllTags,
 } from "@/services/financialService";
 import type { EntryDTO, TagDTO } from "@/types/financial";
-import { entriesInMonth, type FinancialPeriod } from "@/lib/financialSummary";
+import { monthRange, type FinancialPeriod } from "@/lib/financialSummary";
+import { productDate } from "@/lib/product-time";
 import { PeriodOverview } from "@/components/financial/PeriodOverview";
-import { TagExpensesChart } from "@/components/financial/TagExpensesChart";
-import { DistributionPieChart } from "@/components/financial/DistributionPieChart";
 import { EntryHistoryTable } from "@/components/financial/EntryHistoryTable";
 import { CreateEntryDialog } from "@/components/financial/CreateEntryDialog";
 import { EditEntryDialog } from "@/components/financial/EditEntryDialog";
@@ -52,7 +53,8 @@ const INITIAL_FILTERS: TableFilters = {
 };
 
 const HISTORY_PAGE_SIZE = 20;
-const ENTRIES_PAGE_SIZE = 500;
+
+type FinancialView = "overview" | "history";
 
 function buildTableParams(page: number, filters: TableFilters) {
   const params: {
@@ -117,14 +119,13 @@ export default function FinancialPage() {
   const { userId } = useAuth();
 
   const [period, setPeriod] = useState<FinancialPeriod>(() => {
-    const now = new Date();
-    return { month: now.getMonth(), year: now.getFullYear() };
+    const today = productDate();
+    return { month: today.getMonth(), year: today.getFullYear() };
   });
+  const [view, setView] = useState<FinancialView>("overview");
 
-  const [entries, setEntries] = useState<EntryDTO[]>([]);
+  const ledger = useFinancialLedger();
   const [tags, setTags] = useState<TagDTO[]>([]);
-  const [isLoadingFirstPage, setIsLoadingFirstPage] = useState(true);
-  const [isLoadingAllEntries, setIsLoadingAllEntries] = useState(true);
 
   const [tableEntries, setTableEntries] = useState<EntryDTO[]>([]);
   const [tablePagination, setTablePagination] = useState({
@@ -142,10 +143,7 @@ export default function FinancialPage() {
   const [isRecurringManagementOpen, setIsRecurringManagementOpen] =
     useState(false);
 
-  const entriesRequestId = useRef(0);
   const tableRequestId = useRef(0);
-  const hasLoadedEntries = useRef(false);
-
   const loadTags = useCallback(async () => {
     if (!userId) return;
     try {
@@ -156,62 +154,6 @@ export default function FinancialPage() {
         description:
           error.response?.data?.message || "Não foi possível carregar as tags.",
       });
-    }
-  }, [userId]);
-
-  /**
-   * Primeira página (mês atual) pinta o overview; as demais páginas chegam em
-   * seguida e completam apenas o saldo acumulado (SPEC §11.5, D11).
-   */
-  const loadEntries = useCallback(async () => {
-    if (!userId) return;
-
-    const requestId = ++entriesRequestId.current;
-    if (!hasLoadedEntries.current) setIsLoadingFirstPage(true);
-    setIsLoadingAllEntries(true);
-
-    const fetchPage = (page: number) =>
-      getAllEntries(userId, {
-        page,
-        size: ENTRIES_PAGE_SIZE,
-        sortBy: "entryDate",
-        direction: "DESC",
-      });
-
-    try {
-      const firstPage = await fetchPage(0);
-      if (requestId !== entriesRequestId.current) return;
-
-      setEntries(firstPage.content);
-      hasLoadedEntries.current = true;
-      setIsLoadingFirstPage(false);
-
-      if (firstPage.totalPages > 1) {
-        const remainingPages = await Promise.all(
-          Array.from({ length: firstPage.totalPages - 1 }, (_, index) =>
-            fetchPage(index + 1)
-          )
-        );
-        if (requestId !== entriesRequestId.current) return;
-
-        setEntries([
-          ...firstPage.content,
-          ...remainingPages.flatMap((page) => page.content),
-        ]);
-      }
-    } catch (error) {
-      if (requestId !== entriesRequestId.current) return;
-      console.error("Falha ao carregar entradas financeiras: ", error);
-      toast.error("Erro ao carregar dados financeiros", {
-        description:
-          error.response?.data?.message ||
-          "Não foi possível carregar os dados.",
-      });
-    } finally {
-      if (requestId === entriesRequestId.current) {
-        setIsLoadingFirstPage(false);
-        setIsLoadingAllEntries(false);
-      }
     }
   }, [userId]);
 
@@ -255,16 +197,15 @@ export default function FinancialPage() {
   useEffect(() => {
     if (!userId) return;
     void loadTags();
-    void loadEntries();
     void loadTableData(0, INITIAL_FILTERS);
-  }, [userId, loadTags, loadEntries, loadTableData]);
+  }, [userId, loadTags, loadTableData]);
 
   const handlePeriodChange = (direction: "prev" | "next" | "today") => {
     const currentDate = new Date(period.year, period.month, 1);
 
     let newDate: Date;
     if (direction === "today") {
-      newDate = new Date();
+      newDate = productDate();
     } else if (direction === "prev") {
       newDate = subMonths(currentDate, 1);
     } else {
@@ -283,19 +224,33 @@ export default function FinancialPage() {
     try {
       await deleteEntry(userId, entry.id!, entry.version!, key);
       toast.success("Entrada excluída", { description: "A entrada foi excluída com sucesso." });
-      void loadEntries();
       void loadTableData(tablePagination.page, tableFilters);
     } catch (error) {
       // Refresh evidence, but keep the failed deletion and its original version in the dialog.
-      void loadEntries();
+      void ledger.refetch();
       void loadTableData(tablePagination.page, tableFilters);
       throw error;
     }
   };
 
+  // Financial writes invalidate the ledger query in the service; only the table reloads here.
   const handleEntrySuccess = () => {
-    void loadEntries();
     void loadTableData(tablePagination.page, tableFilters);
+  };
+
+  /** Opens the history with the selected month and, when given, one category. */
+  const openHistory = (tagId?: number) => {
+    const { start, end } = monthRange(period);
+    const filters: TableFilters = {
+      ...INITIAL_FILTERS,
+      periodFilter: "custom",
+      customStartDate: productDate(start),
+      customEndDate: productDate(end),
+      tagFilter: tagId === undefined ? "all" : String(tagId),
+    };
+    setTableFilters(filters);
+    void loadTableData(0, filters);
+    setView("history");
   };
 
   const handleFilterChange = (updates: Partial<TableFilters>) => {
@@ -319,15 +274,7 @@ export default function FinancialPage() {
     void loadTableData(0, nextFilters);
   };
 
-  const monthEntries = useMemo(
-    () => entriesInMonth(entries, period),
-    [entries, period]
-  );
-
-  const periodDate = useMemo(
-    () => new Date(period.year, period.month, 1),
-    [period]
-  );
+  const periodDate = new Date(period.year, period.month, 1);
   const monthLabel = format(periodDate, "MMMM yyyy", { locale: ptBR });
   const capitalizedMonthLabel =
     monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
@@ -338,7 +285,47 @@ export default function FinancialPage() {
         <div className="flex min-w-0 w-full flex-col gap-6">
           <PageHeader
             title="Financeiro"
-            meta={
+            actions={
+              <div className="flex flex-wrap items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                      Gerenciar
+                      <ChevronDown className="ml-2 h-4 w-4" aria-hidden />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onSelect={() => setIsTagManagementOpen(true)}
+                    >
+                      Tags
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => setIsRecurringManagementOpen(true)}
+                    >
+                      Recorrências
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button onClick={() => setIsCreateEntryOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" aria-hidden />
+                  Nova entrada
+                </Button>
+              </div>
+            }
+          />
+
+          <Tabs
+            value={view}
+            onValueChange={(value) => setView(value as FinancialView)}
+            className="flex flex-col gap-6"
+          >
+            <TabsList variant="line" aria-label="Visões do Financeiro">
+              <TabsTrigger value="overview">Visão geral</TabsTrigger>
+              <TabsTrigger value="history">Lançamentos</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="mt-0 flex flex-col gap-4">
               <div className="flex flex-wrap items-center gap-1">
                 <Button
                   variant="ghost"
@@ -373,70 +360,34 @@ export default function FinancialPage() {
                   Este mês
                 </Button>
               </div>
-            }
-            actions={
-              <div className="flex flex-wrap items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                      Gerenciar
-                      <ChevronDown className="ml-2 h-4 w-4" aria-hidden />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onSelect={() => setIsTagManagementOpen(true)}
-                    >
-                      Tags
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onSelect={() => setIsRecurringManagementOpen(true)}
-                    >
-                      Recorrências
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button onClick={() => setIsCreateEntryOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" aria-hidden />
-                  Nova entrada
-                </Button>
-              </div>
-            }
-          />
 
-          <PeriodOverview
-            entries={entries}
-            period={period}
-            isLoadingMonth={isLoadingFirstPage}
-            isLoadingAccumulated={isLoadingFirstPage || isLoadingAllEntries}
-            onNewEntry={() => setIsCreateEntryOpen(true)}
-            onPreviousMonth={() => handlePeriodChange("prev")}
-          />
+              <PeriodOverview
+                entries={ledger.data}
+                tags={tags}
+                period={period}
+                isLoading={ledger.isPending && ledger.fetchStatus !== "idle"}
+                error={ledger.error}
+                onRetry={() => void ledger.refetch()}
+                onNewEntry={() => setIsCreateEntryOpen(true)}
+                onSelectCategory={(tagId) => openHistory(tagId)}
+                onViewMonth={() => openHistory()}
+              />
+            </TabsContent>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <TagExpensesChart
-              entries={monthEntries}
-              tags={tags}
-              isLoading={isLoadingFirstPage}
-            />
-            <DistributionPieChart
-              entries={monthEntries}
-              tags={tags}
-              isLoading={isLoadingFirstPage}
-            />
-          </div>
-
-          <EntryHistoryTable
-            entries={tableEntries}
-            tags={tags}
-            onEdit={handleEditEntry}
-            onDelete={handleDeleteEntry}
-            pagination={tablePagination}
-            onPageChange={(page) => void loadTableData(page, tableFilters)}
-            isLoading={isLoadingTable}
-            filters={tableFilters}
-            onFilterChange={handleFilterChange}
-          />
+            <TabsContent value="history" className="mt-0">
+              <EntryHistoryTable
+                entries={tableEntries}
+                tags={tags}
+                onEdit={handleEditEntry}
+                onDelete={handleDeleteEntry}
+                pagination={tablePagination}
+                onPageChange={(page) => void loadTableData(page, tableFilters)}
+                isLoading={isLoadingTable}
+                filters={tableFilters}
+                onFilterChange={handleFilterChange}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
