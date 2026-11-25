@@ -1,14 +1,16 @@
 package com.oriens.oriens_api.mcp;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
-import org.springframework.security.jackson2.SecurityJackson2Modules;
+import org.springframework.security.jackson.SecurityJacksonModules;
 import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.server.authorization.*;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module;
+import org.springframework.security.oauth2.server.authorization.jackson.OAuth2AuthorizationServerJacksonModule;
 import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
@@ -19,13 +21,20 @@ import java.util.*;
 /** Framework repository: recoverable values encrypted by Spring Security; only SHA-256 lookup keys in clear. */
 public class McpAuthorizations implements OAuth2AuthorizationService {
     private final JdbcTemplate db; private final McpStore grants; private final RegisteredClientRepository clients;
-    private final TextEncryptor encryptor; private final ObjectMapper json=new ObjectMapper().findAndRegisterModules();
-    private final ObjectMapper attributes=new ObjectMapper();
+    private final TextEncryptor encryptor; private final ObjectMapper json=JsonMapper.builder().findAndAddModules().build();
+    private final ObjectMapper attributes;
     private final Clock clock;
     public McpAuthorizations(JdbcTemplate db, McpStore grants, RegisteredClientRepository clients, TextEncryptor encryptor, Clock clock) {
         this.db=db;this.grants=grants;this.clients=clients;this.encryptor=encryptor;this.clock=clock;
-        attributes.registerModules(SecurityJackson2Modules.getModules(getClass().getClassLoader()));
-        attributes.registerModule(new OAuth2AuthorizationServerJackson2Module());
+        // Jackson 2 persisted these six JDK immutable collection classes in OAuth metadata.
+        // Keep the compatibility allowlist narrow; never enable arbitrary persisted type IDs.
+        attributes=JsonMapper.builder()
+            .addModules(SecurityJacksonModules.getModules(getClass().getClassLoader(),
+                BasicPolymorphicTypeValidator.builder()
+                    .allowIfSubType(Map.of().getClass()).allowIfSubType(Map.of("key", "value").getClass())
+                    .allowIfSubType(List.of().getClass()).allowIfSubType(List.of("value").getClass())
+                    .allowIfSubType(Set.of().getClass()).allowIfSubType(Set.of("value").getClass())))
+            .addModule(new OAuth2AuthorizationServerJacksonModule()).build();
     }
     public static String hash(String value) {
         try {return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));}

@@ -1,6 +1,6 @@
 package com.oriens.oriens_api.work;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import com.oriens.oriens_api.entity.*;
 import com.oriens.oriens_api.entity.dto.work.WorkCommands.*;
 import com.oriens.oriens_api.entity.enums.*;
@@ -88,7 +88,7 @@ class McpP2PostgresTest extends McpPostgresTest {
         assertThat(detail.path("objectives").path("items")).hasSize(5);assertThat(detail.path("objectives").path("totalElements").asLong()).isEqualTo(105);
         assertThat(detail.toString()).doesNotContain("taskCounts","taskSummary","totalTasks","Tarefa");
         var board=success(metadata,"get_board",fields("projectId",id(p.getId()),"columnsPageSize",2)).path("data");
-        assertThat(board.path("columns").path("items")).hasSize(2);assertThat(board.path("columns").path("totalElements").asLong()).isEqualTo(108);
+        assertThat(board.path("columns").path("items")).hasSize(2);assertThat(board.path("columns").path("totalElements").asLong()).isEqualTo(110);
         assertThat(board.toString()).doesNotContain("\"tasks\"","totalCount","visibleCount","TaskCounts");
         var rows=grant(Set.of("mcp:context","projects:read","tasks:read"),Set.of(p.getId()),false);
         board=success(rows,"get_board",fields("projectId",id(p.getId()),"columnsPage",1,"columnsPageSize",2,"tasksPage",1,"tasksPageSize",20,"planning","unscheduled")).path("data");
@@ -97,6 +97,35 @@ class McpP2PostgresTest extends McpPostgresTest {
         assertThat(board.path("tasks").path("items").get(0).path("columnId").asText()).isEqualTo(id(p.getDefaultPendingColumnId()));
         assertThat(db.queryForObject("select result_count from mcp_audit_events where connection_id=? and action='oriens_get_board' order by occurred_at desc limit 1",Integer.class,rows.delegated().connectionId())).isEqualTo(7);
         assertThat(current(p).getLastAccessed()).isNull();
+    }
+
+    @Test void objectiveDetailsAreWritableAndReadableThroughMcpWithoutTaskScopes() throws Exception {
+        var p = project("Objetivos detalhados");
+        var g = grant(Set.of("mcp:context", "projects:read", "objectives:create", "objectives:update"), Set.of(p.getId()), false);
+        var created = repeat(g, "create_objective", intent("projectId", id(p.getId()), "expectedProjectVersion", current(p).getVersion(),
+            "title", "Entrega", "description", "Resultado esperado", "startDate", "2026-11-01", "dueDate", "2026-11-28", "status", "BACKLOG"));
+        var goal = created.path("resource");
+        assertThat(goal.path("description").asText()).isEqualTo("Resultado esperado");
+        assertThat(goal.path("startDate").asText()).isEqualTo("2026-11-01");
+        assertThat(goal.has("taskCounts")).isFalse();
+        var updated = repeat(g, "update_objective", intent("projectId", id(p.getId()), "objectiveId", created.path("resourceId").asText(),
+            "expectedVersion", goal.path("version").asLong(), "description", null, "startDate", null, "status", "PAUSED"));
+        assertThat(updated.path("resource").path("description").isNull()).isTrue();
+        assertThat(updated.path("resource").path("startDate").isNull()).isTrue();
+        assertThat(updated.path("resource").path("status").asText()).isEqualTo("PAUSED");
+        assertThat(updated.path("resource").path("dueDate").asText()).isEqualTo("2026-11-28");
+        assertThat(updated.path("resource").path("favorite").asBoolean()).isFalse();
+        var pinned = repeat(g, "update_objective", intent("projectId", id(p.getId()), "objectiveId", created.path("resourceId").asText(),
+            "expectedVersion", updated.path("resource").path("version").asLong(), "favorite", true));
+        assertThat(pinned.path("resource").path("favorite").asBoolean()).isTrue();
+        assertThat(pinned.path("resource").path("status").asText()).isEqualTo("PAUSED");
+        // Description and start date alone are enough to update.
+        var described = repeat(g, "update_objective", intent("projectId", id(p.getId()), "objectiveId", created.path("resourceId").asText(),
+            "expectedVersion", pinned.path("resource").path("version").asLong(), "description", "Só a descrição"));
+        assertThat(described.path("resource").path("description").asText()).isEqualTo("Só a descrição");
+        var started = repeat(g, "update_objective", intent("projectId", id(p.getId()), "objectiveId", created.path("resourceId").asText(),
+            "expectedVersion", described.path("resource").path("version").asLong(), "startDate", "2026-11-03"));
+        assertThat(started.path("resource").path("startDate").asText()).isEqualTo("2026-11-03");
     }
 
     @Test void everyProjectAndObjectiveMutationReplaysOnceAndCreationDoesNotAuthorize()throws Exception {

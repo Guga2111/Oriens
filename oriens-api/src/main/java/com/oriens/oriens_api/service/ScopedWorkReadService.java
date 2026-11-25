@@ -106,7 +106,7 @@ public class ScopedWorkReadService {
         Specification<Task> all=taskScope(a).and(equal("projectId",id)), visible=all;
         if(objectiveId!=null) visible=visible.and(equal("objectiveId",objectiveId));
         if(planning!=null) visible=visible.and(equal("plannedDate",planning.equals("today")?today():null));
-        if(open||overdue) visible=visible.and((r,q,b)->r.get("status").in(Status.PENDING,Status.ON_DOING));
+        if(open||overdue) visible=visible.and((r,q,b)->r.get("status").in(Status.BACKLOG,Status.PENDING,Status.ON_DOING));
         if(overdue) visible=visible.and((r,q,b)->b.lessThan(r.get("dueDate"),today()));
         if(window!=null) visible=visible.and(window.specification());
         Specification<Task> filtered=visible;
@@ -147,8 +147,8 @@ public class ScopedWorkReadService {
             "defaultCompletedColumnId",id(p.getDefaultCompletedColumnId())));return out;
     }
     public Map<String,Object> objectiveView(Access a,Objective o) {
-        var out=fields("id",id(o.getId()),"projectId",id(o.getProject().getId()),"title",o.getTitle(),"dueDate",o.getDueDate(),
-            "status",o.getStatus(),"position",o.getPosition(),"version",o.getVersion());
+        var out=fields("id",id(o.getId()),"projectId",id(o.getProject().getId()),"title",o.getTitle(),"description",o.getDescription(),"startDate",o.getStartDate(),"dueDate",o.getDueDate(),
+            "status",o.getStatus(),"favorite",o.isFavorite(),"position",o.getPosition(),"version",o.getVersion());
         if(a.taskRead()) out.put("taskCounts",counts(taskScope(a).and(equal("projectId",o.getProject().getId())).and(equal("objectiveId",o.getId()))));
         return out;
     }

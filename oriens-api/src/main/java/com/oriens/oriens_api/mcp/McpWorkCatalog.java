@@ -15,7 +15,8 @@ public final class McpWorkCatalog {
         UUID_SCHEMA=Map.of("type","string","format","uuid","pattern","^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
     private static final Map<String,Object> TITLE=Map.of("type","string","minLength",1,"maxLength",200),
         DESCRIPTION=Map.of("type","string","maxLength",10000),COLOR=Map.of("type","string","maxLength",255),
-        STATUS=choices("PENDING","ON_DOING","CANCELLED","CONCLUDED"),PRIORITY=choices("LOW","MEDIUM","HIGH"),MODE=choices("SIMPLE","DEVELOPMENT"),
+        OBJECTIVE_STATUS=choices("BACKLOG","PENDING","ON_DOING","PAUSED","CONCLUDED","CANCELLED"),
+        STATUS=choices("BACKLOG","PENDING","ON_DOING","CANCELLED","CONCLUDED"),PRIORITY=choices("NONE","LOW","MEDIUM","HIGH","URGENT"),MODE=choices("SIMPLE","DEVELOPMENT"),
         LOCATION=object(fields("address",nullable(Map.of("type","string","maxLength",255)),
             "latitude",nullable(Map.of("type","number","minimum",-90,"maximum",90)),
             "longitude",nullable(Map.of("type","number","minimum",-180,"maximum",180))));
@@ -32,8 +33,8 @@ public final class McpWorkCatalog {
     }
     private static final Map<String,Object> COUNTS=complete(fields("totalTasks",COUNT,"nonCancelledTasks",COUNT,"completedTasks",COUNT,"cancelledTasks",COUNT));
     private static final Map<String,Object> PROJECT_FIELDS=fields("id",ID,"title",TEXT,"mode",MODE,"color",nullable(TEXT),"favorite",BOOL,"archived",BOOL,"version",VERSION);
-    private static final Map<String,Object> OBJECTIVE=object(fields("id",ID,"projectId",ID,"title",TEXT,"dueDate",nullable(DATE),
-        "status",choices("PENDING","CONCLUDED"),"position",COUNT,"version",VERSION,"taskCounts",COUNTS),"id","projectId","title","dueDate","status","position","version");
+    private static final Map<String,Object> OBJECTIVE=object(fields("id",ID,"projectId",ID,"title",TEXT,"description",nullable(DESCRIPTION),"startDate",nullable(DATE),"dueDate",nullable(DATE),
+        "status",OBJECTIVE_STATUS,"favorite",BOOL,"position",COUNT,"version",VERSION,"taskCounts",COUNTS),"id","projectId","title","dueDate","status","position","version");
     private static final Map<String,Object> COLUMN=object(fields("id",ID,"projectId",ID,"name",TEXT,"kind",STATUS,"position",COUNT,"version",VERSION,
         "totalCount",COUNT,"visibleCount",COUNT),"id","projectId","name","kind","position","version");
     private static final Map<String,Object> TASK_FIELDS=fields("id",ID,"title",TEXT,"projectId",nullable(ID),"objectiveId",nullable(ID),"columnId",nullable(ID),
@@ -92,9 +93,9 @@ public final class McpWorkCatalog {
         out.add(definition("delete_project","projects:delete",true,true,"Exclui projeto, objetivos e colunas. As tarefas sobrevivem como avulsas e ficam inacessíveis se avulsas não estão autorizadas.",
             object(fields("idempotencyKey",UUID_SCHEMA,"projectId",ID,"expectedVersion",VERSION),"idempotencyKey","projectId","expectedVersion"),mutation(complete(projectDetail))));
         out.add(definition("create_objective","objectives:create",true,false,"Cria objetivo no projeto autorizado; exige a versão do projeto.",
-            object(fields("idempotencyKey",UUID_SCHEMA,"projectId",ID,"expectedProjectVersion",VERSION,"title",TITLE,"dueDate",nullable(DATE)),"idempotencyKey","projectId","expectedProjectVersion","title"),mutation(OBJECTIVE)));
-        out.add(definition("update_objective","objectives:update",true,false,"Edita objetivo. PENDING reabre; CONCLUDED conclui independentemente das tarefas. Ausente preserva e null limpa prazo.",
-            object(fields("idempotencyKey",UUID_SCHEMA,"projectId",ID,"objectiveId",ID,"expectedVersion",VERSION,"title",TITLE,"dueDate",nullable(DATE),"status",choices("PENDING","CONCLUDED")),
+            object(fields("idempotencyKey",UUID_SCHEMA,"projectId",ID,"expectedProjectVersion",VERSION,"title",TITLE,"description",nullable(DESCRIPTION),"startDate",nullable(DATE),"dueDate",nullable(DATE),"status",OBJECTIVE_STATUS),"idempotencyKey","projectId","expectedProjectVersion","title"),mutation(OBJECTIVE)));
+        out.add(definition("update_objective","objectives:update",true,false,"Edita objetivo. CONCLUDED conclui independentemente das tarefas; CANCELLED cancela. Ausente preserva; null limpa descrição e datas. Término não pode anteceder início.",
+            object(fields("idempotencyKey",UUID_SCHEMA,"projectId",ID,"objectiveId",ID,"expectedVersion",VERSION,"title",TITLE,"description",nullable(DESCRIPTION),"startDate",nullable(DATE),"dueDate",nullable(DATE),"status",OBJECTIVE_STATUS,"favorite",BOOL),
                 "idempotencyKey","projectId","objectiveId","expectedVersion"),mutation(OBJECTIVE)));
         out.add(definition("delete_objective","objectives:delete",true,true,"Exclui objetivo preservando tarefas e removendo seus vínculos. Contagem de tarefas somente com leitura autorizada.",
             object(fields("idempotencyKey",UUID_SCHEMA,"projectId",ID,"objectiveId",ID,"expectedVersion",VERSION,"expectedProjectVersion",VERSION),

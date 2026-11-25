@@ -21,7 +21,7 @@ export function TimelineGroup({ group, grid, scale, period, today, open, onOpenC
   const done = objective ? objective.completedTasks ?? 0 : null;
   const total = objective ? objective.nonCancelledTasks ?? 0 : rows.length;
   const due = objective?.dueDate ? placeRange(period, objective.dueDate, objective.dueDate) : null;
-  const dueLate = objective?.status === 'PENDING' && !!objective.dueDate && objective.dueDate < today;
+  const dueLate = !!objective && objective.status !== 'CONCLUDED' && objective.status !== 'CANCELLED' && !!objective.dueDate && objective.dueDate < today;
   const name = [title, done === null ? `${total} ${total === 1 ? 'tarefa' : 'tarefas'} no período` : `${done} de ${total} tarefas concluídas`,
     objective?.dueDate && `prazo ${formatTimelineDate(objective.dueDate)}${dueLate ? ', atrasado' : ''}`].filter(Boolean).join(', ');
   const Chevron = open ? ChevronDown : ChevronRight;

@@ -1,0 +1,20 @@
+{
+  "payload" : {
+    "title" : "Migração",
+    "description" : null,
+    "projectId" : null,
+    "projectVersion" : null,
+    "objectiveId" : null,
+    "columnId" : null,
+    "plannedDate" : "2026-12-01",
+    "startTime" : "06:30:00",
+    "dueDate" : null,
+    "priority" : "MEDIUM",
+    "location" : null
+  },
+  "response" : {
+    "id" : 42,
+    "title" : "Migração"
+  },
+  "payloadSha256" : "522885d218879ff0b09bffaa1d808b9a3aabf6d72ad154822c447980f68180b2"
+}

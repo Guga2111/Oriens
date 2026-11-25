@@ -18,7 +18,9 @@ interface PageHeaderProps {
 
 /**
  * Cabeçalho padrão de toda rota autenticada: exatamente um `h1` por rota,
- * título em 24/32 (SPEC §9.2) e ações que nunca são cortadas.
+ * título em 20/28 no celular e 28/36 a partir de md (como no plane.so), e ações que nunca são cortadas.
+ * Como no plane.so, título e ações dividem a primeira linha (centralizados);
+ * descrição e meta ocupam a largura toda logo abaixo.
  */
 export function PageHeader({
   title,
@@ -29,15 +31,10 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-3 md:flex-row md:items-start md:justify-between",
-        className
-      )}
-    >
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-semibold leading-8 text-foreground">
+    <div className={cn("flex flex-col gap-2", className)}>
+      <div className="flex flex-wrap items-center justify-between gap-3 max-md:flex-col max-md:items-start">
+        <div className="flex min-w-0 items-center gap-2">
+          <h1 className="text-xl font-medium leading-7 text-foreground md:text-page-title">
             {title}
           </h1>
           {isLoading && (
@@ -47,17 +44,17 @@ export function PageHeader({
             />
           )}
         </div>
-        {description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        )}
-        {meta && <div className="mt-2 text-sm text-muted-foreground">{meta}</div>}
-      </div>
 
-      {actions && (
-        <div className="flex flex-wrap items-center gap-2 md:justify-end">
-          {actions}
-        </div>
+        {actions && (
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+            {actions}
+          </div>
+        )}
+      </div>
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
       )}
+      {meta && <div className="text-sm text-muted-foreground">{meta}</div>}
     </div>
   );
 }

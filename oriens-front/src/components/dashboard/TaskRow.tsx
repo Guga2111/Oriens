@@ -1,9 +1,7 @@
-import { TaskLabels } from '@/components/tasks/TaskLabels';
-import { TaskContext } from './TaskContext';
-import { TaskPlanningMenu } from './TaskPlanningMenu';
 import { useState } from "react";
-import { Clock, MapPin, MoreHorizontal, Pencil, Play, Trash2, Undo2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { MapPin, MoreHorizontal, Pencil, Play, Trash2, Undo2 } from "lucide-react";
+import { TaskPlanningMenu } from './TaskPlanningMenu';
+import { TaskProperties } from './TaskProperties';
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -21,25 +19,29 @@ import {
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { LocationMap } from "@/components/dashboard/LocationMap";
 import { useSound } from "@/hooks/useSound";
-import { PRIORITY } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { useTaskActions } from "@/hooks/useTaskActions";
 import { WorkFeedback } from "@/components/common/WorkFeedback";
 import type { Task, TaskStatus } from "@/types/task";
+import type { TaskPatch } from "@/types/work";
 import { toast } from "sonner";
 
 interface TaskRowProps {
   task: Task;
   onUpdate: () => void;
   onEdit: (task: Task) => void;
+  /** Opens the task panel; without it the title is plain text. */
+  onOpen?: (task: Task) => void;
 }
 
 /**
- * Linha de tarefa da visão dia (SPEC §11.1). O checkbox alterna
+ * Linha de tarefa da visão dia (SPEC §11.1), no formato de lista do plane.so:
+ * uma linha com título à esquerda e propriedades em chips à direita (no
+ * celular os chips descem para a segunda linha). O checkbox alterna
  * PENDING|ON_DOING → CONCLUDED e CONCLUDED → PENDING; o terceiro estado é
  * definido pelo menu "⋯" (D9).
  */
-export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
+export function TaskRow({ task, onUpdate, onEdit, onOpen }: TaskRowProps) {
   const actions = useTaskActions();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
@@ -50,7 +52,6 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
 
   const isConcluded = task.status === "CONCLUDED";
   const isOnDoing = task.status === "ON_DOING";
-  const priority = PRIORITY[task.priority];
 
   const updateStatus = async (newStatus: TaskStatus) => {
     setIsUpdating(true);
@@ -88,6 +89,13 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
     finally { setIsUpdating(false); }
   };
 
+  const save = async (body: Partial<TaskPatch>) => {
+    setIsUpdating(true);
+    try { await actions.update(task, body); onUpdate(); return true; }
+    catch { return false; /* The local feedback under the row explains the failure. */ }
+    finally { setIsUpdating(false); }
+  };
+
   const handleDelete = async () => {
     try {
       await actions.remove(task);
@@ -107,9 +115,9 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
     <li
       id={`task-row-${task.id}`}
       tabIndex={-1}
-      className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 border-b px-2 py-3 last:border-b-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+      className="relative flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1.5 md:flex-nowrap border-b px-2 py-1.5 last:border-b-0 hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
     >
-      <div className="-m-2 flex h-10 w-10 shrink-0 items-center justify-center">
+      <div className="relative z-10 -m-2 flex h-10 w-10 shrink-0 items-center justify-center">
         <Checkbox
           className="task-completion after:-inset-[14px]"
           checked={isConcluded ? true : isOnDoing ? "indeterminate" : false}
@@ -124,60 +132,40 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
         />
       </div>
 
-      <div className="min-w-0">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <p
-            className={cn(
-              "min-w-0 break-words font-medium",
-              isConcluded && "text-muted-foreground line-through"
-            )}
-            title={task.title}
-          >
-            {task.title}
-          </p>
-          {isOnDoing && <Badge variant="warning">Em andamento</Badge>}
-        </div>
+      {/* The title's ::after covers the whole row, so a click anywhere opens the panel while keyboard and
+          screen readers still meet one button; the controls above it sit on z-10. No press scale here: a
+          transform would make the button the ::after's containing block and shrink the target mid-click. */}
+      {onOpen ? (
+        <Button
+          type="button"
+          variant="ghost"
+          className="h-auto min-w-0 flex-1 basis-40 justify-start p-0 text-left text-sm font-normal text-foreground after:absolute after:inset-0 hover:bg-transparent active:transform-none md:min-w-60"
+          title={task.title}
+          aria-haspopup="dialog"
+          onClick={() => onOpen(task)}
+        >
+          <span className={cn("truncate", isConcluded && "text-muted-foreground line-through")}>{task.title}</span>
+        </Button>
+      ) : (
+        <p
+          className={cn(
+            "min-w-0 flex-1 basis-40 truncate text-sm text-foreground md:min-w-60",
+            isConcluded && "text-muted-foreground line-through"
+          )}
+          title={task.title}
+        >
+          {task.title}
+        </p>
+      )}
 
-        <TaskLabels labels={task.labels} />
-        <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1 tabular-nums"><Clock className="h-3 w-3" aria-hidden />{task.startTime?.slice(0, 5) ?? 'Sem horário'}</span>
-          <Badge variant={priority.badge}>{priority.label}</Badge>
-        </div>
-        <TaskContext task={task} />
-
-        {task.description && (
-          <p
-            className="truncate text-sm text-muted-foreground"
-            title={task.description}
-          >
-            {task.description}
-          </p>
-        )}
-
-        {task.location?.address && (
-          <div className="mt-1 flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3 shrink-0" aria-hidden />
-            <span className="truncate" title={task.location.address}>
-              {task.location.address}
-            </span>
-            <Button
-              type="button"
-              variant="link"
-              className="h-auto shrink-0 p-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-              onClick={() => setIsMapOpen(true)}
-            >
-              Ver no mapa
-            </Button>
-          </div>
-        )}
-      </div>
+      <TaskProperties task={task} onSave={save} onOpenMap={() => setIsMapOpen(true)} disabled={isUpdating} />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="h-11 w-11 md:h-8 md:w-8"
+            className="relative z-10 h-11 w-11 md:h-8 md:w-8"
             aria-label={`Ações da tarefa ${task.title}`}
             disabled={isUpdating}
           >
@@ -240,7 +228,9 @@ export function TaskRow({ task, onUpdate, onEdit }: TaskRowProps) {
         )}
       </Dialog>
 
-      <WorkFeedback error={actions.error} retry={() => void actions.refresh(task)} />
+      <div className="basis-full empty:hidden">
+        <WorkFeedback error={actions.error} retry={() => void actions.refresh(task)} />
+      </div>
       <ConfirmDialog error={actions.error}
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}

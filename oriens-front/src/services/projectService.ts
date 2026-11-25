@@ -1,6 +1,6 @@
 import api from './api';
 import type { Page } from '@/types/financial';
-import type { WorkProject, BoardResponse, ProjectTotals, SidebarProject, ProjectWrite, DeletionPreview } from '@/types/work';
+import type { WorkProject, BoardResponse, SidebarProject, ProjectWrite, DeletionPreview } from '@/types/work';
 
 /** startDate/endDate (YYYY-MM-DD, together) bound the queried period; they are not task fields. */
 export interface BoardFilters { objectiveId?: number; planning?: 'today' | 'unscheduled'; overdue?: boolean; open?: boolean; startDate?: string; endDate?: string }
@@ -11,6 +11,9 @@ export interface ProjectFilters {
   direction?: 'ASC' | 'DESC';
   includeArchived?: boolean;
   search?: string;
+  /** Only pinned projects. */
+  favorite?: boolean;
+  mode?: WorkProject['mode'];
 }
 
 export const projectService = {
@@ -41,8 +44,6 @@ export const projectService = {
   },
   sidebar: async (user: number, signal?: AbortSignal) =>
     (await api.get<SidebarProject[]>(`/project/user/${user}/sidebar`, { signal })).data,
-  totals: async (user: number, signal?: AbortSignal) =>
-    (await api.get<ProjectTotals>(`/project/user/${user}/summary`, { signal })).data,
   projects: async (user: number, params: ProjectFilters, signal?: AbortSignal) =>
     (await api.get<Page<WorkProject>>(`/project/user/${user}`, { params, signal })).data,
   project: async (id: number, signal?: AbortSignal) => (await api.get<WorkProject>(`/project/${id}`, { signal })).data,

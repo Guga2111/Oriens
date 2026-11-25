@@ -1,0 +1,12 @@
+title = "Oriens: regras padrão e credencial SMTP do Spring"
+
+[extend]
+useDefault = true
+
+# The default generic API-key detector does not cover Spring mail passwords.
+[[rules]]
+id = "spring-mail-password"
+description = "Senha SMTP literal em configuração Spring"
+regex = '''(?im)^\s*spring\.mail\.password\s*[:=]\s*["']?([^\s$#{}"'\r\n]+)'''
+secretGroup = 1
+keywords = ["spring.mail.password"]

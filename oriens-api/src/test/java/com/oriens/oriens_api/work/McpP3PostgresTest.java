@@ -1,6 +1,6 @@
 package com.oriens.oriens_api.work;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.oriens.oriens_api.service.*;
 import com.oriens.oriens_api.mcp.*;
 import org.junit.jupiter.api.*;

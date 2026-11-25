@@ -42,6 +42,19 @@ describe('estatísticas — interação e consistência de cache', () => {
     expect(onSelect).toHaveBeenCalledWith('2026-11-08', expect.any(HTMLButtonElement));
     expect(container.querySelectorAll('button[role="gridcell"][tabindex="0"]')).toHaveLength(1);
   });
+  it('omite o mês parcial inicial quando seu rótulo colidiria com o mês seguinte', () => {
+    const tasks = query({ coverageFrom: '2025-11-25', days: [] } as unknown as ActivityData);
+    const habits = query({ coverageFrom: '2025-11-25', days: [] } as unknown as HabitsData);
+    const renderCalendar = (startDate: string) => <TooltipProvider><ActivityCalendar
+      period={{ startDate, endDate: '2026-11-24' }} today="2026-11-24" tasks={tasks} habits={habits}
+      onSelect={vi.fn()} onWindowChange={vi.fn()} /></TooltipProvider>;
+    const { container, rerender } = render(renderCalendar('2025-11-25'));
+    const labels = () => Array.from(container.querySelectorAll('.activity-months > span')).map(span => span.textContent);
+    expect(labels().slice(0, 2)).toEqual(['', 'dez']);
+    expect(labels().filter(Boolean)).toHaveLength(12);
+    rerender(renderCalendar('2026-01-01'));
+    expect(labels()[0]).toBe('jan');
+  });
   it('mantém valores válidos quando o refresh falha e oferece uma nova tentativa', () => {
     const retry = vi.fn();
     render(<QueryContent query={query({ value: 12 }, { isError: true, refetch: retry })}>{data => <p>{data.value} conclusões</p>}</QueryContent>);

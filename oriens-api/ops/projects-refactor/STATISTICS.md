@@ -89,7 +89,7 @@ um banco existente ou executar rollback destrutivo automático.
 python3 oriens-api/ops/projects-refactor/test_statistics.py --browser
 ```
 
-Exige Docker com `postgres:15-alpine`, Maven/JDK 17+, Node/dependências frontend e
+Exige Docker com `postgres:15-alpine`, Maven/JDK 25, Node/dependências frontend e
 Brave instalado. O frontend deve estar compilado com `VITE_API_BASE_URL=/api`.
 O script cria PostgreSQL em tmpfs/loopback, instala revisões, prova recusa de
 duplicatas sem perda, rollback total, repetição e selo. Executa MVC/JWT/JPA/SQL

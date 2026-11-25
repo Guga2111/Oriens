@@ -1,102 +1,128 @@
 import { useState } from 'react';
-import { ChevronDown, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Check, Forward, ListFilter, Pin, Plus, Target } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { WorkDatePicker } from '@/components/common/WorkDatePicker';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DraftDialog } from '@/components/common/DraftDialog';
+import { HeaderActions } from '@/components/common/HeaderActions';
+import { ViewSwitcher } from '@/components/common/ViewSwitcher';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { CreateObjectiveDialog, EditObjectiveDialog } from './ObjectiveEditor';
+import { ObjectiveDetails } from './ObjectiveDetails';
+import { ObjectiveMenu, type ObjectiveActionHandlers } from './ObjectiveActions';
+import { ObjectiveGallery } from './ObjectiveGallery';
+import { ObjectiveTimeline } from './ObjectiveTimeline';
+import { ObjectivePeriodPicker, ObjectiveStatusIcon, ObjectiveStatusPicker } from './ObjectiveProperties';
 import { useProjectWrites, useWorkProject } from '@/hooks/useWork';
-import { useCreationAttempt } from '@/hooks/useCreationAttempt';
-import { validCalendarDate } from '@/lib/work-form';
-import { formatDue } from '@/lib/date';
+import { cn } from '@/lib/utils';
+import { OBJECTIVE_STATUSES, objectiveStatusLabel, pinnedFirst, type ObjectiveStatus } from '@/lib/objectives';
+import { OBJECTIVE_LAYOUTS, objectiveWorkItemsHref, type ObjectiveLayout } from '@/lib/project-tabs';
 import type { WorkObjective, WorkProject, WorkTask } from '@/types/work';
 
-export function ProjectObjectives({ project, tasks, onAddTask, onEditTask, selectedObjective }: {
-  project: WorkProject; tasks?: WorkTask[]; onAddTask: (id: number) => void; onEditTask: (t: WorkTask) => void; selectedObjective?: number;
+function ObjectiveProgress({ objective }: { objective: WorkObjective }) {
+  const total = objective.nonCancelledTasks;
+  if (total == null) return <ObjectiveStatusIcon status={objective.status} />;
+  const completed = objective.completedTasks ?? 0;
+  const progress = total > 0 ? Math.round(completed / total * 100) : 0;
+  const done = total > 0 && completed >= total;
+  const label = total > 0 ? `${completed} de ${total} tarefas concluídas (${progress}%)` : 'Nenhuma tarefa ativa vinculada';
+  return <Tooltip><TooltipTrigger asChild><span className="relative flex size-10 shrink-0 items-center justify-center">
+    <svg viewBox="0 0 40 40" className="!size-10 -rotate-90" role="progressbar" aria-label={`Progresso de ${objective.title}`} aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-valuetext={label}>
+      <circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" strokeWidth="2" className="text-border" />
+      {progress > 0 && <circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" strokeWidth="2" pathLength="100" strokeDasharray={`${progress} 100`} strokeLinecap="round" className="text-state-completed" />}
+    </svg>{done
+      ? <Check aria-hidden className="absolute size-4 text-state-completed" />
+      : <span aria-hidden className="absolute text-2xs tabular-nums text-muted-foreground">{progress}%</span>}
+  </span></TooltipTrigger><TooltipContent>{label}</TooltipContent></Tooltip>;
+}
+
+type ObjectivePatch = { status?: ObjectiveStatus; startDate?: string | null; dueDate?: string | null; favorite?: boolean };
+
+/**
+ * The Objectives page: a list, a gallery or a timeline (`layout`, chosen in the header when `onLayoutChange` is
+ * given; projects without a board only have the list). Pinned objectives come first in every layout.
+ */
+export function ProjectObjectives({ project, tasks, tasksLoading, tasksError, onReloadTasks, onAddTask, onEditTask, selectedObjective, onSelectObjective, layout = 'list', onLayoutChange }: {
+  project: WorkProject; tasks?: WorkTask[]; tasksLoading?: boolean; tasksError?: unknown; onReloadTasks?: () => void;
+  onAddTask: (id: number) => void; onEditTask: (task: WorkTask) => void;
+  selectedObjective?: number; onSelectObjective?: (id?: number) => void;
+  layout?: ObjectiveLayout; onLayoutChange?: (layout: ObjectiveLayout) => void;
 }) {
   const objectives = project.objectives ?? [];
-  const [title, setTitle] = useState(''); const [date, setDate] = useState(''); const [error, setError] = useState('');
-  const write = useProjectWrites(); const attempt = useCreationAttempt();
-  const pending = objectives.filter(o => o.status === 'PENDING'); const completed = objectives.filter(o => o.status === 'CONCLUDED');
-  async function add(event: React.FormEvent) {
-    event.preventDefault();
-    if (!title.trim() || (date && !validCalendarDate(date))) { setError('Informe o nome e um prazo válido, se houver.'); return; }
-    const body = { projectVersion: project.version, title: title.trim(), dueDate: date || null };
-    setError('');
-    try { const result = await write.mutateAsync({ action: 'objective-create', id: project.id, ...attempt.prepare(body) });
-      setTitle(''); setDate(''); attempt.reset(); toast.success(result.refreshFailed ? 'Objetivo criado. Recarregue os dados.' : 'Objetivo criado.');
-    } catch (err) { attempt.failed(err); }
-  }
-  return <section aria-labelledby="objectives-title" className="min-w-0 rounded-lg border bg-card p-4 max-sm:[&_button:not([role=checkbox])]:min-h-11 max-sm:[&_input]:min-h-11 md:p-5">
-    <h2 id="objectives-title" className="mb-4 text-base font-semibold">Objetivos</h2>
-    <form onSubmit={add} className="mb-5"><fieldset disabled={write.isPending || attempt.uncertain}><FieldGroup className="grid gap-4 lg:grid-cols-2">
-      <Field><FieldLabel htmlFor="new-objective">Novo objetivo</FieldLabel><Input id="new-objective" value={title} onChange={e => setTitle(e.target.value)} maxLength={200} /></Field>
-      <div className="flex flex-wrap items-end gap-3"><Field className="min-w-0 flex-1"><FieldLabel htmlFor="new-objective-date">Prazo do objetivo (opcional)</FieldLabel><WorkDatePicker id="new-objective-date" label="Prazo do objetivo" value={date} onChange={setDate} /></Field></div>
-    </FieldGroup></fieldset><Button className="mt-3" type="submit" disabled={write.isPending}><Plus aria-hidden />Adicionar objetivo</Button></form>
-    <WorkFeedback message={error || (attempt.uncertain ? 'Confirmação indisponível. Reenvie o mesmo objetivo para evitar duplicação.' : '')} error={write.error} />
-    <Tabs defaultValue={objectives.find(o => o.id === selectedObjective)?.status === 'CONCLUDED' ? 'completed' : 'pending'}>
-      <TabsList variant="line" className="my-4" aria-label="Estado dos objetivos"><TabsTrigger value="pending">A fazer ({pending.length})</TabsTrigger><TabsTrigger value="completed">Concluídos ({completed.length})</TabsTrigger></TabsList>
-      {[{ value: 'pending', rows: pending }, { value: 'completed', rows: completed }].map(group => <TabsContent value={group.value} key={group.value}>
-        {group.rows.length === 0 ? <p className="py-4 text-sm text-muted-foreground">{objectives.length ? 'Nenhum objetivo neste estado.' : 'Nenhum objetivo definido. Adicione o primeiro acima.'}</p> : <ul className="flex flex-col gap-3">{group.rows.map(o => <ObjectiveRow key={o.id} objective={o} project={project} tasks={tasks?.filter(t => t.objectiveId === o.id)} onAddTask={onAddTask} onEditTask={onEditTask} expanded={selectedObjective === o.id} />)}</ul>}
-      </TabsContent>)}
-    </Tabs>
-  </section>;
-}
-function ObjectiveRow({ objective: o, project, tasks, onAddTask, onEditTask, expanded }: {
-  objective: WorkObjective; project: WorkProject; tasks?: WorkTask[]; onAddTask: (id: number) => void; onEditTask: (t: WorkTask) => void; expanded: boolean;
-}) {
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<WorkObjective | null>(null);
+  const [localSelection, setLocalSelection] = useState<number | null>();
+  const [filter, setFilter] = useState<ObjectiveStatus | 'all'>('all');
+  const [deleting, setDeleting] = useState<WorkObjective | null>(null);
   const write = useProjectWrites();
   const current = useWorkProject(project.id);
-  const [edit, setEdit] = useState(false); const [deleting, setDeleting] = useState(false);
-  const [draft, setDraft] = useState({ title: o.title, date: o.dueDate ?? '', version: o.version }); const [validation, setValidation] = useState('');
-  const [showTasks, setShowTasks] = useState(expanded);
-  const development = project.mode === 'DEVELOPMENT';
-  async function execute(command: Parameters<typeof write.mutateAsync>[0]) {
-    const result = await write.mutateAsync(command);
-    toast.success(result.refreshFailed ? 'Salvo. Recarregue os dados.' : 'Objetivo atualizado.');
+  const selection = onSelectObjective ? selectedObjective : localSelection === undefined ? selectedObjective : localSelection;
+  const selected = objectives.find(objective => objective.id === selection);
+  const select = (id?: number) => { if (onSelectObjective) onSelectObjective(id); else setLocalSelection(id ?? null); };
+  const rows = pinnedFirst(filter === 'all' ? objectives : objectives.filter(objective => objective.status === filter));
+  async function patch(objective: WorkObjective, fields: ObjectivePatch) {
+    try {
+      const result = await write.mutateAsync({ action: 'objective-patch', id: project.id, objectiveId: objective.id, body: { version: objective.version, ...fields } });
+      const done = fields.favorite === undefined ? 'Objetivo atualizado.' : fields.favorite ? 'Objetivo fixado.' : 'Objetivo desafixado.';
+      toast.success(result.refreshFailed ? 'Salvo. Recarregue os dados.' : done); return true;
+    } catch { return false; }
   }
-  return <li id={`objective-${o.id}`} className="min-w-0 rounded-md bg-muted/30 p-3">
-    <div className="flex items-start gap-3"><div className="flex size-10 shrink-0 items-center justify-center"><Checkbox className="task-completion" disabled={write.isPending} checked={o.status === 'CONCLUDED'} aria-label={`${o.status === 'CONCLUDED' ? 'Reabrir' : 'Concluir manualmente'} objetivo ${o.title}`}
-      onCheckedChange={() => void execute({ action: 'objective-patch', id: project.id, objectiveId: o.id, body: { version: o.version, status: o.status === 'CONCLUDED' ? 'PENDING' : 'CONCLUDED' } }).catch(() => {})} /></div>
-      <div className="min-w-0 flex-1"><p className="break-words text-sm font-medium">{o.title}</p><p className="mt-1 text-sm text-muted-foreground">{o.dueDate ? `Prazo: ${formatDue(o.dueDate)}` : 'Sem prazo'}</p>
-        {development && <p className="mt-1 text-sm">{o.nonCancelledTasks ? `${o.completedTasks}/${o.nonCancelledTasks} tarefas concluídas` : 'Nenhuma tarefa vinculada'}{o.cancelledTasks ? ` · ${o.cancelledTasks} canceladas` : ''}</p>}
-        {o.status === 'PENDING' && (o.nonCancelledTasks ?? 0) > 0 && o.completedTasks === o.nonCancelledTasks && <p className="mt-2 text-sm">As tarefas terminaram. O resultado foi alcançado? Você pode concluir o objetivo manualmente.</p>}
-      </div>
-      <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" disabled={write.isPending} aria-label={`Ações do objetivo ${o.title}`}><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger>
-        <DropdownMenuContent align="end"><DropdownMenuGroup>
-          <DropdownMenuItem onSelect={() => { setDraft({ title: o.title, date: o.dueDate ?? '', version: o.version }); setValidation(''); write.reset(); setEdit(true); }}><Pencil aria-hidden />Editar objetivo</DropdownMenuItem>
-          <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setDeleting(true)}><Trash2 aria-hidden />Excluir objetivo</DropdownMenuItem>
-        </DropdownMenuGroup></DropdownMenuContent>
-      </DropdownMenu></div>
-    {development && <Collapsible open={showTasks} onOpenChange={setShowTasks}>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" onClick={() => onAddTask(o.id)}><Plus aria-hidden />Adicionar tarefa</Button>
-        <CollapsibleTrigger asChild><Button variant="ghost" size="sm"><ChevronDown aria-hidden />{showTasks ? 'Ocultar tarefas vinculadas' : 'Ver tarefas vinculadas'}</Button></CollapsibleTrigger>
-      </div>
-      <CollapsibleContent><div className="mt-3 flex flex-col gap-2">{tasks ? tasks.length ? tasks.map(t => <Button key={t.id} variant="ghost" className="h-auto min-h-11 justify-start whitespace-normal text-left" onClick={() => onEditTask(t)}>{t.title}</Button>) : <p className="text-sm text-muted-foreground">Nenhuma tarefa vinculada.</p> : <p className="text-sm">Tarefas indisponíveis; tente recarregar o quadro.</p>}</div></CollapsibleContent>
-    </Collapsible>}
-    {!edit && <WorkFeedback error={write.error} />}
-    <DraftDialog open={edit} onOpenChange={setEdit} dirty={draft.title !== o.title || draft.date !== (o.dueDate ?? '')} busy={write.isPending} title="Editar objetivo" description="Editar nome ou prazo preserva a conclusão manual."
-      footer={<Button type="submit" form={`objective-form-${o.id}`} disabled={write.isPending}>Salvar objetivo</Button>}>
-      <form id={`objective-form-${o.id}`} onSubmit={async e => { e.preventDefault(); if (!draft.title.trim() || (draft.date && !validCalendarDate(draft.date))) { setValidation('Informe nome e prazo válidos.'); return; }
-        try { await execute({ action: 'objective-patch', id: project.id, objectiveId: o.id, body: { version: draft.version, title: draft.title.trim(), dueDate: draft.date || null } }); setEdit(false); } catch { /* Keep draft. */ }
-      }}><FieldGroup><Field><FieldLabel htmlFor={`objective-title-${o.id}`}>Título do objetivo</FieldLabel><Input id={`objective-title-${o.id}`} maxLength={200} value={draft.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} /></Field>
-        <Field><FieldLabel htmlFor={`objective-date-${o.id}`}>Prazo do objetivo</FieldLabel><WorkDatePicker id={`objective-date-${o.id}`} label="Prazo do objetivo" value={draft.date} onChange={value => setDraft(d => ({ ...d, date: value }))} /></Field>
-        <WorkFeedback message={validation} error={write.error} retry={() => { void current.refetch().then(result => {
-          const fresh = result.data?.objectives?.find(row => row.id === o.id);
-          if (fresh) { setDraft(d => ({ ...d, version: fresh.version })); setValidation(`Dados recarregados. Nome atual: ${fresh.title}. Revise o rascunho preservado antes de salvar.`); write.reset(); }
-        }); }} />
-      </FieldGroup></form>
-    </DraftDialog>
-    <ConfirmDialog error={write.error} open={deleting} onOpenChange={setDeleting} title="Excluir objetivo?" objectName={o.title} confirmLabel="Excluir objetivo"
-      description={`Excluir ${o.title}? As tarefas serão preservadas no mesmo projeto e coluna, sem vínculo com este objetivo.`}
-      onConfirm={async () => { try { await execute({ action: 'objective-delete', id: project.id, objective: o, projectVersion: project.version }); setDeleting(false); return true; } catch { return false; } }} />
-  </li>;
+  const actions: ObjectiveActionHandlers = {
+    onPin: objective => { void patch(objective, { favorite: !objective.favorite }); },
+    onEdit: setEditing,
+    onDelete: objective => { write.reset(); setDeleting(objective); },
+  };
+  return <section aria-labelledby="objectives-title" className={cn("min-w-0", project.mode === 'DEVELOPMENT' && "-mx-page -mt-4 md:-mx-12 md:-mt-9", layout === 'timeline' && "-mb-4 md:-mb-6")}>
+    <h2 id="objectives-title" className="sr-only">Objetivos</h2>
+    <HeaderActions>
+      {onLayoutChange && <ViewSwitcher label="Visão dos objetivos" views={OBJECTIVE_LAYOUTS} value={layout} onChange={onLayoutChange} />}
+      <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground" aria-label={filter === 'all' ? 'Filtrar objetivos por status' : `Filtrar objetivos: ${objectiveStatusLabel(filter)}`}>
+        <ListFilter aria-hidden />
+        {filter !== 'all' && <span aria-hidden className="absolute right-1 top-1 size-1.5 rounded-full bg-primary" />}
+      </Button></DropdownMenuTrigger><DropdownMenuContent align="end">
+        <DropdownMenuRadioGroup value={filter} onValueChange={value => setFilter(value as typeof filter)}>
+          <DropdownMenuRadioItem value="all">Todos os status</DropdownMenuRadioItem>
+          {OBJECTIVE_STATUSES.map(status => <DropdownMenuRadioItem value={status.value} key={status.value}><ObjectiveStatusIcon status={status.value} />{status.label}</DropdownMenuRadioItem>)}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent></DropdownMenu>
+      <Button size="sm" onClick={() => setCreating(true)}><Plus aria-hidden />Novo objetivo</Button>
+    </HeaderActions>
+    <div className="px-page empty:hidden"><WorkFeedback error={tasksError} retry={onReloadTasks} /><WorkFeedback error={write.error} retry={() => { void current.refetch().then(() => write.reset()); }} /></div>
+    {!rows.length ? null : layout === 'gallery' ? <ObjectiveGallery objectives={rows} projectId={project.id} tasks={tasks} busy={write.isPending} onOpen={select} onPatch={patch} actions={actions} />
+      : layout === 'timeline' ? <ObjectiveTimeline objectives={rows} onOpen={select} />
+      : <ul aria-label="Lista de objetivos" className="divide-y divide-border border-b bg-card">
+      {rows.map(objective => <li id={`objective-${objective.id}`} key={objective.id} className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 px-page py-2.5 hover:bg-accent/50 md:px-6 max-sm:[&_button]:min-h-11">
+        <Button variant="ghost" className="h-auto min-w-0 flex-1 justify-start whitespace-normal p-0 text-left hover:bg-transparent" onClick={() => select(objective.id)} aria-label={`Abrir objetivo ${objective.title}${objective.favorite ? ', fixado' : ''}`}>
+          <ObjectiveProgress objective={objective} /><span className="min-w-0 break-words">{objective.title}</span>
+          {objective.favorite && <Pin aria-hidden className="fill-current text-primary" />}
+        </Button>
+        <div className="flex max-w-full flex-wrap items-center gap-2 max-sm:order-3 max-sm:w-full max-sm:pl-12">
+          <ObjectivePeriodPicker objective={objective} disabled={write.isPending} onSave={(startDate, dueDate) => patch(objective, { startDate, dueDate })} />
+          <ObjectiveStatusPicker value={objective.status} label={`Status de ${objective.title}`} disabled={write.isPending} onChange={status => { if (status !== objective.status) void patch(objective, { status }); }} />
+        </div>
+        {project.mode === 'DEVELOPMENT' && <Tooltip><TooltipTrigger asChild><Button asChild variant="ghost" size="icon">
+          <Link to={objectiveWorkItemsHref(project.id, objective.id)} aria-label={`Ver itens de trabalho do objetivo ${objective.title}`}><Forward aria-hidden /></Link>
+        </Button></TooltipTrigger><TooltipContent>Ver itens de trabalho</TooltipContent></Tooltip>}
+        <ObjectiveMenu objective={objective} disabled={write.isPending} {...actions} />
+      </li>)}
+    </ul>}
+    {!rows.length && <Empty><EmptyHeader><EmptyMedia variant="icon"><Target aria-hidden /></EmptyMedia>
+      <EmptyTitle>{objectives.length ? 'Nenhum objetivo neste status' : 'Defina seu primeiro objetivo'}</EmptyTitle>
+      <EmptyDescription>{objectives.length ? 'Escolha outro status para ver os demais objetivos.' : 'Organize os resultados do projeto e acompanhe as tarefas de cada objetivo.'}</EmptyDescription>
+    </EmptyHeader><EmptyContent><Button variant="outline" onClick={() => objectives.length ? setFilter('all') : setCreating(true)}>{objectives.length ? 'Limpar filtro' : 'Novo objetivo'}</Button></EmptyContent></Empty>}
+    {creating && <CreateObjectiveDialog project={project} onClose={() => setCreating(false)} />}
+    {editing && <EditObjectiveDialog key={editing.id} objective={editing} project={project} onClose={() => setEditing(null)} />}
+    {selected && !editing && !deleting && <ObjectiveDetails key={selected.id} objective={selected} project={project} tasks={tasks} tasksLoading={tasksLoading} tasksError={tasksError} onReloadTasks={onReloadTasks} onClose={() => select(undefined)} busy={write.isPending} error={write.error} onReload={() => { void current.refetch().then(() => write.reset()); }} onPatch={fields => patch(selected, fields)} onEdit={() => setEditing(selected)} onDelete={() => { write.reset(); setDeleting(selected); }} onAddTask={onAddTask} onEditTask={onEditTask} />}
+    <ConfirmDialog open={!!deleting} onOpenChange={open => { if (!open) setDeleting(null); }} error={write.error} title="Excluir objetivo?" objectName={deleting?.title ?? ''} confirmLabel="Excluir objetivo"
+      description="As tarefas serão preservadas no mesmo projeto e coluna, sem vínculo com este objetivo."
+      onConfirm={async () => {
+        if (!deleting) return false;
+        try { const result = await write.mutateAsync({ action: 'objective-delete', id: project.id, objective: deleting, projectVersion: project.version });
+          toast.success(result.refreshFailed ? 'Objetivo excluído. Recarregue os dados.' : 'Objetivo excluído.'); setDeleting(null); return true;
+        } catch { return false; }
+      }} />
+  </section>;
 }

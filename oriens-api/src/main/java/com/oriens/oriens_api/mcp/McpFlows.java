@@ -1,11 +1,11 @@
 package com.oriens.oriens_api.mcp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.authentication.*;
-import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeRequestAuthenticationConverter;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.sql.Timestamp;
@@ -19,7 +19,7 @@ public class McpFlows {
     private final JdbcTemplate db;private final McpProperties props;private final McpAuthorizations auth;
     private final McpStore grants;private final McpRateLimiter limits;private final Clock clock;
     private final OAuth2AuthorizationCodeRequestAuthenticationProvider provider;
-    private final ObjectMapper json=new ObjectMapper();
+    private final ObjectMapper json=JsonMapper.builder().build();
     public McpFlows(JdbcTemplate db,McpProperties props,McpAuthorizations auth,McpStore grants,McpRateLimiter limits,Clock clock,
             OAuth2AuthorizationCodeRequestAuthenticationProvider provider) {
         this.db=db;this.props=props;this.auth=auth;this.grants=grants;this.limits=limits;this.clock=clock;this.provider=provider;
@@ -33,10 +33,11 @@ public class McpFlows {
     }
     @Transactional(timeout=10)
     public UUID begin(HttpServletRequest request,HttpServletResponse response) {
-        var input=(OAuth2AuthorizationCodeRequestAuthenticationToken)new OAuth2AuthorizationCodeRequestAuthenticationConverter().convert(request);
-        if(input==null)throw McpStore.invalid("Solicitação OAuth inválida.");
-        // The same provider validates both the unauthenticated request and its authenticated continuation.
-        provider.authenticate(input);
+        // Security 7 validates client, redirect, scopes, resource and PKCE before its login entry point.
+        // Only the authenticated continuation below may ask the provider to issue a code.
+        if(!(request.getAttribute(OAuth2AuthorizationCodeRequestAuthenticationToken.class.getName())
+                instanceof OAuth2AuthorizationCodeRequestAuthenticationToken input) || !input.isValidated())
+            throw McpStore.invalid("Solicitação OAuth inválida.");
         if(!limits.acquire(Map.of("authorize:"+McpAuthorizations.hash(request.getRemoteAddr()+":"+input.getClientId()),10)))
             throw new com.oriens.oriens_api.exception.WorkDomainException("RATE_LIMITED",null,"Aguarde antes de tentar novamente.");
         UUID id=UUID.randomUUID();

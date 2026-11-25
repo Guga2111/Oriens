@@ -2,13 +2,19 @@ import type { TaskPriority, TaskStatus } from "@/types/task";
 
 /** Vocabulário único de prioridade (SPEC §10.4). */
 export const PRIORITY = {
+  URGENT: { label: "Urgente", badge: "destructive" },
   HIGH: { label: "Alta", badge: "negative" },
   MEDIUM: { label: "Média", badge: "warning" },
   LOW: { label: "Baixa", badge: "outline" },
+  NONE: { label: "Sem prioridade", badge: "outline" },
 } as const satisfies Record<TaskPriority, { label: string; badge: string }>;
+
+/** Display and sort order of priorities, most urgent first. */
+export const PRIORITY_ORDER: readonly TaskPriority[] = ["URGENT", "HIGH", "MEDIUM", "LOW", "NONE"];
 
 /** Vocabulário único de status de tarefa (SPEC §10.4, D9). */
 export const TASK_STATUS = {
+  BACKLOG: { label: "Backlog", badge: "outline" },
   PENDING: { label: "A fazer", badge: "outline" },
   ON_DOING: { label: "Em andamento", badge: "warning" },
   CANCELLED: { label: "Cancelada", badge: "secondary" },

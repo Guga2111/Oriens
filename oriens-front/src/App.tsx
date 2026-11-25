@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SignLoginPage from "./pages/SignLoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import { WorkHomePage } from "./pages/WorkHomePage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LandingPage } from "./pages/LandingPage";
 import { ProtectedRoute } from "./router/ProtectedRoute";
@@ -14,7 +15,6 @@ import HelpSupportPage from "./pages/HelpSupportPage";
 import AdminSupportPage from "./pages/AdminSupportPage";
 import AdminManagementPage from "./pages/AdminManagementPage";
 import { StatisticsPage } from "./pages/StatisticsPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
 import TermsOfServicePage from "./pages/TermsOfServicePage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import { useEffect } from "react";
@@ -39,13 +39,13 @@ const App = () => {
               {/* Public routes */}
               <Route path="/auth" element={<SignLoginPage />} />
               <Route path="/" element={<LandingPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/terms" element={<TermsOfServicePage />} />
 
               {/* Protected Route / Tasks */}
               <Route element={<ProtectedRoute />}>
                 {/* Shell único (SPEC §10.2): as URLs não mudam. */}
                 <Route element={<AppLayout />}>
+                  <Route path="/home" element={<WorkHomePage />} />
                   <Route path="/tasks" element={<DashboardPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />
                   <Route path="/stats" element={<StatisticsPage />} />

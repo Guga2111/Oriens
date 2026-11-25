@@ -56,9 +56,9 @@ public class WorkReadService {
         }).toList();
     }
     private LocalDate today() { return LocalDate.now(clock.withZone(ProductClockConfiguration.ZONE)); }
-    private static boolean active(TaskView t) { return t.status() == Status.PENDING || t.status() == Status.ON_DOING; }
+    private static boolean active(TaskView t) { return t.status().open(); }
     private static final Comparator<TaskView> PRIORITY = Comparator.comparingInt((TaskView t) -> switch(t.priority()) {
-        case HIGH -> 0; case MEDIUM -> 1; case LOW -> 2;
+        case URGENT -> 0; case HIGH -> 1; case MEDIUM -> 2; case LOW -> 3; case NONE -> 4;
     }).thenComparing(TaskView::id);
     private static final Comparator<TaskView> DAY_ORDER = Comparator
         .comparing(TaskView::startTime, Comparator.nullsFirst(Comparator.naturalOrder())).thenComparing(PRIORITY);
@@ -148,10 +148,11 @@ public class WorkReadService {
                 o.getId(), p.getId(), o.getTitle(), o.getDueDate(), o.getStatus(), o.getPosition(), o.getVersion(),
                 p.getMode() == ProjectMode.DEVELOPMENT ? rows.stream().filter(t -> o.getId().equals(t.objectiveId()) && t.status() != Status.CANCELLED).count() : null,
                 p.getMode() == ProjectMode.DEVELOPMENT ? rows.stream().filter(t -> o.getId().equals(t.objectiveId()) && t.status() == Status.CONCLUDED).count() : null,
-                p.getMode() == ProjectMode.DEVELOPMENT ? rows.stream().filter(t -> o.getId().equals(t.objectiveId()) && t.status() == Status.CANCELLED).count() : null))
+                p.getMode() == ProjectMode.DEVELOPMENT ? rows.stream().filter(t -> o.getId().equals(t.objectiveId()) && t.status() == Status.CANCELLED).count() : null, o.getDescription(), o.getStartDate(), o.isFavorite()))
                 .sorted(Comparator.comparingInt(ObjectiveView::position).thenComparing(ObjectiveView::id)).toList();
             boolean dev = p.getMode() == ProjectMode.DEVELOPMENT;
-            ProjectSummary summary = new ProjectSummary(goals.size(), goals.stream().filter(o -> o.status() == ObjectiveStatus.CONCLUDED).count(),
+            // Cancelled objectives leave the denominator, as cancelled tasks do.
+            ProjectSummary summary = new ProjectSummary(goals.stream().filter(o -> o.status() != ObjectiveStatus.CANCELLED).count(), goals.stream().filter(o -> o.status() == ObjectiveStatus.CONCLUDED).count(),
                 dev ? (long) rows.size() : null, dev ? rows.stream().filter(t -> t.status() != Status.CANCELLED).count() : null,
                 dev ? rows.stream().filter(t -> t.status() == Status.CONCLUDED).count() : null,
                 dev ? rows.stream().filter(t -> t.status() == Status.CANCELLED).count() : null,
@@ -159,9 +160,9 @@ public class WorkReadService {
                 dev ? rows.stream().filter(WorkReadService::active).filter(t -> t.plannedDate() != null && t.plannedDate().isBefore(date)).count() : null,
                 dev ? rows.stream().filter(WorkReadService::active).filter(t -> t.dueDate() != null && t.dueDate().isBefore(date)).count() : null,
                 dev ? rows.stream().filter(WorkReadService::active).filter(t -> date.equals(t.dueDate())).count() : null,
-                goals.stream().filter(o -> o.status() == ObjectiveStatus.PENDING && o.dueDate() != null && o.dueDate().isBefore(date)).count(),
+                goals.stream().filter(o -> o.status().isActive() && o.dueDate() != null && o.dueDate().isBefore(date)).count(),
                 rows.stream().filter(WorkReadService::active).filter(t -> t.plannedDate() != null && !t.plannedDate().isBefore(date)).min(PLAN_ORDER).orElse(null),
-                goals.stream().filter(o -> o.status() == ObjectiveStatus.PENDING && o.dueDate() != null)
+                goals.stream().filter(o -> o.status().isActive() && o.dueDate() != null)
                     .min(Comparator.comparing(ObjectiveView::dueDate).thenComparing(ObjectiveView::id)).orElse(null));
             return new ProjectView(p.getId(), owner, p.getTitle(), p.getDescription(), p.getColor(), p.getImageUrl(), p.getMode(),
                 p.isFavorite(), p.getArchived(), p.getLastAccessed(), p.getDefaultPendingColumnId(), p.getDefaultCompletedColumnId(), p.getVersion(),

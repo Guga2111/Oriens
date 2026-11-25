@@ -1,6 +1,9 @@
 package com.oriens.oriens_api.mcp;
 
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.*;
 import com.oriens.oriens_api.entity.*;
 import com.oriens.oriens_api.entity.dto.work.*;
 import com.oriens.oriens_api.entity.dto.work.WorkCommands.*;
@@ -9,7 +12,7 @@ import com.oriens.oriens_api.entity.enums.*;
 import com.oriens.oriens_api.exception.WorkDomainException;
 import com.oriens.oriens_api.service.*;
 import com.oriens.oriens_api.service.ScopedWorkReadService.Access;
-import io.modelcontextprotocol.json.schema.jackson.DefaultJsonSchemaValidator;
+import io.modelcontextprotocol.json.schema.jackson3.DefaultJsonSchemaValidator;
 import io.modelcontextprotocol.spec.McpSchema;
 import org.springframework.data.domain.*;
 import java.time.*;
@@ -28,7 +31,7 @@ public class McpWorkTools {
     private final DefaultJsonSchemaValidator schemas;
     private final Clock clock;
     private final McpFinancialTools finance;
-    public McpWorkTools(McpStore store,McpRateLimiter limits,ScopedWorkReadService read,ProjectWorkService work,WorkCreationService receipts,ObjectMapper json,Clock clock,McpFinancialTools finance) {
+    public McpWorkTools(McpStore store,McpRateLimiter limits,ScopedWorkReadService read,ProjectWorkService work,WorkCreationService receipts,JsonMapper json,Clock clock,McpFinancialTools finance) {
         this.finance=finance;this.store=store;this.limits=limits;this.read=read;this.work=work;this.receipts=receipts;this.json=json;this.clock=clock;schemas=new DefaultJsonSchemaValidator(json);
     }
     private static Access access(McpStore.Policy p) {
@@ -82,9 +85,9 @@ public class McpWorkTools {
     private McpSchema.CallToolResult response(Object body,boolean error) {
         try {
             var b=McpSchema.CallToolResult.builder().isError(error).addTextContent(json.writeValueAsString(body));
-            if(!error)b.structuredContent(json.convertValue(body,new com.fasterxml.jackson.core.type.TypeReference<Map<String,Object>>(){}));
+            if(!error)b.structuredContent(json.convertValue(body,new TypeReference<Map<String,Object>>(){}));
             return b.build();
-        } catch(java.io.IOException e) {throw new IllegalStateException("Cannot project MCP response",e);}
+        } catch(JacksonException e) {throw new IllegalStateException("Cannot project MCP response",e);}
     }
     private McpSchema.CallToolResult error(McpStore.Delegated d,String name,UUID requestId,WorkDomainException error,long started) {
         String code=error.getCode();String message=error.getMessage();
@@ -101,7 +104,7 @@ public class McpWorkTools {
         for(String name:required)if(!n.has(name)&&(name.equals("idempotencyKey")||name.startsWith("expected")))
             throw failure("PRECONDITION_REQUIRED",name,"Informe a chave e as versões exigidas pela operação.");
         if(!schemas.validate(d.input(),n).valid())throw McpStore.invalid("Campos desconhecidos, ausentes, com tipo, formato ou limite inválido.");
-        var keys=n.fieldNames();
+        var keys=n.propertyNames().iterator();
         while(keys.hasNext()) {
             String key=keys.next();JsonNode value=n.get(key);
             if(value.isNull())continue;
@@ -124,7 +127,7 @@ public class McpWorkTools {
         }
         if(d.tool().name().equals("oriens_update_task")&&!hasAny(n,"title","description","objectiveId","plannedDate","startTime","dueDate","priority","location","status")
             ||d.tool().name().equals("oriens_update_project")&&!hasAny(n,"title","description","color","favorite")
-            ||d.tool().name().equals("oriens_update_objective")&&!hasAny(n,"title","dueDate","status"))throw McpStore.invalid("Informe ao menos um campo para alterar.");
+            ||d.tool().name().equals("oriens_update_objective")&&!hasAny(n,"title","description","startDate","dueDate","status","favorite"))throw McpStore.invalid("Informe ao menos um campo para alterar.");
     }
     private Object read(String name,McpStore.Policy p,Access a,JsonNode n) {
         return switch(name) {
@@ -180,7 +183,7 @@ public class McpWorkTools {
         } else if(resourceKind.equals("objective")) {
             long projectId=id(n,"projectId");read.project(a,projectId);projectIds.add(projectId);usedScopes.add("projects:read");
             Objective changed;
-            if(name.equals("oriens_create_objective")) changed=work.createObjective(p.userId(),projectId,new CreateObjective(version(n,"expectedProjectVersion"),text(n,"title"),date(n,"dueDate")));
+            if(name.equals("oriens_create_objective")) changed=work.createObjective(p.userId(),projectId,new CreateObjective(version(n,"expectedProjectVersion"),text(n,"title"),date(n,"dueDate"),text(n,"description"),date(n,"startDate"),enumeration(n,"status",ObjectiveStatus.class)));
             else {
                 resourceId=id(n,"objectiveId");read.objective(a,projectId,resourceId);
                 if(d.delete()) {
@@ -188,7 +191,10 @@ public class McpWorkTools {
                     work.deleteObjective(p.userId(),projectId,resourceId,version(n,"expectedVersion"),version(n,"expectedProjectVersion"));changed=null;effects="Objetivo excluído. As tarefas foram preservadas sem esse vínculo.";
                 } else {
                     var patch=new PatchObjective();patch.setVersion(version(n,"expectedVersion"));
-                    if(n.has("title"))patch.setTitle(text(n,"title"));if(n.has("dueDate"))patch.setDueDate(date(n,"dueDate"));if(n.has("status"))patch.setStatus(enumeration(n,"status",ObjectiveStatus.class));
+                    if(n.has("title"))patch.setTitle(text(n,"title"));
+                    if(n.has("description"))patch.setDescription(text(n,"description"));if(n.has("startDate"))patch.setStartDate(date(n,"startDate"));
+                    if(n.has("dueDate"))patch.setDueDate(date(n,"dueDate"));if(n.has("status"))patch.setStatus(enumeration(n,"status",ObjectiveStatus.class));
+                    if(n.has("favorite"))patch.setFavorite(bool(n,"favorite"));
                     changed=work.patchObjective(p.userId(),projectId,resourceId,patch);
                 }
             }
@@ -267,7 +273,7 @@ public class McpWorkTools {
     private static List<String> fieldsChanged(String name,JsonNode n) {
         Set<String> targetIds=name.contains("_financial_")?Set.of("entryId"):name.contains("_task")?Set.of("taskId"):name.contains("_objective")?Set.of("projectId","objectiveId"):Set.of("projectId");
         var result=new ArrayList<String>();
-        n.fieldNames().forEachRemaining(k->{if(!targetIds.contains(k)&&!k.equals("idempotencyKey")&&!k.startsWith("expected"))result.add(k);});
+        n.propertyNames().iterator().forEachRemaining(k->{if(!targetIds.contains(k)&&!k.equals("idempotencyKey")&&!k.startsWith("expected"))result.add(k);});
         Collections.sort(result);return result;
     }
     private static boolean hasAny(JsonNode n,String... names) {return Arrays.stream(names).anyMatch(n::has);}

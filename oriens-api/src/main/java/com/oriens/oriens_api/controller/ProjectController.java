@@ -43,9 +43,10 @@ public class ProjectController {
     public Page<ProjectView> list(Authentication auth, @PathVariable Long userId,
             @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size,
             @RequestParam(defaultValue="id") String sortBy, @RequestParam(defaultValue="DESC") Sort.Direction direction,
-            @RequestParam(defaultValue="false") boolean includeArchived, @RequestParam(required=false) String search) {
+            @RequestParam(defaultValue="false") boolean includeArchived, @RequestParam(required=false) String search,
+            @RequestParam(defaultValue="false") boolean favorite, @RequestParam(required=false) ProjectMode mode) {
         Long user = owner.matching(auth, userId);
-        Page<Project> result = projects.findAllFiltered(user, includeArchived, search, WorkPagination.of(page, size, sortBy, direction,
+        Page<Project> result = projects.findAllFiltered(user, includeArchived, search, favorite, mode, WorkPagination.of(page, size, sortBy, direction,
             "id", "title", "lastAccessed", "favorite", "archived"));
         return new PageImpl<>(read.projectViews(user, result.getContent(), false), result.getPageable(), result.getTotalElements());
     }

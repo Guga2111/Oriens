@@ -63,7 +63,10 @@ public class Project {
         if (objectives == null || objectives.isEmpty()) {
             return 0;
         }
+        // Cancelled objectives leave the denominator, as cancelled tasks do.
+        long counted = objectives.stream().filter(o -> o.getStatus() != ObjectiveStatus.CANCELLED).count();
+        if (counted == 0) return 0;
         long completedCount = objectives.stream().filter(o -> o.getStatus() == ObjectiveStatus.CONCLUDED).count();
-        return (int) (((double) completedCount / objectives.size()) * 100);
+        return (int) (((double) completedCount / counted) * 100);
     }
 }

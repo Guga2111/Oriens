@@ -12,7 +12,7 @@ import org.springframework.dao.*;
 import org.springframework.security.access.AccessDeniedException;
 import java.util.*;
 
-@RestControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, TagController.class, UserController.class, NotificationController.class, SupportController.class})
+@RestControllerAdvice(assignableTypes = {com.oriens.oriens_api.mcp.McpController.class, WorkHomeController.class, ProjectController.class, TaskController.class, TaskLabelController.class, StatisticsController.class, HabitController.class, FinancialEntryController.class, TagController.class, UserController.class, NotificationController.class, SupportController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class WorkExceptionHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WorkExceptionHandler.class);

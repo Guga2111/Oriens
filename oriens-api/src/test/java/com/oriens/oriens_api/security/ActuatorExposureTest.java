@@ -6,9 +6,9 @@ import com.oriens.oriens_api.service.FileStorageProjectService;
 import com.oriens.oriens_api.service.FileStorageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.boot.test.web.server.LocalManagementPort;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** Metrics are served only on the internal management port; the public port never returns them. */
 // Tests disable metrics export by default; without this the Prometheus endpoint would not exist at all.
-@AutoConfigureObservability(tracing = false)
+@AutoConfigureMetrics
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
     "JWT_SECRET=synthetic-actuator-test-only-0123456789-abcdefghijklmnopqrstuvwxyz-0123456789",
     "management.server.port=0",
@@ -33,8 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
     "file.upload-project-dir=${java.io.tmpdir}/oriens-actuator-project"
 })
 class ActuatorExposureTest {
-    @MockBean FileStorageProjectService projectFiles;
-    @MockBean FileStorageService profileFiles;
+    @MockitoBean FileStorageProjectService projectFiles;
+    @MockitoBean FileStorageService profileFiles;
 
     @LocalServerPort int publicPort;
     @LocalManagementPort int managementPort;

@@ -252,7 +252,7 @@ Origem metodológica: a direção A combina os estilos `editorial-greeting` e `a
 | D2 | O canvas do app usa um tom de **menor croma** da família cream (#F7F4ED). O cream pleno (#FDEFD6) fica nas páginas públicas (landing, auth, reset, termos, 404). | [Decisão] |
 | D3 | O Financeiro mostra o **mês selecionado** como figura principal e o **saldo acumulado** como linha secundária, calculado no frontend com os dados atuais | [Decisão] |
 | D4 | As páginas públicas entram como **P2 de marca** | [Decisão] |
-| D5 | Logo único: o **meio-sol** (`/oriens-logo.png` redesenhado como SVG em tokens) substitui o `CheckSquare` | [Recomendação] derivada de D1 |
+| D5 | Logo único: o **meio-sol** (`/oriens-logo.png` redesenhado como SVG em tokens) substitui o `CheckSquare`. Cores substituídas em 2026-11-23 (ver §11.11) | [Recomendação] derivada de D1 |
 | D6 | Sonner é o único sistema de toast | [Recomendação] |
 | D7 | Ações destrutivas sempre passam por `AlertDialog` com o nome do objeto | [Recomendação] |
 | D8 | Mobile é secundário: navegação e ausência de overflow no P0; layouts mobile dedicados (agenda semanal, tabelas em lista, Drawer) no P2 | [Decisão Q2] |
@@ -276,6 +276,10 @@ Origem metodológica: a direção A combina os estilos `editorial-greeting` e `a
 ## 9. Design System e tokens
 
 ### 9.1 Cores (HSL no formato do projeto, `H S% L%`)
+> **Substituído (2026-11-23):** a paleta "Horizonte" e o logo bordô/amarelo foram substituídos por
+> [docs/plans/2026-11-22-design-system-plane-so-orange-design.md](../plans/2026-11-22-design-system-plane-so-orange-design.md)
+> (neutros do plane.so, primário laranja, sem `--brand-*` nem `--background-brand`). Os valores abaixo são histórico.
+
 Os tokens novos vão em `src/index.css` em `:root` e `.dark`. **Os três `--brand-*` não mudam.**
 
 | Token | Claro | Hex | Escuro | Hex | Uso |
@@ -674,6 +678,10 @@ Aplicar:
 Validar com uma conta ADMIN antes de fechar o design.
 
 ### 11.11 Páginas públicas (P2, D4)
+> **Substituído (2026-11-23):** a paleta "Horizonte" e o logo bordô/amarelo foram substituídos por
+> [docs/plans/2026-11-22-design-system-plane-so-orange-design.md](../plans/2026-11-22-design-system-plane-so-orange-design.md)
+> (neutros do plane.so, primário laranja, sem `--brand-*` nem `--background-brand`). Vale para o item **Marca** e para D5 (§8): o logo usa `fill-primary` e `fill-foreground`, e o fundo das páginas públicas é `bg-background`.
+
 - **Marca:**
   - Logo meio-sol em SVG, nos tokens, usado na landing, no auth, na sidebar e no favicon.
   - O fundo usa `--background-brand`.

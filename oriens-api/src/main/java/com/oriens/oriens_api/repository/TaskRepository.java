@@ -17,14 +17,14 @@ import java.time.LocalTime;
 import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<Task> {
-    @Query("select t from Task t where t.user.id = :owner and t.status <> 'CANCELLED' and (t.plannedDate = :date or (:recovery = true and t.status in ('PENDING','ON_DOING') and (t.plannedDate < :date or t.dueDate <= :date)))")
+    @Query("select t from Task t where t.user.id = :owner and t.status <> 'CANCELLED' and (t.plannedDate = :date or (:recovery = true and t.status in ('BACKLOG','PENDING','ON_DOING') and (t.plannedDate < :date or t.dueDate <= :date)))")
     List<Task> findDay(@Param("owner") Long owner, @Param("date") LocalDate date, @Param("recovery") boolean recovery);
     @Query("select t from Task t where t.user.id = :owner and t.status <> 'CANCELLED' and t.plannedDate between :start and :end")
     List<Task> findPlannedRange(@Param("owner") Long owner, @Param("start") LocalDate start, @Param("end") LocalDate end);
     List<Task> findByUserIdAndProjectIdIn(Long owner, java.util.Collection<Long> ids);
-    @Query("select t.id from Task t where t.status in ('PENDING','ON_DOING') and t.reminderSent = false and t.plannedDate between :start and :end and t.startTime is not null")
+    @Query("select t.id from Task t where t.status in ('BACKLOG','PENDING','ON_DOING') and t.reminderSent = false and t.plannedDate between :start and :end and t.startTime is not null")
     List<Long> findReminderCandidates(@Param("start") LocalDate start, @Param("end") LocalDate end);
-    @Query("select t.id from Task t where t.status in ('PENDING','ON_DOING') and t.overdueNotificationSent = false and t.dueDate < :today")
+    @Query("select t.id from Task t where t.status in ('BACKLOG','PENDING','ON_DOING') and t.overdueNotificationSent = false and t.dueDate < :today")
     List<Long> findOverdueCandidates(@Param("today") LocalDate today);
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from Task t join fetch t.user where t.id = :id")
@@ -84,7 +84,7 @@ public interface TaskRepository extends JpaRepository<Task, Long>, org.springfra
             @Param("endDate") LocalDate endDate
     );
 
-    @Query("SELECT COUNT(t) FROM Task t WHERE t.user.id = :userId AND t.status IN ('PENDING','ON_DOING') AND t.dueDate BETWEEN :startDate AND :endDate")
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.user.id = :userId AND t.status IN ('BACKLOG','PENDING','ON_DOING') AND t.dueDate BETWEEN :startDate AND :endDate")
     long countOverdueTasksInDateRange(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,

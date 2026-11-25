@@ -1,6 +1,6 @@
 # Backend — padrões e antipadrões (`oriens-api`)
 
-Stack: Spring Boot 3.5 · Java 17 · Spring Data JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) ·
+Stack: Spring Boot 4.2 · Java 25 · Spring Data JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) ·
 OAuth Authorization Server + MCP · Lombok · JUnit 5.
 
 Cada seção traz **✅ Padrão** (o que fazer, com referência ao código que já segue a regra) e
@@ -369,7 +369,6 @@ IDOR), porque muda contrato com o front.
 
 | Onde | Problema | Risco |
 |---|---|---|
-| `src/main/resources/application.properties` | Usuário e **senha SMTP commitados em texto puro** (estão no histórico do git) | **Crítico** — rotacionar a senha e mover para variável de ambiente |
 | `exception/config/GlobalExceptionHandler` + `ErrorResponse` | Formata `Instant` com padrão sem fuso: o Jackson falha ao serializar e a exceção original vaza como erro do servlet em todos os controllers legados | Alto |
 | JWT | Papel lido do *claim*: admin rebaixado mantém acesso até o token expirar; `updateUserRole` não impede remover o último admin | Médio |
 | `UserController`, `NotificationController`, `SupportController` | Entidade JPA na resposta e `@RequestBody User`/`SupportTicketDTO` sem validação; `clearAll` responde 204 com corpo | Médio (vazamento / mass assignment) |
@@ -378,6 +377,7 @@ IDOR), porque muda contrato com o front.
 | `application-*.properties` | `spring.jpa.open-in-view` não desligado em dev/prod | Médio (N+1 escondido) |
 | `WorkExceptionHandler` | Código `FORBIDDEN` fora do `switch` (um `WorkDomainException("FORBIDDEN")` vira 422); o 403 de papel vem do handler de `AccessDeniedException` | Baixo |
 | `McpP2/P3/P4PostgresTest` | Não usam `@EnabledIfEnvironmentVariable`: sem `MCP_JDBC_URL`, `./mvnw test` falha com 113 erros | Médio (suíte sempre vermelha) |
+| `McpP3PostgresTest` (finanças) | Entre 00h e 03h UTC (21h e meia-noite em `America/Recife`), quatro testes falham: `totalsCoverAllPagesWithExactCentsAndIndependentCategoryPaging`, `financialScopesAreIndependentAndReadsNeverRevealAnotherAccount`, `schedulerAndClosureOrDeletionSerializeOnTheOriginInBothOrders` e `everyMutationHasDurableReceiptVersionAndStrictMoneyAndPatchContracts`. Nesse intervalo a data UTC já é o dia seguinte e a de Recife ainda não, e os testes comparam as duas. Os runners do GitHub usam UTC, então o `test-postgres` fica vermelho em qualquer PR cujo CI rode nesse horário. Passa com `TZ=America/Recife` ou fora da janela. Visto pela primeira vez em 2026-11-19 (PR #12); reproduz em `dev` sem mudanças. Até a correção: se só esses quatro falharem, confira a hora UTC e rode o CI de novo depois das 03h UTC | Médio (CI vermelho por horário; o script para na falha e as suítes seguintes não rodam) |
 
 **Resolvido em 2026-11-16** (branch `fix/security-and-ui-conventions`): IDOR em `UserController`
 (perfil, preferências, avatar, exclusão e busca por e-mail), `NotificationController` e `SupportController`,

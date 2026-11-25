@@ -1,5 +1,7 @@
 package com.oriens.oriens_api.mcp;
 
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.core.JacksonException;
 import com.oriens.oriens_api.exception.WorkDomainException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -161,10 +163,10 @@ public class McpStore {
         for(var row:rows) {
             row.put("occurred_at",((Timestamp)row.get("occurred_at")).toInstant());
             try {
-                var json=new com.fasterxml.jackson.databind.ObjectMapper();
+                var json=JsonMapper.builder().build();
                 row.put("resource_ids",json.readTree(row.get("resource_ids").toString()));
                 row.put("field_names",json.readTree(row.get("field_names").toString()));
-            }catch(java.io.IOException e){throw new IllegalStateException("Invalid persisted audit metadata",e);}
+            }catch(JacksonException e){throw new IllegalStateException("Invalid persisted audit metadata",e);}
         }
         return new Page<>(rows,page,size,total,(long)(page+1)*size<total);
     }
@@ -181,8 +183,8 @@ public class McpStore {
     }
     public void audit(long owner, UUID connection, String action, String result, UUID requestId,List<String> fieldNames,Integer count,Long durationMs,List<String> resourceIds) {
         String fields,resources;
-        try {var json=new com.fasterxml.jackson.databind.ObjectMapper();fields=json.writeValueAsString(fieldNames);resources=json.writeValueAsString(resourceIds);}
-        catch(java.io.IOException e){throw new IllegalStateException("Cannot project audit fields",e);}
+        try {var json=JsonMapper.builder().build();fields=json.writeValueAsString(fieldNames);resources=json.writeValueAsString(resourceIds);}
+        catch(JacksonException e){throw new IllegalStateException("Cannot project audit fields",e);}
         db.update("insert into mcp_audit_events(id,user_id,connection_id,action,result,request_id,occurred_at,field_names,result_count,duration_ms,resource_ids) values(?,?,?,?,?,?,?,cast(? as jsonb),?,?,cast(? as jsonb))",
             UUID.randomUUID(),owner,connection,action,result,requestId,Timestamp.from(clock.instant()),fields,count,durationMs,resources);
     }

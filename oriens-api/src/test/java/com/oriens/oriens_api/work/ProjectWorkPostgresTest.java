@@ -1,6 +1,7 @@
 package com.oriens.oriens_api.work;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.oriens.oriens_api.configuration.ProductClockConfiguration;
 import com.oriens.oriens_api.entity.*;
 import com.oriens.oriens_api.entity.dto.work.*;
@@ -13,8 +14,8 @@ import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -95,20 +96,37 @@ class ProjectWorkPostgresTest {
         Objective objective = service.createObjective(owner, simple.getId(), new CreateObjective(simple.getVersion(), "Resultado", null));
         assertThat(objective.getId()).isPositive();
         Project converted = service.convertProject(owner, simple.getId(), current(simple).getVersion(), ProjectMode.DEVELOPMENT);
-        assertThat(board(converted)).extracting(ProjectColumn::getName).containsExactly("A fazer", "Fazendo", "Concluídas");
-        assertThat(board(converted)).extracting(ProjectColumn::getKind).containsExactly(Status.PENDING, Status.ON_DOING, Status.CONCLUDED);
+        assertThat(board(converted)).extracting(ProjectColumn::getName).containsExactly("Backlog", "To-Do", "In Progress", "Done", "Cancelled");
+        assertThat(board(converted)).extracting(ProjectColumn::getKind)
+            .containsExactly(Status.BACKLOG, Status.PENDING, Status.ON_DOING, Status.CONCLUDED, Status.CANCELLED);
         assertThat(objectives.findById(objective.getId())).isPresent();
         service.convertProject(owner, simple.getId(), current(simple).getVersion(), ProjectMode.DEVELOPMENT);
-        assertThat(board(simple)).hasSize(3);
+        assertThat(board(simple)).hasSize(5);
         assertThat(current(simple).getDefaultPendingColumnId()).isEqualTo(board(simple).get(0).getId());
-        assertThat(board(project(ProjectMode.DEVELOPMENT))).hasSize(3);
+        assertThat(current(simple).getDefaultCompletedColumnId()).isEqualTo(board(simple).get(3).getId());
+        Project development = project(ProjectMode.DEVELOPMENT);
+        assertThat(board(development)).hasSize(5);
+        // A new project task lands in the backlog, a state of its own.
+        assertThat(task(development, null, null, null, null).getStatus()).isEqualTo(Status.BACKLOG);
+    }
+
+    @Test void noPriorityAndUrgentAreStoredByTheDatabase() {
+        Task task = task(null, null, null, null, null);
+        assertThat(storedPriority(task)).isEqualTo("NONE");
+        PatchTask patch = patch(task); patch.setPriority(Priority.URGENT);
+        service.patchTask(owner, task.getId(), patch);
+        assertThat(storedPriority(task)).isEqualTo("URGENT");
+    }
+
+    private Object storedPriority(Task task) {
+        return em.createNativeQuery("select priority from tasks where id = ?1").setParameter(1, task.getId()).getSingleResult();
     }
 
     @Test void nullableDatesPriorityInstantAndPlanningAreIndependent() {
         Project project = project(ProjectMode.DEVELOPMENT);
         Task unscheduled = task(project, null, null, null, null);
         assertThat(unscheduled.getPlannedDate()).isNull(); assertThat(unscheduled.getStartTime()).isNull();
-        assertThat(unscheduled.getDueDate()).isNull(); assertThat(unscheduled.getPriority()).isEqualTo(Priority.MEDIUM);
+        assertThat(unscheduled.getDueDate()).isNull(); assertThat(unscheduled.getPriority()).isEqualTo(Priority.NONE);
         assertThat(unscheduled.getCreatedAt()).isNotNull();
         LocalDate due = LocalDate.of(2026, 11, 20);
         Task scheduled = task(null, null, due.minusDays(2), LocalTime.NOON, due);
@@ -136,7 +154,14 @@ class ProjectWorkPostgresTest {
         PatchTask reopen = patch(repeated); reopen.setProjectVersion(current(project).getVersion()); reopen.setStatus(Status.PENDING);
         Task reopened = service.patchTask(owner, task.getId(), reopen);
         assertThat(reopened.getCompletedAt()).isNull();
-        assertThat(reopened.getColumnId()).isEqualTo(project.getDefaultPendingColumnId());
+        // Asking for To-Do (not the backlog) finds the board's first To-Do column.
+        assertThat(reopened.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(reopened.getColumnId()).isEqualTo(board(project).stream().filter(c -> c.getKind() == Status.PENDING).findFirst().orElseThrow().getId());
+        PatchTask shelve = patch(reopened); shelve.setProjectVersion(current(project).getVersion()); shelve.setStatus(Status.BACKLOG);
+        Task shelved = service.patchTask(owner, task.getId(), shelve);
+        assertThat(shelved.getStatus()).isEqualTo(Status.BACKLOG);
+        assertThat(shelved.getColumnId()).isEqualTo(project.getDefaultPendingColumnId());
+        reopened = shelved;
         PatchTask cancel = patch(reopened); cancel.setProjectId(null); cancel.setStatus(Status.CANCELLED);
         cancel.setProjectVersion(current(project).getVersion());
         assertThat(service.patchTask(owner, task.getId(), cancel).getCompletedAt()).isNull();
@@ -145,7 +170,7 @@ class ProjectWorkPostgresTest {
     @Test void editingObjectiveDoesNotToggleAndPatchPreservesAbsentFields() throws Exception {
         Project project = project(ProjectMode.SIMPLE);
         Objective objective = service.createObjective(owner, project.getId(), new CreateObjective(project.getVersion(), "Resultado", LocalDate.of(2028, 2, 29)));
-        ObjectMapper mapper = new ObjectMapper(); mapper.findAndRegisterModules();
+        ObjectMapper mapper = JsonMapper.builder().build();
         PatchObjective patch = mapper.readValue("{\"version\":0,\"title\":\"Novo nome\"}", PatchObjective.class);
         Objective edited = service.patchObjective(owner, project.getId(), objective.getId(), patch);
         assertThat(edited.getStatus()).isEqualTo(ObjectiveStatus.PENDING);
@@ -165,7 +190,7 @@ class ProjectWorkPostgresTest {
         rejected(() -> service.patchColumn(owner, project.getId(), source.getId(), occupied), "DOMAIN_VIOLATION");
         rejected(() -> service.removeColumn(owner, project.getId(), source.getId(), source.getVersion(),
                 new RemoveColumn(current(project).getVersion(), null, null, null)), "DOMAIN_VIOLATION");
-        ProjectColumn backlog = service.createColumn(owner, project.getId(), new CreateColumn(current(project).getVersion(), "Backlog", Status.PENDING));
+        ProjectColumn backlog = service.createColumn(owner, project.getId(), new CreateColumn(current(project).getVersion(), "Triagem", Status.PENDING));
         PatchColumn rename = new PatchColumn(); rename.setVersion(backlog.getVersion());
         rename.setProjectVersion(current(project).getVersion()); rename.setName("Bloqueadas");
         service.patchColumn(owner, project.getId(), backlog.getId(), rename);
@@ -173,7 +198,7 @@ class ProjectWorkPostgresTest {
         Collections.reverse(order);
         service.orderColumns(owner, project.getId(), new OrderColumns(current(project).getVersion(), order));
         assertThat(board(project)).extracting(ProjectColumn::getId).containsExactlyElementsOf(order);
-        assertThat(tasks.findById(task.getId()).orElseThrow().getStatus()).isEqualTo(Status.PENDING);
+        assertThat(tasks.findById(task.getId()).orElseThrow().getStatus()).isEqualTo(Status.BACKLOG);
         service.removeColumn(owner, project.getId(), source.getId(), columns.findById(source.getId()).orElseThrow().getVersion(),
                 new RemoveColumn(current(project).getVersion(), backlog.getId(), backlog.getId(), null));
         Task moved = tasks.findById(task.getId()).orElseThrow();
@@ -302,7 +327,7 @@ class ProjectWorkPostgresTest {
             CreationReceipt receipt = CreationReceipt.builder().user(users.findById(owner).orElseThrow())
                     .operation("task:create").idempotencyKey(key).payloadSha256("a".repeat(64))
                     .resourceId(999999L).responseStatus(201).resourceVersion(7)
-                    .responseBody(new ObjectMapper().createObjectNode().put("id", 999999).put("version", 7))
+                    .responseBody(JsonMapper.builder().build().createObjectNode().put("id", 999999).put("version", 7))
                     .createdAt(created).expiresAt(created.plus(Duration.ofHours(24))).build();
             em.persist(receipt); em.flush(); return receipt.getId();
         });

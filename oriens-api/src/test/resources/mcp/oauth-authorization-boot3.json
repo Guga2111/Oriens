@@ -1,0 +1,16 @@
+{
+  "id" : "legacy-authorization",
+  "client" : "legacy-client",
+  "principal" : "00000000-0000-0000-0000-000000000001",
+  "grant" : "authorization_code",
+  "scopes" : [ "tasks:read" ],
+  "attributes" : "{\"@class\":\"java.util.Collections$UnmodifiableMap\",\"org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest\":{\"@class\":\"org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest\",\"authorizationUri\":\"https://oriens.example.invalid/oauth2/authorize\",\"authorizationGrantType\":{\"value\":\"authorization_code\"},\"responseType\":{\"value\":\"code\"},\"clientId\":\"legacy-client\",\"redirectUri\":\"http://127.0.0.1/callback\",\"scopes\":[\"java.util.Collections$UnmodifiableSet\",[\"tasks:read\"]],\"state\":\"synthetic-state\",\"additionalParameters\":{\"@class\":\"java.util.Collections$UnmodifiableMap\",\"code_challenge_method\":\"S256\",\"code_challenge\":\"synthetic-challenge\"},\"authorizationRequestUri\":\"https://oriens.example.invalid/oauth2/authorize?response_type=code&client_id=legacy-client&scope=tasks:read&state=synthetic-state&redirect_uri=http://127.0.0.1/callback&code_challenge_method=S256&code_challenge=synthetic-challenge\",\"attributes\":{\"@class\":\"java.util.Collections$UnmodifiableMap\"}},\"java.security.Principal\":{\"@class\":\"org.springframework.security.authentication.UsernamePasswordAuthenticationToken\",\"authorities\":[\"java.util.Collections$UnmodifiableRandomAccessList\",[{\"@class\":\"org.springframework.security.core.authority.SimpleGrantedAuthority\",\"authority\":\"ROLE_USER\"}]],\"details\":null,\"authenticated\":true,\"principal\":\"legacy-user\",\"credentials\":null}}",
+  "tokens" : [ {
+    "type" : "access_token",
+    "value" : "synthetic-legacy-access",
+    "issuedAt" : 1795305600.000000000,
+    "expiresAt" : 1795392000.000000000,
+    "scopes" : [ "tasks:read" ],
+    "metadata" : "{\"@class\":\"java.util.Collections$UnmodifiableMap\",\"metadata.token.claims\":{\"@class\":\"java.util.ImmutableCollections$MapN\",\"aud\":[\"java.util.ImmutableCollections$List12\",[\"https://oriens.example.invalid/mcp\"]],\"iss\":\"https://oriens.example.invalid\"},\"metadata.token.invalidated\":false}"
+  } ]
+}

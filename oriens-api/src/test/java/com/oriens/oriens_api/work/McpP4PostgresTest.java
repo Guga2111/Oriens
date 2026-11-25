@@ -20,7 +20,7 @@ class McpP4PostgresTest extends McpP3PostgresTest {
         settings.put("oriens.mcp.enabled",false);
         var http=java.net.http.HttpClient.newHttpClient();
         try(var disabled=new org.springframework.boot.builder.SpringApplicationBuilder(App.class).properties(settings).run()) {
-            int port=((org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext)disabled).getWebServer().getPort();
+            int port=((org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext)disabled).getWebServer().getPort();
             String base="http://127.0.0.1:"+port;
             for(String path:List.of("/mcp","/.well-known/oauth-authorization-server","/integrations/mcp/connections")) {
                 var response=http.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(base+path)).header("Authorization",jwt).GET().build(),java.net.http.HttpResponse.BodyHandlers.ofString());

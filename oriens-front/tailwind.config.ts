@@ -15,15 +15,19 @@ export default {
   		}
   	},
   	extend: {
-        spacing: { page: 'var(--page-gutter)', overlay: 'var(--overlay-gutter)' },
+        boxShadow: { sheet: 'var(--sheet-shadow)' },
+        fontSize: { '2xs': ['0.6875rem', { lineHeight: '1rem' }], 'page-title': ['1.75rem', { lineHeight: '2.25rem' }] },
+        screens: { desktop: '1100px' },
+        spacing: { rail: 'var(--rail-width)', 'top-bar': 'var(--top-bar-height)', 'app-header': 'var(--app-header-height)', page: 'var(--page-gutter)', overlay: 'var(--overlay-gutter)' },
         maxHeight: { dialog: 'var(--dialog-max-height)' },
         maxWidth: { 'task-dialog': 'var(--dialog-task-width)', 'project-dialog': 'var(--dialog-project-width)', 'board-dialog': 'var(--dialog-board-width)' },
         gridTemplateColumns: { 'project-detail': 'var(--project-detail-columns)', 'task-details': 'var(--task-details-columns)',
           // --timeline-days is the window length, set at runtime on the timeline grid.
-          ...Object.fromEntries(['week', 'fortnight', 'month'].map(scale => [`timeline-${scale}`, `var(--timeline-label-width) repeat(var(--timeline-days), var(--timeline-day-${scale}))`])) },
-        inset: { 'timeline-label': 'var(--timeline-label-width)' },
+          ...Object.fromEntries(['week', 'fortnight', 'month'].map(scale => [`timeline-${scale}`, `var(--timeline-label-width) repeat(var(--timeline-days), var(--timeline-day-${scale}))`])),
+          ...Object.fromEntries(['week', 'month', 'quarter'].map(scale => [`objective-timeline-${scale}`, `var(--objective-timeline-sidebar-width) repeat(var(--timeline-days), var(--timeline-day-${scale}))`])) },
+        inset: { 'timeline-label': 'var(--timeline-label-width)', 'objective-timeline-sidebar': 'var(--objective-timeline-sidebar-width)' },
         scrollMargin: { 'timeline-label': 'var(--timeline-label-width)' },
-        width: { 'board-column': 'var(--board-column-width)', 'popover-trigger': 'var(--radix-popover-trigger-width)' },
+        width: { 'mobile-navigation': 'var(--mobile-navigation-width)', 'board-column': 'var(--board-column-width)', 'popover-trigger': 'var(--radix-popover-trigger-width)' },
         aspectRatio: { 'project-cover': 'var(--project-cover-ratio)' },
   		fontFamily: {
   			sans: [
@@ -32,22 +36,18 @@ export default {
                 ]
   		},
   		colors: {
-            ...Object.fromEntries(['red','orange','yellow','green','blue','gray'].map(color => [`label-${color}`, { DEFAULT: `hsl(var(--label-${color}))`, foreground: `hsl(var(--label-${color}-foreground))` }])),
-			brand: {
-				cream: 'hsl(var(--brand-cream))',
-				burgundy: 'hsl(var(--brand-burgundy))',
-				yellow: 'hsl(var(--brand-yellow))'
-			},
+            ...Object.fromEntries(['red','orange','yellow','green','blue','gray'].map(color => [`label-${color}`, { DEFAULT: `hsl(var(--label-${color}))`, foreground: `hsl(var(--label-${color}-foreground))`, dot: `hsl(var(--label-${color}-dot))` }])),
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
   			background: 'hsl(var(--background))',
-   			'background-brand': 'hsl(var(--background-brand))',
   			foreground: 'hsl(var(--foreground))',
    			positive: 'hsl(var(--positive))',
    			negative: 'hsl(var(--negative))',
             streak: 'hsl(var(--streak))',
    			now: 'hsl(var(--now))',
+   			priority: { urgent: 'hsl(var(--priority-urgent))', high: 'hsl(var(--priority-high))', medium: 'hsl(var(--priority-medium))', low: 'hsl(var(--priority-low))' },
+   			state: { started: 'hsl(var(--state-started))', completed: 'hsl(var(--state-completed))', cancelled: 'hsl(var(--state-cancelled))' },
    			'chart-1': 'hsl(var(--chart-1))',
    			'chart-2': 'hsl(var(--chart-2))',
    			'chart-3': 'hsl(var(--chart-3))',
@@ -87,6 +87,7 @@ export default {
   				primary: 'hsl(var(--sidebar-primary))',
   				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
   				accent: 'hsl(var(--sidebar-accent))',
+                hover: 'hsl(var(--sidebar-hover))',
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))',

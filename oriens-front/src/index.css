@@ -13,7 +13,10 @@
   :root {
     /* Geometry shared by work screens. Standard spacing uses the Tailwind scale. */
     --page-gutter: 1rem;
-    --app-header-height: 4rem;
+    --app-header-height: 3rem;
+    --top-bar-height: 2.5rem;
+    --rail-width: 3.75rem;
+    --mobile-navigation-width: calc(16rem + var(--rail-width));
     --overlay-gutter: 1rem;
     --dialog-max-height: 90dvh;
     --dialog-task-width: 40rem;
@@ -21,62 +24,71 @@
     --dialog-board-width: 42.5rem;
     --project-detail-columns: minmax(0, 1fr) 20rem;
     --task-details-columns: 9rem minmax(0, 1fr);
-    --board-column-width: 19rem;
+    --board-column-width: 21rem;
     /* Project timeline: sticky label column and one day column per scale (frontend.md §3.3). */
     --timeline-label-width: 9rem;
     --timeline-day-week: 3rem;
     --timeline-day-fortnight: 2rem;
     --timeline-day-month: 0.75rem;
+    --timeline-day-quarter: 0.25rem;
+    /* Objectives timeline: the Objetivos | Duração column, wider than the task timeline's labels. */
+    --objective-timeline-sidebar-width: 12rem;
     --project-cover-ratio: 3 / 1;
-    /* Marca (inalterada — SPEC §9.1) */
-    --brand-cream: 38.4615 90.6977% 91.5686%;
-    --brand-burgundy: 346.875 71.6418% 26.2745%;
-    --brand-yellow: 45.679 99.1837% 51.9608%;
+    /* Task labels are data colors; every swatch has its own contrasting text and a vivid dot tone. */
+    --label-red: 0 75% 93%; --label-red-foreground: 0 65% 28%; --label-red-dot: 0 72% 51%;
+    --label-orange: 24 90% 92%; --label-orange-foreground: 24 80% 25%; --label-orange-dot: 24 90% 50%;
+    --label-yellow: 45 90% 88%; --label-yellow-foreground: 35 75% 22%; --label-yellow-dot: 43 93% 47%;
+    --label-green: 145 55% 91%; --label-green-foreground: 150 60% 23%; --label-green-dot: 145 60% 38%;
+    --label-blue: 210 80% 93%; --label-blue-foreground: 215 70% 28%; --label-blue-dot: 215 80% 52%;
+    --label-gray: 30 10% 90%; --label-gray-foreground: 30 10% 28%; --label-gray-dot: 30 8% 52%;
 
-    /* Task labels are data colors; every swatch has its own contrasting text. */
-    --label-red: 0 75% 93%; --label-red-foreground: 0 65% 28%;
-    --label-orange: 24 90% 92%; --label-orange-foreground: 24 80% 25%;
-    --label-yellow: 45 90% 88%; --label-yellow-foreground: 35 75% 22%;
-    --label-green: 145 55% 91%; --label-green-foreground: 150 60% 23%;
-    --label-blue: 210 80% 93%; --label-blue-foreground: 215 70% 28%;
-    --label-gray: 30 10% 90%; --label-gray-foreground: 30 10% 28%;
+    /* Light theme: plane.so neutrals with an orange primary
+       (docs/plans/2026-11-22-design-system-plane-so-orange-design.md §5.1). */
+    --background: 240 4% 95%;
+    --foreground: 240 3% 6%;
 
-    /* §9.1 — claro */
-    --background: 38 40% 95%;
-    --background-brand: var(--brand-cream);
-    --foreground: 350 28% 14%;
-
-    --card: 38 50% 98.5%;
+    --card: 0 0% 100%;
     --card-foreground: var(--foreground);
+    --sheet-shadow: -8px 0 24px -12px hsl(0 0% 0% / 0.2);
 
     --popover: var(--card);
     --popover-foreground: var(--foreground);
 
-    --primary: var(--brand-burgundy);
-    --primary-foreground: var(--brand-cream);
+    --primary: 21 100% 38%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 36 32% 91%;
-    --secondary-foreground: var(--brand-burgundy);
+    --secondary: 210 5% 92%;
+    --secondary-foreground: var(--foreground);
 
-    --muted: 36 32% 91%;
-    --muted-foreground: 15 17% 36%;
+    --muted: 210 5% 92%;
+    --muted-foreground: 206 5% 30%;
 
-    --accent: 36 32% 91%;
-    --accent-foreground: var(--brand-burgundy);
+    --accent: 210 5% 92%;
+    --accent-foreground: var(--foreground);
 
     --negative: 6 72% 40%;
     /* Activity streak is a distinct data accent, never an error state. */
     --streak: 0 72% 40%;
     --positive: 158 52% 26%;
-    --now: 38 92% 36%;
+    --now: 38 92% 30%;
+    /* Task priority marks (Plane-style): crimson alert, orange-red, vivid amber and electric blue. */
+    --priority-urgent: 350 85% 46%;
+    --priority-high: 12 90% 52%;
+    --priority-medium: 40 100% 48%;
+    --priority-low: 222 100% 56%;
+    /* Task state icons, in plane.so's hues: started, completed and cancelled. */
+    --state-started: 38 95% 50%;
+    --state-completed: 142 71% 38%;
+    --state-cancelled: 0 84% 58%;
     --destructive: var(--negative);
     --destructive-foreground: 0 0% 100%;
 
-    --border: 33 24% 82%;
-    --input: var(--border);
-    --ring: var(--brand-burgundy);
+    --border: 210 3% 89%;
+    /* Field borders stay stronger than plane.so's subtle border. */
+    --input: 204 5% 80%;
+    --ring: var(--primary);
 
-    --chart-1: var(--brand-burgundy);
+    --chart-1: var(--primary);
     --chart-2: 38 92% 36%;
     --chart-3: 170 35% 32%;
     --chart-4: 220 25% 45%;
@@ -85,9 +97,11 @@
     --radius: 0.5rem;
 
     /* Sidebar clara (D1) — mesmos mapeamentos nos dois temas */
-    --sidebar-background: var(--background);
+    --sidebar-background: var(--card);
     --sidebar-foreground: var(--foreground);
     --sidebar-accent: var(--muted);
+    /* Hover stays subtler than the selected navigation item. */
+    --sidebar-hover: 210 5% 96%;
     --sidebar-accent-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
@@ -97,56 +111,64 @@
 
   .dark {
     color-scheme: dark;
-    --label-red: 0 35% 24%; --label-red-foreground: 0 90% 86%;
-    --label-orange: 24 40% 23%; --label-orange-foreground: 24 95% 83%;
-    --label-yellow: 42 38% 22%; --label-yellow-foreground: 45 90% 83%;
-    --label-green: 150 30% 21%; --label-green-foreground: 145 65% 80%;
-    --label-blue: 215 35% 25%; --label-blue-foreground: 210 85% 85%;
-    --label-gray: 30 8% 25%; --label-gray-foreground: 30 12% 85%;
+    --label-red: 0 35% 24%; --label-red-foreground: 0 90% 86%; --label-red-dot: 0 85% 63%;
+    --label-orange: 24 40% 23%; --label-orange-foreground: 24 95% 83%; --label-orange-dot: 24 95% 60%;
+    --label-yellow: 42 38% 22%; --label-yellow-foreground: 45 90% 83%; --label-yellow-dot: 45 95% 55%;
+    --label-green: 150 30% 21%; --label-green-foreground: 145 65% 80%; --label-green-dot: 145 55% 50%;
+    --label-blue: 215 35% 25%; --label-blue-foreground: 210 85% 85%; --label-blue-dot: 212 90% 64%;
+    --label-gray: 30 8% 25%; --label-gray-foreground: 30 12% 85%; --label-gray-dot: 30 8% 62%;
 
-    /* §9.1 — escuro */
-    --background: 350 18% 12%;
-    --background-brand: 350 18% 12%;
-    --foreground: var(--brand-cream);
+    /* Dark theme (docs/plans/2026-11-22-design-system-plane-so-orange-design.md §5.1). */
+    --background: 240 3% 6%;
+    --foreground: 200 6% 90%;
 
-    --card: 350 17% 16%;
+    --card: 240 2% 8%;
     --card-foreground: var(--foreground);
+    --sheet-shadow: -8px 0 24px -12px hsl(0 0% 0% / 0.4);
 
     --popover: var(--card);
     --popover-foreground: var(--foreground);
 
-    --primary: var(--brand-cream);
-    --primary-foreground: var(--brand-burgundy);
+    --primary: 24 100% 55%;
+    --primary-foreground: 240 3% 6%;
 
-    --secondary: 349 25% 22%;
-    --secondary-foreground: var(--brand-cream);
+    --secondary: 200 4% 14%;
+    --secondary-foreground: var(--foreground);
 
-    --muted: 349 25% 22%;
-    --muted-foreground: 30 24% 72%;
+    --muted: 200 4% 14%;
+    --muted-foreground: 206 5% 70%;
 
-    --accent: 349 25% 22%;
-    --accent-foreground: var(--brand-cream);
+    --accent: 200 4% 14%;
+    --accent-foreground: var(--foreground);
 
     --negative: 6 85% 70%;
     --streak: 0 90% 78%;
     --positive: 152 45% 62%;
-    --now: var(--brand-yellow);
+    --now: 45.7 99.2% 52%;
+    --priority-urgent: 350 95% 66%;
+    --priority-high: 12 95% 62%;
+    --priority-medium: 44 100% 55%;
+    --priority-low: 220 100% 68%;
+    --state-started: 40 100% 58%;
+    --state-completed: 142 60% 50%;
+    --state-cancelled: 0 85% 66%;
     --destructive: var(--negative);
     --destructive-foreground: 0 0% 98%;
 
-    --border: 347 17% 30%;
-    --input: var(--border);
-    --ring: var(--brand-yellow);
+    --border: 210 4% 18%;
+    --input: 204 3% 28%;
+    --ring: var(--primary);
 
-    --chart-1: var(--brand-yellow);
+    --chart-1: var(--primary);
     --chart-2: 38 92% 61%;
     --chart-3: 170 35% 57%;
     --chart-4: 220 25% 70%;
     --chart-5: 30 25% 80%;
 
-    --sidebar-background: var(--background);
+    --sidebar-background: var(--card);
     --sidebar-foreground: var(--foreground);
     --sidebar-accent: var(--muted);
+    --sidebar-hover: 200 4% 11%;
     --sidebar-accent-foreground: var(--foreground);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
@@ -165,7 +187,17 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    /* Grayscale smoothing, as Plane does: macOS's default draws light text on colour visibly heavier. */
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* Plane-style chrome: content still scrolls by wheel, touch and keyboard, but no scrollbar is drawn. */
+  * {
+    scrollbar-width: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -176,15 +208,19 @@
   }
 }
 
-/* Page gutters grow with the canvas; overlays retain their compact inset. */
+/* A view marked [data-fill-page] (the objectives timeline) reaches the bottom of the page content, as on plane.so:
+   every element between [data-page-content] and it becomes a growing flex column. Other pages keep their block flow. */
+[data-page-content]:has([data-fill-page]),
+[data-page-content] :has([data-fill-page]) { display: flex; flex-direction: column; }
+[data-page-content] :has([data-fill-page]),
+[data-page-content] [data-fill-page] { flex-grow: 1; }
+
+/* Desktop pages use a compact gutter; overlays keep their own inset. */
 @media (min-width: 640px) {
-  :root { --timeline-label-width: 16rem; }
+  :root { --timeline-label-width: 16rem; --objective-timeline-sidebar-width: 22rem; }
 }
 @media (min-width: 768px) {
-  :root { --page-gutter: 2rem; --overlay-gutter: 2rem; }
-}
-@media (min-width: 1024px) {
-  :root { --page-gutter: 4rem; }
+  :root { --page-gutter: 1.25rem; --overlay-gutter: 2rem; }
 }
 
 @keyframes task-complete {
@@ -209,18 +245,21 @@
   .planning-screen button:not([role="checkbox"]) { min-height: 44px; min-width: 44px; }
 }
 
-/* Statistics: brand tokens, data-only intensity, and a locally scrolling annual grid. */
-.statistics-screen { --activity-cell: 14px; --activity-gap: 3px; font-variant-numeric: tabular-nums; }
+/* Statistics: design tokens, data-only intensity, and a locally scrolling annual grid. */
+.statistics-screen { font-variant-numeric: tabular-nums; }
+.activity-scroll, .activity-loading { --activity-cell: 14px; --activity-gap: 3px; }
 .statistics-screen .text-xs { font-size: 13px; line-height: 1.25rem; }
 .statistics-screen [role="region"] { box-shadow: none; min-width: 0; border-color: hsl(var(--muted)); }
 .statistics-screen [role="region"] > div:first-child h3 { font-size: 1rem; line-height: 1.5rem; }
-.activity-scroll { overflow-x: auto; overscroll-behavior-x: contain; padding: 4px; margin: -4px; }
+.activity-scroll { overflow-x: auto; overscroll-behavior-x: contain; padding: 4px 0; margin: -4px 0; }
 .activity-grid, .activity-months { width: max-content; }
 .activity-loading { height: calc(7 * var(--activity-cell) + 7 * var(--activity-gap) + 26px); }
-.activity-months { display: flex; gap: var(--activity-gap); padding-left: 32px; margin-bottom: 6px; font-size: 11px; line-height: 18px; }
+.activity-months { display: flex; gap: var(--activity-gap); margin-bottom: 6px; font-size: 11px; line-height: 18px; }
+.activity-months::before { content: ""; }
+.activity-months::before, .activity-weekday { width: calc(28px + var(--activity-gap)); margin-right: calc(-1 * var(--activity-gap)); flex: none; position: sticky; left: 0; z-index: 1; background: hsl(var(--card)); }
 .activity-months > span { width: var(--activity-cell); flex: none; overflow: visible; white-space: nowrap; }
 .activity-weekday-row { display: flex; align-items: center; gap: var(--activity-gap); margin-bottom: var(--activity-gap); }
-.activity-weekday { width: 28px; flex: none; font-size: 11px; color: hsl(var(--muted-foreground)); position: sticky; left: 0; z-index: 1; background: hsl(var(--card)); }
+.activity-weekday { height: var(--activity-cell); display: flex; align-items: center; font-size: 11px; color: hsl(var(--muted-foreground)); }
 .activity-cell { width: var(--activity-cell); height: var(--activity-cell); flex: none; border-radius: 3px; background: hsl(var(--muted)); border: 1px solid transparent; }
 .activity-level-0 { background: hsl(var(--muted)); }
 .activity-level-1 { background: hsl(var(--chart-1) / 0.25); }
@@ -231,7 +270,7 @@
 .activity-future { background: transparent; border: 1px dashed hsl(var(--border)); }
 .activity-selected { outline: 2px solid hsl(var(--foreground)); outline-offset: 1px; }
 .activity-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
-.statistics-screen button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.statistics-screen button:focus-visible, .activity-cell:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
 /* A bounded date window fits the panel; totals always cover the analysis period. */
 .habit-matrix { --habit-cell: 28px; min-width: 0; }
 .habit-matrix table { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 3px; }
@@ -245,7 +284,7 @@
 .habit-PAUSED { border: 1px dashed hsl(var(--border)); }
 .habit-OUTSIDE { opacity: 0.5; }
 @media (max-width: 639px) {
-  .statistics-screen { --activity-cell: 44px; --activity-gap: 4px; }
+  .activity-scroll, .activity-loading { --activity-cell: 44px; --activity-gap: 4px; }
   .statistics-screen button, .statistics-screen input, .statistics-screen [role="combobox"] { min-height: 44px; min-width: 44px; }
   .habit-matrix { --habit-cell: 44px; }
   .activity-months { margin-bottom: 8px; }

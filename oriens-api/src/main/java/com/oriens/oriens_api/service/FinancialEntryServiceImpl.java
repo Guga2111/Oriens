@@ -1,5 +1,6 @@
 package com.oriens.oriens_api.service;
 
+import tools.jackson.core.JacksonException;
 import com.oriens.oriens_api.entity.FinancialEntry;
 import com.oriens.oriens_api.entity.Tag;
 import com.oriens.oriens_api.entity.dto.financial.EntryDTO;
@@ -28,7 +29,7 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
     private final java.time.Clock clock;
 
     private final WorkCreationService receipts;
-    private final com.fasterxml.jackson.databind.ObjectMapper json;
+    private final tools.jackson.databind.ObjectMapper json;
     private final jakarta.validation.Validator validator;
     private final jakarta.persistence.EntityManager em;
 
@@ -67,9 +68,9 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
             else {
                 var c=(Update)command;
                 var state=json.valueToTree(input(financialMapper.toDTO(entry)));
-                c.patch().values().forEach((name,value)->((com.fasterxml.jackson.databind.node.ObjectNode)state).set(name,value));
+                c.patch().values().forEach((name,value)->((tools.jackson.databind.node.ObjectNode)state).set(name,value));
                 try { input=json.treeToValue(state,Input.class); }
-                catch(java.io.IOException|IllegalArgumentException e) { throw fail("INVALID_REQUEST",null,"Campos financeiros inválidos."); }
+                catch(JacksonException|IllegalArgumentException e) { throw fail("INVALID_REQUEST",null,"Campos financeiros inválidos."); }
             }
             validate(input);
             Tag tag=tagRepository.findByUserIdAndId(owner,input.tagId()).orElseThrow(()->fail("NOT_FOUND","tagId","Categoria não encontrada."));

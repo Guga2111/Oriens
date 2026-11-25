@@ -55,7 +55,7 @@ test("a página 404 usa um Link tokenizado", async ({ page }) => {
 test("páginas públicas mantêm um h1 e cabem em 360 e 390px", async ({ page }) => {
   for (const width of [360, 390]) {
     await page.setViewportSize({ width, height: 844 });
-    for (const path of ["/", "/auth", "/reset-password", "/terms", "/rota-inexistente"]) {
+    for (const path of ["/", "/auth", "/terms", "/rota-inexistente"]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), path).toBeLessThanOrEqual(0);
