@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import tools.jackson.databind.*;
 import com.oriens.oriens_api.controller.*;
 import com.oriens.oriens_api.entity.*;
+import com.oriens.oriens_api.entity.enums.Priority;
+import com.oriens.oriens_api.entity.enums.Status;
 import com.oriens.oriens_api.repository.*;
 import com.oriens.oriens_api.security.*;
 import com.oriens.oriens_api.security.manager.CustomAuthManager;
@@ -115,6 +117,32 @@ class WorkApiPostgresTest {
     JsonNode getJson(String url) throws Exception {
         return body(mvc.perform(get(url).header("Authorization",token)).andExpect(status().isOk()).andReturn());
     }
+
+    @Test void exploreSortsTaskPriorityAndStatusAcrossPagesWithinOwner() throws Exception {
+        tx(() -> {
+            User workOwner = users.findById(owner).orElseThrow();
+            tasks.saveAll(List.of(
+                Task.builder().user(workOwner).title("Sem prioridade").priority(Priority.NONE).status(Status.PENDING).build(),
+                Task.builder().user(workOwner).title("Urgente").priority(Priority.URGENT).status(Status.ON_DOING).build(),
+                Task.builder().user(workOwner).title("Alta").priority(Priority.HIGH).status(Status.BACKLOG).build()));
+            return null;
+        });
+        String path = "/task/user/" + owner + "/all?size=1";
+        assertThat(getJson(path + "&sortBy=priority&direction=DESC&page=0").at("/content/0/title").asText()).isEqualTo("Urgente");
+        assertThat(getJson(path + "&sortBy=priority&direction=DESC&page=1").at("/content/0/title").asText()).isEqualTo("Alta");
+        assertThat(getJson(path + "&sortBy=priority&direction=ASC").at("/content/0/title").asText()).isEqualTo("Sem prioridade");
+        assertThat(getJson(path + "&sortBy=status&direction=ASC&page=1").at("/content/0/status").asText()).isEqualTo("PENDING");
+        mvc.perform(get(path + "&sortBy=priority").header("Authorization", other)).andExpect(status().isNotFound());
+    }
+
+    @Test void exploreSortsProjectsByDescriptionBeforePagination() throws Exception {
+        String path = "/project/user/" + owner;
+        send("POST", path, "{\"title\":\"Primeiro projeto\",\"mode\":\"SIMPLE\",\"description\":\"Revisar conteúdo\"}", UUID.randomUUID().toString(), token, 201);
+        send("POST", path, "{\"title\":\"Segundo projeto\",\"mode\":\"SIMPLE\",\"description\":\"Criar conteúdo\"}", UUID.randomUUID().toString(), token, 201);
+        assertThat(getJson(path + "?size=1&sortBy=description&direction=ASC").at("/content/0/title").asText()).isEqualTo("Segundo projeto");
+        assertThat(getJson(path + "?size=1&sortBy=description&direction=DESC").at("/content/0/title").asText()).isEqualTo("Primeiro projeto");
+    }
+
     Task fixtureTask(String name, String plan, String due, String time, com.oriens.oriens_api.entity.enums.Status status) {
         return tx(() -> tasks.saveAndFlush(Task.builder().user(users.findById(owner).orElseThrow()).title(name)
             .plannedDate(plan == null ? null : LocalDate.parse(plan)).dueDate(due == null ? null : LocalDate.parse(due))

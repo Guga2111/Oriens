@@ -102,10 +102,9 @@ public class TaskController {
             throw new com.oriens.oriens_api.exception.WorkDomainException("INVALID_REQUEST", "dateField", "Campo de data inválido.");
         if (dateField == null) dateField = "plannedDate";
         if (projectId != null) read.project(user, projectId);
-        Page<Task> result = tasks.findWorkFiltered(user, projectId, status, priority, search, dateField, startDate, endDate,
-            WorkPagination.of(page,size,sortBy,direction,"id","title","dueDate","plannedDate","startTime","priority","status","createdAt"))
-            ;
-        return new PageImpl<>(read.views(user, result.getContent()), result.getPageable(), result.getTotalElements());
+        var pageable = WorkPagination.of(page, size, sortBy, direction, "id", "title", "dueDate", "plannedDate", "startTime", "priority", "status", "createdAt");
+        Page<Task> result = tasks.findWorkFiltered(user, projectId, status, priority, search, dateField, startDate, endDate, TaskRepository.workOrder(pageable));
+        return new PageImpl<>(read.views(user, result.getContent()), pageable, result.getTotalElements());
     }
     @GetMapping("/user/{userId}/summary/weekly-counts")
     @Transactional(readOnly = true)

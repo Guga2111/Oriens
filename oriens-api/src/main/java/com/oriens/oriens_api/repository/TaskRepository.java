@@ -6,7 +6,10 @@ import com.oriens.oriens_api.entity.dto.statistics.TasksCompletedByTimeRangeDTO;
 import com.oriens.oriens_api.entity.enums.Priority;
 import com.oriens.oriens_api.entity.enums.Status;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,6 +34,19 @@ public interface TaskRepository extends JpaRepository<Task, Long>, org.springfra
     java.util.Optional<Task> lockReminder(@Param("id") Long id);
     @Query("select count(t) from Task t where t.user.id = :userId and t.status = 'CONCLUDED' and t.plannedDate between :startDate and :endDate")
     long countCompletedPlanned(@Param("userId") Long userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    /** Enum names are persisted as strings, so the work list needs an explicit domain order. */
+    static Pageable workOrder(Pageable page) {
+        Sort.Order order = page.getSort().iterator().next();
+        String expression = switch (order.getProperty()) {
+            case "priority" -> "(case t.priority when 'NONE' then 0 when 'LOW' then 1 when 'MEDIUM' then 2 when 'HIGH' then 3 else 4 end)";
+            case "status" -> "(case t.status when 'BACKLOG' then 0 when 'PENDING' then 1 when 'ON_DOING' then 2 when 'CANCELLED' then 3 else 4 end)";
+            default -> null;
+        };
+        if (expression == null) return page;
+        // Only fixed HQL expressions reach JpaSort. The controller validates the requested property first.
+        return PageRequest.of(page.getPageNumber(), page.getPageSize(), JpaSort.unsafe(order.getDirection(), expression).and(Sort.by("id")));
+    }
 
     @Query("select t from Task t where t.user.id = :owner and (:projectId is null or t.projectId = :projectId) " +
         "and (cast(:status as string) is null or t.status = :status) and (cast(:priority as string) is null or t.priority = :priority) " +
