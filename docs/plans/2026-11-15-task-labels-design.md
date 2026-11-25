@@ -55,7 +55,7 @@ A migração será entregue, mas não aplicada a banco compartilhado ou produç�
 
 As regras reutilizáveis estão na seção 22 da especificação frontend. A revisão
 SQL e o procedimento de implantação/rollback estão em
-[TASK_LABELS.md](../../oriens-api/ops/projects-refactor/TASK_LABELS.md).
+[TASK_LABELS.md](../../ops/projects-refactor/TASK_LABELS.md).
 Nenhum banco compartilhado foi alterado.
 
 ## Crítica visual final — componentes de app

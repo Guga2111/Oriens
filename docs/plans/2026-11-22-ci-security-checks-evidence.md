@@ -78,7 +78,7 @@ Com Java 17, Maven Wrapper e cache/configuração local isolados, o comando fina
 ```
 
 O Dependency-Check **13.0.0 concluiu a análise de 114 artefatos em 1 min 15 s**, produziu
-`oriens-api/target/dependency-check-report.html` e `.json`, e retornou **exit 1 por achados com
+`apps/api/target/dependency-check-report.html` e `.json`, e retornou **exit 1 por achados com
 CVSS >= 7**. O log identifica 11 artefatos bloqueantes, incluindo dependência de teste (`assertj-core`),
 Jackson, driver PostgreSQL, componentes Spring e Tomcat. Isso prova inclusão de testes e reprovação
 real de dependências existentes; não constitui confirmação manual de cada associação CPE/CVE.

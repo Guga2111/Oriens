@@ -2,7 +2,7 @@
 
 Data: 2026-11-16. Base: `30b4c85`; desenho aprovado registrado em `3bcfb12`.
 Contrato: [SPEC](2026-11-16-mcp-account-spec.md).
-Operação: [README](../../oriens-api/ops/mcp-account/README.md).
+Operação: [README](../../ops/mcp-account/README.md).
 Resultados sem credenciais: [JSON](2026-11-16-mcp-p2-evidence.json).
 
 ## Entrega

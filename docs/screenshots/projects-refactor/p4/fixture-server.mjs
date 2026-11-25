@@ -2,7 +2,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-const root = path.resolve(process.argv[2] || 'oriens-front/dist');
+const root = path.resolve(process.argv[2] || 'apps/client/dist');
 const port = Number(process.argv[3] || 4177);
 const token = ['eyJhbGciOiJub25lIn0', Buffer.from(JSON.stringify({ sub:'fixture@example.invalid', userId:1, username:'Demonstração', exp:4102444800 })).toString('base64url'), 'fixture'].join('.');
 const date = new Intl.DateTimeFormat('en-CA', {timeZone:'America/Recife',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());

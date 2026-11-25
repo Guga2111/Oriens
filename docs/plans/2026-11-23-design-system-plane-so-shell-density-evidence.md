@@ -20,7 +20,7 @@ Rotas, contratos, backend, paleta e dependências foram preservados. Na entrega 
 
 ## Provas automáticas
 
-Executadas em `oriens-front/`:
+Executadas em `apps/client/`:
 
 | Comando | Resultado |
 |---|---|

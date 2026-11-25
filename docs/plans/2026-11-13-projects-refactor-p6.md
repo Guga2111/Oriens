@@ -84,7 +84,7 @@ e inspeção. Isso não equivale a executar manualmente cada cenário no ambient
 produção. AC41 e o mecanismo de AC42 foram ensaiados em banco descartável; restore,
 contagens, acesso e autorização **do alvo real** continuam obrigatórios.
 
-O [runbook operacional](../../oriens-api/ops/projects-refactor/RELEASE.md) contém
+O [runbook operacional](../../ops/projects-refactor/RELEASE.md) contém
 pré-condições, registro restrito de autorização, backup/restore antes do reset,
 instalação separada/idempotente, primeira conta, rotação JWT, smoke tests e rollback
 antes/depois de novas escritas. A entrega é revisável sem identificar ou destruir

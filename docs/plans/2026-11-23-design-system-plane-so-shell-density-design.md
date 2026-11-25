@@ -213,16 +213,16 @@ Os `max-md:min-h-10` / `max-md:h-10` existentes ficam (toque no mobile).
 
 | Arquivo | Mudança |
 |---|---|
-| `oriens-front/src/components/layout/AppLayout.tsx` | estrutura §5.1 |
-| `oriens-front/src/components/layout/AppTopBar.tsx` (novo) | §5.5 |
-| `oriens-front/src/components/layout/AppContextRail.tsx` (novo) | §5.3 |
-| `oriens-front/src/components/layout/app-contexts.ts` (novo) | §5.2 |
-| `oriens-front/src/components/layout/AppSidebar.tsx` | §5.4; menu do usuário sai para a barra |
-| `oriens-front/src/components/common/AppHeader.tsx`, `PageHeader.tsx` | §5.5 |
-| `oriens-front/src/components/ui/{button,input,select,toggle,tabs}.tsx` | §5.6 |
-| `oriens-front/src/components/projects/ProjectBoard.tsx` | kanban §5.6 |
-| `oriens-front/src/index.css`, `tailwind.config.ts` | tokens de geometria, `--sidebar-background` |
-| `oriens-front/src/__tests__/`, `oriens-front/e2e/` | testes de §9 e ajustes de navegação |
+| `apps/client/src/components/layout/AppLayout.tsx` | estrutura §5.1 |
+| `apps/client/src/components/layout/AppTopBar.tsx` (novo) | §5.5 |
+| `apps/client/src/components/layout/AppContextRail.tsx` (novo) | §5.3 |
+| `apps/client/src/components/layout/app-contexts.ts` (novo) | §5.2 |
+| `apps/client/src/components/layout/AppSidebar.tsx` | §5.4; menu do usuário sai para a barra |
+| `apps/client/src/components/common/AppHeader.tsx`, `PageHeader.tsx` | §5.5 |
+| `apps/client/src/components/ui/{button,input,select,toggle,tabs}.tsx` | §5.6 |
+| `apps/client/src/components/projects/ProjectBoard.tsx` | kanban §5.6 |
+| `apps/client/src/index.css`, `tailwind.config.ts` | tokens de geometria, `--sidebar-background` |
+| `apps/client/src/__tests__/`, `apps/client/e2e/` | testes de §9 e ajustes de navegação |
 
 `ui/sidebar.tsx` não muda: `collapsible="none"` e `SidebarMenuSub` já existem.
 

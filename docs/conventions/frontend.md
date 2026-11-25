@@ -1,4 +1,4 @@
-# Frontend — padrões e antipadrões (`oriens-front`)
+# Frontend — padrões e antipadrões (`apps/client`)
 
 Stack: Vite 5 · React 18 · TypeScript · Tailwind CSS 3 · shadcn/ui (Radix, estilo `default`, base `slate`,
 CSS variables) · TanStack Query 5 · Axios · date-fns · lucide-react · recharts · sonner · Vitest +

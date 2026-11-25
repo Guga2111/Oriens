@@ -84,12 +84,12 @@ O custo da inferência permanece na relação entre usuário e cliente escolhido
 ## 4. Estado atual e responsáveis
 
 Os caminhos completos são relativos à raiz do repositório. Pacotes Java
-abreviados pertencem a `oriens-api/src/main/java/com/oriens/oriens_api/`; os
-componentes e o contexto do frontend pertencem a `oriens-front/src/`.
+abreviados pertencem a `apps/api/src/main/java/com/oriens/oriens_api/`; os
+componentes e o contexto do frontend pertencem a `apps/client/src/`.
 
 | Área atual | Evidência | Consequência para a implementação |
 | --- | --- | --- |
-| Stack | `oriens-api/pom.xml`: Java 17, Spring Boot 3.5.6, MVC, Security, JPA e PostgreSQL | Escolher dependências compatíveis; não migrar stack para instalar o MCP. |
+| Stack | `apps/api/pom.xml`: Java 17, Spring Boot 3.5.6, MVC, Security, JPA e PostgreSQL | Escolher dependências compatíveis; não migrar stack para instalar o MCP. |
 | Login | `security/filters/AuthenticationFilter.java` e `JWTAuthorizationFilter.java` | Preservar autenticação atual; credenciais MCP têm validação e uso separados. |
 | Identidade | `security/WorkOwner.java` resolve o usuário pelo principal atual | Gestão de conexões usa identidade autenticada; ferramentas usam principal delegado com ID estável do usuário. |
 | Projetos e tarefas | `service/ProjectWorkService.java` | É a fronteira canônica de escrita; preservar locks, versões, transições e regras de associação. |
@@ -1005,7 +1005,7 @@ contratos não exigem uma nova rodada de aprovação.
 ## 20. Referências
 
 - [Design existente de projetos](2026-11-13-projects-refactor-design.md) e [SPEC executável](2026-11-13-projects-refactor-spec.md): invariantes de tarefas/projetos.
-- [Evolução de estatísticas e recorrência](../../oriens-api/ops/projects-refactor/STATISTICS.md): operação e segurança dos dados financeiros.
+- [Evolução de estatísticas e recorrência](../../ops/projects-refactor/STATISTICS.md): operação e segurança dos dados financeiros.
 - [MCP — autorização](https://modelcontextprotocol.io/specification/latest/basic/authorization): papéis e descoberta OAuth.
 - [MCP — ferramentas](https://modelcontextprotocol.io/specification/latest/server/tools): schemas, descoberta e execução.
 - [MCP — segurança](https://modelcontextprotocol.io/specification/latest/basic/security_best_practices): fronteiras e ameaças do protocolo.

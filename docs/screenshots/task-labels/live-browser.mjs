@@ -1,5 +1,5 @@
 // Full label lifecycle against the disposable JWT/JPA/PostgreSQL API, no mocked work endpoints.
-import { chromium } from '../../../oriens-front/node_modules/playwright/index.mjs';
+import { chromium } from '../../../apps/client/node_modules/playwright/index.mjs';
 import assert from 'node:assert/strict';
 const [base, project, linked, standalone] = process.argv.slice(2);
 const browser = await chromium.launch({ headless: true, executablePath: '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser' });

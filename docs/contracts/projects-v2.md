@@ -191,4 +191,4 @@ altera campos escalares, não há incremento duplicado. PATCH normal preserva as
 precondições de projeto existentes; não muda a versão estrutural do projeto ao
 editar somente etiquetas. Criação preserva recibos legados quando não há etiquetas.
 
-[Procedimento aditivo, rollback e compatibilidade](../../oriens-api/ops/projects-refactor/TASK_LABELS.md).
+[Procedimento aditivo, rollback e compatibilidade](../../ops/projects-refactor/TASK_LABELS.md).

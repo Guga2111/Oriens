@@ -83,7 +83,7 @@ Executado na raiz, salvo indicação:
 | --- | --- |
 | python3 oriens-api/ops/projects-refactor/test_p2.py | 11 testes reais MVC/JPA/PostgreSQL: 8 P2 + 3 cenários P3 compostos; passou |
 | python3 oriens-api/ops/projects-refactor/test_p1.py | 13 testes PostgreSQL de invariantes/locks/rollback; passou |
-| mvn -q -o -f oriens-api/pom.xml test | 40 comuns passaram; só os 2 erros preexistentes de P1/P2; 24 opt-in desabilitados |
+| mvn -q -o -f apps/api/pom.xml test | 40 comuns passaram; só os 2 erros preexistentes de P1/P2; 24 opt-in desabilitados |
 | npm test, em oriens-front | 76 testes em 20 arquivos; passou |
 | tsc --noEmit -p tsconfig.app.json | passou |
 | ESLint de hooks, contratos/serviços, helpers novos, tabelas, AllData e testes Query | passou |

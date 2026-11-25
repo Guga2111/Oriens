@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { chromium } from '../../../oriens-front/node_modules/playwright-core/index.mjs';
+import { chromium } from '../../../apps/client/node_modules/playwright-core/index.mjs';
 const base=process.argv[2]||'http://127.0.0.1:4215',checks=[];
 const browser=await chromium.launch({executablePath:'/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',headless:true});
 try{

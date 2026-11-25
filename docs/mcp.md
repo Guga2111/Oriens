@@ -6,11 +6,11 @@ O processamento e o custo do modelo pertencem ao cliente/provedor escolhido.
 
 ## Habilitar no Docker local
 
-O Compose de desenvolvimento lê `oriens-api/.env` e repassa as opções MCP para
+O Compose de desenvolvimento lê `.env` na raiz e repassa as opções MCP para
 o Spring. O recurso continua desligado quando `ORIENS_MCP_ENABLED` não é definido.
 A porta da API de desenvolvimento fica restrita a `127.0.0.1`.
 
-No arquivo `oriens-api/.env`, preserve o `JWT_SECRET` existente e configure:
+No arquivo `.env`, preserve o `JWT_SECRET` existente e configure:
 
 ```dotenv
 ORIENS_MCP_ENABLED=true
@@ -26,16 +26,16 @@ Guarde esse arquivo fora do Git, com permissão `600`. Gere os dois valores de
 proteção uma vez e preserve-os entre reinícios; substituí-los exige o procedimento
 de rotação do runbook. O schema MCP é criado pelo Flyway quando a API sobe.
 
-Na pasta `oriens-api`, recrie somente a API:
+Na raiz do repositório, recrie somente a API:
 
 ```sh
-docker compose --env-file .env -f docker-compose.dev.yml up -d --no-deps oriens-api-dev
+docker compose --env-file .env -f ops/compose/docker-compose.dev.yml up -d --no-deps oriens-api-dev
 ```
 
 Se a imagem ainda não contém a implementação MCP, acrescente `--build` ao
 comando. O banco e seu volume não precisam ser recriados.
 
-No frontend, configure `oriens-front/.env.development.local`:
+No frontend, configure `apps/client/.env.development.local`:
 
 ```dotenv
 VITE_API_BASE_URL=http://127.0.0.1:8080
@@ -144,7 +144,7 @@ histórico, mas não podem voltar a operar: uma nova autorização é necessári
 ## Operação e publicação
 
 O procedimento de schema, segredos, limites, retenção, rotação e recuperação está
-em [ops/mcp-account](../oriens-api/ops/mcp-account/README.md). MCP permanece
+em [ops/mcp-account](../ops/mcp-account/README.md). MCP permanece
 **desabilitado por padrão**. P4 não acrescenta migração nem habilita ambientes.
 
 Antes de habilitar um ambiente público:
