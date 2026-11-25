@@ -23,7 +23,21 @@ function userIdFromToken(token: string): number {
  * Semeia dois meses para que a troca de período mude os indicadores.
  * A conta E2E é nova a cada run, então os valores são determinísticos.
  */
+type SeedEntry = { amount: number; tagId: number; entryDate: string; description: string; isRecurring: boolean };
+type SeedTags = { incomeTagId: number; expenseTagId: number };
+
 async function seedEntries(request: APIRequestContext): Promise<void> {
+  const now = new Date();
+  const previous = addMonths(now, -1);
+  await postEntries(request, ({ incomeTagId, expenseTagId }) => [
+    { amount: 1000, tagId: incomeTagId, entryDate: format(now, "yyyy-MM-05"), description: "Receita do mês", isRecurring: false },
+    { amount: -250, tagId: expenseTagId, entryDate: format(now, "yyyy-MM-06"), description: "Gasto do mês", isRecurring: false },
+    { amount: 500, tagId: incomeTagId, entryDate: format(previous, "yyyy-MM-10"), description: "Receita anterior", isRecurring: false },
+    { amount: -100, tagId: expenseTagId, entryDate: format(previous, "yyyy-MM-11"), description: "Gasto anterior", isRecurring: false },
+  ]);
+}
+
+async function postEntries(request: APIRequestContext, build: (tags: SeedTags) => SeedEntry[]): Promise<void> {
   const token = process.env.E2E_TOKEN;
   if (!token) throw new Error("E2E_TOKEN ausente — globalSetup não rodou?");
 
@@ -40,39 +54,7 @@ async function seedEntries(request: APIRequestContext): Promise<void> {
   const incomeTagId = tags.find((tag) => tag.name === "Salário")!.id;
   const expenseTagId = tags.find((tag) => !["Salário", "Investimentos"].includes(tag.name))!.id;
 
-  const now = new Date();
-  const previous = addMonths(now, -1);
-
-  const entries = [
-    {
-      amount: 1000,
-      tagId: incomeTagId,
-      entryDate: format(now, "yyyy-MM-05"),
-      description: "Receita do mês",
-      isRecurring: false,
-    },
-    {
-      amount: -250,
-      tagId: expenseTagId,
-      entryDate: format(now, "yyyy-MM-06"),
-      description: "Gasto do mês",
-      isRecurring: false,
-    },
-    {
-      amount: 500,
-      tagId: incomeTagId,
-      entryDate: format(previous, "yyyy-MM-10"),
-      description: "Receita anterior",
-      isRecurring: false,
-    },
-    {
-      amount: -100,
-      tagId: expenseTagId,
-      entryDate: format(previous, "yyyy-MM-11"),
-      description: "Gasto anterior",
-      isRecurring: false,
-    },
-  ];
+  const entries = build({ incomeTagId, expenseTagId });
 
   for (const entry of entries) {
     const response = await request.post(
@@ -139,6 +121,61 @@ test("troca de mês atualiza os indicadores e a categoria abre o histórico", as
     page.getByText(monthLabel(new Date()), { exact: true })
   ).toBeVisible();
   await expect(metric("Resultado do mês")).toHaveText("R$ 750,00");
+});
+
+// Lançamentos (#118): busca e filtros ficam na barra superior, combinam-se,
+// seguem na URL e sobrevivem a uma edição; limpar devolve o histórico completo.
+test("busca e filtros do histórico combinam, seguem na URL e persistem após editar", async ({ page, request }, testInfo) => {
+  // A conta é compartilhada entre os projetos; o sufixo isola os lançamentos de cada um.
+  const suffix = testInfo.project.name;
+  // Um mês futuro não altera os indicadores verificados pelo teste da Visão geral.
+  const day = format(addMonths(new Date(), 2), "yyyy-MM-03");
+  await postEntries(request, ({ incomeTagId, expenseTagId }) => [
+    { amount: -40, tagId: expenseTagId, entryDate: day, description: `Mercado ${suffix}`, isRecurring: false },
+    { amount: -15, tagId: expenseTagId, entryDate: day, description: `Padaria ${suffix}`, isRecurring: false },
+    { amount: 300, tagId: incomeTagId, entryDate: day, description: `Freela ${suffix}`, isRecurring: false },
+  ]);
+  await login(page);
+  await page.goto("/financial/entries");
+  await expect(page.getByRole("heading", { level: 1, name: "Lançamentos" })).toBeAttached();
+  const history = testInfo.project.name === "mobile"
+    ? page.getByRole("list", { name: "Lista de entradas" })
+    : page.getByRole("table");
+
+  await page.getByRole("button", { name: "Buscar lançamentos" }).click();
+  await page.getByRole("searchbox", { name: "Buscar na descrição" }).fill(`Mercado ${suffix}`);
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/[?&]q=Mercado/);
+  await expect(history.getByText(`Mercado ${suffix}`)).toBeVisible();
+  await expect(history.getByText(`Padaria ${suffix}`)).toHaveCount(0);
+
+  // Busca e categoria se combinam: a receita não tem "Mercado" na descrição.
+  await page.getByRole("button", { name: /^Filtros/ }).click();
+  const filters = page.getByRole("dialog", { name: "Filtros" });
+  await filters.getByRole("combobox", { name: "Categoria" }).click();
+  await page.getByRole("option", { name: "Salário" }).click();
+  await expect(page).toHaveURL(/[?&]tag=\d+/);
+  await expect(page.getByText("Nenhum resultado encontrado")).toBeVisible();
+
+  await filters.getByRole("button", { name: "Limpar filtros" }).click();
+  await page.keyboard.press("Escape");
+  await expect(filters).toBeHidden();
+  await expect(page).toHaveURL(/\/financial\/entries$/);
+  await expect(history.getByText(`Padaria ${suffix}`)).toBeVisible();
+
+  // Editar com a busca ativa mantém o recorte e mostra o valor novo.
+  await page.getByRole("button", { name: "Buscar lançamentos" }).click();
+  await page.getByRole("searchbox", { name: "Buscar na descrição" }).fill(`Padaria ${suffix}`);
+  await page.keyboard.press("Enter");
+  await expect(history.getByText(`Mercado ${suffix}`)).toHaveCount(0);
+  await history.getByRole("button", { name: `Editar entrada: Padaria ${suffix}` }).click();
+  const dialog = page.getByRole("dialog", { name: "Editar Entrada" });
+  await dialog.getByLabel("Valor").fill("-18");
+  await dialog.getByRole("button", { name: "Salvar Alterações" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(history.getByText("− R$ 18,00")).toBeVisible();
+  await expect(page).toHaveURL(/[?&]q=Padaria/);
+  await expect(history.getByText(`Mercado ${suffix}`)).toHaveCount(0);
 });
 
 // BE6: POST /financial/user/{id}/tags devolve 403 para conta nova.
