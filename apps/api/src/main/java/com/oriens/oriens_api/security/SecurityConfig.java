@@ -65,6 +65,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, SecurityConstants.REGISTER_PATH).permitAll()
                         .requestMatchers("/profile-pictures/**").permitAll() // para conseguir pegar as imagens
                         .requestMatchers("/projects-pictures/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/task/attachments/content/*/*").permitAll()
+                        .requestMatchers(HttpMethod.HEAD, "/task/attachments/content/*/*").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/user/init-admin").denyAll()
                         // user routes

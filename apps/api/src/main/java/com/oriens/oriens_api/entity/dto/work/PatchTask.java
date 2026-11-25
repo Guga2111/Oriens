@@ -23,6 +23,9 @@ public class PatchTask extends PatchFields {
     private String description;
     public String getDescription() { return description; }
     public void setDescription(String value) { supplied("description"); description = value; }
+    private TaskDescriptionDocument descriptionDoc;
+    public TaskDescriptionDocument getDescriptionDoc() { return descriptionDoc; }
+    public void setDescriptionDoc(TaskDescriptionDocument value) { supplied("descriptionDoc"); descriptionDoc = value; }
     private Long projectId;
     public Long getProjectId() { return projectId; }
     public void setProjectId(Long value) { supplied("projectId"); projectId = value; }

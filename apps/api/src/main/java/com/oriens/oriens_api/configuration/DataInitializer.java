@@ -34,9 +34,32 @@ import java.util.UUID;
 @Slf4j
 public class DataInitializer implements ApplicationRunner {
     static final String EMAIL = "luisgosampaio@gmail.com";
+    private static final String DESCRIPTION_EXAMPLE = """
+        ## Fluxo de revisão
+
+        Acompanhe a publicação do portfólio da primeira versão até a entrega.
+
+        ```mermaid
+        flowchart LR
+            draft[Rascunho] --> review[Revisão] --> done[Publicação]
+        ```
+
+        ## Etapas da entrega
+
+        | Etapa | Responsável | Situação |
+        | --- | --- | --- |
+        | Preparar a página | Design | Concluída |
+        | Revisar o conteúdo | Conteúdo | Em andamento |
+        | Publicar o portfólio | Desenvolvimento | Pendente |
+
+        - [x] Preparar a primeira versão
+        - [ ] Conferir links e revisar o conteúdo
+        - [ ] Publicar o portfólio
+        """;
     private final UserRepository users;
     private final UserService userService;
     private final ProjectWorkService work;
+    private final TaskDescriptionCodec descriptions;
     private final ProjectColumnRepository columns;
     private final TaskLabelService labels;
     private final HabitService habits;
@@ -117,6 +140,9 @@ public class DataInitializer implements ApplicationRunner {
                 today, LocalTime.of(9 + status.ordinal(), 0), today.plusDays(3),
                 Priority.values()[status.ordinal() % Priority.values().length], null, labelIds.subList(0, 2)));
         }
+        work.createTask(owner, new CreateTask("Explorar o editor de descrição", null,
+            board.getId(), board.getVersion(), null, null, today, null, null,
+            Priority.MEDIUM, null, List.of(), descriptions.fromMarkdown(DESCRIPTION_EXAMPLE)));
         work.createTask(owner, new CreateTask("Comprar itens para a semana", "Lista pessoal sem vínculo com projeto.",
             null, null, null, null, today, LocalTime.of(18, 30), today, Priority.MEDIUM,
             new Location("Recife, PE", -8.0476, -34.8770), List.of(labelIds.get(4))));

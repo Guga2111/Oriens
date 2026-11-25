@@ -22,6 +22,7 @@ public class WorkReadService {
     private final TaskLabelService taskLabels;
     private final ProjectRepository projects;
     private final TaskRepository tasks;
+    private final TaskDescriptionCodec descriptions;
     private final ObjectiveRepository objectives;
     private final ProjectColumnRepository columns;
     public Project project(Long owner, Long id) {
@@ -32,10 +33,14 @@ public class WorkReadService {
     }
     public TaskView taskView(Long owner, Long id) { return view(owner, task(owner, id)); }
     public ProjectView projectView(Long owner, Long id) { return projectViews(owner, List.of(project(owner, id)), true).get(0); }
-    public TaskView view(Long owner, Task task) { return views(owner, List.of(task)).get(0); }
+    public TaskView view(Long owner, Task task) { return views(owner, List.of(task), true).get(0); }
 
     /** Bounded batch projection: one query per link type, never one query per task. */
     public List<TaskView> views(Long owner, List<Task> source) {
+        return views(owner, source, false);
+    }
+
+    private List<TaskView> views(Long owner, List<Task> source, boolean includeDocument) {
         Set<Long> projectIds = source.stream().map(Task::getProjectId).filter(Objects::nonNull).collect(Collectors.toSet());
         Map<Long, Project> ps = projects.findAllById(projectIds).stream()
             .filter(p -> p.getUser().getId().equals(owner)).collect(Collectors.toMap(Project::getId, Function.identity()));
@@ -49,10 +54,13 @@ public class WorkReadService {
             Project p = ps.get(t.getProjectId());
             Objective o = os.get(t.getObjectiveId()); ProjectColumn c = cs.get(t.getColumnId());
             if (t.getProjectId() != null && p == null) throw missing();
+            var document = descriptions.read(t.getDescriptionDoc());
+            String descriptionText = document == null ? null : TaskDescriptionCodec.plainText(document.content());
             return new TaskView(t.getId(), owner, t.getTitle(), t.getDescription(), t.getProjectId(), t.getObjectiveId(), t.getColumnId(),
                 t.getPosition(), t.getPlannedDate(), t.getStartTime(), t.getDueDate(), t.getPriority(), t.getStatus(), t.getCompletedAt(),
                 t.getCreatedAt(), t.getLocation(), t.getVersion(), p == null ? null : new ProjectLink(p.getId(), p.getTitle(), p.getArchived(), p.getVersion()),
-                o == null ? null : new ObjectiveLink(o.getId(), o.getTitle()), c == null ? null : new ColumnLink(c.getId(), c.getName(), c.getKind()), labels.getOrDefault(t.getId(), List.of()));
+                o == null ? null : new ObjectiveLink(o.getId(), o.getTitle()), c == null ? null : new ColumnLink(c.getId(), c.getName(), c.getKind()),
+                labels.getOrDefault(t.getId(), List.of()), descriptionText, includeDocument ? document : null);
         }).toList();
     }
     private LocalDate today() { return LocalDate.now(clock.withZone(ProductClockConfiguration.ZONE)); }

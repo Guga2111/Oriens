@@ -8,8 +8,10 @@ import io.modelcontextprotocol.json.jackson3.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.server.*;
 import org.springframework.ai.mcp.server.webmvc.transport.WebMvcStatelessServerTransport;
 import io.modelcontextprotocol.spec.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.*;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.function.*;
 import reactor.core.publisher.Mono;
 import java.time.*;
@@ -18,8 +20,11 @@ import java.util.*;
 @Configuration(proxyBeanMethods=false)
 @ConditionalOnProperty(name="oriens.mcp.enabled",havingValue="true")
 public class McpTransport {
-    @Bean McpWorkTools mcpWorkTools(McpStore store,McpRateLimiter limits,ScopedWorkReadService read,ProjectWorkService work,WorkCreationService receipts,JsonMapper json,Clock clock,FinancialEntryServiceImpl finance,FinancialStatisticsService statistics,org.springframework.jdbc.core.JdbcTemplate db) {
-        return new McpWorkTools(store,limits,read,work,receipts,json,clock,new McpFinancialTools(finance,statistics,db,json));
+    @Bean McpWorkTools mcpWorkTools(McpStore store,McpRateLimiter limits,ScopedWorkReadService read,ProjectWorkService work,WorkCreationService receipts,JsonMapper json,Clock clock,FinancialEntryServiceImpl finance,FinancialStatisticsService statistics,JdbcTemplate db,
+                                    TaskDescriptionCodec descriptions, TaskAttachmentService attachments, McpProperties properties,
+                                    @Value("${file.task-download-public-prefix:}") String publicApiPrefix) {
+        return new McpWorkTools(store,limits,read,work,receipts,json,clock,new McpFinancialTools(finance,statistics,db,json),
+            descriptions,attachments,properties.base() + publicApiPrefix);
     }
     @Bean WebMvcStatelessServerTransport mcpHttpTransport() {
         var mapper=new JacksonMcpJsonMapper(JsonMapper.builder().enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build());

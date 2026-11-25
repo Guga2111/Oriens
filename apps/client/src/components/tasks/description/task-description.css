@@ -1,0 +1,197 @@
+.task-description {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.task-description .tiptap {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.description-editor .tiptap {
+  min-height: 5rem;
+  padding: 0.5rem 0.5rem 0.5rem 2rem;
+  outline: none;
+}
+
+.description-editor {
+  border-radius: calc(var(--radius) - 2px);
+  margin-top: 0.25rem;
+}
+
+.description-editor:focus-within {
+  box-shadow: 0 0 0 1px hsl(var(--ring));
+}
+
+.task-description .tiptap > * + * {
+  margin-top: 0.5rem;
+}
+
+.task-description .tiptap h1,
+.task-description .tiptap h2,
+.task-description .tiptap h3,
+.task-description .tiptap h4,
+.task-description .tiptap h5,
+.task-description .tiptap h6 {
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.task-description .tiptap h1 { font-size: 1.5rem; }
+.task-description .tiptap h2 { font-size: 1.25rem; }
+.task-description .tiptap h3 { font-size: 1.125rem; }
+.task-description .tiptap h4 { font-size: 1rem; }
+.task-description .tiptap h5 { font-size: 0.875rem; }
+.task-description .tiptap h6 { font-size: 0.8125rem; color: hsl(var(--muted-foreground)); }
+
+.task-description .tiptap a {
+  color: hsl(var(--foreground));
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.task-description .tiptap blockquote {
+  padding-inline-start: 0.75rem;
+  border-inline-start: 1px solid hsl(var(--border));
+}
+
+.task-description .tiptap [data-oriens-note],
+.task-description .description-toggle {
+  padding: 0.5rem 0.75rem;
+  background: hsl(var(--muted));
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.task-description .tiptap ul:not([data-type="taskList"]),
+.task-description .tiptap ol {
+  padding-inline-start: 1.35rem;
+}
+
+.task-description .tiptap ul:not([data-type="taskList"]) { list-style: disc; }
+.task-description .tiptap ol { list-style: decimal; }
+
+.task-description .tiptap ul[data-type="taskList"] > li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.task-description .tiptap ul[data-type="taskList"] > li > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.task-description .tiptap input[type="checkbox"] {
+  accent-color: hsl(var(--primary));
+}
+
+.task-description .tiptap hr {
+  border-color: hsl(var(--border));
+}
+
+.task-description .tableWrapper,
+.task-description pre {
+  overflow-x: auto;
+}
+
+.task-description table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.task-description td,
+.task-description th {
+  border: 1px solid hsl(var(--border));
+  padding: 0.375rem 0.5rem;
+  min-width: 4rem;
+  text-align: start;
+  vertical-align: top;
+}
+
+.task-description th {
+  background: hsl(var(--muted));
+  font-weight: 600;
+}
+
+.task-description [data-align="left"] { text-align: left; }
+.task-description [data-align="center"] { text-align: center; }
+.task-description [data-align="right"] { text-align: right; }
+
+.task-description .tiptap code {
+  padding: 0.1rem 0.25rem;
+  border-radius: calc(var(--radius) - 4px);
+  background: hsl(var(--muted));
+  font-size: 0.8125rem;
+}
+
+.task-description .description-code {
+  background: hsl(var(--muted));
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.task-description pre {
+  padding: 0.5rem 0.75rem;
+  white-space: pre;
+}
+
+.task-description pre code { padding: 0; }
+.task-description .hljs-keyword,
+.task-description .hljs-built_in { color: hsl(var(--description-ink-violet)); }
+.task-description .hljs-string { color: hsl(var(--description-ink-green)); }
+.task-description .hljs-number { color: hsl(var(--description-ink-blue)); }
+.task-description .hljs-comment { color: hsl(var(--muted-foreground)); }
+
+.task-description .description-media {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 100%;
+}
+
+.task-description :is(img, video) {
+  display: block;
+  max-width: 100%;
+  max-height: 24rem;
+  border-radius: calc(var(--radius) - 2px);
+  object-fit: contain;
+}
+
+.task-description .description-diagram { background: hsl(var(--description-diagram-surface)); }
+
+.task-description .is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: hsl(var(--muted-foreground));
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.task-description .description-grip { cursor: grab; }
+.task-description .description-grip:active { cursor: grabbing; }
+.task-description .description-dragging .ProseMirror-selectednode,
+.task-description .selectedCell { background: hsl(var(--accent)); }
+
+.description-preview {
+  --description-preview-height: 224px;
+}
+
+.description-preview-clipped {
+  max-height: var(--description-preview-height);
+  overflow: hidden;
+}
+
+.description-preview-fade {
+  mask-image: linear-gradient(to bottom, black calc(100% - 2.5rem), transparent);
+}
+
+[data-description-tone="red"] { color: hsl(var(--description-ink-red)); }
+[data-description-tone="amber"] { color: hsl(var(--description-ink-amber)); }
+[data-description-tone="green"] { color: hsl(var(--description-ink-green)); }
+[data-description-tone="blue"] { color: hsl(var(--description-ink-blue)); }
+[data-description-tone="violet"] { color: hsl(var(--description-ink-violet)); }
+[data-description-highlight="red"] { background-color: hsl(var(--description-highlight-red)); }
+[data-description-highlight="amber"] { background-color: hsl(var(--description-highlight-amber)); }
+[data-description-highlight="green"] { background-color: hsl(var(--description-highlight-green)); }
+[data-description-highlight="blue"] { background-color: hsl(var(--description-highlight-blue)); }
+[data-description-highlight="violet"] { background-color: hsl(var(--description-highlight-violet)); }

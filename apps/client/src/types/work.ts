@@ -4,6 +4,8 @@ import type { LocationDTO, TaskPriority, TaskStatus } from './task';
 export interface WorkTask {
   labels?: TaskLabel[];
   id: number; userId: number; title: string; description: string | null;
+  descriptionText?: string | null;
+  descriptionDoc?: TaskDescriptionDocument | null;
   projectId: number | null; objectiveId: number | null; columnId: number | null; position: number | null;
   plannedDate: string | null; startTime: string | null; dueDate: string | null; completedAt: string | null;
   createdAt: string; priority: TaskPriority; status: TaskStatus; location: LocationDTO | null; version: number;
@@ -11,6 +13,7 @@ export interface WorkTask {
   objective: { id: number; title: string } | null;
   column: { id: number; name: string; kind: TaskStatus } | null;
 }
+export interface TaskDescriptionDocument { schemaVersion: 1; content: JSONContent }
 export interface WorkObjective {
   id: number; projectId: number; title: string; dueDate: string | null;
   description?: string | null; startDate?: string | null;
@@ -55,6 +58,7 @@ export interface TaskPatch {
   labelIds?: number[];
   version: number; projectVersion?: number; targetProjectVersion?: number;
   title?: string; description?: string | null; projectId?: number | null; objectiveId?: number | null;
+  descriptionDoc?: TaskDescriptionDocument | null;
   columnId?: number; status?: TaskStatus; plannedDate?: string | null; startTime?: string | null;
   dueDate?: string | null; priority?: TaskPriority; location?: LocationDTO | null; beforeTaskId?: number | null;
 }
@@ -82,3 +86,4 @@ export type ProjectWrite =
   | { action: 'column-order'; id: number; body: { projectVersion: number; columnIds: number[] } }
   | { action: 'defaults'; id: number; body: { projectVersion: number; pendingColumnId: number; completedColumnId: number } }
   | { action: 'column-remove'; id: number; columnId: number; body: { projectVersion: number; targetColumnId?: number; replacementPendingColumnId?: number; replacementCompletedColumnId?: number } };
+import type { JSONContent } from '@tiptap/core';

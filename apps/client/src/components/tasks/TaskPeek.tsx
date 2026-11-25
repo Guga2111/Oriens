@@ -1,5 +1,5 @@
 import { useRecordVisit } from '@/hooks/useHome';
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { isAxiosError } from "axios";
 import {
@@ -9,6 +9,7 @@ import {
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { InlineText } from "@/components/common/InlineText";
+import { TaskDescriptionSection } from "./description/TaskDescriptionSection";
 import { WorkFeedback } from "@/components/common/WorkFeedback";
 import {
   DueProperty, LabelsProperty, PlannedProperty, PriorityProperty, TimeProperty, type SaveTask,
@@ -36,6 +37,7 @@ import { cn } from "@/lib/utils";
 import type { TaskView } from "@/types/settings";
 import type { TaskStatus } from "@/types/task";
 import type { WorkTask } from "@/types/work";
+
 
 /** A standalone task moves between these; a project task's state comes from its board column. */
 const STANDALONE_STATUSES: TaskStatus[] = ["PENDING", "ON_DOING", "CONCLUDED"];
@@ -146,7 +148,7 @@ function Row({ icon: Icon, label, children }: { icon: typeof Circle; label: stri
 
 const empty = <span className="text-muted-foreground">—</span>;
 
-function PeekBody({ task, onSave, disabled }: { task: WorkTask; onSave: SaveTask; disabled: boolean }) {
+function PeekBody({ task, onSave, disabled, descriptionLoading }: { task: WorkTask; onSave: SaveTask; disabled: boolean; descriptionLoading: boolean }) {
   return (
     <div className="flex min-w-0 flex-col gap-8">
       <div className="flex flex-col gap-4">
@@ -159,8 +161,7 @@ function PeekBody({ task, onSave, disabled }: { task: WorkTask; onSave: SaveTask
           <div className={strip}><TimeProperty task={task} onSave={onSave} disabled={disabled} bare /></div>
           <div className={strip}><DueProperty task={task} onSave={onSave} disabled={disabled} bare /></div>
         </div>
-        <InlineText multiline value={task.description ?? ""} label="Descrição" placeholder="Adicionar descrição…" maxLength={10000}
-          className="text-sm leading-relaxed" onCommit={description => onSave({ description: description || null })} />
+        <TaskDescriptionSection key={task.id} task={task} loading={descriptionLoading} />
       </div>
 
       <section aria-labelledby="task-peek-properties" className="flex flex-col gap-4">
@@ -223,7 +224,10 @@ function ViewModeMenu({ mode, onChange }: { mode: TaskView; onChange: (mode: Tas
 }
 
 /** Escape first leaves a field being edited (restoring its text) and only then closes the task. */
-const keepOpenWhileEditing = (event: KeyboardEvent) => { if (isEditingInline()) event.preventDefault(); };
+const keepOpenWhileEditing = (event: KeyboardEvent) => {
+  const target = event.target;
+  if (isEditingInline() || (target instanceof Element && target.closest("[data-description-editing]"))) event.preventDefault();
+};
 
 /**
  * Plane-style task view, shown as a side panel next to the list (the list stays usable and a click outside
@@ -238,6 +242,9 @@ export function TaskPeek({ taskId, placeholder, onClose, onEdit }: {
   const [mode, setMode] = useTaskView();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const body = useRef<HTMLDivElement>(null);
+  // Arrow keys and Page Up/Down scroll the focused scroller, so start there instead of on the header buttons.
+  const focusBody = (event: Event) => { event.preventDefault(); body.current?.focus({ preventScroll: true }); };
   const task = detail.data;
   useRecordVisit("TASK", detail.isSuccess && !detail.isPlaceholderData ? taskId : undefined);
   const missing = isAxiosError(detail.error) && detail.error.response?.status === 404;
@@ -285,7 +292,9 @@ export function TaskPeek({ taskId, placeholder, onClose, onEdit }: {
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+      {/* Chromium drops focus to <body> on clicks inside the read-only editor (contenteditable="false"). */}
+      <div ref={body} tabIndex={-1} onMouseUp={() => { if (document.activeElement === document.body) body.current?.focus({ preventScroll: true }); }}
+        className="min-h-0 flex-1 overflow-y-auto px-6 py-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
         <div className={cn("mx-auto flex w-full flex-col", mode === "full" && "max-w-4xl")}>
           {task ? (
             <div className="flex flex-col gap-2">
@@ -295,7 +304,7 @@ export function TaskPeek({ taskId, placeholder, onClose, onEdit }: {
               <InlineText value={task.title} label="Título da tarefa" required="Informe o título da tarefa." maxLength={200}
                 className="break-words text-xl font-medium leading-snug" onCommit={title => save({ title })} />
               <WorkFeedback error={actions.error} retry={() => void detail.refetch()} />
-              <div className="mt-3"><PeekBody task={task} onSave={save} disabled={saving} /></div>
+              <div className="mt-3"><PeekBody task={task} onSave={save} disabled={saving} descriptionLoading={detail.isPlaceholderData} /></div>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
@@ -314,14 +323,14 @@ export function TaskPeek({ taskId, placeholder, onClose, onEdit }: {
 
   return mode === "peek" ? (
         <Sheet open modal={false} onOpenChange={onOpenChange}>
-          <SheetContent side="right" showClose={false} aria-describedby={undefined} onEscapeKeyDown={keepOpenWhileEditing}
+          <SheetContent side="right" showClose={false} aria-describedby={undefined} onOpenAutoFocus={focusBody} onEscapeKeyDown={keepOpenWhileEditing}
             className="flex w-full flex-col gap-0 bg-card p-0 sm:max-w-xl lg:max-w-2xl">
             {content}
           </SheetContent>
         </Sheet>
       ) : (
         <Dialog open onOpenChange={onOpenChange}>
-          <DialogContent showClose={false} aria-describedby={undefined} onEscapeKeyDown={keepOpenWhileEditing}
+          <DialogContent showClose={false} aria-describedby={undefined} onOpenAutoFocus={focusBody} onEscapeKeyDown={keepOpenWhileEditing}
             className={cn("flex flex-col gap-0 overflow-hidden bg-card p-0",
               mode === "modal" ? "h-5/6 max-w-3xl" : "inset-0 h-full max-w-none translate-x-0 translate-y-0 border-0 sm:rounded-none")}>
             {content}

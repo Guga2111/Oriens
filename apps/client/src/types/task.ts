@@ -25,6 +25,7 @@ export interface LocationDTO {
 }
 
 export interface Task {
+  descriptionText?: string | null;
   labels?: TaskLabel[];
   id: number;
   title: string;

@@ -62,6 +62,31 @@ lembretes e prazos). Projeto de desenvolvimento nasce com as colunas Backlog, To
 e tarefa nova de projeto entra no Backlog. Pedir só o estado `BACKLOG` ou `PENDING` leva a tarefa à primeira coluna
 desse estado; para `ON_DOING` e `CANCELLED`, informe a coluna.
 
+## Descrição de tarefas em Markdown
+
+`oriens_create_task` e `oriens_update_task` recebem Markdown no campo `description`.
+`oriens_get_task` e `oriens_list_tasks` devolvem essa descrição como Markdown
+legível. O limite é de **10.000 caracteres** com os marcadores. No update,
+campo ausente preserva a descrição e `null` limpa.
+
+- Use CommonMark e GFM para títulos de nível 1 a 6, citação, divisor, listas,
+  checklist, tabela, links, negrito, itálico, tachado e código inline.
+- Para nota em destaque, use `> **Nota:** texto`. Para um bloco recolhível, use
+  `> **Recolhível:** título`, uma linha vazia citada (`>`) e o corpo dentro da
+  citação. Para uma citação comum que comece com um desses rótulos em negrito,
+  inicie com `> <!-- oriens:quote -->` e uma linha vazia citada.
+- Use blocos cercados com linguagem para código. A linguagem `mermaid`
+  renderiza um diagrama na UI e entrega o código-fonte ao MCP.
+- Use `![texto alternativo](url)` para imagem e `[Vídeo — nome](url)` para vídeo.
+  A URL externa precisa ser HTTPS. Um anexo privado usa
+  `oriens-attachment:<uuid>`. Para acessá-lo, chame
+  `oriens_get_task_attachment` com `taskId` e `attachmentId`. A ferramenta
+  exige `tasks:read`, acesso à tarefa e vínculo ativo. A URL retornada expira
+  em cinco minutos.
+- Sublinhado, cor do texto e marca-texto preservam o conteúdo textual na saída.
+  O documento da interface guarda esses estilos. Um PATCH de descrição via
+  MCP substitui o documento pelos blocos do Markdown enviado.
+
 ## Revisar, reduzir ou revogar
 
 Em Integrações, **Gerenciar** mostra permissões, projetos nomeados, estado,

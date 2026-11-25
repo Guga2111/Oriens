@@ -43,7 +43,7 @@ public final class ImageUploads {
         return dot < 0 ? "" : filename.substring(dot).toLowerCase(Locale.ROOT);
     }
 
-    private static boolean matches(String extension, byte[] head) {
+    static boolean matches(String extension, byte[] head) {
         return switch (extension) {
             case ".jpg", ".jpeg" -> startsWith(head, 0, 0xFF, 0xD8, 0xFF);
             case ".png" -> startsWith(head, 0, 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A);

@@ -53,6 +53,7 @@ class DataInitializerPostgresTest {
     @Autowired BCryptPasswordEncoder encoder;
     @Autowired PlatformTransactionManager transactions;
     @Autowired HabitService habits;
+    @Autowired WorkReadService workRead;
     @Autowired Clock clock;
 
     @Test void startupCreatesLoginAndEveryProductDomainWithValidRelationships() {
@@ -65,6 +66,12 @@ class DataInitializerPostgresTest {
         assertThat(db.queryForObject("select count(*) from project where user_id=? and archived", Long.class, owner)).isEqualTo(1);
         assertThat(db.queryForList("select distinct status from tasks where user_id=?", String.class, owner))
             .containsExactlyInAnyOrderElementsOf(java.util.Arrays.stream(Status.values()).map(Enum::name).toList());
+        Long exampleId = db.queryForObject("select id from tasks where user_id=? and title=?", Long.class,
+            owner, "Explorar o editor de descrição");
+        var example = new TransactionTemplate(transactions).execute(status -> workRead.taskView(owner, exampleId));
+        assertThat(example.description()).contains("```mermaid", "flowchart LR", "Etapa", "- [x]");
+        assertThat(example.descriptionDoc().content().path("content").valueStream().map(node -> node.path("type").asString()))
+            .contains("heading", "codeBlock", "table", "taskList");
         assertThat(db.queryForList("select distinct o.status from project_objectives o join project p on p.id=o.project_id where p.user_id=?", String.class, owner))
             .containsExactlyInAnyOrderElementsOf(java.util.Arrays.stream(ObjectiveStatus.values()).map(Enum::name).toList());
         assertThat(db.queryForObject("select count(*) from task_labels where user_id=?", Long.class, owner)).isEqualTo(6);

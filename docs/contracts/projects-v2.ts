@@ -23,8 +23,21 @@ export interface Objective {
 export interface Column {
   id: Id; projectId: Id; name: string; kind: Status; position: number; version: Version;
 }
+export interface TaskDescriptionNode {
+  type: string;
+  attrs?: Record<string, unknown>;
+  text?: string;
+  content?: TaskDescriptionNode[];
+  marks?: { type: string; attrs?: Record<string, unknown> }[];
+}
+export interface TaskDescriptionDocument {
+  schemaVersion: 1;
+  content: TaskDescriptionNode & { type: 'doc' };
+}
 export interface Task {
   id: Id; userId: Id; title: string; description: string | null;
+  descriptionText?: string;
+  descriptionDoc?: TaskDescriptionDocument;
   projectId: Id | null; objectiveId: Id | null; columnId: Id | null; position: number | null;
   plannedDate: DateOnly | null; startTime: TimeOnly | null; dueDate: DateOnly | null;
   status: Status; priority: Priority; completedAt: DateOnly | null; createdAt: Instant;
@@ -131,6 +144,7 @@ export interface RemoveColumn {
 }
 export interface CreateTask {
   title: string; description?: string | null; projectId?: Id | null; projectVersion?: Version;
+  descriptionDoc?: TaskDescriptionDocument | null;
   objectiveId?: Id | null; columnId?: Id | null;
   plannedDate?: DateOnly | null; startTime?: TimeOnly | null; dueDate?: DateOnly | null;
   priority?: Priority; location?: Location | null;
@@ -138,6 +152,7 @@ export interface CreateTask {
 export interface PatchTask {
   version: Version; projectVersion?: Version; targetProjectVersion?: Version;
   title?: string; description?: string | null; projectId?: Id | null;
+  descriptionDoc?: TaskDescriptionDocument | null;
   objectiveId?: Id | null; columnId?: Id; status?: Status;
   plannedDate?: DateOnly | null; startTime?: TimeOnly | null; dueDate?: DateOnly | null;
   priority?: Priority; location?: Location | null; beforeTaskId?: Id | null;

@@ -51,6 +51,7 @@ class McpPostgresTest {
  @Import({com.oriens.oriens_api.CorsConfig.class,McpConfiguration.class,McpSecurity.class,McpTransport.class,McpController.class,McpMaintenance.class,
      SecurityConfig.class,JwtConfiguration.class,WorkOwner.class,UserServiceImpl.class,CustomAuthManager.class,
      WorkExceptionHandler.class,WorkRequestBodyAdvice.class,ProjectWorkService.class,WorkReadService.class,
+     TaskDescriptionCodec.class,TaskAttachmentService.class,TaskAttachmentController.class,
      WorkCreationService.class,TaskLabelService.class,ScopedWorkReadService.class,ProjectController.class,TaskController.class,TagController.class,TagServiceImpl.class,FinancialEntryController.class,FinancialEntryServiceImpl.class,FinancialStatisticsService.class,RecurringFinancialService.class,com.oriens.oriens_api.mapper.FinancialMapper.class})
  static class App {
   @Bean BCryptPasswordEncoder passwordEncoder(){return new BCryptPasswordEncoder();}
