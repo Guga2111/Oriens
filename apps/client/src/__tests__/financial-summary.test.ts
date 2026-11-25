@@ -116,6 +116,12 @@ describe("financialSummary — byTag", () => {
       { tagId: 1, name: "Casa", color: "#111111", amount: 150, percent: 38 },
     ]);
   });
+
+  it("mantém a despesa de tag ainda não carregada para a soma fechar com o total", () => {
+    expect(byTag([entry(-40, "2026-11-01", 9)], [])).toEqual([
+      { tagId: 9, name: "Categoria indisponível", color: "hsl(var(--muted-foreground))", amount: 40, percent: 100 },
+    ]);
+  });
 });
 
 describe("financialSummary — datas do mês", () => {

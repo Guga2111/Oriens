@@ -365,7 +365,7 @@ export default function FinancialPage() {
                 entries={ledger.data}
                 tags={tags}
                 period={period}
-                isLoading={ledger.isPending && ledger.fetchStatus !== "idle"}
+                isLoading={ledger.isPending}
                 error={ledger.error}
                 onRetry={() => void ledger.refetch()}
                 onNewEntry={() => setIsCreateEntryOpen(true)}

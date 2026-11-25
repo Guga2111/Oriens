@@ -101,6 +101,10 @@ export function summarizeThrough(
   return summarize(entries.filter((entry) => entry.entryDate.slice(0, 7) <= prefix));
 }
 
+// Sem a tag carregada, a despesa continua no recorte para que a soma feche com o total.
+const UNKNOWN_TAG = "Categoria indisponível";
+const UNKNOWN_TAG_COLOR = "hsl(var(--muted-foreground))";
+
 /**
  * Despesas por tag, da maior para a menor. Receitas não entram: o recorte
  * responde "para onde foi o dinheiro".
@@ -116,14 +120,14 @@ export function byTag(entries: EntryDTO[], tags: TagDTO[]): TagTotal[] {
     totalCents -= cents;
   }
 
-  return tags
-    .filter((tag) => tag.id !== undefined && (centsByTag.get(tag.id) ?? 0) > 0)
-    .map((tag) => {
-      const cents = centsByTag.get(tag.id!)!;
+  const tagsById = new Map(tags.map((tag) => [tag.id, tag]));
+  return [...centsByTag]
+    .map(([tagId, cents]) => {
+      const tag = tagsById.get(tagId);
       return {
-        tagId: tag.id!,
-        name: tag.name,
-        color: tag.color,
+        tagId,
+        name: tag?.name ?? UNKNOWN_TAG,
+        color: tag?.color ?? UNKNOWN_TAG_COLOR,
         amount: cents / 100,
         percent: Math.round((100 * cents) / totalCents),
       };
