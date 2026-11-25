@@ -11,7 +11,7 @@ cd "$(dirname "$0")/../apps/api"
 
 tests=("$@")
 if [ ${#tests[@]} -eq 0 ]; then
-  tests=(ProjectWorkPostgresTest WorkApiPostgresTest StatisticsPostgresTest
+  tests=(ProjectWorkPostgresTest WorkApiPostgresTest StatisticsPostgresTest InvestmentPostgresTest InvestmentMigrationPostgresTest
          McpPostgresTest McpP2PostgresTest McpP3PostgresTest McpP4PostgresTest)
 fi
 

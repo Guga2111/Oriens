@@ -5,6 +5,7 @@ import com.oriens.oriens_api.entity.FinancialEntry;
 import com.oriens.oriens_api.entity.Tag;
 import com.oriens.oriens_api.entity.dto.financial.EntryDTO;
 import com.oriens.oriens_api.entity.dto.financial.FinancialCommands.*;
+import com.oriens.oriens_api.entity.enums.EntryKind;
 import com.oriens.oriens_api.mapper.FinancialMapper;
 import com.oriens.oriens_api.repository.FinancialEntryRepository;
 import com.oriens.oriens_api.repository.TagRepository;
@@ -54,6 +55,8 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
             if (!(command instanceof Create)) {
                 entry=financialEntryRepository.lockOwned(id,owner).orElseThrow(()->fail("NOT_FOUND",null,"Lançamento não encontrado."));
                 if (entry.getVersion()!=version) throw fail("VERSION_CONFLICT","expectedVersion","O lançamento mudou. Recarregue antes de salvar.");
+                if (financialEntryRepository.ownedByInvestment(id))
+                    throw fail("DOMAIN_VIOLATION",null,"Este lançamento pertence a um investimento. Edite o movimento pela aplicação.");
             }
             if (command instanceof Delete) {
                 if (financialEntryRepository.hasOccurrences(id))
@@ -73,6 +76,8 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
                 catch(JacksonException|IllegalArgumentException e) { throw fail("INVALID_REQUEST",null,"Campos financeiros inválidos."); }
             }
             validate(input);
+            if (entry!=null && entry.getKind()!=EntryKind.STANDARD && input.isRecurring())
+                throw fail("DOMAIN_VIOLATION","isRecurring","Movimentos de investimento não podem ser recorrentes.");
             Tag tag=tagRepository.findByUserIdAndId(owner,input.tagId()).orElseThrow(()->fail("NOT_FOUND","tagId","Categoria não encontrada."));
             if (!tag.getAllowNegative() && input.amount().signum()<0)
                 throw fail("DOMAIN_VIOLATION","amount","A categoria não permite despesas.");
@@ -124,7 +129,18 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
 
     public Page<EntryDTO> filtered(Long owner,LocalDate start,LocalDate end,Long tagId,String search,Pageable page) {
         if(tagId!=null) tagRepository.findByUserIdAndId(owner,tagId).orElseThrow(()->fail("NOT_FOUND","tagId","Categoria não encontrada."));
-        return financialEntryRepository.filtered(owner,start,end,tagId,search==null||search.isBlank()?null:search.strip(),page).map(financialMapper::toDTO);
+        Page<EntryDTO> result=financialEntryRepository.filtered(owner,start,end,tagId,search==null||search.isBlank()?null:search.strip(),page).map(financialMapper::toDTO);
+        linkInvestments(owner,result.getContent());
+        return result;
+    }
+
+    /** Marks entries owned by an investment movement; one query per page. */
+    private void linkInvestments(Long owner,List<EntryDTO> entries) {
+        var linked=entries.stream().filter(e->e.getKind()!=EntryKind.STANDARD).map(EntryDTO::getId).toList();
+        if (linked.isEmpty()) return;
+        java.util.Map<Long,Long> investments=new java.util.HashMap<>();
+        for (Object[] row:financialEntryRepository.investmentLinks(owner,linked)) investments.put(((Number)row[0]).longValue(),((Number)row[1]).longValue());
+        entries.forEach(e->e.setInvestmentId(investments.get(e.getId())));
     }
 
     @Override
@@ -132,7 +148,9 @@ public class FinancialEntryServiceImpl implements FinancialEntryService {
         FinancialEntry financialEntry = financialEntryRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> fail("NOT_FOUND",null,"Lançamento não encontrado."));
 
-        return financialMapper.toDTO(financialEntry);
+        EntryDTO dto = financialMapper.toDTO(financialEntry);
+        linkInvestments(userId, List.of(dto));
+        return dto;
     }
 
     @Override
