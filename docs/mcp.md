@@ -4,51 +4,7 @@ O MCP permite que um cliente compatível consulte ou altere dados que você
 autorizar. O Oriens não pede uma chave de provedor nem executa um modelo de IA.
 O processamento e o custo do modelo pertencem ao cliente/provedor escolhido.
 
-## Habilitar no Docker local
-
-O Compose de desenvolvimento lê `.env` na raiz e repassa as opções MCP para
-o Spring. O recurso continua desligado quando `ORIENS_MCP_ENABLED` não é definido.
-A porta da API de desenvolvimento fica restrita a `127.0.0.1`.
-
-No arquivo `.env`, preserve o `JWT_SECRET` existente e configure:
-
-```dotenv
-ORIENS_MCP_ENABLED=true
-ORIENS_MCP_ISSUER=http://127.0.0.1:8080
-ORIENS_MCP_FRONTEND=http://127.0.0.1:5173
-ORIENS_MCP_ENCRYPTION_PASSWORD=<segredo aleatório estável com pelo menos 32 caracteres>
-ORIENS_MCP_ENCRYPTION_SALT=<32 caracteres hexadecimais aleatórios>
-ORIENS_MCP_CODEX_REDIRECTS=http://127.0.0.1/callback
-ORIENS_MCP_CLAUDE_REDIRECTS=http://localhost:8765/callback
-```
-
-Guarde esse arquivo fora do Git, com permissão `600`. Gere os dois valores de
-proteção uma vez e preserve-os entre reinícios; substituí-los exige o procedimento
-de rotação do runbook. O schema MCP é criado pelo Flyway quando a API sobe.
-
-Na raiz do repositório, recrie somente a API:
-
-```sh
-docker compose --env-file .env -f ops/compose/docker-compose.dev.yml up -d --no-deps oriens-api-dev
-```
-
-Se a imagem ainda não contém a implementação MCP, acrescente `--build` ao
-comando. O banco e seu volume não precisam ser recriados.
-
-No frontend, configure `apps/client/.env.development.local`:
-
-```dotenv
-VITE_API_BASE_URL=http://127.0.0.1:8080
-```
-
-Reinicie o Vite se necessário e abra **http://127.0.0.1:5173/config**. Faça login
-novamente nessa origem. Use `127.0.0.1` tanto para frontend quanto para API;
-misturar `localhost` e `127.0.0.1` impede a correlação OAuth por cookie. Não copie
-o JWT entre origens. Em seguida, siga os passos de conexão abaixo. Habilitar o
-servidor não concede permissões a nenhum cliente.
-
-Para desligar, defina `ORIENS_MCP_ENABLED=false` e execute novamente o comando
-Compose. As conexões/histórico persistidos são preservados.
+Para habilitar ou operar o servidor, consulte o [guia de operação](guides/mcp-operations.md).
 
 ## Conectar
 
@@ -140,41 +96,6 @@ histórico, mas não podem voltar a operar: uma nova autorização é necessári
 | Conflito de registro ou conexão | Releia o estado/versão e revise a intenção. Não sobrescreva automaticamente. |
 | Timeout de escrita MCP | Repita a mesma intenção com a mesma chave UUID, payload e versões. Não crie outra chave para o mesmo efeito incerto. |
 | Limite de uso | Respeite `retryAfterSeconds`/`Retry-After`, mantendo a chave de uma escrita pendente. |
-
-## Operação e publicação
-
-O procedimento de schema, segredos, limites, retenção, rotação e recuperação está
-em [ops/mcp-account](../ops/mcp-account/README.md). MCP permanece
-**desabilitado por padrão**. P4 não acrescenta migração nem habilita ambientes.
-
-Antes de habilitar um ambiente público:
-
-1. Identifique host/banco/operador, backup e restore isolado. O Flyway aplica as
-   migrações aditivas (até `V6__mcp_finance`) no startup; `ddl-auto=validate` confere o resultado.
-2. Publique API e frontend compatíveis com versões/idempotência financeira antes
-   de reabrir escritores. Não mantenha instâncias financeiras antigas em paralelo.
-3. Configure issuer/recurso HTTPS, origem confiável de frontend e callbacks exatos.
-   A ponte atual usa cookie HttpOnly Secure/SameSite Lax: frontend e API devem ser
-   do **mesmo site**, com HTTPS em ambos (subdomínios distintos são permitidos).
-   Origens completamente distintas não são cobertas por essa topologia. Não
-   enfraqueça CSRF/CORS/cookie para contornar uma publicação incorreta.
-4. Desabilite registro de query strings de OAuth/callback, cookies, Authorization
-   e corpos com credenciais no proxy/APM. Sirva a SPA com fallback para `/config`
-   e `/auth`. O frontend não deve ter analytics capturando esses fluxos.
-5. Confira os metadados públicos pelo endereço HTTPS publicado. Execute os dois
-   clientes, autorize uma leitura sintética, recuse acesso fora do recorte, reduza
-   acesso e revogue. Confirme login normal, WhatsApp e estados nos três tamanhos.
-6. Habilite o flag em todas as instâncias somente após o smoke. Observe erros,
-   limites e correlação sem conteúdo de domínio. A evidência loopback não prova
-   certificados, proxy ou DNS públicos.
-
-Rollback: desabilite MCP/novas autorizações em todas as instâncias e preserve
-schema aditivo, versões, recibos, tombstones e histórico. O login normal continua
-disponível. Volte apenas para uma API/frontend compatível com as escritas
-financeiras protegidas; um escritor que ignora versões não é um rollback seguro.
-Restaurar banco exige alvo novo/isolado e troca coordenada conforme o runbook.
-O teste P4 verifica desligar/religar em instâncias independentes com o mesmo
-PostgreSQL descartável e sem perda da autorização persistida.
 
 Referências: [MCP no Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)
 e [OAuth no Claude Code](https://code.claude.com/docs/en/mcp), consultadas em
