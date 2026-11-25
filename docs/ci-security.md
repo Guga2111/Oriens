@@ -1,7 +1,7 @@
 # Checks de segurança do CI
 
 Os jobs de segurança vivem em `.github/workflows/checks.yml`, junto dos testes existentes. Rodam em
-todo PR para `dev` ou `main`, inclusive documentação, forks e Dependabot. O deploy reutiliza esse
+todo PR para `dev`, `main` ou branches de integração `refac/**`, inclusive documentação, forks e Dependabot. O deploy reutiliza esse
 workflow e só inicia depois de todos os jobs passarem. Não há `pull_request_target`, herança de
 segredos de produção ou merge automático.
 
