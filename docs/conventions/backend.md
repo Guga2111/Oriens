@@ -377,7 +377,6 @@ IDOR), porque muda contrato com o front.
 | `application-*.properties` | `spring.jpa.open-in-view` não desligado em dev/prod | Médio (N+1 escondido) |
 | `WorkExceptionHandler` | Código `FORBIDDEN` fora do `switch` (um `WorkDomainException("FORBIDDEN")` vira 422); o 403 de papel vem do handler de `AccessDeniedException` | Baixo |
 | `McpP2/P3/P4PostgresTest` | Não usam `@EnabledIfEnvironmentVariable`: sem `MCP_JDBC_URL`, `./mvnw test` falha com 113 erros | Médio (suíte sempre vermelha) |
-| `McpP3PostgresTest` (finanças) | Entre 00h e 03h UTC (21h e meia-noite em `America/Recife`), quatro testes falham: `totalsCoverAllPagesWithExactCentsAndIndependentCategoryPaging`, `financialScopesAreIndependentAndReadsNeverRevealAnotherAccount`, `schedulerAndClosureOrDeletionSerializeOnTheOriginInBothOrders` e `everyMutationHasDurableReceiptVersionAndStrictMoneyAndPatchContracts`. Nesse intervalo a data UTC já é o dia seguinte e a de Recife ainda não, e os testes comparam as duas. Os runners do GitHub usam UTC, então o `test-postgres` fica vermelho em qualquer PR cujo CI rode nesse horário. Passa com `TZ=America/Recife` ou fora da janela. Visto pela primeira vez em 2026-11-19 (PR #12); reproduz em `dev` sem mudanças. Até a correção: se só esses quatro falharem, confira a hora UTC e rode o CI de novo depois das 03h UTC | Médio (CI vermelho por horário; o script para na falha e as suítes seguintes não rodam) |
 
 **Resolvido em 2026-11-16** (branch `fix/security-and-ui-conventions`): IDOR em `UserController`
 (perfil, preferências, avatar, exclusão e busca por e-mail), `NotificationController` e `SupportController`,
@@ -390,3 +389,6 @@ passam por `ImageUploads` (só JPG/PNG/GIF/WebP, conferidos pela assinatura do c
 com 422), e `/profile-pictures/**` e `/projects-pictures/**` só servem essas extensões, de modo que arquivos
 gravados antes da correção deixam de ser servidos. `System.out.println` removido do `MvcConfig`. Testes em
 `ImageUploadsTest` e `ProfilePictureUploadTest`.
+
+
+**Resolvido em 2026-11-25** (branch `fix/mcp-p3-product-date`): entre 00h e 03h UTC, quatro testes de finanças do `McpP3PostgresTest` falhavam no CI. Os testes calculavam hoje com `LocalDate.now()`, no fuso da JVM (UTC nos runners), enquanto o domínio usa o fuso do produto. Agora usam `LocalDate.now(ProductClockConfiguration.ZONE)`. Em teste que compara datas com o domínio, use o fuso do produto, nunca o da JVM.
