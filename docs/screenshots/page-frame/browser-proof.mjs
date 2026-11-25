@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { chromium } from '../../../oriens-front/node_modules/playwright-core/index.mjs';
+import { chromium } from '../../../apps/client/node_modules/playwright-core/index.mjs';
 const base=process.argv[2]||'http://127.0.0.1:4221',checks=[],errors=[];
 const browser=await chromium.launch({executablePath:'/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',headless:true});
 const summary={totalObjectives:0,completedObjectives:0,totalTasks:0,nonCancelledTasks:0,completedTasks:0,cancelledTasks:0,plannedTodayCount:0,previousPlansCount:0,overdueTaskCount:0,dueTodayTaskCount:0,overdueObjectiveCount:0,nextPlannedTask:null,nextObjective:null};

@@ -12,7 +12,7 @@ temas, nas três larguras do inspector. Os dados são exclusivamente sintéticos
 cd oriens-front
 npm run build
 cd ..
-node docs/screenshots/projects-refactor/p5/fixture-server.mjs oriens-front/dist 4201
+node docs/screenshots/projects-refactor/p5/fixture-server.mjs apps/client/dist 4201
 ```
 
 Em outro terminal, a partir da raiz:

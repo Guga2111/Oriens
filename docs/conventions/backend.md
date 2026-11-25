@@ -1,4 +1,4 @@
-# Backend — padrões e antipadrões (`oriens-api`)
+# Backend — padrões e antipadrões (`apps/api`)
 
 Stack: Spring Boot 4.2 · Java 25 · Spring Data JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) ·
 OAuth Authorization Server + MCP · Lombok · JUnit 5.
@@ -302,7 +302,7 @@ código → status e devolve o envelope `{code, message, fieldErrors, requestId}
 
 1. **`spring.jpa.hibernate.ddl-auto=validate`** em dev e prod. O Hibernate nunca cria ou altera tabela.
 2. **Mudança de schema é uma migração Flyway aditiva** em
-   `oriens-api/src/main/resources/db/migration/postgresql/V<n>__descricao.sql` (próximo número livre).
+   `apps/api/src/main/resources/db/migration/postgresql/V<n>__descricao.sql` (próximo número livre).
    O Flyway aplica no startup da API, em transação, e valida o checksum das já aplicadas: **nunca edite
    uma migração já aplicada** — crie a próxima. Rollback é de aplicação (a migração é aditiva, a versão
    anterior da API continua compatível); remover algo exige uma migração própria em entrega posterior.
@@ -312,7 +312,7 @@ código → status e devolve o envelope `{code, message, fieldErrors, requestId}
    `user_id` para garantir que filho e pai têm o mesmo dono).
 4. **Índice** para toda coluna usada em filtro/ordenação de listagem nova.
 5. Antes de aplicar em banco compartilhado: identificar ambiente, conferir backup e restore isolado
-   (`ops/projects-refactor/db.py backup`/`restore`).
+   (`scripts/projects-refactor/db.py backup`/`restore`).
 
 ❌ **Antipadrões**
 - `ddl-auto=update`/`create` fora do perfil de teste em memória.
@@ -350,7 +350,7 @@ código → status e devolve o envelope `{code, message, fieldErrors, requestId}
 |---|---|---|
 | Unitário de serviço (Mockito) | `src/test/.../service` | Regra de domínio isolada |
 | Repositório | `src/test/.../repository` | Consulta JPQL nova |
-| Integração Postgres | `src/test/.../work/*PostgresTest`, via `ops/postgres-tests.sh` | Contrato HTTP, posse (IDOR), concorrência, N+1, migrações |
+| Integração Postgres | `src/test/.../work/*PostgresTest`, via `scripts/postgres-tests.sh` | Contrato HTTP, posse (IDOR), concorrência, N+1, migrações |
 
 Regras:
 - Teste de IDOR com dois usuários para todo endpoint novo (§2.4).

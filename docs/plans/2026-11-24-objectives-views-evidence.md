@@ -16,7 +16,7 @@ Design: [2026-11-24-objectives-views-design.md](2026-11-24-objectives-views-desi
 ## Provas
 
 - `./mvnw test` (H2, sem McpP2/P3/P4): passou.
-- `ops/postgres-tests.sh ObjectiveDetailsPostgresTest McpP2PostgresTest`: passou (pin com posse 404, null 422,
+- `scripts/postgres-tests.sh ObjectiveDetailsPostgresTest McpP2PostgresTest`: passou (pin com posse 404, null 422,
   versão 409; MCP grava e devolve `favorite`).
 - `npm test`: 364 de 366. As 2 falhas (`app-header`, `today-header-actions`) vêm de `AppHeader.tsx` e
   `app-contexts.ts`, alterados fora desta entrega durante a sessão.

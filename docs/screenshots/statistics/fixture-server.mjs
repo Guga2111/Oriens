@@ -2,7 +2,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-const root = path.resolve(process.argv[2] || 'oriens-front/dist');
+const root = path.resolve(process.argv[2] || 'apps/client/dist');
 const port = Number(process.argv[3] || 4213);
 const instant = process.env.QA_NOW || '2026-11-15T15:00:00Z';
 const today = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Recife',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(instant));

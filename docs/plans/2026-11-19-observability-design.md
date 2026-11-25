@@ -107,7 +107,7 @@ fora das consultas. O painel JVM (Micrometer) da stack também passa a listar o 
 
 ## 4. Testes, deploy e evidência (#63)
 
-- Nos PRs: `ActuatorExposureTest` na suíte H2 do CI, `docker compose -f docker-compose-prod.yml config`
+- Nos PRs: `ActuatorExposureTest` na suíte H2 do CI, `docker compose -f ops/compose/docker-compose-prod.yml config`
   para validar o compose, `promtool check config` no `prometheus.yml` da stack e validação do JSON
   do painel.
 - Depois dos merges: deploy do Oriens em `main`, depois deploy da stack (FutspringV2 `main`),
@@ -127,7 +127,7 @@ revisão; só a stack que coleta passou a ser a compartilhada.
 - Grafana: datasource `prometheus` saudável; painel "Oriens API" provisionado;
   anônimo → 401. Todas as 23 consultas do painel retornam dados. A única exceção é "Taxa de 5xx
   por rota", que fica vazia quando não há erro 5xx (o stat geral mostra 0).
-- `promtool check config` e `docker compose -f docker-compose-prod.yml config` passaram.
+- `promtool check config` e `docker compose -f ops/compose/docker-compose-prod.yml config` passaram.
 
 ### Evidência local da topologia compartilhada (2026-11-20)
 

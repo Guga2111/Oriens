@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { chromium } from '../../../oriens-front/node_modules/playwright-core/index.mjs';
+import { chromium } from '../../../apps/client/node_modules/playwright-core/index.mjs';
 
 const phase = process.argv[2] || 'after';
 const base = process.argv[3] || 'http://127.0.0.1:4222';

@@ -3,7 +3,7 @@
   "findings": [
     {
       "rule": "java/spring-disabled-csrf-protection",
-      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpSecurity.java",
+      "file": "apps/api/src/main/java/com/oriens/oriens_api/mcp/McpSecurity.java",
       "line": 31,
       "fingerprint": "ae10e2f071ce0870:1",
       "until": "2027-05-23",
@@ -11,7 +11,7 @@
     },
     {
       "rule": "java/spring-disabled-csrf-protection",
-      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpSecurity.java",
+      "file": "apps/api/src/main/java/com/oriens/oriens_api/mcp/McpSecurity.java",
       "line": 108,
       "fingerprint": "a951b33f8dbb8d69:1",
       "until": "2027-05-23",
@@ -19,7 +19,7 @@
     },
     {
       "rule": "java/spring-disabled-csrf-protection",
-      "file": "oriens-api/src/main/java/com/oriens/oriens_api/security/SecurityConfig.java",
+      "file": "apps/api/src/main/java/com/oriens/oriens_api/security/SecurityConfig.java",
       "line": 43,
       "fingerprint": "6f8a31dadbc559cb:1",
       "until": "2027-05-23",
@@ -27,7 +27,7 @@
     },
     {
       "rule": "java/spring-disabled-csrf-protection",
-      "file": "oriens-api/src/main/java/com/oriens/oriens_api/security/SecurityConfig.java",
+      "file": "apps/api/src/main/java/com/oriens/oriens_api/security/SecurityConfig.java",
       "line": 58,
       "fingerprint": "406b812a7c071c6e:1",
       "until": "2027-05-23",
@@ -35,7 +35,7 @@
     },
     {
       "rule": "java/csrf-unprotected-request-type",
-      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpController.java",
+      "file": "apps/api/src/main/java/com/oriens/oriens_api/mcp/McpController.java",
       "line": 57,
       "fingerprint": "8bdfd62e03c0eb98:1",
       "until": "2027-05-23",
@@ -43,7 +43,7 @@
     },
     {
       "rule": "java/user-controlled-bypass",
-      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpFlows.java",
+      "file": "apps/api/src/main/java/com/oriens/oriens_api/mcp/McpFlows.java",
       "line": 84,
       "fingerprint": "99997b1b6d087dd1:1",
       "until": "2027-05-23",
@@ -51,7 +51,7 @@
     },
     {
       "rule": "java/user-controlled-bypass",
-      "file": "oriens-api/src/main/java/com/oriens/oriens_api/mcp/McpFlows.java",
+      "file": "apps/api/src/main/java/com/oriens/oriens_api/mcp/McpFlows.java",
       "line": 96,
       "fingerprint": "4412885c80da2b4e:1",
       "until": "2027-05-23",

@@ -9,15 +9,15 @@ P1–P6 permanecem pendentes; não há nova API/interface de produto ativa nesta
 - [Contratos HTTP](../contracts/projects-v2.md) e [DTOs tipados](../contracts/projects-v2.ts):
   IDs, presença/null, enums separados, datas, leituras/escritas, ETag, versão estrutural,
   recibos idempotentes, erros estáveis e rejeição futura de clientes antigos.
-- [Inventário e runbook](../../oriens-api/ops/projects-refactor/README.md): todas as entidades,
+- [Inventário e runbook](../../ops/projects-refactor/README.md): todas as entidades,
   estratégia JPA/SQL, instalação, backup, restore, checkpoint de reset e rollback.
-- [Schema observado](../../oriens-api/ops/projects-refactor/observed-schema.sql): schema-only
+- [Schema observado](../../ops/projects-refactor/observed-schema.sql): schema-only
   do PostgreSQL local 15.19, sem registros, credenciais, owners ou ACLs.
-- [Baseline](../../oriens-api/ops/projects-refactor/baseline.sql), checksum SHA-256
+- [Baseline](../../ops/projects-refactor/baseline.sql), checksum SHA-256
   `6fa68a942c6ff5029b733ba34f8d33089168d75c209d04d427bbb434e2c3e704`,
   versão `oriens-projects-v2`; fora do diretório de migrations automáticas.
-- [Operações explícitas](../../oriens-api/ops/projects-refactor/db.py) e
-  [prova PostgreSQL](../../oriens-api/ops/projects-refactor/test_p0.py), sem dependências Python extras.
+- [Operações explícitas](../../scripts/projects-refactor/db.py) e
+  [prova PostgreSQL](../../ops/projects-refactor/test_p0.py), sem dependências Python extras.
 
 ## Rastreio e decisões
 

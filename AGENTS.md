@@ -6,8 +6,8 @@ Leia este arquivo inteiro antes de editar código. Os detalhes estão nos guias 
 
 | Guia | Quando ler |
 |---|---|
-| [docs/conventions/backend.md](docs/conventions/backend.md) | Qualquer mudança em `oriens-api/` (Java, SQL, migrações, MCP) |
-| [docs/conventions/frontend.md](docs/conventions/frontend.md) | Qualquer mudança em `oriens-front/` (React, Tailwind, shadcn) |
+| [docs/conventions/backend.md](docs/conventions/backend.md) | Qualquer mudança em `apps/api/` (Java, SQL, migrações, MCP) |
+| [docs/conventions/frontend.md](docs/conventions/frontend.md) | Qualquer mudança em `apps/client/` (React, Tailwind, shadcn) |
 | [docs/conventions/clean-code.md](docs/conventions/clean-code.md) | Sempre: nomes, funções, erros, testes, commits, revisão |
 
 ## 1. O que é o Oriens
@@ -16,7 +16,7 @@ Gestão pessoal de tarefas, projetos (kanban com objetivos), hábitos, estatíst
 integração MCP para clientes como Claude e Codex. Monorepo com duas aplicações:
 
 ```
-oriens-api/     Spring Boot 4.2 · Java 25 · JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) · MCP
+apps/api/     Spring Boot 4.2 · Java 25 · JPA/Hibernate · PostgreSQL 15 · Spring Security (JWT) · MCP
   src/main/java/com/oriens/oriens_api/
     controller/   HTTP: autenticação → dono → serviço → resposta (sem regra de negócio)
     service/      Regras de domínio e transações
@@ -25,12 +25,13 @@ oriens-api/     Spring Boot 4.2 · Java 25 · JPA/Hibernate · PostgreSQL 15 · 
     security/     JWT, filtros, WorkOwner (resolve o dono autenticado)
     mcp/          Servidor MCP, OAuth delegado, escopos, catálogos de ferramentas
     resources/db/migration/postgresql/  Migrações Flyway (V<n>__descricao.sql), aplicadas no startup
-  ops/            Scripts operacionais (testes PostgreSQL descartáveis, backup/restore, provas MCP)
-oriens-front/   Vite · React 18 · TypeScript · Tailwind 3 · shadcn/ui (Radix) · TanStack Query · RHF + Zod
+apps/client/   Vite · React 18 · TypeScript · Tailwind 3 · shadcn/ui (Radix) · TanStack Query · RHF + Zod
   src/
     components/ui/   Componentes shadcn (gerados pelo CLI; base de toda a UI)
     components/<domínio>/  Componentes de produto (tasks, projects, financial, statistics…)
     pages/  hooks/  services/  lib/  types/  context/  router/
+ops/            Compose, runbooks e inventários operacionais
+scripts/        Testes PostgreSQL, backup/restore e provas MCP
 docs/
   conventions/  Padrões e antipadrões (este conjunto de guias)
   plans/        Specs, designs aprovados e evidências por entrega (datados)
@@ -41,15 +42,16 @@ docs/
 ## 2. Comandos
 
 ```sh
-# Backend (a partir de oriens-api/)
+# Backend (a partir de apps/api/)
 ./mvnw test                         # testes (H2); *PostgresTest exigem variáveis de ambiente próprias
 # Sem Postgres de prova, McpP2/P3/P4PostgresTest falham (dívida conhecida). Para a suíte local:
 ./mvnw test '-Dtest=!McpP2PostgresTest,!McpP3PostgresTest,!McpP4PostgresTest' -Dsurefire.failIfNoSpecifiedTests=false
-ops/postgres-tests.sh [Classe…]     # *PostgresTest em PostgreSQL descartável (Docker); Flyway cria o schema
+# A partir da raiz
+scripts/postgres-tests.sh [Classe…]     # *PostgresTest em PostgreSQL descartável (Docker); Flyway cria o schema
 # O CI (.github/workflows/checks.yml) roda as duas suítes e o lint/testes/build do front em todo PR para dev/main.
-docker compose -f docker-compose.dev.yml up -d   # API + Postgres locais (JWT_SECRET obrigatório)
+docker compose -f ops/compose/docker-compose.dev.yml up -d   # API + Postgres locais (JWT_SECRET obrigatório)
 
-# Frontend (a partir de oriens-front/)
+# Frontend (a partir de apps/client/)
 npm run dev        # Vite em http://127.0.0.1:5173
 npm run lint       # ESLint, que bloqueia HTML cru e cores fora de token (regras 6 e 7)
 npm test           # Vitest + Testing Library
@@ -70,7 +72,7 @@ Estas regras valem acima de conveniência, prazo ou "só um ajuste rápido". Vio
    `...In(ids)` ou `join fetch`). Nunca chame repositório dentro de `stream().map()`/laço sobre entidades.
 3. **Nunca exponha entidade JPA na API.** Responda com records/DTOs (`WorkResponses`, `TaskView` etc.).
 4. **Nunca altere schema pelo Hibernate.** `ddl-auto=validate`. Mudança de banco = nova migração Flyway
-   aditiva em `oriens-api/src/main/resources/db/migration/postgresql/`; nunca edite uma migração já aplicada.
+   aditiva em `apps/api/src/main/resources/db/migration/postgresql/`; nunca edite uma migração já aplicada.
 5. **Nunca commite segredos** (`.env`, tokens, chaves, salts). Use `.env.example` para documentar variáveis.
 
 **Frontend**

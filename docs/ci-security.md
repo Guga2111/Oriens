@@ -51,10 +51,10 @@ GITLEAKS_BINARY=/caminho/absoluto/gitleaks python3 -B -m unittest discover -s .g
 # Valores sempre ocultos; não adicione --verbose nem publique relatório bruto.
 gitleaks git . --log-opts=HEAD --redact=100 --ignore-gitleaks-allow --no-banner --no-color --exit-code=1
 
-# Na pasta oriens-front; não instala pacotes nem executa scripts de lifecycle.
+# Na pasta apps/client; não instala pacotes nem executa scripts de lifecycle.
 npm audit --include=dev --audit-level=high --json
 
-# Na pasta oriens-api; o perfil não faz parte de test/package normais.
+# Na pasta apps/api; o perfil não faz parte de test/package normais.
 ./mvnw -B -Psecurity-audit dependency-check:check
 
 # Depois de uma análise CodeQL: diretório com um ou mais arquivos *.sarif.
@@ -83,7 +83,7 @@ contagens e diagnóstico fixo; não reproduzem mensagens/trechos do SARIF.
   A primeira carga é maior; as seguintes usam os metadados de atualização e o cache. Há timeout de
   45 minutos; falha de atualização reprova. Confira os logs e a disponibilidade da NVD antes de
   reexecutar. Nenhuma chave NVD é exigida em PRs ou armazenada no repositório.
-- Falsos positivos do Dependency-Check vão em `oriens-api/dependency-check-suppressions.xml`, um por
+- Falsos positivos do Dependency-Check vão em `apps/api/dependency-check-suppressions.xml`, um por
   CVE e pacote (`packageUrl` + `cve`, nunca só CPE), com justificativa e data `until` para revisão.
   Supressão vencida volta a reprovar. Não suprima achado real para destravar o gate.
 - O analisador opcional OSS Index fica desligado porque exige autenticação; a auditoria Java usa NVD.

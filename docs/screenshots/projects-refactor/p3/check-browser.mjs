@@ -1,4 +1,4 @@
-import { chromium } from '../../../../oriens-front/node_modules/playwright/index.mjs';
+import { chromium } from '../../../../apps/client/node_modules/playwright/index.mjs';
 import assert from 'node:assert/strict';
 const browser = await chromium.launch({ headless: true,
   executablePath: process.env.CHROME_PATH || '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser' });

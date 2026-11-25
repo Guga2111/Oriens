@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: oriens-api
+        working-directory: apps/api
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -30,6 +30,7 @@ jobs:
           distribution: temurin
           java-version: "25"
           cache: maven
+          cache-dependency-path: apps/api/pom.xml
       # McpP*PostgresTest fail without their Postgres; test-postgres runs them.
       - run: ./mvnw -B test '-Dtest=!McpP2PostgresTest,!McpP3PostgresTest,!McpP4PostgresTest' -Dsurefire.failIfNoSpecifiedTests=false
 
@@ -47,14 +48,15 @@ jobs:
           distribution: temurin
           java-version: "25"
           cache: maven
-      - run: oriens-api/ops/postgres-tests.sh
+          cache-dependency-path: apps/api/pom.xml
+      - run: scripts/postgres-tests.sh
 
   test-front:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: oriens-front
+        working-directory: apps/client
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -63,7 +65,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: oriens-front/package-lock.json
+          cache-dependency-path: apps/client/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm test
@@ -108,7 +110,7 @@ jobs:
         with:
           node-version: "22"
       - name: Auditar dependências de produção e desenvolvimento
-        working-directory: oriens-front
+        working-directory: apps/client
         # Audit the lockfile without installing packages or running lifecycle scripts.
         run: npm audit --include=dev --audit-level=high --json > "$RUNNER_TEMP/npm-audit.json"
       - name: Preservar relatório completo do npm
@@ -132,26 +134,27 @@ jobs:
           distribution: temurin
           java-version: "25"
           cache: maven
+          cache-dependency-path: apps/api/pom.xml
       - name: Identificar a atualização diária da base NVD
         id: nvd-date
         run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: nvd-cache
         with:
-          path: oriens-api/target/dependency-check-data
+          path: apps/api/target/dependency-check-data
           key: nvd-feed-13.0.0-${{ runner.os }}-${{ steps.nvd-date.outputs.date }}
           restore-keys: nvd-feed-13.0.0-${{ runner.os }}-
       - name: Reprovar vulnerabilidades Java com CVSS maior ou igual a 7
-        working-directory: oriens-api
+        working-directory: apps/api
         # Official NVD feeds require no API key, including on fork/bot PRs.
         run: ./mvnw -B -Psecurity-audit dependency-check:check
       - name: Guardar a base mesmo quando achados reprovam a análise
         if: >-
           ${{ !cancelled() && steps.nvd-cache.outputs.cache-hit != 'true' &&
-          hashFiles('oriens-api/target/dependency-check-report.json') != '' }}
+          hashFiles('apps/api/target/dependency-check-report.json') != '' }}
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: oriens-api/target/dependency-check-data
+          path: apps/api/target/dependency-check-data
           key: ${{ steps.nvd-cache.outputs.cache-primary-key }}
       - name: Preservar relatórios completos do Dependency-Check
         if: ${{ !cancelled() }}
@@ -159,8 +162,8 @@ jobs:
         with:
           name: dependency-check
           path: |
-            oriens-api/target/dependency-check-report.json
-            oriens-api/target/dependency-check-report.html
+            apps/api/target/dependency-check-report.json
+            apps/api/target/dependency-check-report.html
           if-no-files-found: error
           retention-days: 7
 
@@ -194,6 +197,7 @@ jobs:
           distribution: temurin
           java-version: "25"
           cache: maven
+          cache-dependency-path: apps/api/pom.xml
       - uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4
         with:
           languages: ${{ matrix.language }}
@@ -201,7 +205,7 @@ jobs:
           queries: security-extended
       - name: Compilar a API para análise estática
         if: matrix.language == 'java-kotlin'
-        working-directory: oriens-api
+        working-directory: apps/api
         run: ./mvnw -B -Dmaven.test.skip=true package
       - name: Analisar e publicar resultados CodeQL
         id: codeql-analysis

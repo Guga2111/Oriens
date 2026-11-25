@@ -50,7 +50,7 @@ Reprodução, a partir da raiz:
 
 ```bash
 npm --prefix oriens-front run build
-node docs/screenshots/projects-refactor/p3/fixture-server.mjs oriens-front/dist 4175
+node docs/screenshots/projects-refactor/p3/fixture-server.mjs apps/client/dist 4175
 # Em outro terminal:
 node docs/screenshots/projects-refactor/p3/check-browser.mjs
 node /Users/luisgosampaio/.agents/skills/design-taste-frontend/scripts/inspect.mjs --app http://127.0.0.1:4175/all-data --out docs/screenshots/projects-refactor/p3/after --allow palette-cream
@@ -191,7 +191,7 @@ Nada dessa conta sintética é incluído no produto ou enviado para um serviço 
 
 ```bash
 npm --prefix oriens-front run build
-node docs/screenshots/projects-refactor/p4/fixture-server.mjs oriens-front/dist 4183
+node docs/screenshots/projects-refactor/p4/fixture-server.mjs apps/client/dist 4183
 # Outro terminal, a partir da raiz:
 node docs/screenshots/projects-refactor/p4/check-browser.mjs http://127.0.0.1:4183
 node docs/screenshots/projects-refactor/p4/inspect-all.mjs http://127.0.0.1:4183
@@ -310,7 +310,7 @@ período, o que foi concluído, o que ficou de outro dia e qual prazo exige aten
 
 ```bash
 VITE_API_BASE_URL=/api npm --prefix oriens-front run build
-node docs/screenshots/projects-refactor/p5/fixture-server.mjs oriens-front/dist 4185
+node docs/screenshots/projects-refactor/p5/fixture-server.mjs apps/client/dist 4185
 # Em outro terminal; executar interações antes da inspeção, mantendo a fixture estável:
 node docs/screenshots/projects-refactor/p5/check-browser.mjs
 node docs/screenshots/projects-refactor/p5/inspect-all.mjs
@@ -379,7 +379,7 @@ no lançamento. P6 ainda cobre a inspeção global e a liberação operacional.
 ## P6 — inspeção e preparação de liberação
 
 [Entrega P6](../../plans/2026-11-13-projects-refactor-p6.md) ·
-[runbook/checkpoint](../../../oriens-api/ops/projects-refactor/RELEASE.md).
+[runbook/checkpoint](../../../ops/projects-refactor/RELEASE.md).
 O release real depende de alvo, autorização destrutiva e backup/restore desse alvo.
 Nenhum banco compartilhado foi resetado e nenhum deploy foi executado.
 
@@ -419,9 +419,9 @@ Reprodução a partir da raiz, com dependências/navegador já instalados:
 
 ```bash
 VITE_API_BASE_URL=/api npm --prefix oriens-front run build
-node docs/screenshots/projects-refactor/p4/fixture-server.mjs oriens-front/dist 4194
+node docs/screenshots/projects-refactor/p4/fixture-server.mjs apps/client/dist 4194
 # Outro terminal:
-node docs/screenshots/projects-refactor/p5/fixture-server.mjs oriens-front/dist 4196
+node docs/screenshots/projects-refactor/p5/fixture-server.mjs apps/client/dist 4196
 # Terceiro terminal; rodar interações antes de inspecionar:
 node docs/screenshots/projects-refactor/p4/check-browser.mjs http://127.0.0.1:4194 docs/screenshots/projects-refactor/p6/projects
 node docs/screenshots/projects-refactor/p5/check-browser.mjs http://127.0.0.1:4196 docs/screenshots/projects-refactor/p6/planning
