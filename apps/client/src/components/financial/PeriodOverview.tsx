@@ -18,6 +18,7 @@ import {
   entriesInMonth,
   summarizeMonth,
   summarizeThrough,
+  transfersInMonth,
   weeklyFlow,
   type FinancialPeriod,
 } from "@/lib/financialSummary";
@@ -66,6 +67,7 @@ export function PeriodOverview({
       hasEntries: monthEntries.length > 0,
       month: summarizeMonth(entries, period),
       available: summarizeThrough(entries, period),
+      transfers: transfersInMonth(entries, period),
       categories: byTag(monthEntries, tags),
       weeks: weeklyFlow(monthEntries),
     };
@@ -100,7 +102,9 @@ export function PeriodOverview({
     );
   }
 
-  const { month, available } = overview;
+  const { month, available, transfers } = overview;
+  const hasTransfers = transfers.contributions > 0 || transfers.withdrawals > 0;
+  const transferTag = transfers.tagId;
 
   return (
     <section aria-label="Resumo do mês" className="flex flex-col gap-6">
@@ -131,7 +135,7 @@ export function PeriodOverview({
             </Metric>
             <Metric
               label="Saldo disponível"
-              hint={`Acumulado até ${monthEnd}`}
+              hint={`Acumulado até ${monthEnd}, com aportes e resgates`}
               className={cn(available.balance < 0 && "text-negative")}
             >
               {mask(formatCurrency(available.balance))}
@@ -148,6 +152,39 @@ export function PeriodOverview({
           </Button>
         </CardContent>
       </Card>
+
+      {hasTransfers ? (
+        <Card>
+          <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-semibold">Transferências de investimentos</h2>
+              <p className="text-xs text-muted-foreground">
+                Movem o saldo disponível sem entrar em receitas, despesas ou no resultado do mês.
+              </p>
+            </div>
+            <dl className="grid grid-cols-3 gap-4 sm:flex sm:gap-6">
+              <Metric label="Aportes" hint="Saíram do saldo" className="text-base">
+                {mask(formatCurrency(transfers.contributions))}
+              </Metric>
+              <Metric label="Resgates" hint="Voltaram ao saldo" className="text-base">
+                {mask(formatCurrency(transfers.withdrawals))}
+              </Metric>
+              <Metric label="Efeito no saldo" hint="Resgates menos aportes"
+                className={cn("text-base", transfers.net < 0 && "text-negative")}>
+                {mask(formatCurrency(transfers.net))}
+              </Metric>
+            </dl>
+            {transferTag !== null && (
+              <Button variant="link" className="h-auto self-start px-0 sm:self-center"
+                aria-label={`Ver transferências de ${monthName} no histórico, na tag Investimentos`}
+                onClick={() => onSelectCategory(transferTag)}>
+                Ver no histórico
+                <ArrowRight className="ml-1 h-4 w-4" aria-hidden />
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
 
       {overview.hasEntries ? (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

@@ -7,6 +7,11 @@ import type { EntryDTO, TagDTO } from "@/types/financial";
  *
  * Os valores são somados em centavos inteiros para que receitas − despesas seja
  * exatamente o resultado exibido, sem resíduos de ponto flutuante.
+ *
+ * Aportes e resgates (`INVESTMENT_TRANSFER`) movem só o saldo disponível: ficam fora
+ * de receitas, despesas, resultado e gráficos. Rendimentos recebidos são receitas.
+ * A classificação vem de `kind`, nunca da tag: um lançamento comum com a tag
+ * Investimentos continua comum.
  */
 export interface FinancialPeriod {
   /** 0–11, como em `Date#getMonth`. */
@@ -39,8 +44,28 @@ export interface WeekFlow {
   expenses: number;
 }
 
+export interface MonthTransfers {
+  /** Aportes do mês em módulo, em reais. */
+  contributions: number;
+  /** Resgates do mês, em reais. */
+  withdrawals: number;
+  /** `withdrawals - contributions`: o efeito no saldo disponível. */
+  net: number;
+  /** Tag Investimentos da conta, lida dos próprios lançamentos, para abrir o histórico filtrado. */
+  tagId: number | null;
+}
+
 function toCents(value: number): number {
   return Math.round(value * 100);
+}
+
+export function isInvestmentTransfer(entry: EntryDTO): boolean {
+  return entry.kind === "INVESTMENT_TRANSFER";
+}
+
+/** Lançamentos que contam como receita ou despesa. */
+function cashFlow(entries: EntryDTO[]): EntryDTO[] {
+  return entries.filter((entry) => !isInvestmentTransfer(entry));
 }
 
 function summarize(entries: EntryDTO[]): FinancialSummary {
@@ -84,15 +109,39 @@ export function entriesInMonth(
   return entries.filter((entry) => entry.entryDate.startsWith(prefix));
 }
 
-/** Resumo do mês selecionado. */
+/** Resumo do mês selecionado, sem transferências de investimento. */
 export function summarizeMonth(
   entries: EntryDTO[],
   period: FinancialPeriod
 ): FinancialSummary {
-  return summarize(entriesInMonth(entries, period));
+  return summarize(cashFlow(entriesInMonth(entries, period)));
 }
 
-/** Saldo disponível: tudo o que foi lançado até o fim do mês selecionado. */
+/** Aportes e resgates do mês, que entram no saldo disponível mas não no resultado. */
+export function transfersInMonth(entries: EntryDTO[], period: FinancialPeriod): MonthTransfers {
+  let contributions = 0;
+  let withdrawals = 0;
+  let tagId: number | null = null;
+  for (const entry of entriesInMonth(entries, period)) {
+    if (!isInvestmentTransfer(entry)) continue;
+    const cents = toCents(entry.amount);
+    if (cents < 0) contributions -= cents;
+    else withdrawals += cents;
+    tagId ??= entry.tagId;
+  }
+  return {
+    contributions: contributions / 100,
+    withdrawals: withdrawals / 100,
+    net: (withdrawals - contributions) / 100,
+    tagId,
+  };
+}
+
+/**
+ * Saldo disponível: tudo o que foi lançado até o fim do mês selecionado, inclusive
+ * aportes (saídas) e resgates (entradas). Use só `balance`: receitas e despesas
+ * deste recorte incluem as transferências.
+ */
 export function summarizeThrough(
   entries: EntryDTO[],
   period: FinancialPeriod
@@ -113,7 +162,7 @@ export function byTag(entries: EntryDTO[], tags: TagDTO[]): TagTotal[] {
   const centsByTag = new Map<number, number>();
   let totalCents = 0;
 
-  for (const entry of entries) {
+  for (const entry of cashFlow(entries)) {
     const cents = toCents(entry.amount);
     if (cents >= 0) continue;
     centsByTag.set(entry.tagId, (centsByTag.get(entry.tagId) ?? 0) - cents);
@@ -141,7 +190,7 @@ const WEEK_LABELS = ["1–7", "8–14", "15–21", "22–fim"];
 export function weeklyFlow(monthEntries: EntryDTO[]): WeekFlow[] {
   const weeks = WEEK_LABELS.map(() => ({ income: 0, expenses: 0 }));
 
-  for (const entry of monthEntries) {
+  for (const entry of cashFlow(monthEntries)) {
     const cents = toCents(entry.amount);
     const day = Number(entry.entryDate.slice(8, 10));
     const week = weeks[Math.min(3, Math.floor((day - 1) / 7))];

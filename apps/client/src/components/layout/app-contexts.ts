@@ -4,7 +4,7 @@ import { ReadCvLogoIcon } from '@phosphor-icons/react/dist/csr/ReadCvLogo';
 import { TipJarIcon } from '@phosphor-icons/react/dist/csr/TipJar';
 import {
   Briefcase, CalendarCheck, ChartLine, Headset,
-  House, LifeBuoy, PiggyBank, ReceiptText, Settings, Shield, Telescope, type LucideIcon,
+  House, LifeBuoy, PiggyBank, Landmark, ReceiptText, Settings, Shield, Telescope, type LucideIcon,
 } from 'lucide-react';
 
 type ContextNavItem = {
@@ -40,6 +40,7 @@ export const appContexts: AppContext[] = [
     items: [
       { label: 'Visão geral', icon: PiggyBank, url: '/financial' },
       { label: 'Lançamentos', icon: ReceiptText, url: '/financial/entries' },
+      { label: 'Investimentos', icon: Landmark, url: '/financial/investments' },
     ],
   },
   {

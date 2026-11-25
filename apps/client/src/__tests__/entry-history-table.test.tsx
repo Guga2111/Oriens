@@ -36,6 +36,7 @@ function renderTable(overrides: Partial<React.ComponentProps<typeof EntryHistory
     pagination: { page: 0, totalPages: 2, totalElements: 25 },
     onPageChange: vi.fn(),
     onManageRecurrences: vi.fn(),
+    onManageInvestments: vi.fn(),
     filtered: false,
     onClearFilters: vi.fn(),
     ...overrides,

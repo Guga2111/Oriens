@@ -34,7 +34,7 @@ describe('sidebar por contexto', () => {
   });
 
   it.each([
-    ['/financial', 'Financeiro', ['Visão geral', 'Lançamentos']],
+    ['/financial', 'Financeiro', ['Visão geral', 'Lançamentos', 'Investimentos']],
     ['/stats', 'Estatísticas', ['Visão geral']],
   ])('isola os itens de %s', (path, label, items) => {
     renderSidebar(path);

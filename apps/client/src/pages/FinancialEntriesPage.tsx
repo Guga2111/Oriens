@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronDown, Plus, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { HeaderActions } from "@/components/common/HeaderActions";
@@ -52,6 +52,7 @@ export default function FinancialEntriesPage() {
   const { userId } = useAuth();
   const tags = useFinancialTags();
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [tableEntries, setTableEntries] = useState<EntryDTO[]>([]);
   const [tablePagination, setTablePagination] = useState({
@@ -190,6 +191,7 @@ export default function FinancialEntriesPage() {
         onEdit={setEditingEntry}
         onDelete={handleDeleteEntry}
         onManageRecurrences={() => setIsRecurringManagementOpen(true)}
+        onManageInvestments={() => navigate("/financial/investments")}
         pagination={tablePagination}
         onPageChange={(page) => void loadTableData(page, tableFilters)}
         isLoading={isLoadingTable}

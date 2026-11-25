@@ -5,6 +5,7 @@ import { format, parseISO } from "date-fns";
 import {
   ChevronLeft,
   ChevronRight,
+  Landmark,
   Pencil,
   Repeat,
   Trash2,
@@ -52,6 +53,8 @@ interface EntryHistoryTableProps {
   onPageChange: (page: number) => void;
   /** Opens the recurrence management, where automatic occurrences are changed through their origin. */
   onManageRecurrences: () => void;
+  /** Opens the portfolio, where entries owned by an investment movement are changed. */
+  onManageInvestments: () => void;
   filtered: boolean;
   onClearFilters: () => void;
 }
@@ -94,6 +97,18 @@ function RecurrenceBadge({ entry }: { entry: EntryDTO }) {
   );
 }
 
+/** Investment movements keep their classification: a transfer is not income or expense. */
+function KindBadge({ entry }: { entry: EntryDTO }) {
+  if (entry.kind === "INVESTMENT_INCOME") return <Badge variant="outline" className="shrink-0 font-normal">Rendimento</Badge>;
+  if (entry.kind !== "INVESTMENT_TRANSFER") return null;
+  return (
+    <Badge variant="outline" className="shrink-0 font-normal">
+      {entry.amount < 0 ? "Aporte" : "Resgate"}
+      <span className="sr-only">, transferência</span>
+    </Badge>
+  );
+}
+
 /**
  * Histórico de entradas. Busca e filtros ficam na barra superior da página. Valores alinhados à
  * direita, com sinal explícito e tokens --positive/--negative; abaixo de 768 vira lista de duas linhas.
@@ -107,6 +122,7 @@ export function EntryHistoryTable({
   pagination,
   onPageChange,
   onManageRecurrences,
+  onManageInvestments,
   filtered,
   onClearFilters,
 }: EntryHistoryTableProps) {
@@ -133,6 +149,26 @@ export function EntryHistoryTable({
 
   const renderActions = (entry: EntryDTO) => {
     const label = entry.description ? `: ${entry.description}` : "";
+    if (entry.investmentId) {
+      return (
+        <div className="flex shrink-0 justify-end gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-10 w-10 md:h-8 md:w-8"
+                onClick={onManageInvestments}
+                aria-label={`Corrigir em Investimentos${label}`}
+              >
+                <Landmark className="h-4 w-4" aria-hidden />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Movimento da carteira: corrija ou exclua em Investimentos</TooltipContent>
+          </Tooltip>
+        </div>
+      );
+    }
     return (
       <div className="flex shrink-0 justify-end gap-1">
         {entry.parentEntryId ? (
@@ -238,6 +274,7 @@ export function EntryHistoryTable({
                             {entry.description || "Sem descrição"}
                           </span>
                           <RecurrenceBadge entry={entry} />
+                          <KindBadge entry={entry} />
                         </span>
                       </TableCell>
                       <TableCell>
@@ -288,6 +325,7 @@ export function EntryHistoryTable({
                         </Badge>
                       )}
                       <RecurrenceBadge entry={entry} />
+                          <KindBadge entry={entry} />
                     </div>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs tabular-nums text-muted-foreground">
