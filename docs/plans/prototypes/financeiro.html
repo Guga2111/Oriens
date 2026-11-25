@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Financeiro · Oriens</title>
+<style>
+:root {
+  color-scheme: light;
+  --background: 240 4% 95%; --card: 0 0% 100%; --fg: 240 3% 6%;
+  --muted: 206 5% 30%; --soft: 210 5% 96%; --border: 210 3% 89%; --input: 204 5% 80%;
+  --primary: 21 100% 38%; --on-primary: 0 0% 100%; --positive: 158 52% 26%; --negative: 6 72% 40%;
+  --ink: 170 35% 32%; --radius: .5rem;
+}
+:root.dark {
+  color-scheme: dark;
+  --background: 240 3% 6%; --card: 240 2% 8%; --fg: 200 6% 90%;
+  --muted: 206 5% 70%; --soft: 200 4% 14%; --border: 210 4% 18%; --input: 204 3% 28%;
+  --primary: 24 100% 55%; --on-primary: 240 3% 6%; --positive: 152 45% 62%; --negative: 6 85% 70%;
+  --ink: 170 35% 57%;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: hsl(var(--background)); color: hsl(var(--fg)); font: 14px/1.5 Inter, system-ui, sans-serif; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; font-weight: 600; }
+button, input, select { min-height: 38px; border: 1px solid hsl(var(--input)); border-radius: var(--radius); background: hsl(var(--card)); padding: 7px 12px; }
+button:hover { background: hsl(var(--soft)); }
+button.primary { background: hsl(var(--primary)); border-color: hsl(var(--primary)); color: hsl(var(--on-primary)); }
+button.primary:hover { filter: brightness(.92); }
+button.ghost { border-color: transparent; background: transparent; }
+button.ghost:hover { background: hsl(var(--soft)); }
+:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
+[hidden] { display: none !important; }
+h1,h2,h3,p,dl,dd { margin: 0; }
+h1 { font-size: clamp(26px,4vw,36px); line-height: 1.15; letter-spacing: -.035em; }
+h2 { font-size: 16px; letter-spacing: -.01em; }
+h3 { font-size: 14px; }
+small,.muted { color: hsl(var(--muted)); }
+.amount { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.positive { color: hsl(var(--positive)); }
+.negative { color: hsl(var(--negative)); }
+.topbar { background: hsl(var(--card)); border-bottom: 1px solid hsl(var(--border)); }
+.topbar-inner, main { max-width: 1240px; margin: auto; padding-inline: 28px; }
+.topbar-inner { min-height: 57px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand, .row { display: flex; align-items: center; gap: 10px; }
+.brand strong { font-size: 15px; }
+.sun { display: inline-block; width: 18px; height: 18px; position: relative; }
+.sun::before { content: ""; display: block; height: 8px; width: 16px; margin: 1px auto 3px; border-radius: 12px 12px 0 0; background: hsl(var(--primary)); }
+.sun::after { content: ""; display: block; width: 14px; height: 1px; margin: auto; background: hsl(var(--fg)); box-shadow: 0 3px hsl(var(--fg)), 0 6px hsl(var(--fg)); }
+.topbar button { font-size: 12px; }
+main { padding-block: 28px 44px; }
+.page-head,.section-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.page-head { margin-bottom: 22px; }
+.page-head small { display: block; margin-top: 4px; }
+.nav { display: flex; gap: 24px; border-bottom: 1px solid hsl(var(--border)); margin-bottom: 20px; }
+.nav button { background: transparent; border: 0; border-radius: 0; padding: 10px 2px; color: hsl(var(--muted)); white-space: nowrap; border-bottom: 2px solid transparent; }
+.nav button[aria-current="page"] { border-bottom-color: hsl(var(--primary)); color: hsl(var(--fg)); }
+.period { font-weight: 650; min-width: 125px; text-align: center; }
+.icon { width: 38px; padding: 2px; font-size: 22px; line-height: 1; }
+.stack { display: grid; gap: 16px; }
+.metrics { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
+.metrics.wallet-metrics { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.metric, .panel { border: 1px solid hsl(var(--border)); background: hsl(var(--card)); border-radius: var(--radius); min-width: 0; }
+.metric { padding: 14px 16px; }
+.metric dt { color: hsl(var(--muted)); font-weight: 550; }
+.metric dd { font-size: clamp(17px,2vw,25px); font-weight: 690; letter-spacing: -.035em; line-height: 1.3; margin-top: 7px; }
+.metric small { display: block; margin-top: 4px; }
+.metric.emphasis { border-top: 2px solid hsl(var(--primary)); padding-top: 13px; }
+.panel { padding: 16px; }
+.panel > .section-head { margin-bottom: 9px; }
+.pair { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 16px; }
+.text-action { color: hsl(var(--primary)); }
+.list { list-style: none; padding: 0; margin: 0; }
+.bare { padding: 0; border: 0; background: none; min-height: auto; text-align: left; }
+.category { display: block; width: 100%; padding: 8px 5px; border: 0; background: transparent; }
+.category .row { justify-content: space-between; text-align: left; }
+.category span:last-child { font-variant-numeric: tabular-nums; }
+.bar { display: block; margin-top: 5px; height: 5px; overflow: hidden; border-radius: 6px; background: hsl(var(--soft)); }
+.bar > span { display: block; height: 100%; background: hsl(var(--ink)); border-radius: inherit; }
+.chart { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin: 12px 0 0; padding: 10px 0 0; }
+.bars { display: flex; align-items: end; justify-content: center; gap: 5px; height: 104px; border-bottom: 1px solid hsl(var(--border)); background: repeating-linear-gradient(to top, transparent 0 25px, hsl(var(--border)) 25px 26px); }
+.bars span { width: min(25%,26px); background: hsl(var(--ink)); border-radius: 4px 4px 0 0; }
+.bars span + span { background: hsl(var(--primary)); }
+.chart small { display: block; text-align: center; margin-top: 6px; }
+.legend { display: flex; align-items: center; gap: 13px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; background: hsl(var(--ink)); }
+.legend span + span i { background: hsl(var(--primary)); }
+.chart-detail { margin-top: 7px; }
+.chart-detail summary { cursor: pointer; width: fit-content; }
+.records { display: grid; }
+.record { display: grid; grid-template-columns: minmax(0,1.8fr) minmax(6ch,1fr) minmax(8ch,1fr) 110px; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid hsl(var(--border)); }
+.record.head { border-top: 0; font-size: 12px; color: hsl(var(--muted)); font-weight: 600; }
+.record strong,.record .bare { overflow-wrap: anywhere; }
+.record .amount { text-align: right; font-weight: 650; }
+.record .meta { display: none; }
+.record .record-kind { display: block; }
+.transfer-summary { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.transfer-summary h2 { font-size: 14px; }
+.filters { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin: 12px 0; }
+label { display: grid; gap: 4px; font-weight: 550; }
+.field { display: grid; gap: 4px; }
+.filters .field:first-child { flex: 1 1 155px; }
+.filters input,.filters select { width: 100%; min-width: 0; }
+.empty { padding: 18px 0; color: hsl(var(--muted)); }
+.valuation-list { display: grid; gap: 0; }
+.simple-row { justify-content: space-between; padding: 8px 0; border-top: 1px solid hsl(var(--border)); }
+.status:not(:empty) { position: fixed; z-index: 1; inset: auto 16px 16px auto; max-width: calc(100% - 32px); padding: 8px 12px; border: 1px solid hsl(var(--border)); border-radius: var(--radius); background: hsl(var(--card)); color: hsl(var(--positive)); font-weight: 550; }
+dialog { width: min(calc(100% - 24px),470px); max-height: calc(100% - 24px); background: hsl(var(--card)); color: hsl(var(--fg)); padding: 0; border: 1px solid hsl(var(--border)); border-radius: 12px; }
+dialog::backdrop { background: hsl(0 0% 0% / .48); }
+.dialog-head,.dialog-body { padding: 16px 20px; }
+.dialog-head { border-bottom: 1px solid hsl(var(--border)); }
+.dialog-head h2 { font-size: 19px; }
+.dialog-head button { min-height: 34px; }
+.fields { display: grid; gap: 12px; }
+.fields .field-pair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.fields input,.fields select { min-width: 0; width: 100%; }
+.dialog-actions { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.form-error { color: hsl(var(--negative)); margin-top: 7px; }
+@media (max-width: 750px) {
+  .topbar-inner, main { padding-inline: 15px; }
+  main { padding-top: 19px; }
+  .page-head { margin-bottom: 15px; }
+  .pair { grid-template-columns: 1fr; }
+  .metrics, .metrics.wallet-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .wallet-metrics .metric:first-child { grid-column: 1 / -1; }
+  .metric, .panel { padding: 11px; }
+  .metric.emphasis { padding-top: 10px; }
+  .nav { gap: 18px; }
+  button,input,select { min-height: 42px; }
+  .category { min-height: 42px; }
+  .record.head { display: none; }
+  .record { grid-template-columns: minmax(0,1fr) max-content; gap: 3px 9px; }
+  .record .desktop { display: none; }
+  .record .meta { display: block; }
+  .record .amount { grid-column: 2; grid-row: 1; }
+  .filters .field:not(:first-child) { flex: 1 1 128px; }
+  .filters .field:first-child { flex-basis: 100%; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><span class="sun" aria-hidden="true"></span><strong>Oriens</strong></div>
+    <button class="ghost" id="theme" type="button" aria-pressed="false">Tema escuro</button>
+  </div>
+</header>
+<main>
+  <header class="page-head">
+    <div><h1>Financeiro</h1><small>Protótipo · Dados fictícios</small></div>
+    <button class="primary" id="new-entry" type="button"><span aria-hidden="true">＋ </span>Nova entrada</button>
+  </header>
+  <nav class="nav" aria-label="Visões do Financeiro">
+    <button type="button" data-view="overview" aria-current="page">Visão geral</button>
+    <button type="button" data-view="history">Lançamentos</button>
+    <button type="button" data-view="wallet">Investimentos</button>
+  </nav>
+  <section id="overview" class="stack" aria-label="Visão geral">
+    <div class="row">
+      <button class="icon ghost" id="previous-month" type="button" aria-label="Mês anterior">‹</button>
+      <span class="period" id="month" aria-live="polite"></span>
+      <button class="icon ghost" id="next-month" type="button" aria-label="Próximo mês">›</button>
+    </div>
+    <dl id="cash-metrics" class="metrics"></dl>
+    <section id="transfer-summary" class="panel transfer-summary" aria-label="Transferências de investimentos" hidden>
+      <div><h2>Transferências de investimentos</h2><small>Impacto no saldo do mês</small></div>
+      <div class="row">
+        <strong id="transfer-impact" class="amount"></strong>
+        <button id="view-investment-tag" type="button" class="ghost text-action">Ver tag Investimentos</button>
+      </div>
+    </section>
+    <div class="pair">
+      <section class="panel">
+        <div class="section-head"><h2>Despesas por categoria</h2></div>
+        <ul class="list" id="categories"></ul>
+      </section>
+      <section class="panel">
+        <div class="section-head"><h2>Receitas e despesas no mês</h2></div>
+        <div class="legend muted"><span><i aria-hidden="true"></i>Receitas</span><span><i aria-hidden="true"></i>Despesas</span></div>
+        <div id="chart"></div>
+      </section>
+    </div>
+    <section class="panel">
+      <div class="section-head"><h2>Lançamentos recentes</h2><button class="ghost text-action" id="view-month" type="button">Ver lançamentos do mês <span aria-hidden="true">→</span></button></div>
+      <div id="recent"></div>
+    </section>
+  </section>
+  <section id="history" class="stack" aria-label="Lançamentos" hidden>
+    <section class="panel">
+      <div class="section-head"><h2>Histórico de lançamentos</h2><span class="muted" id="results-count" aria-live="polite"></span></div>
+      <div class="filters">
+        <div class="field"><label for="search">Busca</label><input id="search" type="search" placeholder="Descrição do lançamento"></div>
+        <div class="field"><label for="period-filter">Período</label><select id="period-filter"></select></div>
+        <div class="field"><label for="category-filter">Categoria</label><select id="category-filter"></select></div>
+        <button id="clear-filters" type="button">Limpar</button>
+      </div>
+      <div id="history-records"></div>
+    </section>
+  </section>
+  <section id="wallet" class="stack" aria-label="Investimentos" hidden>
+    <div class="section-head">
+      <h2>Carteira manual</h2><button class="primary" id="new-asset" type="button"><span aria-hidden="true">＋ </span>Nova aplicação</button>
+    </div>
+    <dl id="wallet-metrics" class="metrics wallet-metrics"></dl>
+    <div class="pair">
+      <section class="panel">
+        <div class="section-head"><h2>Minhas aplicações</h2></div>
+        <div id="asset-records"></div>
+      </section>
+      <section class="panel">
+        <div class="section-head"><h2>Composição por classe</h2></div>
+        <ul class="list" id="allocation"></ul>
+      </section>
+    </div>
+    <section class="panel">
+      <div class="section-head"><h2>Movimentações da carteira</h2><button id="new-movement" type="button">Registrar movimentação</button></div>
+      <div id="movement-records"></div>
+    </section>
+  </section>
+  <p class="status" id="status" role="status"></p>
+</main>
+<dialog id="editor" aria-labelledby="editor-title">
+  <div class="dialog-head section-head"><h2 id="editor-title"></h2><button class="icon ghost" id="close-editor" type="button" aria-label="Fechar">×</button></div>
+  <div class="dialog-body" id="editor-body"></div>
+</dialog>
+<script>
+'use strict';
+const get = (id) => document.getElementById(id);
+const editor = get('editor');
+const dateToday = '2026-11-25';
+const initialMonth = dateToday.slice(0, 7);
+const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const months = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const money = (cents) => brl.format(cents / 100);
+const dateLabel = (date) => date.split('-').reverse().join('/');
+const monthLabel = (month) => months.format(new Date(month + '-01T00:00:00Z'));
+const escape = (value) => String(value).replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[char]);
+const investmentTag = 'Investimentos';
+const categories = ['Moradia', 'Alimentação', 'Transporte', 'Lazer', 'Saúde', 'Salário', 'Outros', investmentTag];
+const assetClasses = ['Renda fixa', 'Ações', 'Fundos imobiliários', 'Outros'];
+let month = initialMonth;
+let nextId = 100;
+let statusTimer;
+let entries = [
+  { id: 1, label: 'Salário', category: 'Salário', date: '2026-11-03', amount: 620000 },
+  { id: 2, label: 'Aluguel', category: 'Moradia', date: '2026-11-05', amount: -165000 },
+  { id: 3, label: 'Supermercado', category: 'Alimentação', date: '2026-11-08', amount: -32640 },
+  { id: 4, label: 'Combustível', category: 'Transporte', date: '2026-11-12', amount: -19500 },
+  { id: 5, label: 'Jantar', category: 'Lazer', date: '2026-11-14', amount: -14800 },
+  { id: 6, label: 'Mercado da semana', category: 'Alimentação', date: '2026-11-18', amount: -23870 },
+  { id: 7, label: 'Consulta', category: 'Saúde', date: '2026-11-20', amount: -25000 },
+  { id: 8, label: 'Freelance', category: 'Outros', date: '2026-11-22', amount: 150000 },
+  { id: 9, label: 'Almoço', category: 'Alimentação', date: '2026-11-24', amount: -6200 },
+  { id: 10, label: 'Salário de outubro', category: 'Salário', date: '2026-10-03', amount: 620000 },
+  { id: 11, label: 'Aluguel de outubro', category: 'Moradia', date: '2026-10-05', amount: -165000 },
+  { id: 12, label: 'Mercado de outubro', category: 'Alimentação', date: '2026-10-22', amount: -97660 }
+];
+const assets = [
+  { id: 21, label: 'Tesouro Selic', category: 'Renda fixa', valuations: [{ date: '2026-10-31', amount: 780000 }, { date: '2026-11-24', amount: 825000 }] },
+  { id: 22, label: 'Fundo imobiliário', category: 'Fundos imobiliários', valuations: [{ date: '2026-11-23', amount: 315000 }] },
+  { id: 23, label: 'Carteira de ações', category: 'Ações', valuations: [{ date: '2026-11-22', amount: 243000 }] }
+];
+const movements = [
+  { id: 31, asset: 21, category: 'Aporte', date: '2026-11-06', amount: 40000 },
+  { id: 32, asset: 22, category: 'Rendimento', date: '2026-11-17', amount: 3220 }
+];
+
+function options(values, selected) {
+  return values.map((item) => {
+    const [value, label] = Array.isArray(item) ? item : [item, item];
+    return '<option value="' + escape(value) + '"' + (String(value) === String(selected) ? ' selected' : '') + '>' + escape(label) + '</option>';
+  }).join('');
+}
+function metric(label, amount, description, style = '') {
+  const value = amount === null ? 'A avaliar' : money(amount);
+  return '<div class="metric ' + style + '"><dt>' + escape(label) + '</dt><dd class="amount">' + value + '</dd><small>' + escape(description) + '</small></div>';
+}
+function sum(rows) {
+  return rows.reduce((total, row) => total + row.amount, 0);
+}
+function isInvestmentTransfer(movement) {
+  return movement.category === 'Aporte' || movement.category === 'Resgate';
+}
+function cashRecords() {
+  const investmentRecords = movements.map((movement) => ({
+    id: movement.id,
+    label: movement.category + ' · ' + assets.find((asset) => asset.id === movement.asset).label,
+    date: movement.date,
+    category: investmentTag,
+    amount: movement.category === 'Aporte' ? -movement.amount : movement.amount,
+    transfer: isInvestmentTransfer(movement)
+  }));
+  return [...entries.map((entry) => ({ ...entry, action: 'entry' })), ...investmentRecords];
+}
+function newest(rows) {
+  return [...rows].sort((a, b) => b.date.localeCompare(a.date) || (b.id ?? 0) - (a.id ?? 0));
+}
+function group(rows) {
+  const totals = new Map();
+  for (const row of rows) totals.set(row.category, (totals.get(row.category) ?? 0) + Math.abs(row.amount));
+  return [...totals].sort((a, b) => b[1] - a[1]);
+}
+function record({ label, category, date, amount, action, id, transfer }) {
+  const name = action ? '<button type="button" class="bare text-action" data-action="' + action + '" data-id="' + id + '">' + escape(label) + '</button>' : '<strong>' + escape(label) + '</strong>';
+  const when = escape(dateLabel(date));
+  const value = amount === null ? 'A avaliar' : money(amount);
+  const kind = transfer ? '<small class="record-kind">Transferência</small>' : '';
+  return '<div class="record"><div>' + name + kind + '<small class="meta">' + escape(category) + ' · ' + when + '</small></div><span class="desktop muted">' + escape(category) + '</span><span class="desktop muted">' + when + '</span><span class="amount ' + (amount < 0 ? 'negative' : '') + '">' + value + '</span></div>';
+}
+function list(rows, empty, headings = ['Descrição', 'Categoria', 'Data', 'Valor']) {
+  if (!rows.length) return '<p class="empty">' + escape(empty) + '</p>';
+  return '<div class="records"><div class="record head">' + headings.map((heading, index) => '<span' + (index === 3 ? ' class="amount"' : '') + '>' + escape(heading) + '</span>').join('') + '</div>' + rows.map(record).join('') + '</div>';
+}
+function barRows(rows, clickable) {
+  const total = rows.reduce((value, row) => value + row[1], 0);
+  if (!total) return '<li class="empty">Nenhum valor para exibir.</li>';
+  return rows.map(([label, amount]) => {
+    const percent = Math.round(100 * amount / total);
+    const body = '<span class="row"><span>' + escape(label) + '</span><span>' + money(amount) + ' <small>· ' + percent + '%</small></span></span><span class="bar" aria-hidden="true"><span style="width:' + percent + '%"></span></span>';
+    return clickable
+      ? '<li><button class="category" type="button" data-category="' + escape(label) + '">' + body + '</button></li>'
+      : '<li class="category">' + body + '</li>';
+  }).join('');
+}
+function renderChart(rows) {
+  if (!rows.length) {
+    get('chart').innerHTML = '<p class="empty">Nenhuma movimentação no mês.</p>';
+    return;
+  }
+  const weeks = Array.from({ length: 4 }, (_, index) => {
+    const week = rows.filter((row) => Math.min(3, Math.floor((Number(row.date.slice(-2)) - 1) / 7)) === index);
+    return [sum(week.filter((row) => row.amount > 0)), Math.abs(sum(week.filter((row) => row.amount < 0)))];
+  });
+  const max = Math.max(1, ...weeks.flat());
+  const labels = ['1–7', '8–14', '15–21', '22–fim'];
+  get('chart').innerHTML = '<div class="chart" aria-hidden="true">' + weeks.map(([income, expenses], index) => '<div><div class="bars"><span style="height:' + (100 * income / max) + '%"></span><span style="height:' + (100 * expenses / max) + '%"></span></div><small>' + labels[index] + '</small></div>').join('') + '</div><details class="chart-detail"><summary class="muted">Valores por semana</summary>' + weeks.map(([income, expenses], index) => '<div class="row simple-row"><strong>' + labels[index] + '</strong><span>Receitas ' + money(income) + ' · Despesas ' + money(expenses) + '</span></div>').join('') + '</details>';
+}
+function renderOverview() {
+  const cash = cashRecords();
+  const rows = newest(cash.filter((row) => row.date.startsWith(month)));
+  const ordinary = rows.filter((row) => !row.transfer);
+  const transfers = rows.filter((row) => row.transfer);
+  const transferImpact = sum(transfers);
+  const income = sum(ordinary.filter((row) => row.amount > 0));
+  const expenses = Math.abs(sum(ordinary.filter((row) => row.amount < 0)));
+  const balance = sum(cash.filter((row) => row.date.slice(0, 7) <= month));
+  get('month').textContent = monthLabel(month);
+  get('cash-metrics').innerHTML = metric('Receitas', income, 'No mês selecionado', 'positive') +
+    metric('Despesas', expenses, 'No mês selecionado', 'negative') +
+    metric('Resultado do mês', income - expenses, 'Receitas menos despesas', 'emphasis') +
+    metric('Saldo disponível', balance, 'Acumulado até o fim do mês');
+  get('transfer-summary').hidden = transfers.length === 0;
+  get('transfer-impact').textContent = (transferImpact > 0 ? '+' : '') + money(transferImpact);
+  get('categories').innerHTML = barRows(group(ordinary.filter((row) => row.amount < 0)), true);
+  get('recent').innerHTML = list(rows.slice(0, 4), 'Nenhum lançamento neste mês.');
+  renderChart(ordinary);
+}
+function renderHistory() {
+  const period = get('period-filter').value;
+  const category = get('category-filter').value;
+  const query = get('search').value.trim().toLocaleLowerCase('pt-BR');
+  const rows = newest(cashRecords().filter((row) => (!period || row.date.startsWith(period)) && (!category || row.category === category) && (!query || row.label.toLocaleLowerCase('pt-BR').includes(query))));
+  get('results-count').textContent = rows.length + (rows.length === 1 ? ' lançamento' : ' lançamentos');
+  get('history-records').innerHTML = list(rows, 'Nenhum lançamento corresponde aos filtros.');
+}
+function latest(asset) {
+  return newest(asset.valuations)[0];
+}
+function currentPosition(asset) {
+  const valuation = latest(asset);
+  // Na mesma data, uma nova avaliação já incorpora os movimentos registrados antes dela.
+  const changes = movements.filter((movement) => movement.asset === asset.id &&
+    isInvestmentTransfer(movement) &&
+    (movement.date > valuation.date ||
+      (movement.date === valuation.date && movement.id > (valuation.recordedOrder ?? 0))));
+  const estimated = changes.reduce((amount, movement) =>
+    amount + (movement.category === 'Aporte' ? movement.amount : -movement.amount), valuation.amount);
+  return { date: valuation.date, amount: estimated < 0 ? null : estimated, adjusted: changes.length > 0 };
+}
+function renderWallet() {
+  const positions = assets.map((asset) => ({ ...asset, ...currentPosition(asset), action: 'asset' }));
+  const available = positions.filter((position) => position.amount !== null);
+  const value = available.length ? sum(available) : null;
+  const coverage = available.length === positions.length
+    ? 'Avaliações, aportes e resgates'
+    : 'Total parcial · ' + available.length + ' de ' + positions.length + ' aplicações';
+  const contributions = sum(movements.filter((movement) => movement.category === 'Aporte')) - sum(movements.filter((movement) => movement.category === 'Resgate'));
+  const proceeds = sum(movements.filter((movement) => movement.category === 'Rendimento'));
+  get('wallet-metrics').innerHTML = metric('Valor da carteira', value, coverage, 'emphasis') +
+    metric('Aportes líquidos', contributions, 'Aportes menos resgates registrados') +
+    metric('Rendimentos registrados', proceeds, 'Recebimentos informados');
+  get('asset-records').innerHTML = list(positions, 'Nenhuma aplicação cadastrada.', ['Aplicação', 'Classe', 'Última avaliação', 'Posição']);
+  get('allocation').innerHTML = barRows(group(available), false);
+  const rows = newest(movements).map((movement) => ({
+    ...movement,
+    label: assets.find((asset) => asset.id === movement.asset).label,
+    amount: movement.category === 'Resgate' ? -movement.amount : movement.amount
+  }));
+  get('movement-records').innerHTML = list(rows, 'Nenhuma movimentação registrada.', ['Aplicação', 'Tipo', 'Data', 'Valor']);
+}
+function refreshPeriod(selected = get('period-filter').value) {
+  const available = [...new Set([selected, ...cashRecords().map((row) => row.date.slice(0, 7))])].filter(Boolean).sort().reverse();
+  get('period-filter').innerHTML = options([['', 'Todos os períodos'], ...available.map((item) => [item, monthLabel(item)])], selected);
+}
+function show(view) {
+  get('status').textContent = '';
+  for (const button of document.querySelectorAll('[data-view]')) {
+    const current = button.dataset.view === view;
+    get(button.dataset.view).hidden = !current;
+    if (current) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  }
+  if (view === 'history') renderHistory();
+  if (view === 'wallet') renderWallet();
+}
+function showMonthHistory(category = '') {
+  refreshPeriod(month);
+  get('category-filter').value = category;
+  get('search').value = '';
+  show('history');
+  get('search').focus();
+}
+function changeMonth(offset) {
+  const [year, index] = month.split('-').map(Number);
+  month = new Date(Date.UTC(year, index - 1 + offset, 1)).toISOString().slice(0, 7);
+  renderOverview();
+}
+function updatePanel(title, markup) {
+  get('editor-title').textContent = title;
+  get('editor-body').innerHTML = markup;
+  if (!editor.open) editor.showModal();
+  editor.querySelector('input, select, [data-action]')?.focus();
+}
+function field(label, name, type, value = '', extra = '') {
+  return '<label>' + label + '<input type="' + type + '" name="' + name + '" value="' + escape(value) + '" required ' + extra + '></label>';
+}
+function select(label, name, values, selected) {
+  return '<div class="field"><label for="form-' + name + '">' + label + '</label><select id="form-' + name + '" name="' + name + '">' + options(values, selected) + '</select></div>';
+}
+function form(fields, submit, save) {
+  return '<form data-save="' + save + '"><div class="fields">' + fields + '</div><p class="form-error" data-error role="alert" hidden></p><div class="dialog-actions"><button type="button" data-action="close">Cancelar</button><button type="submit" class="primary">' + submit + '</button></div></form>';
+}
+function entryDialog(entry) {
+  const fields = field('Descrição', 'label', 'text', entry?.label, 'maxlength="80"') +
+    '<div class="field-pair">' + select('Tipo', 'type', ['Despesa', 'Receita'], entry?.amount > 0 ? 'Receita' : 'Despesa') +
+    field('Valor (R$)', 'amount', 'text', entry ? (Math.abs(entry.amount) / 100).toFixed(2).replace('.', ',') : '', 'inputmode="decimal" maxlength="12" placeholder="0,00"') + '</div>' +
+    '<div class="field-pair">' + select('Categoria', 'category', categories, entry?.category ?? 'Alimentação') + field('Data', 'date', 'date', entry?.date ?? dateToday) + '</div>';
+  updatePanel(entry ? 'Editar lançamento' : 'Nova entrada', form(fields, 'Salvar lançamento', 'entry'));
+  editor.querySelector('form').dataset.id = entry?.id ?? '';
+}
+function assetDialog() {
+  const fields = field('Nome da aplicação', 'label', 'text', '', 'maxlength="80"') +
+    select('Classe', 'category', assetClasses, assetClasses[0]) +
+    '<div class="field-pair">' + field('Valor informado (R$)', 'amount', 'text', '', 'inputmode="decimal" maxlength="12" placeholder="0,00"') +
+    field('Data da avaliação', 'date', 'date', dateToday, 'max="' + dateToday + '"') + '</div>';
+  updatePanel('Nova aplicação', form(fields, 'Salvar aplicação', 'asset'));
+}
+function detailDialog(asset) {
+  const valuation = latest(asset);
+  const position = currentPosition(asset);
+  const value = position.amount === null ? 'A avaliar' : money(position.amount);
+  const positionNote = position.amount === null ? 'Atualize a avaliação para confirmar o valor que restou.' :
+    position.adjusted ? 'Estimativa com aportes e resgates após a última avaliação.' : '';
+  const history = newest(asset.valuations).map((valuation) => '<div class="row simple-row"><span>' + dateLabel(valuation.date) + '</span><strong class="amount">' + money(valuation.amount) + '</strong></div>').join('');
+  updatePanel(asset.label, '<p class="muted">' + escape(asset.category) + ' · Última avaliação em ' + dateLabel(valuation.date) + '</p>' +
+    '<div class="metric" style="margin-block:12px"><h3>Posição na carteira</h3><strong class="amount">' + value + '</strong><small>' + positionNote + '</small></div>' +
+    '<h3>Histórico de avaliações</h3><div class="valuation-list">' + history + '</div><div class="dialog-actions"><button type="button" class="primary" data-action="valuation" data-id="' + asset.id + '">Atualizar avaliação</button></div>');
+}
+function valuationDialog(asset) {
+  const fields = '<p class="muted">' + escape(asset.label) + '</p><div class="field-pair">' + field('Valor informado (R$)', 'amount', 'text', '', 'inputmode="decimal" maxlength="12" placeholder="0,00"') +
+    field('Data da avaliação', 'date', 'date', dateToday, 'max="' + dateToday + '"') + '</div>';
+  updatePanel('Atualizar avaliação', form(fields, 'Salvar avaliação', 'valuation'));
+  editor.querySelector('form').dataset.id = asset.id;
+}
+function movementDialog() {
+  const fields = select('Aplicação', 'asset', assets.map((asset) => [asset.id, asset.label]), assets[0].id) +
+    select('Tipo de movimentação', 'category', ['Aporte', 'Resgate', 'Rendimento'], 'Aporte') +
+    '<div class="field-pair">' + field('Valor (R$)', 'amount', 'text', '', 'inputmode="decimal" maxlength="12" placeholder="0,00"') +
+    field('Data', 'date', 'date', dateToday, 'max="' + dateToday + '"') + '</div>' +
+    '<p class="muted">Aportes e resgates entram como transferências. Rendimentos recebidos entram como receita. A tag Investimentos é aplicada automaticamente.</p>';
+  updatePanel('Registrar movimentação', form(fields, 'Salvar movimentação', 'movement'));
+}
+function parseCents(value) {
+  const input = value.trim();
+  const normalized = /^\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?$/.test(input) ? input.replaceAll('.', '') : input;
+  const match = /^(\d+)(?:[,.](\d{1,2}))?$/.exec(normalized);
+  return match ? Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0')) : NaN;
+}
+function announce(message) {
+  clearTimeout(statusTimer);
+  get('status').textContent = message;
+  statusTimer = setTimeout(() => { get('status').textContent = ''; }, 3500);
+}
+function submit(event) {
+  const form = event.target;
+  if (!form.dataset.save) return;
+  event.preventDefault();
+  const data = new FormData(form);
+  const kind = form.dataset.save;
+  const amount = parseCents(data.get('amount'));
+  const label = data.get('label')?.trim();
+  const date = data.get('date');
+  const category = data.get('category');
+  const id = Number(form.dataset.id);
+  const error = form.querySelector('[data-error]');
+  const canBeZero = kind === 'asset' || kind === 'valuation';
+  if (!Number.isSafeInteger(amount) || (amount === 0 && !canBeZero) || label === '') {
+    error.textContent = 'Informe uma descrição válida e um valor em reais com até duas casas decimais.';
+    error.hidden = false;
+    return;
+  }
+  if (kind === 'entry') {
+    const entry = { id: id || nextId++, label, category, date, amount: data.get('type') === 'Despesa' ? -amount : amount };
+    entries = id ? entries.map((row) => row.id === id ? entry : row) : [...entries, entry];
+    editor.close();
+    refreshPeriod();
+    renderOverview();
+    renderHistory();
+    announce(id ? 'Lançamento atualizado.' : 'Lançamento salvo.');
+  } else if (kind === 'asset') {
+    const id = nextId++;
+    assets.push({ id, label, category, valuations: [{ date, amount, recordedOrder: id }] });
+    editor.close();
+    renderWallet();
+    announce('Aplicação cadastrada.');
+  } else if (kind === 'valuation') {
+    const asset = assets.find((item) => item.id === id);
+    asset.valuations = [...asset.valuations.filter((item) => item.date !== date), { date, amount, recordedOrder: nextId++ }];
+    renderWallet();
+    detailDialog(asset);
+    announce('Avaliação atualizada.');
+  } else if (kind === 'movement') {
+    movements.push({ id: nextId++, asset: Number(data.get('asset')), category, date, amount });
+    editor.close();
+    refreshPeriod();
+    renderWallet();
+    renderOverview();
+    renderHistory();
+    announce(isInvestmentTransfer({ category }) ? 'Transferência registrada com a tag Investimentos.' : 'Receita de investimento registrada.');
+  }
+}
+for (const button of document.querySelectorAll('[data-view]')) button.addEventListener('click', () => show(button.dataset.view));
+get('theme').addEventListener('click', () => {
+  const dark = document.documentElement.classList.toggle('dark');
+  get('theme').setAttribute('aria-pressed', String(dark));
+  get('theme').textContent = dark ? 'Tema claro' : 'Tema escuro';
+});
+get('new-entry').addEventListener('click', () => entryDialog());
+get('new-asset').addEventListener('click', assetDialog);
+get('new-movement').addEventListener('click', movementDialog);
+get('close-editor').addEventListener('click', () => editor.close());
+get('previous-month').addEventListener('click', () => changeMonth(-1));
+get('next-month').addEventListener('click', () => changeMonth(1));
+get('view-month').addEventListener('click', () => showMonthHistory());
+get('view-investment-tag').addEventListener('click', () => showMonthHistory(investmentTag));
+get('search').addEventListener('input', renderHistory);
+get('period-filter').addEventListener('change', renderHistory);
+get('category-filter').addEventListener('change', renderHistory);
+get('clear-filters').addEventListener('click', () => {
+  get('search').value = '';
+  get('period-filter').value = '';
+  get('category-filter').value = '';
+  renderHistory();
+});
+editor.addEventListener('submit', submit);
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-action], button[data-category]');
+  if (!button) return;
+  if (button.dataset.category) showMonthHistory(button.dataset.category);
+  const id = Number(button.dataset.id);
+  switch (button.dataset.action) {
+    case 'entry': entryDialog(entries.find((entry) => entry.id === id)); break;
+    case 'asset': detailDialog(assets.find((asset) => asset.id === id)); break;
+    case 'valuation': valuationDialog(assets.find((asset) => asset.id === id)); break;
+    case 'close': editor.close(); break;
+  }
+});
+get('category-filter').innerHTML = options([['', 'Todas as categorias'], ...categories]);
+refreshPeriod();
+renderOverview();
+</script>
+</body>
+</html>
