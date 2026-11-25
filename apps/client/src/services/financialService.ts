@@ -2,7 +2,8 @@ import apiClient from './api';
 import { queryClient } from '@/lib/query-client';
 
 function financialChanged(userId: number) {
-  void queryClient.invalidateQueries({ predicate: query => query.queryKey[0] === 'work' && query.queryKey[1] === userId && query.queryKey[2] === 'statistics' && ['finance', 'financial-evidence'].includes(String(query.queryKey[3])) });
+  void queryClient.invalidateQueries({ predicate: query => query.queryKey[0] === 'work' && query.queryKey[1] === userId && (query.queryKey[2] === 'financial'
+    || query.queryKey[2] === 'statistics' && ['finance', 'financial-evidence'].includes(String(query.queryKey[3]))) });
 }
 import { EntryDTO, FinancialInput, TagDTO, Page } from '@/types/financial';
 
@@ -44,6 +45,17 @@ export const getAllEntries = async (
 ): Promise<Page<EntryDTO>> => {
   const response = await apiClient.get(`/financial/user/${userId}/entries`, { params, signal });
   return response.data;
+};
+
+const LEDGER_PAGE_SIZE = 500;
+
+/** Full account history in stable id order; any failed page rejects the whole read, so no partial total escapes. */
+export const getEntryLedger = async (userId: number, signal?: AbortSignal): Promise<EntryDTO[]> => {
+  const page = (index: number) => getAllEntries(userId, { page: index, size: LEDGER_PAGE_SIZE, sortBy: 'id', direction: 'ASC' }, signal);
+  const first = await page(0);
+  const rest = await Promise.all(Array.from({ length: Math.max(0, first.totalPages - 1) }, (_, index) => page(index + 1)));
+  if (rest.some(result => result.totalElements !== first.totalElements)) throw new Error('O histórico mudou durante a leitura. Recarregue os dados.');
+  return [first, ...rest].flatMap(result => result.content);
 };
 
 export const updateEntry = async (userId: number, entryId: number, entry: EntryDTO, key: string): Promise<EntryDTO> => {

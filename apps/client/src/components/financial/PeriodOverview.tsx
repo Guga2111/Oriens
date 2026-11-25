@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { WorkFeedback } from "@/components/common/WorkFeedback";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Empty,
   EmptyContent,
@@ -13,177 +14,229 @@ import {
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  byTag,
   entriesInMonth,
-  summarizeAll,
   summarizeMonth,
+  summarizeThrough,
+  weeklyFlow,
   type FinancialPeriod,
 } from "@/lib/financialSummary";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { EntryDTO } from "@/types/financial";
+import type { EntryDTO, TagDTO } from "@/types/financial";
+import { CategoryBreakdown } from "./CategoryBreakdown";
+import { MonthFlowChart } from "./MonthFlowChart";
 
 interface PeriodOverviewProps {
-  /** Histórico carregado até o momento (o acumulado cresce conforme chega). */
-  entries: EntryDTO[];
+  /** Histórico completo da conta; ausente enquanto carrega ou após falha. */
+  entries: EntryDTO[] | undefined;
+  tags: TagDTO[];
   period: FinancialPeriod;
-  /** Primeira página ainda não chegou: o mês inteiro está em skeleton. */
-  isLoadingMonth: boolean;
-  /** Carga completa do histórico em andamento: só o acumulado fica em skeleton. */
-  isLoadingAccumulated: boolean;
+  isLoading: boolean;
+  error: unknown;
+  onRetry: () => void;
   onNewEntry: () => void;
-  /** Ação "Ver outro mês" do estado vazio. */
-  onPreviousMonth: () => void;
+  onSelectCategory: (tagId: number) => void;
+  onViewMonth: () => void;
 }
 
 const MASKED_VALUE = "R$ ••••••";
 
 /**
- * Resumo do mês selecionado (SPEC §11.5, D3): saldo como figura principal,
- * receitas/gastos com sinal e o saldo acumulado como linha secundária.
+ * Visão geral do mês: receitas, despesas e resultado do mês selecionado, saldo
+ * disponível acumulado até o fim dele e a composição das despesas.
  */
 export function PeriodOverview({
   entries,
+  tags,
   period,
-  isLoadingMonth,
-  isLoadingAccumulated,
+  isLoading,
+  error,
+  onRetry,
   onNewEntry,
-  onPreviousMonth,
+  onSelectCategory,
+  onViewMonth,
 }: PeriodOverviewProps) {
   const [showValues, setShowValues] = useState(true);
 
-  const monthEntries = useMemo(
-    () => entriesInMonth(entries, period),
-    [entries, period]
-  );
-  const monthSummary = useMemo(
-    () => summarizeMonth(entries, period),
-    [entries, period]
-  );
-  const accumulated = useMemo(() => summarizeAll(entries), [entries]);
+  const overview = useMemo(() => {
+    if (!entries) return null;
+    const monthEntries = entriesInMonth(entries, period);
+    return {
+      hasEntries: monthEntries.length > 0,
+      month: summarizeMonth(entries, period),
+      available: summarizeThrough(entries, period),
+      categories: byTag(monthEntries, tags),
+      weeks: weeklyFlow(monthEntries),
+    };
+  }, [entries, tags, period]);
 
-  const monthName = format(new Date(period.year, period.month, 1), "MMMM", {
+  const periodDate = new Date(period.year, period.month, 1);
+  const monthName = format(periodDate, "MMMM", { locale: ptBR });
+  const monthEnd = format(new Date(period.year, period.month + 1, 0), "d 'de' MMMM 'de' yyyy", {
     locale: ptBR,
   });
-
   const mask = (value: string) => (showValues ? value : MASKED_VALUE);
 
+  if (isLoading) {
+    return (
+      <section aria-label="Resumo do mês" aria-busy="true">
+        <OverviewSkeleton />
+      </section>
+    );
+  }
+
+  // Sem histórico completo, nenhum total aparece: um valor parcial pareceria definitivo.
+  if (!overview) {
+    return (
+      <section aria-label="Resumo do mês">
+        <WorkFeedback
+          error={error}
+          message={error ? undefined : "Não foi possível calcular o resumo."}
+          retry={onRetry}
+          retryLabel="Tentar novamente"
+        />
+      </section>
+    );
+  }
+
+  const { month, available } = overview;
+
   return (
-    <section aria-labelledby="financial-overview-heading" aria-busy={isLoadingMonth}>
-      <h2 id="financial-overview-heading" className="sr-only">
-        Resumo do mês
-      </h2>
+    <section aria-label="Resumo do mês" className="flex flex-col gap-6">
+      {error ? (
+        <WorkFeedback
+          message="Não foi possível atualizar os dados. Os valores exibidos são da última leitura completa."
+          retry={onRetry}
+          retryLabel="Tentar novamente"
+        />
+      ) : null}
       <Card>
-        <CardContent className="p-5">
-          {isLoadingMonth ? (
-            <OverviewSkeleton />
-          ) : monthEntries.length === 0 ? (
+        <CardContent className="flex items-start gap-4 p-5">
+          {/* The header already shows the month; the heading only names the region for screen readers. */}
+          <h2 className="sr-only">Resumo de {monthName}</h2>
+          <dl className="grid flex-1 grid-cols-2 gap-4 lg:grid-cols-4">
+            <Metric label="Receitas" hint="No mês selecionado" className="text-positive">
+              {mask(formatCurrency(month.income))}
+            </Metric>
+            <Metric label="Despesas" hint="No mês selecionado" className="text-negative">
+              {mask(formatCurrency(month.expenses))}
+            </Metric>
+            <Metric
+              label="Resultado do mês"
+              hint="Receitas menos despesas"
+              className={cn(month.balance < 0 && "text-negative")}
+            >
+              {mask(formatCurrency(month.balance))}
+            </Metric>
+            <Metric
+              label="Saldo disponível"
+              hint={`Acumulado até ${monthEnd}`}
+              className={cn(available.balance < 0 && "text-negative")}
+            >
+              {mask(formatCurrency(available.balance))}
+            </Metric>
+          </dl>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowValues((visible) => !visible)}
+            aria-label={showValues ? "Ocultar valores" : "Exibir valores"}
+            className="-mr-2 -mt-2 shrink-0"
+          >
+            {showValues ? <Eye className="h-5 w-5" aria-hidden /> : <EyeOff className="h-5 w-5" aria-hidden />}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {overview.hasEntries ? (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between gap-2 space-y-0 p-5 pb-3">
+              <h2 className="text-base font-semibold">Despesas por categoria</h2>
+              <Button variant="link" className="h-auto px-0" onClick={onViewMonth}>
+                Ver lançamentos do mês
+                <ArrowRight className="ml-1 h-4 w-4" aria-hidden />
+              </Button>
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
+              <CategoryBreakdown
+                categories={overview.categories}
+                monthName={monthName}
+                onSelect={onSelectCategory}
+              />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="p-5 pb-3">
+              <h2 className="text-base font-semibold">Receitas e despesas no mês</h2>
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
+              <MonthFlowChart weeks={overview.weeks} />
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-5">
             <Empty className="border-0 p-0">
               <EmptyHeader>
-                <EmptyTitle className="text-base">
-                  Nenhuma entrada em {monthName}
-                </EmptyTitle>
+                <EmptyTitle className="text-base">Nenhum lançamento em {monthName}</EmptyTitle>
                 <EmptyDescription>
-                  Registre uma receita ou um gasto para ver o resumo e os
-                  gráficos deste mês.
+                  Registre uma receita ou uma despesa para ver a composição deste mês.
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  <Button onClick={onNewEntry}>Nova entrada</Button>
-                  <Button variant="outline" onClick={onPreviousMonth}>
-                    Ver outro mês
-                  </Button>
-                </div>
+                <Button onClick={onNewEntry}>Nova entrada</Button>
               </EmptyContent>
             </Empty>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-sm text-muted-foreground">Saldo do mês</p>
-                  <p
-                    className={cn(
-                      "mt-1 text-[2rem] font-semibold leading-9 tabular-nums tracking-tight",
-                      monthSummary.balance < 0 && "text-negative"
-                    )}
-                  >
-                    {mask(formatCurrency(monthSummary.balance))}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowValues((visible) => !visible)}
-                  aria-label={showValues ? "Ocultar valores" : "Exibir valores"}
-                  className="shrink-0"
-                >
-                  {showValues ? (
-                    <Eye className="h-5 w-5" aria-hidden />
-                  ) : (
-                    <EyeOff className="h-5 w-5" aria-hidden />
-                  )}
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">
-                    Receitas do mês
-                  </p>
-                  <p className="mt-1 text-xl font-semibold tabular-nums text-positive">
-                    {mask(`+ ${formatCurrency(monthSummary.income)}`)}
-                  </p>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Gastos do mês</p>
-                  <p className="mt-1 text-xl font-semibold tabular-nums text-negative">
-                    {mask(`− ${formatCurrency(monthSummary.expenses)}`)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                <span>Saldo acumulado:</span>
-                {isLoadingAccumulated ? (
-                  <Skeleton
-                    className="inline-block h-3 w-24 align-middle"
-                    data-testid="accumulated-skeleton"
-                  />
-                ) : (
-                  <span className="font-medium tabular-nums text-foreground">
-                    {mask(formatCurrency(accumulated.balance))}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </section>
+  );
+}
+
+function Metric({
+  label,
+  hint,
+  className,
+  children,
+}: {
+  label: string;
+  hint: string;
+  className?: string;
+  children: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className={cn("mt-1 text-xl font-semibold tabular-nums", className)}>{children}</dd>
+      <dd className="mt-0.5 text-xs text-muted-foreground">{hint}</dd>
+    </div>
   );
 }
 
 function OverviewSkeleton() {
   return (
-    <div aria-hidden className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-9 w-44" />
-        </div>
-        <Skeleton className="h-9 w-9" />
+    <div aria-hidden className="flex flex-col gap-6">
+      <Card>
+        <CardContent className="flex flex-col gap-4 p-5">
+          <Skeleton className="h-4 w-40" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, index) => (
+              <div key={index} className="flex flex-col gap-2">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-6 w-28" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-48 w-full" />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-6 w-32" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className="h-6 w-32" />
-        </div>
-      </div>
-      <Skeleton className="h-3 w-56" />
     </div>
   );
 }

@@ -33,14 +33,24 @@ describe('sidebar por contexto', () => {
     expect(create).toHaveBeenCalledOnce();
   });
 
-  it.each([['/financial', 'Financeiro'], ['/stats', 'Estatísticas']])('isola os itens de %s', (path, label) => {
+  it.each([
+    ['/financial', 'Financeiro', ['Visão geral', 'Lançamentos']],
+    ['/stats', 'Estatísticas', ['Visão geral']],
+  ])('isola os itens de %s', (path, label, items) => {
     renderSidebar(path);
     const nav = screen.getByRole('navigation', { name: `Menu de ${label}` });
-    expect(within(nav).getAllByRole('link')).toHaveLength(1);
+    expect(within(nav).getAllByRole('link').map(link => link.textContent)).toEqual(items);
     expect(within(nav).getByRole('link', { name: 'Visão geral' })).toHaveAttribute('href', path);
     expect(screen.queryByRole('button', { name: 'Nova tarefa' })).not.toBeInTheDocument();
     expect(screen.queryByText('Site pessoal')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Criar projeto' })).not.toBeInTheDocument();
+  });
+
+  it('marca Lançamentos, e não a Visão geral, em /financial/entries', () => {
+    renderSidebar('/financial/entries');
+    const nav = screen.getByRole('navigation', { name: 'Menu de Financeiro' });
+    expect(within(nav).getByRole('link', { name: 'Lançamentos' })).toHaveAttribute('aria-current', 'page');
+    expect(within(nav).getByRole('link', { name: 'Visão geral' })).not.toHaveAttribute('aria-current');
   });
 
   it('aciona a criação de projeto sem alternar o grupo, mesmo recolhido', async () => {

@@ -6,7 +6,7 @@ import { login } from "./helpers";
 
 const API_BASE_URL = process.env.E2E_API_BASE_URL ?? "http://localhost:8080";
 
-/** Mesmo rótulo do PageHeader: "Novembro 2026". */
+/** Mesmo rótulo do seletor de mês: "Novembro 2026". */
 function monthLabel(date: Date): string {
   const label = format(date, "MMMM yyyy", { locale: ptBR });
   return label.charAt(0).toUpperCase() + label.slice(1);
@@ -20,7 +20,7 @@ function userIdFromToken(token: string): number {
 }
 
 /**
- * Semeia dois meses para que a troca de período mude os três blocos do topo.
+ * Semeia dois meses para que a troca de período mude os indicadores.
  * A conta E2E é nova a cada run, então os valores são determinísticos.
  */
 async function seedEntries(request: APIRequestContext): Promise<void> {
@@ -35,8 +35,10 @@ async function seedEntries(request: APIRequestContext): Promise<void> {
     { headers }
   );
   expect(tagsResponse.ok()).toBeTruthy();
-  const tags = (await tagsResponse.json()) as Array<{ id: number }>;
-  const tagId = tags[0].id;
+  const tags = (await tagsResponse.json()) as Array<{ id: number; name: string }>;
+  // Salário recusa valores negativos; as despesas vão para outra tag padrão.
+  const incomeTagId = tags.find((tag) => tag.name === "Salário")!.id;
+  const expenseTagId = tags.find((tag) => !["Salário", "Investimentos"].includes(tag.name))!.id;
 
   const now = new Date();
   const previous = addMonths(now, -1);
@@ -44,29 +46,29 @@ async function seedEntries(request: APIRequestContext): Promise<void> {
   const entries = [
     {
       amount: 1000,
+      tagId: incomeTagId,
       entryDate: format(now, "yyyy-MM-05"),
-      tagId,
       description: "Receita do mês",
       isRecurring: false,
     },
     {
       amount: -250,
+      tagId: expenseTagId,
       entryDate: format(now, "yyyy-MM-06"),
-      tagId,
       description: "Gasto do mês",
       isRecurring: false,
     },
     {
       amount: 500,
+      tagId: incomeTagId,
       entryDate: format(previous, "yyyy-MM-10"),
-      tagId,
       description: "Receita anterior",
       isRecurring: false,
     },
     {
       amount: -100,
+      tagId: expenseTagId,
       entryDate: format(previous, "yyyy-MM-11"),
-      tagId,
       description: "Gasto anterior",
       isRecurring: false,
     },
@@ -75,14 +77,15 @@ async function seedEntries(request: APIRequestContext): Promise<void> {
   for (const entry of entries) {
     const response = await request.post(
       `${API_BASE_URL}/financial/user/${userId}/entries`,
-      { headers, data: entry }
+      { headers: { ...headers, "Idempotency-Key": crypto.randomUUID() }, data: entry }
     );
     expect(response.ok()).toBeTruthy();
   }
 }
 
-// E2E 5 da SPEC §15 (P0.0) + P1.3: a troca de mês altera os 3 blocos do topo.
-test("troca de mês atualiza os três blocos do resumo", async ({
+// Visão geral (#117): o mês selecionado governa os indicadores, o saldo
+// disponível acumula até o fim dele e a categoria abre o histórico filtrado.
+test("troca de mês atualiza os indicadores e a categoria abre o histórico", async ({
   page,
   request,
 }, testInfo) => {
@@ -96,33 +99,46 @@ test("troca de mês atualiza os três blocos do resumo", async ({
   await page.goto("/financial");
 
   const overview = page.getByRole("region", { name: "Resumo do mês" });
+  const metric = (label: string) =>
+    overview.locator("dt").getByText(label, { exact: true }).locator("xpath=following-sibling::dd[1]");
   await expect(overview).toBeVisible();
 
-  // Mês atual: 1000 − 250 = 750; acumulado = 750 + 400.
-  await expect(overview.getByText("R$ 750,00")).toBeVisible();
-  await expect(overview.getByText("+ R$ 1.000,00")).toBeVisible();
-  await expect(overview.getByText("− R$ 250,00")).toBeVisible();
-  await expect(overview.getByText("R$ 1.150,00")).toBeVisible();
+  // Mês atual: 1000 − 250 = 750; saldo disponível = 750 + 400.
+  await expect(metric("Receitas")).toHaveText("R$ 1.000,00");
+  await expect(metric("Despesas")).toHaveText("R$ 250,00");
+  await expect(metric("Resultado do mês")).toHaveText("R$ 750,00");
+  await expect(metric("Saldo disponível")).toHaveText("R$ 1.150,00");
   await expect(
     page.getByText(monthLabel(new Date()), { exact: true })
   ).toBeVisible();
 
-  // Mês anterior: 500 − 100 = 400; o acumulado não muda.
+  // Mês anterior: 500 − 100 = 400; o saldo disponível termina nesse mês.
   await page.getByRole("button", { name: "Mês anterior" }).click();
   await expect(
     page.getByText(monthLabel(addMonths(new Date(), -1)), { exact: true })
   ).toBeVisible();
-  await expect(overview.getByText("R$ 400,00")).toBeVisible();
-  await expect(overview.getByText("+ R$ 500,00")).toBeVisible();
-  await expect(overview.getByText("− R$ 100,00")).toBeVisible();
-  await expect(overview.getByText("R$ 1.150,00")).toBeVisible();
+  await expect(metric("Receitas")).toHaveText("R$ 500,00");
+  await expect(metric("Despesas")).toHaveText("R$ 100,00");
+  await expect(metric("Resultado do mês")).toHaveText("R$ 400,00");
+  await expect(metric("Saldo disponível")).toHaveText("R$ 400,00");
 
-  // "Este mês" volta para o período atual.
+  // A categoria abre Lançamentos com o mês e a tag aplicados.
+  await overview.getByRole("button", { name: /das despesas\. Ver lançamentos/ }).first().click();
+  await expect(page).toHaveURL(/\/financial\/entries\?start=\d{4}-\d{2}-01&end=\d{4}-\d{2}-\d{2}&tag=\d+$/);
+  await expect(page.getByRole("navigation", { name: "Menu de Financeiro" }).getByRole("link", { name: "Lançamentos" })).toHaveAttribute("aria-current", "page");
+  const history = page.getByRole("table");
+  await expect(history.getByText("Gasto anterior")).toBeVisible();
+  await expect(history.getByText("Receita anterior")).toHaveCount(0);
+  await expect(history.getByText("Gasto do mês")).toHaveCount(0);
+
+  // Voltar mantém o mês na URL; "Este mês" retorna ao período atual.
+  await page.goBack();
+  await expect(metric("Resultado do mês")).toHaveText("R$ 400,00");
   await page.getByRole("button", { name: "Este mês" }).click();
   await expect(
     page.getByText(monthLabel(new Date()), { exact: true })
   ).toBeVisible();
-  await expect(overview.getByText("R$ 750,00")).toBeVisible();
+  await expect(metric("Resultado do mês")).toHaveText("R$ 750,00");
 });
 
 // BE6: POST /financial/user/{id}/tags devolve 403 para conta nova.
