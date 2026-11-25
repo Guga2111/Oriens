@@ -74,7 +74,8 @@ export function timelineDays(window: TimelineWindow): TimelineDay[] {
   });
 }
 
-function segments(window: TimelineWindow, keyOf: (date: Date) => string, labelOf: (first: Date) => string): TimelineSegment[] {
+/** Consecutive days of the window grouped by `keyOf`; each group is labelled from its first day in the window. */
+export function timelineSegments(window: TimelineWindow, keyOf: (date: Date) => string, labelOf: (first: Date) => string): TimelineSegment[] {
   const start = productDate(window.startDate);
   const result: TimelineSegment[] = [];
   for (let index = 0; index < window.days; index++) {
@@ -89,11 +90,11 @@ function segments(window: TimelineWindow, keyOf: (date: Date) => string, labelOf
 
 /** Upper header level: each month in full, pt-BR. */
 export const monthSegments = (window: TimelineWindow) =>
-  segments(window, date => format(date, 'yyyy-MM'), date => format(date, 'MMMM yyyy', { locale: ptBR }));
+  timelineSegments(window, date => format(date, 'yyyy-MM'), date => format(date, 'MMMM yyyy', { locale: ptBR }));
 
 /** Lower header level of the month scale: one label per Monday-based week ("17 nov"). */
 export const weekSegments = (window: TimelineWindow) =>
-  segments(window, date => toDay(startOfWeek(date, { weekStartsOn: 1 })), formatTimelineDate);
+  timelineSegments(window, date => toDay(startOfWeek(date, { weekStartsOn: 1 })), formatTimelineDate);
 
 export function formatTimelineDate(value: string | Date): string {
   return format(typeof value === 'string' ? productDate(value) : value, 'd MMM', { locale: ptBR });

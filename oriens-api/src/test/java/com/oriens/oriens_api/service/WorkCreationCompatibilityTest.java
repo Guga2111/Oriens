@@ -3,6 +3,10 @@ package com.oriens.oriens_api.service;
 import com.oriens.oriens_api.entity.CreationReceipt;
 import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.entity.dto.work.WorkCommands.CreateTask;
+import com.oriens.oriens_api.entity.dto.work.WorkCommands.CreateObjective;
+import java.util.HexFormat;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 import com.oriens.oriens_api.entity.enums.Priority;
 import com.oriens.oriens_api.repository.CreationReceiptRepository;
 import jakarta.persistence.EntityManager;
@@ -64,4 +68,35 @@ class WorkCreationCompatibilityTest {
                 verify(repository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
             });
     }
+    @Test
+    void retriesAnObjectiveReceiptFromBeforeDescriptionAndStartDateWereAdded() {
+        new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(JacksonAutoConfiguration.class))
+            .withPropertyValues("spring.jackson.use-jackson2-defaults=true").run(context -> {
+                var json = context.getBean(JsonMapper.class);
+                var em = mock(EntityManager.class);
+                var repository = mock(CreationReceiptRepository.class);
+                var lock = mock(Query.class);
+                var key = UUID.randomUUID();
+                var now = Instant.parse("2026-11-24T12:00:00Z");
+                String legacyBody = "{\"dueDate\":null,\"projectVersion\":4,\"title\":\"Resultado\"}";
+                String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                    .digest(legacyBody.getBytes(StandardCharsets.UTF_8)));
+                var response = json.readTree("{\"objective\":{\"id\":81,\"status\":\"PENDING\"},\"projectVersion\":5}");
+                var receipt = CreationReceipt.builder().payloadSha256(hash).resourceId(81L).resourceVersion(0L)
+                    .responseBody(response).expiresAt(now.plusSeconds(86400)).build();
+                when(em.createNativeQuery(anyString())).thenReturn(lock);
+                when(lock.setParameter(eq("owner"), eq(1L))).thenReturn(lock);
+                when(lock.getResultList()).thenReturn(List.of(1L));
+                when(em.find(User.class, 1L)).thenReturn(new User());
+                when(repository.findByUserIdAndOperationAndIdempotencyKey(1L, "project:9:objective:create", key))
+                    .thenReturn(Optional.of(receipt));
+                var service = new WorkCreationService(em, repository, json, Clock.fixed(now, ZoneOffset.UTC));
+                var payload = new CreateObjective(4L, " Resultado ", null);
+                var replay = service.create(1L, "project:9:objective:create", key.toString(), payload,
+                    () -> { throw new AssertionError("Não recriar o objetivo após upgrade."); }, id -> id == 81L);
+                assertThat(replay.body()).isEqualTo(response);
+                verify(repository, never()).saveAndFlush(org.mockito.ArgumentMatchers.any());
+            });
+    }
+
 }

@@ -15,4 +15,6 @@ public class UserPreferences {
     private Boolean notifications;
     private Boolean sound;
     private String theme;
+    /** How a task opens: "peek" (side panel), "modal" or "full" (full screen). */
+    private String taskView;
 }

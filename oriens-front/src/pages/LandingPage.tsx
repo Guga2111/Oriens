@@ -30,7 +30,7 @@ const highlights = [
 
 export function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background-brand">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
       <header className="px-page">
         <div className="mx-auto flex h-16 max-w-[1120px] items-center">
@@ -82,14 +82,14 @@ export function LandingPage() {
 
         <section
           id="features-detail"
-          className="w-full bg-brand-burgundy py-20 text-brand-cream md:py-28"
+          className="w-full bg-primary py-20 text-primary-foreground md:py-28"
         >
           <div className="mx-auto grid max-w-[1120px] gap-12 px-page lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
                 O dia inteiro em uma faixa
               </h2>
-              <p className="mt-4 max-w-[52ch] text-brand-cream/80">
+              <p className="mt-4 max-w-[52ch] text-primary-foreground">
                 O Oriens organiza o dia como um horizonte: a linha do dia
                 mostra, de um vistazo, o que já passou e o que vem a seguir.
                 Cada marca é uma tarefa que você abre em um clique.
@@ -97,15 +97,15 @@ export function LandingPage() {
 
               <div
                 aria-hidden
-                className="mt-8 rounded-xl bg-brand-cream/5 p-5"
+                className="mt-8 rounded-xl bg-primary-foreground/5 p-5"
               >
-                <div className="flex h-16 items-center gap-3 rounded-lg bg-brand-cream/10 px-4">
-                  <span className="h-6 w-1 rounded-full bg-brand-cream/40" />
-                  <span className="h-6 w-1 rounded-full bg-brand-cream/40" />
-                  <span className="h-6 w-1 rounded-full bg-brand-yellow" />
-                  <span className="h-6 w-1 rounded-full bg-brand-cream/40" />
+                <div className="flex h-16 items-center gap-3 rounded-lg bg-primary-foreground/10 px-4">
+                  <span className="h-6 w-1 rounded-full bg-primary-foreground/40" />
+                  <span className="h-6 w-1 rounded-full bg-primary-foreground/40" />
+                  <span className="h-6 w-1 rounded-full bg-primary-foreground" />
+                  <span className="h-6 w-1 rounded-full bg-primary-foreground/40" />
                 </div>
-                <p className="mt-3 text-sm text-brand-cream/70">
+                <p className="mt-3 text-sm text-primary-foreground">
                   Manhã, tarde e noite, com a contagem de concluídas sempre no
                   topo.
                 </p>
@@ -116,7 +116,7 @@ export function LandingPage() {
               {highlights.map((highlight) => (
                 <div key={highlight.title}>
                   <dt className="text-base font-semibold">{highlight.title}</dt>
-                  <dd className="mt-1 text-brand-cream/75">
+                  <dd className="mt-1 text-primary-foreground">
                     {highlight.description}
                   </dd>
                 </div>
@@ -126,7 +126,7 @@ export function LandingPage() {
                   Lembretes no WhatsApp
                 </dt>
                 <dd>
-                  <Badge className="border-brand-yellow/60 bg-brand-yellow/15 text-brand-yellow">
+                  <Badge variant="secondary">
                     Em breve
                   </Badge>
                 </dd>
@@ -136,7 +136,7 @@ export function LandingPage() {
         </section>
       </main>
 
-      <footer className="bg-background-brand py-16">
+      <footer className="bg-background py-16">
         <div className="mx-auto grid max-w-[1120px] grid-cols-1 gap-8 px-page text-center md:grid-cols-3 md:text-left">
           <div className="flex flex-col items-center gap-2 md:items-start">
             <div className="flex items-center gap-2">

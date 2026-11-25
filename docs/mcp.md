@@ -98,6 +98,14 @@ Os dados autorizados são entregues ao cliente e podem ser processados pelo
 provedor usado nele. O nome registrado do cliente não atesta a identidade do
 software. Revogar não apaga dados já entregues.
 
+## Estados de tarefa e colunas do quadro
+
+Tarefas e colunas usam os estados `BACKLOG`, `PENDING` (To-Do), `ON_DOING` (In Progress), `CONCLUDED` (Done)
+e `CANCELLED`. `BACKLOG` é um estado próprio, diferente de `PENDING`, e conta como trabalho aberto (planejamento,
+lembretes e prazos). Projeto de desenvolvimento nasce com as colunas Backlog, To-Do, In Progress, Done e Cancelled,
+e tarefa nova de projeto entra no Backlog. Pedir só o estado `BACKLOG` ou `PENDING` leva a tarefa à primeira coluna
+desse estado; para `ON_DOING` e `CANCELLED`, informe a coluna.
+
 ## Revisar, reduzir ou revogar
 
 Em Integrações, **Gerenciar** mostra permissões, projetos nomeados, estado,

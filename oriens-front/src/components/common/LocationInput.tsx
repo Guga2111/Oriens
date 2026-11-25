@@ -98,7 +98,7 @@ export function LocationInput({ isLoaded, onPlaceSelect, ...inputProps }: Locati
       {isLoading && <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
       
       {suggestions.length > 0 && (
-        <div className="absolute top-full mt-1 w-full bg-background border border-border rounded-md shadow-lg z-50">
+        <div className="absolute top-full mt-1 w-full bg-background border border-border rounded-lg shadow-lg z-50">
           {suggestions.map((suggestion) => (
             <Button
               key={suggestion.place_id}
@@ -106,7 +106,7 @@ export function LocationInput({ isLoaded, onPlaceSelect, ...inputProps }: Locati
               variant="ghost"
               onMouseDown={event => event.preventDefault()}
               onClick={() => handleSuggestionClick(suggestion.place_id)}
-              className="h-auto w-full justify-start whitespace-normal rounded-none p-2 text-left font-normal"
+              className="h-auto w-full justify-start whitespace-normal p-2 text-left font-normal"
             >
               {suggestion.description}
             </Button>

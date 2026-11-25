@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+import { productNow } from "../src/lib/product-time";
 import { Buffer } from "node:buffer";
 import { expect, test } from "@playwright/test";
 import { format } from "date-fns";
@@ -27,16 +29,18 @@ async function seedTask(title: string): Promise<void> {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      "Idempotency-Key": randomUUID(),
     },
     body: JSON.stringify({
       title,
       description: "Tarefa semeada para os asserts de mobile",
-      startTime: "09:00",
+      plannedDate: productNow().date,
+      startTime: "09:00:00",
       dueDate: format(new Date(), "yyyy-MM-dd"),
       priority: "MEDIUM",
     }),
   });
-  expect(response.ok).toBeTruthy();
+  expect(response.ok, await response.text()).toBeTruthy();
 }
 
 async function seedProject(title: string): Promise<void> {
@@ -49,15 +53,17 @@ async function seedProject(title: string): Promise<void> {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      "Idempotency-Key": randomUUID(),
     },
     body: JSON.stringify({
       title,
       description: "Projeto semeado para os asserts de mobile",
       color: "#7B1E3A",
+      mode: "SIMPLE",
       objectives: [],
     }),
   });
-  expect(response.ok).toBeTruthy();
+  expect(response.ok, await response.text()).toBeTruthy();
 }
 
 async function pageOverflow(page: import("@playwright/test").Page): Promise<number> {
@@ -214,9 +220,9 @@ test("mobile: formulários longos usam Drawer sem overflow em 360px", async ({ p
   await page.setViewportSize({ width: 360, height: 844 });
   await login(page);
   for (const [path, trigger, title] of [
-    ["/tasks", "Nova Tarefa", "Criar Nova Tarefa"],
+    ["/tasks", "Nova Tarefa", "Nova tarefa"],
     ["/financial", "Nova entrada", "Nova Entrada"],
-    ["/projects", "Novo projeto", "Criar Novo Projeto"],
+    ["/projects", "Novo projeto", "Novo projeto"],
   ]) {
     await page.goto(path);
     await page.getByRole("button", { name: trigger, exact: true }).first().click();
@@ -229,4 +235,33 @@ test("mobile: formulários longos usam Drawer sem overflow em 360px", async ({ p
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
   }
+});
+
+test('shell alterna para Sheet abaixo de 1100px e preserva alvos de toque', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'Breakpoint e toque');
+  await login(page);
+  for (const width of [1099, 768, 640, 390, 360]) {
+    await page.setViewportSize({ width, height: 844 });
+    const trigger = page.getByRole('button', { name: 'Alternar menu de navegação' });
+    await expect(trigger).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Contextos' })).toBeHidden();
+    const panel = await page.locator('[data-app-panel]').boundingBox();
+    expect(panel?.x).toBe(0);
+    expect(panel?.width).toBe(width);
+    await trigger.click();
+    const sheet = page.getByRole('dialog', { name: 'Navegação Oriens' });
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole('navigation', { name: 'Contextos' })).toBeVisible();
+    await expect(sheet.getByRole('navigation', { name: 'Menu de Trabalho' })).toBeVisible();
+    const box = await sheet.boundingBox();
+    expect(box?.width).toBeLessThanOrEqual(width);
+    for (const name of ['Nova tarefa', 'Esconder menu']) {
+      expect((await sheet.getByRole('button', { name }).boundingBox())?.height).toBeGreaterThanOrEqual(40);
+    }
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    expect(await pageOverflow(page)).toBeLessThanOrEqual(0);
+  }
+  await page.setViewportSize({ width: 1100, height: 844 });
+  await expect(page.getByRole('navigation', { name: 'Contextos' })).toBeVisible();
 });

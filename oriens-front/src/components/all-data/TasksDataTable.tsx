@@ -61,9 +61,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { TaskDTO, Priority, Status } from "@/types/task";
+import { TaskDTO, Status } from "@/types/task";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { PRIORITY, TASK_STATUS } from "@/lib/labels";
+import { PRIORITY, PRIORITY_ORDER, TASK_STATUS } from "@/lib/labels";
 
 export interface TasksFilters {
   dateField?: "plannedDate" | "dueDate";
@@ -168,6 +168,7 @@ export function TasksDataTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
+            <SelectItem value={Status.BACKLOG}>{TASK_STATUS.BACKLOG.label}</SelectItem>
             <SelectItem value={Status.PENDING}>
               {TASK_STATUS.PENDING.label}
             </SelectItem>
@@ -194,13 +195,9 @@ export function TasksDataTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as prioridades</SelectItem>
-            <SelectItem value={Priority.LOW}>{PRIORITY.LOW.label}</SelectItem>
-            <SelectItem value={Priority.MEDIUM}>
-              {PRIORITY.MEDIUM.label}
-            </SelectItem>
-            <SelectItem value={Priority.HIGH}>
-              {PRIORITY.HIGH.label}
-            </SelectItem>
+            {PRIORITY_ORDER.map((value) => (
+              <SelectItem key={value} value={value}>{PRIORITY[value].label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 

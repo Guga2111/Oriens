@@ -12,7 +12,12 @@ public final class WorkCommands {
     public record NewObjective(String title, LocalDate dueDate) {}
     public record CreateProject(String title, ProjectMode mode, String description, String color,
                                 List<NewObjective> objectives) {}
-    public record CreateObjective(Long projectVersion, String title, LocalDate dueDate) {}
+    public record CreateObjective(Long projectVersion, String title, LocalDate dueDate,
+                                  String description, LocalDate startDate, ObjectiveStatus status) {
+        public CreateObjective(Long projectVersion, String title, LocalDate dueDate) {
+            this(projectVersion, title, dueDate, null, null, null);
+        }
+    }
     public record CreateColumn(Long projectVersion, String name, Status kind) {}
     public record OrderColumns(Long projectVersion, List<Long> columnIds) {}
     public record BoardDefaults(Long projectVersion, Long pendingColumnId, Long completedColumnId) {}

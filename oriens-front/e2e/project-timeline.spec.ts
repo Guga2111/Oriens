@@ -50,14 +50,17 @@ test("timeline: escala, Hoje, ‹ ›, detalhe pela barra e deep link", async ({
   // Unique titles: desktop and mobile share the account in the same run.
   const suffix = `${testInfo.project.name} ${Date.now()}`;
   const { projectId, bar, milestone, undated } = await seedTimeline(request, suffix, today);
-  const barButton = page.getByRole("button", { name: new RegExp(`^${bar.title}, a fazer, planejada`) });
+  const barButton = page.getByRole("button", { name: new RegExp(`^${bar.title}, (backlog|a fazer), planejada`) });
 
   await login(page);
   await page.goto(`/tasks/project/${projectId}?tab=timeline`);
-  await expect(page.getByRole("tab", { name: "Timeline" })).toHaveAttribute("aria-selected", "true");
+  // On a phone the views sit behind one menu, named after the open view.
+  await expect(testInfo.project.name === "mobile"
+    ? page.getByRole("button", { name: "Visão: Timeline" })
+    : page.getByRole("radio", { name: "Timeline" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Timeline do projeto" })).toBeVisible();
   await expect(barButton).toBeVisible();
-  await expect(page.getByRole("button", { name: new RegExp(`^${milestone.title}, a fazer, sem planejamento, prazo`) })).toBeAttached();
+  await expect(page.getByRole("button", { name: new RegExp(`^${milestone.title}, (backlog|a fazer), sem planejamento, prazo`) })).toBeAttached();
   await expect(page.getByRole("region", { name: /Sem data/ }).getByRole("button", { name: new RegExp(undated.title) })).toBeVisible();
 
   // Scale lives in the URL.
@@ -77,7 +80,7 @@ test("timeline: escala, Hoje, ‹ ›, detalhe pela barra e deep link", async ({
   await expect(page).not.toHaveURL(/[?&]anchor=/);
   await expect(page).toHaveURL(/[?&]scale=month/);
 
-  // The bar opens the TaskDetailsDialog through ?task.
+  // The bar opens the task panel (the same as on Hoje) through ?task.
   await barButton.click();
   const dialog = page.getByRole("dialog", { name: bar.title });
   await expect(dialog).toBeVisible();
@@ -87,7 +90,7 @@ test("timeline: escala, Hoje, ‹ ›, detalhe pela barra e deep link", async ({
   await page.goto(`/tasks/project/${projectId}?tab=timeline&task=${bar.id}`);
   await page.reload();
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole("button", { name: /Editar/ })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: `Ações da tarefa ${bar.title}` })).toBeVisible();
 });
 
 test("timeline: cabeçalho do app, foco e título ficam visíveis apesar da coluna fixa", async ({ page, request }, testInfo) => {

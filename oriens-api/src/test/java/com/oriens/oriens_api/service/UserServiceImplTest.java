@@ -1,5 +1,7 @@
 package com.oriens.oriens_api.service;
 
+import com.oriens.oriens_api.entity.dto.UserPreferencesDTO;
+
 import com.oriens.oriens_api.entity.User;
 import com.oriens.oriens_api.exception.UserNotFoundException;
 import com.oriens.oriens_api.repository.UserRepository;
@@ -188,5 +190,25 @@ class UserServiceImplTest {
 
         // Assert
         verify(userRepository, times(1)).delete(user);
+    }
+
+    // === Task view preference ===
+
+    @Test
+    void taskViewDefaultsToPeekAndAcceptsOnlyTheKnownViews() {
+        User user = new User();
+        user.setId(7L);
+        when(userRepository.findById(7L)).thenReturn(Optional.of(user));
+
+        assertThat(userService.getUserPreferences(7L).getTaskView()).isEqualTo("peek");
+
+        UserPreferencesDTO modal = new UserPreferencesDTO();
+        modal.setTaskView("modal");
+        assertThat(userService.updateUserPreferences(7L, modal).getTaskView()).isEqualTo("modal");
+
+        UserPreferencesDTO unknown = new UserPreferencesDTO();
+        unknown.setTaskView("sideways");
+        assertThat(userService.updateUserPreferences(7L, unknown).getTaskView()).isEqualTo("modal");
+        assertThat(user.getUserPreferences().getTaskView()).isEqualTo("modal");
     }
 }

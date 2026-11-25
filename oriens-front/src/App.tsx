@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SignLoginPage from "./pages/SignLoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import { WorkHomePage } from "./pages/WorkHomePage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LandingPage } from "./pages/LandingPage";
 import { ProtectedRoute } from "./router/ProtectedRoute";
@@ -44,6 +45,7 @@ const App = () => {
               <Route element={<ProtectedRoute />}>
                 {/* Shell único (SPEC §10.2): as URLs não mudam. */}
                 <Route element={<AppLayout />}>
+                  <Route path="/home" element={<WorkHomePage />} />
                   <Route path="/tasks" element={<DashboardPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />
                   <Route path="/stats" element={<StatisticsPage />} />

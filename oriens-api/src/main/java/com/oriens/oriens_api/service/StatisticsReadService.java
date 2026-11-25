@@ -63,7 +63,7 @@ public class StatisticsReadService {
         List<OverdueGroup> overdue = db.query("""
             select t.project_id, coalesce(p.title,'Sem projeto'), count(*) from tasks t
             left join project p on p.id=t.project_id and p.user_id=t.user_id
-            where t.user_id=? and t.status in ('PENDING','ON_DOING') and t.due_date < ?
+            where t.user_id=? and t.status in ('BACKLOG','PENDING','ON_DOING') and t.due_date < ?
             group by t.project_id,p.title order by count(*) desc, coalesce(p.title,'Sem projeto'),t.project_id
             """, (r,i) -> new OverdueGroup(r.getObject(1,Long.class),r.getString(2),r.getLong(3)), owner,p.today());
         return new Planning(p, plan(owner,start,end), plan(owner,p.previousStartDate(),p.previousEndDate()),
@@ -81,7 +81,7 @@ public class StatisticsReadService {
         String filter=switch(kind) {
             case "completed" -> "t.status='CONCLUDED' and t.completed_at between ? and ?";
             case "planned" -> "t.status<>'CANCELLED' and t.planned_date between ? and ?";
-            case "overdue" -> "t.status in ('PENDING','ON_DOING') and t.due_date < ?";
+            case "overdue" -> "t.status in ('BACKLOG','PENDING','ON_DOING') and t.due_date < ?";
             default -> throw new WorkDomainException("INVALID_REQUEST","kind","Escolha conclusões, planejamento ou atrasos.");
         };
         List<Object> args=new ArrayList<>();args.add(owner);

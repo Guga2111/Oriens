@@ -7,6 +7,8 @@ describe('isTaskOverdue', () => {
   it('flags open tasks whose deadline is before today', () => {
     expect(isTaskOverdue({ dueDate: '2026-11-16', status: 'PENDING' }, today)).toBe(true);
     expect(isTaskOverdue({ dueDate: '2026-11-01', status: 'ON_DOING' }, today)).toBe(true);
+    // The backlog is still open work.
+    expect(isTaskOverdue({ dueDate: '2026-11-16', status: 'BACKLOG' }, today)).toBe(true);
   });
 
   it('does not flag a deadline today, in the future or missing', () => {

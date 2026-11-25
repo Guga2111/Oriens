@@ -1,317 +1,177 @@
+import { useEffect, type CSSProperties } from 'react';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-  useSidebar,
-} from "@/components/ui/sidebar";
+  ChevronDown, ChevronRight, Circle, PanelLeftClose, Pin, PinOff, Plus,
+} from 'lucide-react';
+import { OverviewIcon } from '@/components/icons/OverviewIcon';
 import {
-  ChartLine,
-  ChevronUp,
-  Circle,
-  Database,
-  FolderOpenDot,
-  Headset,
-  LifeBuoy,
-  Loader2,
-  LogOut,
-  Moon,
-  PiggyBank,
-  Settings,
-  Shield,
-  Star,
-  Sun,
-  Home,
-} from "lucide-react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { EditableAvatar } from "@/components/common/EditableAvatar";
-import { OriensLogo } from "@/components/common/OriensLogo";
-import { useAuth } from "@/context/AuthContext";
-import { useSettings } from "@/context/SettingsContext";
-import apiClient from "@/services/api";
-import { useProjectFlags, useWorkSidebar } from "@/hooks/useWork";
-import { WorkFeedback } from "@/components/common/WorkFeedback";
-import { toast } from "sonner";
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel,
+  SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem,
+  SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, useSidebar,
+} from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { WorkFeedback } from '@/components/common/WorkFeedback';
+import { useAuth } from '@/context/AuthContext';
+import { useProjectFlags, useWorkSidebar } from '@/hooks/useWork';
+import { PROJECT_SECTIONS, projectSectionOf, projectTabFrom, workViewOf } from '@/lib/project-tabs';
+import { cn } from '@/lib/utils';
+import { getAppContext, isContextItemActive } from './app-contexts';
 
-interface NavItem {
-  title: string;
-  icon: typeof Home;
-  url: string;
-  /** Match exato quando o item cobre sub-rotas (ex.: /tasks e /tasks/project/:id). */
-  isActive?: (pathname: string) => boolean;
-}
 
-const planItems: NavItem[] = [
-  { title: "Hoje", icon: Home, url: "/tasks", isActive: (p) => p === "/tasks" },
-  {
-    title: "Projetos",
-    icon: FolderOpenDot,
-    url: "/projects",
-    isActive: (p) => p === "/projects" || p.startsWith("/tasks/project/"),
-  },
-  { title: "Financeiro", icon: PiggyBank, url: "/financial" },
-  { title: "Estatísticas", icon: ChartLine, url: "/stats" },
-  { title: "Todos os dados", icon: Database, url: "/all-data" },
-];
-
-const adminItems: NavItem[] = [
-  { title: "Dashboard de Suporte", icon: Headset, url: "/admin/support" },
-  { title: "Gerenciar Admins", icon: Shield, url: "/admin/management" },
-];
-
-interface AppSidebarProps {
-  /** Incrementado pelo AppLayout quando um projeto é mutado (risco §16). */
-  projectsVersion?: number;
-}
-
-export function AppSidebar({ projectsVersion = 0 }: AppSidebarProps) {
-  const { logout, userId, role, username, userEmail, profileImageUrl, updateProfileImage } =
-    useAuth();
-  const { preferences, updatePreference, isUpdating } = useSettings();
-  const { isMobile, setOpenMobile } = useSidebar();
-  const location = useLocation();
-  const navigate = useNavigate();
-
+function SidebarProjects({ projectsVersion, onNewProject }: { projectsVersion: number; onNewProject: () => void }) {
   const sidebar = useWorkSidebar();
   const flags = useProjectFlags();
-  const projects = sidebar.data ?? [];
-  const isLoadingProjects = sidebar.isPending;
-
-  const isActive = (item: NavItem) =>
-    item.isActive ? item.isActive(location.pathname) : location.pathname === item.url;
-
-  // No mobile a sidebar é um Sheet: ele fecha ao navegar (SPEC §13.1 R2).
-  useEffect(() => {
-    setOpenMobile(false);
-  }, [location.pathname, setOpenMobile]);
-
+  const { pathname } = useLocation();
+  const [params] = useSearchParams();
   const { refetch } = sidebar;
-  useEffect(() => { if (projectsVersion > 0) void refetch(); }, [projectsVersion, refetch]);
+  const tab = projectTabFrom(params.get('tab'));
+  const section = projectSectionOf(tab);
+  // "Itens de trabalho" keeps the view being used; from elsewhere it opens on the board.
+  const sectionTab = (value: string) => value === 'work' ? workViewOf(tab) ?? 'board' : value;
 
-  const handleToggleFavorite = (projectId: number) => {
-    const project = projects.find(p => p.id === projectId);
-    if (project) flags.mutate({ project, field: 'favorite', value: !project.favorite });
-  };
-
-  const handleToggleTheme = async () => {
-    if (!preferences) return;
-    const newTheme = preferences.theme === "light" ? "dark" : "light";
-    try {
-      await updatePreference("theme", newTheme);
-      toast.success(
-        `Tema alterado para ${newTheme === "light" ? "claro" : "escuro"}`
-      );
-    } catch {
-      // erro já exibido como toast pelo SettingsContext
-    }
-  };
-
-  const theme = preferences?.theme || "light";
-  const userFallback = (username || userEmail || "?")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2);
-
-  const goTo = (url: string) => {
-    navigate(url);
-    setOpenMobile(false);
-  };
-
-  const renderNavItem = (item: NavItem) => (
-    <SidebarMenuItem key={item.title}>
-      <SidebarMenuButton
-        asChild
-        isActive={isActive(item)}
-        tooltip={item.title}
-        className="max-md:h-10"
-      >
-        <NavLink to={item.url} end={!item.isActive}>
-          <item.icon />
-          <span>{item.title}</span>
-        </NavLink>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
-  );
+  useEffect(() => {
+    if (projectsVersion > 0) void refetch();
+  }, [projectsVersion, refetch]);
 
   return (
-    <Sidebar side="left" collapsible="icon">
-      <SidebarHeader className="h-[--app-header-height] shrink-0 justify-center border-b border-sidebar-border px-4 py-0 group-data-[collapsible=icon]:px-2">
-        <div className="flex items-center gap-2">
-          <OriensLogo className="h-8 w-8 shrink-0" />
-          <span className="truncate text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-            Oriens
-          </span>
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Planejar</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>{planItems.map(renderNavItem)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Projetos recentes</SidebarGroupLabel>
+    <Collapsible defaultOpen className="group/projects">
+      <SidebarGroup>
+        <SidebarGroupLabel asChild>
+          <CollapsibleTrigger className="relative pr-16 max-desktop:min-h-10 max-desktop:pr-24">
+            Projetos
+            <ChevronDown aria-hidden className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition-transform group-data-[state=closed]/projects:-rotate-90 motion-reduce:transition-none" />
+          </CollapsibleTrigger>
+        </SidebarGroupLabel>
+        <SidebarGroupAction showOnHover type="button" className="right-9 top-2.5 size-7 after:inset-0 max-desktop:top-2 max-desktop:size-10" aria-label="Criar projeto" onClick={onNewProject}>
+          <Plus aria-hidden className="text-muted-foreground" />
+        </SidebarGroupAction>
+        <CollapsibleContent>
           <SidebarGroupContent>
             <WorkFeedback error={sidebar.error || flags.error} retry={() => void sidebar.refetch()} />
             <SidebarMenu>
-              {isLoadingProjects ? (
-                <div className="flex items-center justify-center p-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-sidebar-foreground/80" />
-                </div>
-              ) : (
-                projects.map((project) => (
+              {sidebar.isPending ? (
+                <SidebarMenuItem><SidebarMenuSkeleton showIcon /><span className="sr-only" role="status">Carregando projetos…</span></SidebarMenuItem>
+              ) : (sidebar.data ?? []).map(project => {
+                const active = pathname === `/tasks/project/${project.id}`;
+                return (
                   <SidebarMenuItem key={project.id}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location.pathname === `/tasks/project/${project.id}`}
-                      tooltip={project.title}
-                    >
-                      <Link to={`/tasks/project/${project.id}`}>
-                        <Circle
-                          className="h-3 w-3 shrink-0"
-                          style={{ color: project.color || "#ccc" }}
-                          fill="currentColor"
-                        />
-                        <span className="truncate">{project.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    <SidebarMenuAction
-                      aria-label={
-                        project.favorite
-                          ? `Desfavoritar ${project.title}`
-                          : `Favoritar ${project.title}`
-                      }
-                      aria-pressed={project.favorite}
-                      disabled={flags.isPending}
-                      onClick={() => handleToggleFavorite(project.id)}
-                    >
-                      <Star
-                        className={
-                          project.favorite
-                            ? "fill-current text-sidebar-primary"
-                            : "text-sidebar-foreground/70"
-                        }
-                      />
-                    </SidebarMenuAction>
+                    {/* Route activation resets the disclosure so deep links reveal their destination. */}
+                    <Collapsible key={String(active)} defaultOpen={active} className="group/project">
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton className="relative group-has-[[data-sidebar=menu-action]]/menu-item:pr-14 max-desktop:group-has-[[data-sidebar=menu-action]]/menu-item:pr-20 max-desktop:min-h-10 [&>svg:last-child]:size-3.5">
+                          <Circle aria-hidden className={cn('size-3 shrink-0 fill-current', project.color ? 'text-[var(--project-color)]' : 'text-muted-foreground')} style={project.color ? { '--project-color': project.color } as CSSProperties : undefined} />
+                          <span className="truncate">{project.title}</span>
+                          <ChevronRight aria-hidden className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground group-data-[state=open]/project:rotate-90" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <SidebarMenuAction
+                        showOnHover={!project.favorite}
+                        className="right-7 max-desktop:right-10"
+                        aria-label={`${project.favorite ? 'Desafixar' : 'Fixar'} ${project.title}`}
+                        aria-pressed={project.favorite}
+                        disabled={flags.isPending}
+                        onClick={() => flags.mutate({ project, field: 'favorite', value: !project.favorite })}
+                      >
+                        {project.favorite ? <PinOff aria-hidden className="text-muted-foreground" /> : <Pin aria-hidden className="text-muted-foreground" />}
+                      </SidebarMenuAction>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {project.mode === 'DEVELOPMENT' ? PROJECT_SECTIONS.map(item => (
+                            <SidebarMenuSubItem key={item.value}>
+                              <SidebarMenuSubButton asChild isActive={active && section === item.value} className="max-desktop:min-h-10">
+                                <Link to={`/tasks/project/${project.id}?tab=${active ? sectionTab(item.value) : item.value === 'work' ? 'board' : item.value}`} aria-current={active && section === item.value ? 'page' : undefined}>
+                                  <item.icon aria-hidden />
+                                  <span>{item.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )) : (
+                            <SidebarMenuSubItem>
+                              <SidebarMenuSubButton asChild isActive={active} className="max-desktop:min-h-10">
+                                <Link to={`/tasks/project/${project.id}`} aria-current={active ? 'page' : undefined}>
+                                  <OverviewIcon aria-hidden />
+                                  <span>Visão geral</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          )}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </SidebarMenuItem>
-                ))
-              )}
+                );
+              })}
             </SidebarMenu>
+            {!sidebar.isPending && !sidebar.error && sidebar.data?.length === 0 && (
+              <p className="px-2 py-3 text-sm text-muted-foreground">Nenhum projeto recente.</p>
+            )}
           </SidebarGroupContent>
-        </SidebarGroup>
+        </CollapsibleContent>
+      </SidebarGroup>
+    </Collapsible>
+  );
+}
 
-        {role === "ADMIN" && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Administração</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>{adminItems.map(renderNavItem)}</SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-      </SidebarContent>
+type AppSidebarProps = {
+  projectsVersion?: number;
+  onNewTask: () => void;
+  onNewProject: () => void;
+};
 
-      <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  tooltip={username || userEmail || "Conta"}
-                  className="h-12"
-                >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={profileImageUrl} alt="" />
-                    <AvatarFallback>{userFallback}</AvatarFallback>
-                  </Avatar>
-                  <span className="truncate">{username}</span>
-                  <ChevronUp className="ml-auto" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" side="top" align="start">
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col gap-1">
-                    <EditableAvatar
-                      src={profileImageUrl || username || ""}
-                      fallback={userFallback}
-                      alt="Foto de perfil"
-                      onImageChange={async (file: File) => {
-                        const formData = new FormData();
-                        formData.append("profileImage", file);
-                        try {
-                          const response = await apiClient.put(
-                            `/user/${userId}/avatar`,
-                            formData,
-                            { headers: { "Content-Type": "multipart/form-data" } }
-                          );
-                          updateProfileImage(response.data.profileImageUrl);
-                        } catch (error) {
-                          const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
-                          toast.error(message ?? "Não foi possível atualizar sua imagem.");
-                        }
-                      }}
-                    />
-                    <p className="text-sm font-medium leading-none">{username}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {userEmail}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => goTo("/config")}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Configurações</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => goTo("/support")}>
-                  <LifeBuoy className="mr-2 h-4 w-4" />
-                  <span>Ajuda &amp; Suporte</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={handleToggleTheme} disabled={isUpdating}>
-                  {theme === "light" ? (
-                    <Moon className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Sun className="mr-2 h-4 w-4" />
-                  )}
-                  <span>
-                    Tema {theme === "light" ? "escuro" : "claro"}
-                  </span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={logout}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sair</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+export function AppSidebar({ projectsVersion = 0, onNewTask, onNewProject }: AppSidebarProps) {
+  const { role } = useAuth();
+  const { pathname } = useLocation();
+  const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
+  const context = getAppContext(pathname);
+
+  const renderItems = (items: typeof context.items) => (
+    <SidebarMenu>
+      {items.map(item => {
+        const active = isContextItemActive(item, pathname);
+        return (
+          <SidebarMenuItem key={item.url}>
+            <SidebarMenuButton asChild isActive={active} className="max-desktop:min-h-10">
+              <Link to={item.url} aria-current={active ? 'page' : undefined}>
+                <item.icon aria-hidden />
+                <span>{item.label}</span>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+        );
+      })}
+    </SidebarMenu>
+  );
 
-      {!isMobile && <SidebarRail />}
+  return (
+    <Sidebar collapsible="none" data-sidebar="sidebar" className="min-w-0 shrink-0 border-r border-sidebar-border max-desktop:flex-1">
+      <SidebarHeader className="h-app-header shrink-0 justify-center px-4 py-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-base">{context.label}</span>
+          <Button variant="ghost" size="icon" className="size-7 max-desktop:size-10" aria-label="Esconder menu" aria-expanded={isMobile ? openMobile : open} onClick={toggleSidebar}>
+            <PanelLeftClose aria-hidden />
+          </Button>
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        <nav aria-label={`Menu de ${context.label}`}>
+          {context.id === 'work' && (
+            <div className="px-3 pb-2 pt-3">
+              <Button variant="sidebar-action" className="w-full justify-start pl-2 font-normal max-desktop:min-h-10" onClick={onNewTask}>
+                <Plus aria-hidden />Nova tarefa
+              </Button>
+            </div>
+          )}
+          <SidebarGroup><SidebarGroupContent>{renderItems(context.items)}</SidebarGroupContent></SidebarGroup>
+          {context.id === 'work' && <SidebarProjects projectsVersion={projectsVersion} onNewProject={onNewProject} />}
+          {role === 'ADMIN' && context.adminItems && (
+            <SidebarGroup>
+              <SidebarGroupLabel>Administração</SidebarGroupLabel>
+              <SidebarGroupContent>{renderItems(context.adminItems)}</SidebarGroupContent>
+            </SidebarGroup>
+          )}
+        </nav>
+      </SidebarContent>
     </Sidebar>
   );
 }

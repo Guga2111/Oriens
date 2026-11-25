@@ -320,14 +320,16 @@ class WorkApiPostgresTest {
         JsonNode reopened=body(send("PATCH","/task/"+id,"{"+version(repeated,p)+",\"status\":\"PENDING\",\"plannedDate\":null}",null,token,200)).path("task");
         assertThat(reopened.path("completedAt").isNull()).isTrue(); assertThat(reopened.path("plannedDate").isNull()).isTrue();
         assertThat(reopened.path("dueDate").asText()).isEqualTo("2026-11-20");
-        long doing=columns.findByProjectIdOrderByPositionAscIdAsc(p.path("id").asLong()).get(1).getId();
+        long doing=columns.findByProjectIdOrderByPositionAscIdAsc(p.path("id").asLong()).get(2).getId();
         JsonNode moved=body(send("PATCH","/task/"+id,"{"+version(reopened,p)+",\"columnId\":"+doing+"}",null,token,200)).path("task");
         assertThat(moved.path("status").asText()).isEqualTo("ON_DOING");
     }
     @Test void creationReplayCanonicalPayloadConflictsExpiredDeletedAndConcurrentKeys() throws Exception {
         String key=UUID.randomUUID().toString(), value="{\"title\":\"Ação\"}";
         MvcResult first=send("POST","/task/user/"+owner,value,key,token,201);
-        MvcResult again=send("POST","/task/user/"+owner,"{\"priority\":\"MEDIUM\",\"title\":\" Ação \"}",key,token,201);
+        MvcResult again=send("POST","/task/user/"+owner,"{\"priority\":\"NONE\",\"title\":\" Ação \"}",key,token,201);
+        // An explicit priority other than the default is a different request under the same key.
+        send("POST","/task/user/"+owner,"{\"priority\":\"MEDIUM\",\"title\":\"Ação\"}",key,token,409);
         assertThat(body(again)).isEqualTo(body(first)); assertThat(again.getResponse().getHeader("ETag")).isEqualTo(first.getResponse().getHeader("ETag"));
         send("POST","/task/user/"+owner,"{\"title\":\"Outra\"}",key,token,409);
         long id=body(first).path("task").path("id").asLong();
@@ -369,7 +371,7 @@ class WorkApiPostgresTest {
         JsonNode o=body(send("POST","/project/"+pid+"/objectives",command,key,token,201)).path("objective");
         JsonNode replay=body(send("POST","/project/"+pid+"/objectives",command,key,token,201)).path("objective"); assertThat(replay).isEqualTo(o);
         for(int i=0;i<2;i++) send("PATCH","/project/"+pid+"/mode","{\"version\":"+project(pid).path("version")+",\"mode\":\"DEVELOPMENT\"}",null,token,200);
-        assertThat(columns.countByProjectId(pid)).isEqualTo(3);
+        assertThat(columns.countByProjectId(pid)).isEqualTo(5);
         send("PATCH","/project/"+pid+"/mode","{\"version\":"+project(pid).path("version")+",\"mode\":\"SIMPLE\"}",null,token,422);
         JsonNode t=task(project(pid)); long tid=t.path("id").asLong();
         t=body(send("PATCH","/task/"+tid,"{"+version(t,p)+",\"objectiveId\":"+o.path("id")+"}",null,token,200)).path("task");
@@ -389,16 +391,18 @@ class WorkApiPostgresTest {
     @Test void boardConfigurationReturnsStructuralVersionsAndRemovesColumnsAtomically() throws Exception {
         JsonNode p=project("DEVELOPMENT"); long pid=p.path("id").asLong(); JsonNode t=task(p);
         String key=UUID.randomUUID().toString();
-        String value="{\"projectVersion\":"+project(pid).path("version")+",\"name\":\"Backlog\",\"kind\":\"PENDING\"}";
+        String value="{\"projectVersion\":"+project(pid).path("version")+",\"name\":\"Triagem\",\"kind\":\"PENDING\"}";
         JsonNode config=body(send("POST","/project/"+pid+"/columns",value,key,token,201));
-        assertThat(config.path("columns").size()).isEqualTo(4);
+        assertThat(config.path("columns").size()).isEqualTo(6);
         assertThat(body(send("POST","/project/"+pid+"/columns",value,key,token,201))).isEqualTo(config);
-        JsonNode backlog=config.path("columns").get(3); long cid=backlog.path("id").asLong();
+        JsonNode backlog=config.path("columns").get(5); long cid=backlog.path("id").asLong();
         send("PATCH","/project/"+pid+"/columns/"+p.path("defaultPendingColumnId"),
             "{\"version\":0,\"projectVersion\":"+config.path("projectVersion")+",\"kind\":\"CANCELLED\"}",null,token,422);
         JsonNode renamed=body(send("PATCH","/project/"+pid+"/columns/"+cid,
             "{\"version\":0,\"projectVersion\":"+config.path("projectVersion")+",\"name\":\"Próximas\"}",null,token,200));
-        String ids=renamed.path("columns").get(3).path("id")+","+renamed.path("columns").get(2).path("id")+","+renamed.path("columns").get(1).path("id")+","+renamed.path("columns").get(0).path("id");
+        java.util.List<String> reversed=new java.util.ArrayList<>();
+        renamed.path("columns").forEach(c -> reversed.add(0,c.path("id").asText()));
+        String ids=String.join(",",reversed);
         JsonNode ordered=body(send("PUT","/project/"+pid+"/columns/order",
             "{\"projectVersion\":"+renamed.path("projectVersion")+",\"columnIds\":["+ids+"]}",null,token,200));
         assertThat(ordered.path("columns").get(0).path("id").asLong()).isEqualTo(cid);
@@ -408,6 +412,36 @@ class WorkApiPostgresTest {
         assertThat(removed.path("invalidateBoard").asBoolean()).isTrue();
         assertThat(task(t.path("id").asLong()).path("columnId").asLong()).isEqualTo(cid);
         assertThat(project(pid).path("defaultPendingColumnId").asLong()).isEqualTo(cid);
+    }
+
+    @Test void projectListFiltersPinnedAndModeOnTheServerSoPagesStayComplete() throws Exception {
+        JsonNode simple=project("SIMPLE"), development=project("DEVELOPMENT");
+        send("PATCH","/project/"+simple.path("id")+"/favorite","{\"version\":"+project(simple.path("id").asLong()).path("version")+",\"favorite\":true}",null,token,200);
+        JsonNode bySimple=getJson("/project/user/"+owner+"?mode=SIMPLE");
+        assertThat(bySimple.path("totalElements").asLong()).isEqualTo(1);
+        assertThat(bySimple.path("content").get(0).path("id").asLong()).isEqualTo(simple.path("id").asLong());
+        JsonNode byDevelopment=getJson("/project/user/"+owner+"?mode=DEVELOPMENT");
+        assertThat(byDevelopment.path("content").get(0).path("id").asLong()).isEqualTo(development.path("id").asLong());
+        JsonNode pinned=getJson("/project/user/"+owner+"?favorite=true");
+        assertThat(pinned.path("totalElements").asLong()).isEqualTo(1);
+        assertThat(getJson("/project/user/"+owner+"?favorite=true&mode=DEVELOPMENT").path("totalElements").asLong()).isZero();
+        assertThat(getJson("/project/user/"+owner).path("totalElements").asLong()).isEqualTo(2);
+    }
+
+    @Test void backlogIsItsOwnStateAndStillOpenWork() throws Exception {
+        JsonNode p=project("DEVELOPMENT"); JsonNode t=task(p);
+        assertThat(t.path("status").asText()).isEqualTo("BACKLOG");
+        assertThat(t.path("columnId").asLong()).isEqualTo(p.path("defaultPendingColumnId").asLong());
+        JsonNode day=getJson("/task/user/"+owner+"?date=2026-11-13");
+        assertThat(day.path("planned").size()).isEqualTo(1);
+        assertThat(day.path("planned").get(0).path("id").asLong()).isEqualTo(t.path("id").asLong());
+        JsonNode open=getJson("/project/"+p.path("id")+"/board?open=true");
+        assertThat(open.path("tasks").size()).isEqualTo(1);
+        assertThat(open.path("tasks").get(0).path("status").asText()).isEqualTo("BACKLOG");
+        // Asking for To-Do moves it out of the backlog into the first To-Do column.
+        JsonNode todo=body(send("PATCH","/task/"+t.path("id"),"{"+version(t,p)+",\"status\":\"PENDING\"}",null,token,200)).path("task");
+        assertThat(todo.path("status").asText()).isEqualTo("PENDING");
+        assertThat(todo.path("columnId").asLong()).isNotEqualTo(p.path("defaultPendingColumnId").asLong());
     }
 
     @Test void projectDeletionAndConcurrentTaskCreationSerializeWithoutOrphans() throws Exception {
@@ -450,7 +484,7 @@ class WorkApiPostgresTest {
         assertThat(projects.count()).isEqualTo(before);
         assertThat(receipts.findByUserIdAndOperationAndIdempotencyKey(owner,"project:create",UUID.fromString(key))).isEmpty();
         JsonNode p=body(send("POST","/project/user/"+owner,"{\"title\":\"Projeto\",\"mode\":\"DEVELOPMENT\"}",key,token,201));
-        assertThat(columns.countByProjectId(p.path("id").asLong())).isEqualTo(3);
+        assertThat(columns.countByProjectId(p.path("id").asLong())).isEqualTo(5);
         JsonNode replay=body(send("POST","/project/user/"+owner,"{\"mode\":\"DEVELOPMENT\",\"title\":\"Projeto\",\"objectives\":[]}",key,token,201));
         assertThat(replay).isEqualTo(p);
         mvc.perform(delete("/project/"+p.path("id")).header("Authorization",token).header("If-Match","\""+p.path("version").asLong()+"\"")).andExpect(status().isNoContent());
@@ -499,7 +533,8 @@ class WorkApiPostgresTest {
         assertThat(replay.path("id")).isEqualTo(created.path("id"));
         Map<String,Object> legacy = new TreeMap<>();
         for (String field : List.of("description","projectId","projectVersion","objectiveId","columnId","plannedDate","startTime","dueDate","location")) legacy.put(field,null);
-        legacy.put("title","Legado"); legacy.put("priority","MEDIUM");
+        // An omitted priority is hashed as its effective value, NONE since V12.
+        legacy.put("title","Legado"); legacy.put("priority","NONE");
         String expected = HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(json.writeValueAsBytes(legacy)));
         assertThat(receipts.findByUserIdAndOperationAndIdempotencyKey(owner,"task:create",UUID.fromString(key)).orElseThrow().getPayloadSha256()).isEqualTo(expected);
         JsonNode label = body(send("POST", "/task-labels/user/"+owner, "{\"name\":\"Pesquisa\",\"color\":\"YELLOW\"}", UUID.randomUUID().toString(), token, 201));

@@ -1,4 +1,5 @@
 import type { Task, TaskStatus } from "@/types/task";
+import { PRIORITY_ORDER } from "@/lib/labels";
 
 export interface TaskPeriod {
   id: "morning" | "afternoon" | "night";
@@ -40,9 +41,8 @@ export const TASK_PERIODS: readonly TaskPeriod[] = [
   },
 ];
 
-const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 export function compareTaskPriority(a: Task, b: Task) {
-  return priorityOrder[a.priority] - priorityOrder[b.priority] || a.id - b.id;
+  return PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority) || a.id - b.id;
 }
 export function compareTaskTime(a: Task, b: Task) {
   return (a.startTime ?? '24:00:00').localeCompare(b.startTime ?? '24:00:00') || compareTaskPriority(a, b);
@@ -109,7 +109,10 @@ export function describeWeek(tasks: Task[]): string {
   return `${concluded} de ${tasks.length} concluídas nesta semana`;
 }
 
-/** Open (pending or in progress) with a deadline before the product's today (YYYY-MM-DD). */
+/** Work still to be done: backlog, to do or in progress. */
+export const isOpenStatus = (status: TaskStatus) => status === "BACKLOG" || status === "PENDING" || status === "ON_DOING";
+
+/** Open with a deadline before the product's today (YYYY-MM-DD). */
 export function isTaskOverdue(task: { dueDate: string | null; status: TaskStatus }, today: string): boolean {
-  return !!task.dueDate && task.dueDate < today && (task.status === "PENDING" || task.status === "ON_DOING");
+  return !!task.dueDate && task.dueDate < today && isOpenStatus(task.status);
 }

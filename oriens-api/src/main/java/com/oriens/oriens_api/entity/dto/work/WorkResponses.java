@@ -10,8 +10,9 @@ import java.util.List;
 public final class WorkResponses {
     private WorkResponses() {}
     public record ObjectiveView(Long id, Long projectId, String title, LocalDate dueDate, ObjectiveStatus status,
-                                int position, long version, Long nonCancelledTasks, Long completedTasks, Long cancelledTasks) {
-        public static ObjectiveView of(Objective o) { return new ObjectiveView(o.getId(), o.getProject().getId(), o.getTitle(), o.getDueDate(), o.getStatus(), o.getPosition(), o.getVersion(), null, null, null); }
+                                int position, long version, Long nonCancelledTasks, Long completedTasks, Long cancelledTasks,
+                                String description, LocalDate startDate, boolean favorite) {
+        public static ObjectiveView of(Objective o) { return new ObjectiveView(o.getId(), o.getProject().getId(), o.getTitle(), o.getDueDate(), o.getStatus(), o.getPosition(), o.getVersion(), null, null, null, o.getDescription(), o.getStartDate(), o.isFavorite()); }
     }
     public record ColumnView(Long id, Long projectId, String name, Status kind, int position, long version) {
         public static ColumnView of(ProjectColumn c) { return new ColumnView(c.getId(), c.getProject().getId(), c.getName(), c.getKind(), c.getPosition(), c.getVersion()); }

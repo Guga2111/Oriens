@@ -32,7 +32,8 @@ describe('AppHeader — navegação de contexto', () => {
     vi.mocked(api.get).mockResolvedValue({ data: project });
     const { client } = renderHeader('/tasks/project/9?tab=objectives', true);
     const breadcrumb = screen.getByRole('navigation', { name: 'Breadcrumb' });
-    expect(await within(breadcrumb).findByText(project.title)).toHaveAttribute('aria-current', 'page');
+    expect(await within(breadcrumb).findByRole('link', { name: project.title })).toHaveAttribute('href', '/tasks/project/9?tab=overview');
+    expect(within(breadcrumb).getByText('Objetivos').closest('[aria-current="page"]')).not.toBeNull();
     expect(api.get).toHaveBeenCalledTimes(1);
     act(() => { client.setQueryData(workKey(7, 'projects/detail', 9), { ...project, title: 'Novo nome do projeto' }); });
     await waitFor(() => expect(within(breadcrumb).getByText('Novo nome do projeto')).toBeInTheDocument());
@@ -60,5 +61,38 @@ describe('AppHeader — navegação de contexto', () => {
     expect(within(breadcrumb).queryByText(project.title)).not.toBeInTheDocument();
     await act(async () => { fail(new Error('Projeto não encontrado')); });
     expect(await within(breadcrumb).findByText('Projeto indisponível')).toBeInTheDocument();
+  });
+
+  it('com a sidebar aberta mostra o ícone da página; fechada, oferece o botão para reabrir', () => {
+    const width = window.innerWidth;
+    window.innerWidth = 1280;
+    try {
+      const open = renderWork(<SidebarProvider><AppHeader /></SidebarProvider>, '/projects');
+      expect(screen.queryByRole('button', { name: 'Alternar menu de navegação' })).not.toBeInTheDocument();
+      expect(open.container.querySelector('[data-page-icon]')).toHaveClass('lucide-briefcase');
+      open.unmount();
+
+      const closed = renderWork(<SidebarProvider defaultOpen={false}><AppHeader /></SidebarProvider>, '/projects');
+      expect(screen.getByRole('button', { name: 'Alternar menu de navegação' })).toHaveAttribute('aria-expanded', 'false');
+      expect(closed.container.querySelector('[data-page-icon]')).toBeNull();
+    } finally {
+      window.innerWidth = width;
+    }
+  });
+
+  it('nos itens de trabalho mostra a seção e o total de itens, em qualquer visão', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: { ...project, summary: { ...project.summary, totalTasks: 8 } } });
+    renderHeader('/tasks/project/9?tab=timeline');
+    const breadcrumb = screen.getByRole('navigation', { name: 'Breadcrumb' });
+    expect((await within(breadcrumb).findByText('Itens de trabalho')).closest('[aria-current="page"]')).not.toBeNull();
+    expect(within(breadcrumb).getByLabelText('8 itens')).toHaveTextContent('8');
+  });
+
+  it('projeto simples não ganha seção no breadcrumb', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: { ...project, mode: 'SIMPLE' } });
+    renderHeader('/tasks/project/9');
+    const breadcrumb = screen.getByRole('navigation', { name: 'Breadcrumb' });
+    expect(await within(breadcrumb).findByText(project.title)).toHaveAttribute('aria-current', 'page');
+    expect(within(breadcrumb).queryByText('Itens de trabalho')).not.toBeInTheDocument();
   });
 });

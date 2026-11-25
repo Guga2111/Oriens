@@ -1,41 +1,20 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+/** Same shape as ProjectCard: cover, title, supporting line and a row of chips. */
 export function ProjectSkeleton() {
   return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-40 w-full rounded-md mb-4" />
-        <div className="flex justify-between items-start">
-          <div className="flex flex-col gap-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <Skeleton className="h-4 w-4 rounded-full" />
+    <Card className="overflow-hidden shadow-none" aria-hidden>
+      <Skeleton className="h-32 w-full rounded-none" />
+      <div className="flex flex-col gap-2 p-4 pt-3">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-4 w-28" />
+        <div className="mt-3 flex gap-2">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-8 w-16" />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4">
-          <div className="flex justify-between mb-2">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-10" />
-          </div>
-          <Skeleton className="h-2 w-full" />
-        </div>
-        <div>
-          <Skeleton className="h-5 w-32 mb-3" />
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-5 w-5 rounded-full" />
-              <Skeleton className="h-4 w-full" />
-            </div>
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-5 w-5 rounded-full" />
-              <Skeleton className="h-4 w-full" />
-            </div>
-          </div>
-        </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }

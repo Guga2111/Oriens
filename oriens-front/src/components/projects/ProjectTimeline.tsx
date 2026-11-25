@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { WorkFeedback } from '@/components/common/WorkFeedback';
 import { TimelineGroup } from '@/components/projects/timeline/TimelineGroup';
 import { TimelineHeader } from '@/components/projects/timeline/TimelineHeader';
 import { useTimelineBoard } from '@/hooks/useTimelineBoard';
+import { useTimelineScroll } from '@/hooks/useTimelineScroll';
 import { formatLongDate } from '@/lib/date';
 import { TASK_STATUS } from '@/lib/labels';
 import {
@@ -47,16 +48,7 @@ export function ProjectTimeline({ project, onOpen, onAdd }: {
     return next;
   }, { replace: true });
 
-  const scrollTo = useCallback((date: string, smooth: boolean) => {
-    const node = content.current;
-    const viewport = node?.closest<HTMLElement>('[data-radix-scroll-area-viewport]');
-    if (!node || !viewport) return;
-    const label = node.querySelector<HTMLElement>('[data-timeline-label]')?.offsetWidth ?? 0;
-    const day = (node.offsetWidth - label) / period.days;
-    const reduced = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    viewport.scrollTo?.({ left: label + (dayIndex(period, date) + 0.5) * day - (viewport.clientWidth + label) / 2,
-      behavior: smooth && !reduced ? 'smooth' : 'auto' });
-  }, [period]);
+  const scrollTo = useTimelineScroll(content, period);
   const hasLayout = !!layout;
   // Keep the anchor in view whenever the window changes or first renders.
   useEffect(() => { if (hasLayout) scrollTo(anchor, false); }, [hasLayout, anchor, scrollTo]);

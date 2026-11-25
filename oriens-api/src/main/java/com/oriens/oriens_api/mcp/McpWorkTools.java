@@ -127,7 +127,7 @@ public class McpWorkTools {
         }
         if(d.tool().name().equals("oriens_update_task")&&!hasAny(n,"title","description","objectiveId","plannedDate","startTime","dueDate","priority","location","status")
             ||d.tool().name().equals("oriens_update_project")&&!hasAny(n,"title","description","color","favorite")
-            ||d.tool().name().equals("oriens_update_objective")&&!hasAny(n,"title","dueDate","status"))throw McpStore.invalid("Informe ao menos um campo para alterar.");
+            ||d.tool().name().equals("oriens_update_objective")&&!hasAny(n,"title","description","startDate","dueDate","status","favorite"))throw McpStore.invalid("Informe ao menos um campo para alterar.");
     }
     private Object read(String name,McpStore.Policy p,Access a,JsonNode n) {
         return switch(name) {
@@ -183,7 +183,7 @@ public class McpWorkTools {
         } else if(resourceKind.equals("objective")) {
             long projectId=id(n,"projectId");read.project(a,projectId);projectIds.add(projectId);usedScopes.add("projects:read");
             Objective changed;
-            if(name.equals("oriens_create_objective")) changed=work.createObjective(p.userId(),projectId,new CreateObjective(version(n,"expectedProjectVersion"),text(n,"title"),date(n,"dueDate")));
+            if(name.equals("oriens_create_objective")) changed=work.createObjective(p.userId(),projectId,new CreateObjective(version(n,"expectedProjectVersion"),text(n,"title"),date(n,"dueDate"),text(n,"description"),date(n,"startDate"),enumeration(n,"status",ObjectiveStatus.class)));
             else {
                 resourceId=id(n,"objectiveId");read.objective(a,projectId,resourceId);
                 if(d.delete()) {
@@ -191,7 +191,10 @@ public class McpWorkTools {
                     work.deleteObjective(p.userId(),projectId,resourceId,version(n,"expectedVersion"),version(n,"expectedProjectVersion"));changed=null;effects="Objetivo excluído. As tarefas foram preservadas sem esse vínculo.";
                 } else {
                     var patch=new PatchObjective();patch.setVersion(version(n,"expectedVersion"));
-                    if(n.has("title"))patch.setTitle(text(n,"title"));if(n.has("dueDate"))patch.setDueDate(date(n,"dueDate"));if(n.has("status"))patch.setStatus(enumeration(n,"status",ObjectiveStatus.class));
+                    if(n.has("title"))patch.setTitle(text(n,"title"));
+                    if(n.has("description"))patch.setDescription(text(n,"description"));if(n.has("startDate"))patch.setStartDate(date(n,"startDate"));
+                    if(n.has("dueDate"))patch.setDueDate(date(n,"dueDate"));if(n.has("status"))patch.setStatus(enumeration(n,"status",ObjectiveStatus.class));
+                    if(n.has("favorite"))patch.setFavorite(bool(n,"favorite"));
                     changed=work.patchObjective(p.userId(),projectId,resourceId,patch);
                 }
             }

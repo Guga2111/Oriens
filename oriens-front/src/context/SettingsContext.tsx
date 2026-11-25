@@ -6,7 +6,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import { UserPreferences, Theme } from "@/types/settings";
+import { UserPreferences, Theme, TaskView } from "@/types/settings";
 import settingsService from "@/services/settingsService";
 import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ interface SettingsContextType {
   preferences: UserPreferences | null;
   isLoading: boolean;
   isUpdating: boolean;
-  updatePreference: (key: keyof UserPreferences, value: boolean | Theme) => Promise<void>;
+  updatePreference: (key: keyof UserPreferences, value: boolean | Theme | TaskView) => Promise<void>;
   refreshPreferences: () => Promise<void>;
 }
 
@@ -90,7 +90,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   }, [userId, isAuthenticated, saveToLocalStorage, loadFromLocalStorage]);
 
   const updatePreference = useCallback(
-    async (key: keyof UserPreferences, value: boolean | Theme) => {
+    async (key: keyof UserPreferences, value: boolean | Theme | TaskView) => {
       if (!userId || !preferences) {
         toast.error("Usuário não autenticado");
         return;
