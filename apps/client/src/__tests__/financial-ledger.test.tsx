@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import api from '@/services/api';
 import { getEntryLedger } from '@/services/financialService';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import FinancialPage from '@/pages/FinancialPage';
+import FinancialEntriesPage from '@/pages/FinancialEntriesPage';
 import { renderWork } from './work-fixtures';
 
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7 }) }));
@@ -12,6 +14,11 @@ vi.mock('@/lib/product-time', async original => ({
   ...(await original<typeof import('@/lib/product-time')>()),
   productDate: (date = '2026-11-25') => { const [y, m, d] = date.split('-').map(Number); return new Date(y, m - 1, d); },
 }));
+
+function Location() {
+  const { pathname, search } = useLocation();
+  return <output data-testid="location">{pathname + search}</output>;
+}
 
 const tags = [{ id: 1, name: 'Salário', color: '#111111' }, { id: 2, name: 'Mercado', color: '#222222' }];
 const page = (content: unknown[], number: number, totalPages: number, totalElements: number) =>
@@ -54,13 +61,13 @@ describe('getEntryLedger — histórico completo', () => {
   });
 });
 
-describe('FinancialPage — categoria abre o histórico filtrado', () => {
-  it('aplica o mês selecionado e a categoria ao abrir Lançamentos', async () => {
+describe('Financeiro — categoria abre Lançamentos filtrado', () => {
+  it('leva o mês selecionado e a categoria pela URL até o histórico', async () => {
     const user = userEvent.setup();
     const entries = [
       { id: 1, version: 0, amount: 3000, entryDate: '2026-11-05', tagId: 1 },
       { id: 2, version: 0, amount: -120.4, entryDate: '2026-11-08', tagId: 2 },
-      { id: 3, version: 0, amount: -80, entryDate: '2026-10-08', tagId: 2 },
+      { id: 3, version: 0, amount: -80, entryDate: '2026-10-08', tagId: 2, description: 'Feira' },
     ];
     vi.mocked(api.get).mockImplementation(async (url, config) => {
       if (url.endsWith('/tags')) return { data: tags };
@@ -68,17 +75,19 @@ describe('FinancialPage — categoria abre o histórico filtrado', () => {
       if (params.sortBy === 'id') return page(entries, 0, 1, entries.length);
       return page([entries[2]], 0, 1, 1);
     });
-    renderWork(<FinancialPage />, '/financial');
+    renderWork(<Routes>
+      <Route path="/financial" element={<FinancialPage />} />
+      <Route path="/financial/entries" element={<><FinancialEntriesPage /><Location /></>} />
+    </Routes>, '/financial?month=2026-10');
 
-    await user.click(screen.getByRole('button', { name: 'Mês anterior' }));
-    const category = await screen.findByRole('button', { name: /^Mercado: R\$\s80,00/ });
-    await user.click(category);
+    expect(screen.getByRole('heading', { level: 1, name: 'Financeiro' })).toHaveClass('sr-only');
+    await user.click(await screen.findByRole('button', { name: /^Mercado: R\$\s80,00/ }));
 
-    expect(screen.getByRole('tab', { name: 'Lançamentos' })).toHaveAttribute('aria-selected', 'true');
-    await waitFor(() => expect(api.get).toHaveBeenLastCalledWith('/financial/user/7/entries', expect.objectContaining({
+    expect(await screen.findByRole('heading', { level: 1, name: 'Lançamentos' })).toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/financial/entries?start=2026-10-01&end=2026-10-31&tag=2');
+    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/financial/user/7/entries', expect.objectContaining({
       params: expect.objectContaining({ startDate: '2026-10-01', endDate: '2026-10-31', tagId: 2, page: 0 }),
     })));
-    const history = screen.getByRole('tabpanel', { name: 'Lançamentos' });
-    expect(within(history).getByRole('combobox', { name: 'Filtrar por período' })).toHaveTextContent('Personalizado');
+    expect(within(screen.getByRole('table')).getByText('Feira')).toBeInTheDocument();
   });
 });

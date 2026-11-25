@@ -155,10 +155,11 @@ test("mobile: /financial não tem rolagem horizontal e os filtros ficam no Sheet
 
   await expect(
     page.getByRole("heading", { level: 1, name: "Financeiro" })
-  ).toBeVisible();
+  ).toBeAttached();
   expect(await pageOverflow(page)).toBeLessThanOrEqual(0);
 
-  await page.getByRole("tab", { name: "Lançamentos" }).click();
+  await page.goto("/financial/entries");
+  await expect(page.getByRole("heading", { level: 1, name: "Lançamentos" })).toBeAttached();
   expect(await pageOverflow(page)).toBeLessThanOrEqual(0);
   await page.getByRole("button", { name: /Filtros/ }).first().click();
   await expect(page.getByRole("heading", { name: "Filtros" })).toBeVisible();

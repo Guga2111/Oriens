@@ -124,14 +124,16 @@ test("troca de mês atualiza os indicadores e a categoria abre o histórico", as
 
   // A categoria abre Lançamentos com o mês e a tag aplicados.
   await overview.getByRole("button", { name: /das despesas\. Ver lançamentos/ }).first().click();
-  await expect(page.getByRole("tab", { name: "Lançamentos" })).toHaveAttribute("aria-selected", "true");
+  await expect(page).toHaveURL(/\/financial\/entries\?start=\d{4}-\d{2}-01&end=\d{4}-\d{2}-\d{2}&tag=\d+$/);
+  await expect(page.getByRole("navigation", { name: "Menu de Financeiro" }).getByRole("link", { name: "Lançamentos" })).toHaveAttribute("aria-current", "page");
   const history = page.getByRole("table");
   await expect(history.getByText("Gasto anterior")).toBeVisible();
   await expect(history.getByText("Receita anterior")).toHaveCount(0);
   await expect(history.getByText("Gasto do mês")).toHaveCount(0);
 
-  // "Este mês" volta para o período atual.
-  await page.getByRole("tab", { name: "Visão geral" }).click();
+  // Voltar mantém o mês na URL; "Este mês" retorna ao período atual.
+  await page.goBack();
+  await expect(metric("Resultado do mês")).toHaveText("R$ 400,00");
   await page.getByRole("button", { name: "Este mês" }).click();
   await expect(
     page.getByText(monthLabel(new Date()), { exact: true })

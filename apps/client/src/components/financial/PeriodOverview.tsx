@@ -112,20 +112,10 @@ export function PeriodOverview({
         />
       ) : null}
       <Card>
-        <CardContent className="flex flex-col gap-4 p-5">
-          <div className="flex items-start justify-between gap-4">
-            <h2 className="text-base font-semibold">Resumo de {monthName}</h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowValues((visible) => !visible)}
-              aria-label={showValues ? "Ocultar valores" : "Exibir valores"}
-              className="-mt-2 shrink-0"
-            >
-              {showValues ? <Eye className="h-5 w-5" aria-hidden /> : <EyeOff className="h-5 w-5" aria-hidden />}
-            </Button>
-          </div>
-          <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <CardContent className="flex items-start gap-4 p-5">
+          {/* The header already shows the month; the heading only names the region for screen readers. */}
+          <h2 className="sr-only">Resumo de {monthName}</h2>
+          <dl className="grid flex-1 grid-cols-2 gap-4 lg:grid-cols-4">
             <Metric label="Receitas" hint="No mês selecionado" className="text-positive">
               {mask(formatCurrency(month.income))}
             </Metric>
@@ -147,6 +137,15 @@ export function PeriodOverview({
               {mask(formatCurrency(available.balance))}
             </Metric>
           </dl>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowValues((visible) => !visible)}
+            aria-label={showValues ? "Ocultar valores" : "Exibir valores"}
+            className="-mr-2 -mt-2 shrink-0"
+          >
+            {showValues ? <Eye className="h-5 w-5" aria-hidden /> : <EyeOff className="h-5 w-5" aria-hidden />}
+          </Button>
         </CardContent>
       </Card>
 
