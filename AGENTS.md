@@ -47,7 +47,6 @@ docs/
 ./mvnw test '-Dtest=!McpP2PostgresTest,!McpP3PostgresTest,!McpP4PostgresTest' -Dsurefire.failIfNoSpecifiedTests=false
 ops/postgres-tests.sh [Classe…]     # *PostgresTest em PostgreSQL descartável (Docker); Flyway cria o schema
 # O CI (.github/workflows/checks.yml) roda as duas suítes e o lint/testes/build do front em todo PR para dev/main.
-# Entre 00h e 03h UTC, 4 testes de finanças do McpP3PostgresTest falham por fuso (dívida conhecida, backend.md §11).
 docker compose -f docker-compose.dev.yml up -d   # API + Postgres locais (JWT_SECRET obrigatório)
 
 # Frontend (a partir de oriens-front/)
