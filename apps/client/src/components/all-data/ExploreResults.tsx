@@ -1,17 +1,14 @@
 import { useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { HeaderActions } from "@/components/common/HeaderActions";
-import { HeaderFilterButton } from "@/components/common/HeaderFilterButton";
+import { HeaderFilterPanel } from "@/components/common/HeaderFilterPanel";
 import { HeaderSearch } from "@/components/common/HeaderSearch";
 import { WorkFeedback } from "@/components/common/WorkFeedback";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table } from "@/components/ui/table";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 import styles from "./explore-layout.module.css";
 
@@ -53,7 +50,7 @@ export function ExploreResults({ resources, emptyTitle, emptyDescription, search
         <HeaderSearch label={`Buscar ${resources}`} inputLabel="Buscar por título" placeholder="Buscar…"
           value={draft} onChange={setDraft} open={searchOpen} onOpenChange={setSearchOpen}
           onSubmit={() => search.submit(draft)} onClear={() => { if (search.query) search.submit(""); }} />
-        <ExploreFilters count={count} onClear={clear}>{filters.fields}</ExploreFilters>
+        <HeaderFilterPanel count={count} onClear={clear} description="Refine os resultados desta aba.">{filters.fields}</HeaderFilterPanel>
       </HeaderActions>
 
       {feedback && <WorkFeedback error={feedback.error} message={`Não foi possível atualizar ${resources === "tarefas" ? "as" : "os"} ${resources}.`}
@@ -72,41 +69,6 @@ export function ExploreResults({ resources, emptyTitle, emptyDescription, search
 
       {!isLoading && pagination.totalElements > 0 && <ExplorePagination resources={resources} pagination={pagination} onPageChange={onPageChange} />}
     </div>
-  );
-}
-
-function ExploreFilters({ count, onClear, children }: { count: number; onClear: () => void; children: ReactNode }) {
-  const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const trigger = <HeaderFilterButton count={count} />;
-  const clear = count > 0 && <Button type="button" variant="ghost" size="sm" onClick={onClear}>Limpar filtros</Button>;
-
-  if (isDesktop) return (
-    <Popover>
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent align="end" aria-labelledby="explore-desktop-filters"
-        className="flex max-h-[var(--radix-popover-content-available-height)] w-80 flex-col gap-4 overflow-y-auto">
-        <h2 id="explore-desktop-filters" className="text-sm font-medium">Filtros</h2>
-        {children}
-        {clear && <div className="flex justify-end">{clear}</div>}
-      </PopoverContent>
-    </Popover>
-  );
-
-  return (
-    <Sheet>
-      <SheetTrigger asChild>{trigger}</SheetTrigger>
-      <SheetContent side="bottom" showClose={false} className="flex max-h-dialog flex-col overflow-y-auto">
-        <SheetHeader className="text-left">
-          <SheetTitle>Filtros</SheetTitle>
-          <SheetDescription className="sr-only">Refine os resultados desta aba.</SheetDescription>
-        </SheetHeader>
-        {children}
-        <SheetFooter className="flex-row justify-end gap-2 sm:space-x-0">
-          {clear}
-          <SheetClose asChild><Button type="button" variant="outline">Fechar</Button></SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
   );
 }
 

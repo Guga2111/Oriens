@@ -1,14 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  endOfMonth,
-  format,
-  startOfMonth,
-  subDays,
-} from "date-fns";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Plus, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { HeaderActions } from "@/components/common/HeaderActions";
+import { HeaderFilterPanel } from "@/components/common/HeaderFilterPanel";
+import { HeaderSearch } from "@/components/common/HeaderSearch";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,106 +14,40 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
 import { useFinancialTags } from "@/hooks/useFinancial";
+import { productNow } from "@/lib/product-time";
 import { deleteEntry, getAllEntries } from "@/services/financialService";
 import type { EntryDTO } from "@/types/financial";
-import { entriesRangeFrom } from "@/lib/financial-route";
-import { productDate } from "@/lib/product-time";
+import {
+  activeEntriesFilterCount,
+  entriesDateRange,
+  entriesFiltersFrom,
+  entriesSearchParams,
+  NO_ENTRIES_FILTERS,
+  type EntriesFilters,
+} from "@/lib/financial-route";
+import { EntryFilterFields } from "@/components/financial/EntryFilterFields";
 import { EntryHistoryTable } from "@/components/financial/EntryHistoryTable";
 import { CreateEntryDialog } from "@/components/financial/CreateEntryDialog";
 import { EditEntryDialog } from "@/components/financial/EditEntryDialog";
 import { TagManagementDialog } from "@/components/financial/TagManagementDialog";
 import { RecurringManagementDialog } from "@/components/financial/RecurringManagementDialog";
 
-interface TableFilters {
-  periodFilter: string;
-  customStartDate: Date | undefined;
-  customEndDate: Date | undefined;
-  tagFilter: string;
-  searchQuery: string;
-}
-
-const INITIAL_FILTERS: TableFilters = {
-  periodFilter: "all",
-  customStartDate: undefined,
-  customEndDate: undefined,
-  tagFilter: "all",
-  searchQuery: "",
-};
-
 const HISTORY_PAGE_SIZE = 20;
 
-function buildTableParams(page: number, filters: TableFilters) {
-  const params: {
-    page: number;
-    size: number;
-    sortBy: string;
-    direction: "ASC" | "DESC";
-    startDate?: string;
-    endDate?: string;
-    tagId?: number;
-    search?: string;
-  } = {
+function buildTableParams(page: number, filters: EntriesFilters, today: string) {
+  const range = entriesDateRange(filters, today);
+  return {
     page,
     size: HISTORY_PAGE_SIZE,
     sortBy: "entryDate",
-    direction: "DESC",
-  };
-
-  if (filters.periodFilter !== "all") {
-    const now = new Date();
-    let startDate: Date | undefined;
-    let endDate: Date | undefined = now;
-
-    switch (filters.periodFilter) {
-      case "7days":
-        startDate = subDays(now, 7);
-        break;
-      case "15days":
-        startDate = subDays(now, 15);
-        break;
-      case "30days":
-        startDate = subDays(now, 30);
-        break;
-      case "thisMonth":
-        startDate = startOfMonth(now);
-        endDate = endOfMonth(now);
-        break;
-      case "custom":
-        if (filters.customStartDate && filters.customEndDate) {
-          startDate = filters.customStartDate;
-          endDate = filters.customEndDate;
-        }
-        break;
-    }
-
-    if (startDate) params.startDate = format(startDate, "yyyy-MM-dd");
-    if (endDate) params.endDate = format(endDate, "yyyy-MM-dd");
-  }
-
-  if (filters.tagFilter !== "all") {
-    params.tagId = parseInt(filters.tagFilter);
-  }
-
-  if (filters.searchQuery) {
-    params.search = filters.searchQuery;
-  }
-
-  return params;
-}
-
-/** A month or category opened from the overview arrives as `?start&end&tag`. */
-function filtersFromUrl(params: URLSearchParams): TableFilters {
-  const range = entriesRangeFrom(params);
-  return {
-    ...INITIAL_FILTERS,
-    ...(range.start && range.end
-      ? { periodFilter: "custom", customStartDate: productDate(range.start), customEndDate: productDate(range.end) }
-      : {}),
-    ...(range.tagId !== null ? { tagFilter: String(range.tagId) } : {}),
+    direction: "DESC" as const,
+    ...(range ? { startDate: range.start, endDate: range.end } : {}),
+    ...(filters.tagId !== null ? { tagId: filters.tagId } : {}),
+    ...(filters.search ? { search: filters.search } : {}),
   };
 }
 
-/** Histórico de lançamentos; a reorganização dos filtros na barra superior é da #118. */
+/** Histórico de lançamentos: busca e filtros na barra superior, sincronizados com a URL. */
 export default function FinancialEntriesPage() {
   const { userId } = useAuth();
   const tags = useFinancialTags();
@@ -130,8 +60,10 @@ export default function FinancialEntriesPage() {
     totalElements: 0,
   });
   const [isLoadingTable, setIsLoadingTable] = useState(true);
-  const [tableFilters, setTableFilters] = useState<TableFilters>(() => filtersFromUrl(params));
+  const [tableFilters, setTableFilters] = useState<EntriesFilters>(() => entriesFiltersFrom(params));
   const initialFilters = useRef(tableFilters);
+  const [searchDraft, setSearchDraft] = useState(tableFilters.search);
+  const [isSearchOpen, setIsSearchOpen] = useState(Boolean(tableFilters.search));
 
   const [isCreateEntryOpen, setIsCreateEntryOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<EntryDTO | null>(null);
@@ -142,7 +74,7 @@ export default function FinancialEntriesPage() {
   const tableRequestId = useRef(0);
 
   const loadTableData = useCallback(
-    async (page: number, filters: TableFilters) => {
+    async (page: number, filters: EntriesFilters) => {
       if (!userId) return;
 
       const requestId = ++tableRequestId.current;
@@ -151,7 +83,7 @@ export default function FinancialEntriesPage() {
       try {
         const response = await getAllEntries(
           userId,
-          buildTableParams(page, filters)
+          buildTableParams(page, filters, productNow().date)
         );
         if (requestId !== tableRequestId.current) return;
 
@@ -182,17 +114,6 @@ export default function FinancialEntriesPage() {
     void loadTableData(0, initialFilters.current);
   }, [userId, loadTableData]);
 
-  /** Keeps the shareable part of the filters (custom range and category) in the URL. */
-  const syncUrl = (filters: TableFilters) => {
-    const next = new URLSearchParams();
-    if (filters.periodFilter === "custom" && filters.customStartDate && filters.customEndDate) {
-      next.set("start", format(filters.customStartDate, "yyyy-MM-dd"));
-      next.set("end", format(filters.customEndDate, "yyyy-MM-dd"));
-    }
-    if (filters.tagFilter !== "all") next.set("tag", filters.tagFilter);
-    setParams(next, { replace: true });
-  };
-
   const handleDeleteEntry = async (entry: EntryDTO, key: string) => {
     if (!userId) return;
     try {
@@ -211,38 +132,45 @@ export default function FinancialEntriesPage() {
     void loadTableData(tablePagination.page, tableFilters);
   };
 
-  const handleFilterChange = (updates: Partial<TableFilters>) => {
-    const nextFilters = { ...tableFilters, ...updates };
+  const applyFilters = (nextFilters: EntriesFilters) => {
     setTableFilters(nextFilters);
-    syncUrl(nextFilters);
-
-    const isUpdatingCustomDate =
-      "customStartDate" in updates || "customEndDate" in updates;
-    const isClearingCustomDates =
-      updates.customStartDate === undefined &&
-      updates.customEndDate === undefined;
-
-    if (
-      isUpdatingCustomDate &&
-      !isClearingCustomDates &&
-      !(nextFilters.customStartDate && nextFilters.customEndDate)
-    ) {
-      return;
-    }
-
+    setParams(entriesSearchParams(nextFilters), { replace: true });
     void loadTableData(0, nextFilters);
   };
+
+  const handleFilterChange = (updates: Partial<EntriesFilters>) =>
+    applyFilters({ ...tableFilters, ...updates });
+
+  const submitSearch = (search: string) => {
+    if (search.trim() !== tableFilters.search) handleFilterChange({ search: search.trim() });
+  };
+
+  const clearFilters = () => {
+    setSearchDraft("");
+    setIsSearchOpen(false);
+    applyFilters(NO_ENTRIES_FILTERS);
+  };
+
+  const activeFilters = activeEntriesFilterCount(tableFilters);
 
   return (
     <div className="min-w-0 w-full">
       {/* The breadcrumb names the page, as on Projetos; the h1 stays for screen readers. */}
       <h1 className="sr-only">Lançamentos</h1>
       <HeaderActions>
+        <HeaderSearch label="Buscar lançamentos" inputLabel="Buscar na descrição" placeholder="Buscar…"
+          value={searchDraft} onChange={setSearchDraft} open={isSearchOpen} onOpenChange={setIsSearchOpen}
+          onSubmit={() => submitSearch(searchDraft)} onClear={() => submitSearch("")} />
+        <HeaderFilterPanel count={activeFilters} onClear={clearFilters}
+          description="Refine o histórico por período e categoria.">
+          <EntryFilterFields filters={tableFilters} tags={tags.data ?? []} onChange={handleFilterChange} />
+        </HeaderFilterPanel>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
-              Gerenciar
-              <ChevronDown aria-hidden />
+              <Settings2 aria-hidden className="md:hidden" />
+              <span className="max-md:sr-only">Gerenciar</span>
+              <ChevronDown aria-hidden className="max-md:hidden" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -261,11 +189,12 @@ export default function FinancialEntriesPage() {
         tags={tags.data ?? []}
         onEdit={setEditingEntry}
         onDelete={handleDeleteEntry}
+        onManageRecurrences={() => setIsRecurringManagementOpen(true)}
         pagination={tablePagination}
         onPageChange={(page) => void loadTableData(page, tableFilters)}
         isLoading={isLoadingTable}
-        filters={tableFilters}
-        onFilterChange={handleFilterChange}
+        filtered={activeFilters > 0}
+        onClearFilters={clearFilters}
       />
 
       <CreateEntryDialog

@@ -2,7 +2,8 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { EntryHistoryTable } from "@/components/financial/EntryHistoryTable";
-import type { EntryDTO, TagDTO } from "@/types/financial";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { RecurrencePattern, type EntryDTO, type TagDTO } from "@/types/financial";
 
 const tags: TagDTO[] = [
   { id: 1, name: "Salário", color: "#111111" },
@@ -34,18 +35,13 @@ function renderTable(overrides: Partial<React.ComponentProps<typeof EntryHistory
     onDelete: vi.fn(),
     pagination: { page: 0, totalPages: 2, totalElements: 25 },
     onPageChange: vi.fn(),
-    filters: {
-      periodFilter: "all",
-      customStartDate: undefined,
-      customEndDate: undefined,
-      tagFilter: "all",
-      searchQuery: "",
-    },
-    onFilterChange: vi.fn(),
+    onManageRecurrences: vi.fn(),
+    filtered: false,
+    onClearFilters: vi.fn(),
     ...overrides,
   };
 
-  render(<EntryHistoryTable {...props} />);
+  render(<TooltipProvider><EntryHistoryTable {...props} /></TooltipProvider>);
   return props;
 }
 
@@ -86,5 +82,34 @@ describe("EntryHistoryTable — histórico independente do mês", () => {
 
     await user.click(within(dialog).getByRole("button", { name: "Excluir" }));
     expect(props.onDelete).toHaveBeenCalledWith(entries[1], expect.any(String));
+  });
+
+  it("identifica a origem recorrente e leva a ocorrência automática à recorrência", async () => {
+    const user = userEvent.setup();
+    const props = renderTable({
+      entries: [
+        { ...entries[0], isRecurring: true, recurrencePattern: RecurrencePattern.MONTHLY },
+        { ...entries[1], id: 3, parentEntryId: 1 },
+      ],
+    });
+    const table = screen.getByRole("table");
+
+    expect(within(table).getByText("Mensal")).toBeInTheDocument();
+    expect(within(table).getByText("Automática")).toBeInTheDocument();
+    expect(within(table).getByRole("button", { name: "Editar entrada: Salário" })).toBeInTheDocument();
+    expect(within(table).queryByRole("button", { name: "Editar entrada: Mercado" })).not.toBeInTheDocument();
+
+    await user.click(within(table).getByRole("button", { name: "Editar pela recorrência de origem: Mercado" }));
+    expect(props.onManageRecurrences).toHaveBeenCalled();
+    expect(props.onEdit).not.toHaveBeenCalled();
+  });
+
+  it("oferece limpar filtros quando o recorte não tem resultados", async () => {
+    const user = userEvent.setup();
+    const props = renderTable({ entries: [], filtered: true, pagination: { page: 0, totalPages: 0, totalElements: 0 } });
+
+    expect(screen.getByText("Nenhum resultado encontrado")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Limpar filtros" }));
+    expect(props.onClearFilters).toHaveBeenCalled();
   });
 });
