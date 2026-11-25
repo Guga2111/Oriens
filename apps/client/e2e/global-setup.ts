@@ -16,17 +16,18 @@ async function post(path: string, body: unknown) {
   return { data: text ? JSON.parse(text) : null, headers: res.headers };
 }
 
-/**
- * Cria uma conta de teste nova (@oriens.test) a cada execução do Playwright
- * e expõe credenciais e token via process.env para todos os workers.
- * As credenciais nunca são commitadas: ver e2e/.env.test.example.
- */
-export default async function globalSetup() {
+/** Registra uma conta sintética que pode ser isolada por cenário. */
+export async function registerTestAccount() {
   const email = `e2e-${Date.now()}-${randomBytes(4).toString("hex")}@oriens.test`;
   const password = `E2e!${randomBytes(16).toString("hex")}`;
 
   await post("/user/register", { name: "Conta E2E Oriens", email, password });
+  return { email, password };
+}
 
+/** Compartilha uma conta sintética e seu token com as suítes que usam o setup global. */
+export default async function globalSetup() {
+  const { email, password } = await registerTestAccount();
   const auth = await post("/authenticate", { email, password });
   const token =
     (auth.headers.get("authorization") ?? "").split(" ")[1] ||
