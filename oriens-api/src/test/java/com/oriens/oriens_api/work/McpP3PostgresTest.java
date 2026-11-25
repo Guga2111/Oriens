@@ -14,9 +14,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static com.oriens.oriens_api.service.ScopedWorkReadService.fields;
+import com.oriens.oriens_api.configuration.ProductClockConfiguration;
 
 /** P3 plus the complete inherited P0/P1/P2 suite, against disposable PostgreSQL. */
 class McpP3PostgresTest extends McpP2PostgresTest {
+    /** The finance domain dates by the product zone; the JVM's (UTC on CI) is a day ahead from 21:00 to 00:00 in Recife. */
+    static LocalDate productToday() { return LocalDate.now(ProductClockConfiguration.ZONE); }
     @Autowired RecurringFinancialService recurring;
     @Autowired FinancialEntryServiceImpl finance;
     static final Set<String> FINANCE=Set.of("mcp:context","finance:read","finance:create","finance:update","finance:delete");
@@ -24,10 +27,10 @@ class McpP3PostgresTest extends McpP2PostgresTest {
         return db.queryForObject("insert into tags(user_id,name,color,is_default,allow_negative,created_at) values(?,?,?,false,?,now()) returning id",Long.class,user,name,"#781336",negative);
     }
     Grant financial()throws Exception {return grant(FINANCE,Set.of(),false);}
-    Map<String,Object> entryIntent(long tag,String amount) {return intent("tagId",id(tag),"amount",amount,"entryDate",LocalDate.now().toString(),"description","Café sintético","isRecurring",false);}
+    Map<String,Object> entryIntent(long tag,String amount) {return intent("tagId",id(tag),"amount",amount,"entryDate",productToday().toString(),"description","Café sintético","isRecurring",false);}
     JsonNode create(Grant g,long tag,String amount)throws Exception {return success(g,"create_financial_entry",entryIntent(tag,amount)).path("data");}
     String rest() {return "/financial/user/"+owner+"/entries";}
-    Map<String,Object> restInput(long tag,String amount) {return fields("tagId",tag,"amount",new BigDecimal(amount),"entryDate",LocalDate.now().toString(),"description","REST sintético","isRecurring",false);}
+    Map<String,Object> restInput(long tag,String amount) {return fields("tagId",tag,"amount",new BigDecimal(amount),"entryDate",productToday().toString(),"description","REST sintético","isRecurring",false);}
     JsonNode restCreate(long tag,String amount,String key)throws Exception {return body(mvc.perform(post(rest()).header("Authorization",jwt).header("Idempotency-Key",key).contentType("application/json").content(str(restInput(tag,amount)))).andExpect(status().isCreated()).andReturn());}
 
     @Test void financialScopesAreIndependentAndReadsNeverRevealAnotherAccount()throws Exception {
@@ -37,7 +40,7 @@ class McpP3PostgresTest extends McpP2PostgresTest {
         var projects=grant(Set.of("mcp:context","projects:read"),Set.of(),false);
         denied(projects,"list_financial_entries",fields(),"INSUFFICIENT_SCOPE");
         denied(g,"list_financial_entries",fields("tagId",id(foreign)),"NOT_FOUND");
-        denied(g,"get_financial_summary",fields("tagId",id(foreign),"startDate",LocalDate.now().toString(),"endDate",LocalDate.now().toString()),"NOT_FOUND");
+        denied(g,"get_financial_summary",fields("tagId",id(foreign),"startDate",productToday().toString(),"endDate",productToday().toString()),"NOT_FOUND");
         var bad=entryIntent(foreign,"1.00");denied(g,"create_financial_entry",bad,"NOT_FOUND");
         var categories=success(g,"list_financial_categories",fields()).path("data");assertThat(categories.path("totalElements").asLong()).isEqualTo(1);assertThat(categories.toString()).doesNotContain("secreta","userId");
         var otherGrant=store.create(other,"oriens-codex","Outra conta",FINANCE,Set.of(),false);
@@ -48,7 +51,7 @@ class McpP3PostgresTest extends McpP2PostgresTest {
     }
 
     @Test void totalsCoverAllPagesWithExactCentsAndIndependentCategoryPaging()throws Exception {
-        long a=category(owner,"Alimentação",true),b=category(owner,"Renda",true);var g=financial();String day=LocalDate.now().toString();
+        long a=category(owner,"Alimentação",true),b=category(owner,"Renda",true);var g=financial();String day=productToday().toString();
         db.update("insert into financial_entry(user_id,tag_id,amount,entry_date,description,is_recurring,created_at) select ?,?,0.10,?::date,'Filtro café',false,now() from generate_series(1,50)",owner,b,day);
         db.update("insert into financial_entry(user_id,tag_id,amount,entry_date,description,is_recurring,created_at) select ?,?,-0.03,?::date,'Filtro café',false,now() from generate_series(1,75)",owner,a,day);
         create(g,a,"0.00");
@@ -57,11 +60,11 @@ class McpP3PostgresTest extends McpP2PostgresTest {
         assertThat(summary.path("income").asText()).isEqualTo("5.00");assertThat(summary.path("expenses").asText()).isEqualTo("2.25");assertThat(summary.path("result").asText()).isEqualTo("2.75");assertThat(summary.path("entries").asLong()).isEqualTo(125);
         assertThat(summary.path("categories").path("totalElements").asLong()).isEqualTo(2);assertThat(summary.path("categories").path("items")).hasSize(1);assertThat(summary.toString()).doesNotContain("previous","userId");
         var empty=success(g,"get_financial_summary",fields("search","inexistente","startDate",day,"endDate",day)).path("data");assertThat(empty.path("result").asText()).isEqualTo("0.00");assertThat(empty.path("categories").path("items")).isEmpty();
-        denied(g,"get_financial_summary",fields("startDate",day,"endDate",LocalDate.now().plusDays(1).toString()),"INVALID_REQUEST");
-        denied(g,"get_financial_summary",fields("startDate",LocalDate.now().minusDays(366).toString(),"endDate",day),"INVALID_REQUEST");
-        success(g,"get_financial_summary",fields("startDate",LocalDate.now().minusDays(365).toString(),"endDate",day));
-        var future=entryIntent(a,"1.00");future.put("entryDate",LocalDate.now().plusDays(40).toString());success(g,"create_financial_entry",future);
-        success(g,"list_financial_entries",fields("startDate",LocalDate.now().plusDays(40).toString(),"endDate",LocalDate.now().plusDays(40).toString()));
+        denied(g,"get_financial_summary",fields("startDate",day,"endDate",productToday().plusDays(1).toString()),"INVALID_REQUEST");
+        denied(g,"get_financial_summary",fields("startDate",productToday().minusDays(366).toString(),"endDate",day),"INVALID_REQUEST");
+        success(g,"get_financial_summary",fields("startDate",productToday().minusDays(365).toString(),"endDate",day));
+        var future=entryIntent(a,"1.00");future.put("entryDate",productToday().plusDays(40).toString());success(g,"create_financial_entry",future);
+        success(g,"list_financial_entries",fields("startDate",productToday().plusDays(40).toString(),"endDate",productToday().plusDays(40).toString()));
         for(int i=0;i<104;i++)category(owner,"Categoria "+i,true);
         assertThat(success(g,"list_financial_categories",fields("page",5,"pageSize",20)).path("data").path("items")).hasSize(6);
     }
@@ -81,7 +84,7 @@ class McpP3PostgresTest extends McpP2PostgresTest {
             var invalid=entryIntent(tag,"1.00");invalid.put("amount",amount);denied(g,"create_financial_entry",invalid,"INVALID_REQUEST");
         }
         create(g,tag,"9999999999.99");create(g,tag,"9999999999.99");create(g,tag,"-9999999999.99");
-        assertThat(success(g,"get_financial_summary",fields("startDate",LocalDate.now().toString(),"endDate",LocalDate.now().toString())).path("data").path("income").asText()).isEqualTo("19999999999.98");
+        assertThat(success(g,"get_financial_summary",fields("startDate",productToday().toString(),"endDate",productToday().toString())).path("data").path("income").asText()).isEqualTo("19999999999.98");
         denied(g,"create_financial_entry",entryIntent(incomeOnly,"-0.01"),"DOMAIN_VIOLATION");
         var forbidden=entryIntent(tag,"1.00");forbidden.put("parentEntryId",entry);denied(g,"create_financial_entry",forbidden,"INVALID_REQUEST");
         var invalid=entryIntent(tag,"1.00");invalid.remove("idempotencyKey");denied(g,"create_financial_entry",invalid,"PRECONDITION_REQUIRED");
@@ -110,7 +113,7 @@ class McpP3PostgresTest extends McpP2PostgresTest {
     }
 
     @Test void schedulerPreservesClaimsAndConsumesParentVersionWithoutPartialDefinitions()throws Exception {
-        long tag=category(owner,"Recorrência",true);var g=financial();LocalDate today=LocalDate.now();
+        long tag=category(owner,"Recorrência",true);var g=financial();LocalDate today=productToday();
         var recurringInput=entryIntent(tag,"-0.10");recurringInput.put("entryDate",today.minusDays(2).toString());recurringInput.put("isRecurring",true);recurringInput.put("recurrencePattern","DAILY");
         var parent=repeat(g,"create_financial_entry",recurringInput);long parentId=parent.path("id").asLong();
         assertThat(db.queryForObject("select version from financial_entry where id=?",Long.class,parentId)).isEqualTo(parent.path("version").asLong());
@@ -147,7 +150,7 @@ class McpP3PostgresTest extends McpP2PostgresTest {
     }
 
     @Test void schedulerAndClosureOrDeletionSerializeOnTheOriginInBothOrders()throws Exception {
-        long tag=category(owner,"Locks recorrentes",true);var g=financial();LocalDate today=LocalDate.now();
+        long tag=category(owner,"Locks recorrentes",true);var g=financial();LocalDate today=productToday();
         var pool=Executors.newFixedThreadPool(2);
         try {
             for(boolean delete:List.of(false,true)) {
@@ -183,7 +186,7 @@ class McpP3PostgresTest extends McpP2PostgresTest {
 
     @Test void ownerSerializationDoesNotDeadlockSchedulerForeignKeyChecks()throws Exception {
         long tag=category(owner,"FK lock",true);var g=financial();
-        var input=entryIntent(tag,"-0.10");input.put("isRecurring",true);input.put("recurrencePattern","DAILY");input.put("entryDate",LocalDate.now().minusDays(2).toString());
+        var input=entryIntent(tag,"-0.10");input.put("isRecurring",true);input.put("recurrencePattern","DAILY");input.put("entryDate",productToday().minusDays(2).toString());
         long parent=success(g,"create_financial_entry",input).path("data").path("id").asLong();
         var originLocked=new CountDownLatch(1);var ownerLocked=new CountDownLatch(1);var release=new CountDownLatch(1);var pool=Executors.newFixedThreadPool(2);
         try {
@@ -236,6 +239,6 @@ class McpP3PostgresTest extends McpP2PostgresTest {
         assertThat(ended).as("production browser proof completed").isTrue();assertThat(process.exitValue()).isZero();
         assertThat(db.queryForObject("select count(*) from financial_entry where user_id=? and description='Browser idempotente'",Long.class,owner)).isEqualTo(1);
         assertThat(db.queryForObject("select count(*) from financial_entry where id=?",Long.class,created.path("id").asLong())).isZero();
-        assertThat(db.queryForObject("select recurrence_end_date from financial_entry where user_id=? and description='Recorrência sintética'",LocalDate.class,owner)).isEqualTo(LocalDate.now());
+        assertThat(db.queryForObject("select recurrence_end_date from financial_entry where user_id=? and description='Recorrência sintética'",LocalDate.class,owner)).isEqualTo(productToday());
     }
 }
