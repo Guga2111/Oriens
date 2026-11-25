@@ -47,6 +47,7 @@ public class FinancialMapper {
         dto.setRecurrencePattern(entry.getRecurrencePattern());
         dto.setRecurrenceEndDate(entry.getRecurrenceEndDate());
         dto.setParentEntryId(entry.getParentEntryId());
+        dto.setKind(entry.getKind());
         return dto;
     }
 

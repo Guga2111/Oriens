@@ -1,5 +1,6 @@
 package com.oriens.oriens_api.entity;
 
+import com.oriens.oriens_api.entity.enums.EntryKind;
 import com.oriens.oriens_api.entity.enums.RecurrencePattern;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -69,6 +70,11 @@ public class FinancialEntry {
 
     @Column(name = "parent_entry_id")
     private Long parentEntryId;
+
+    /** Investment movements own non-standard entries; the entries API never changes it. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "kind", nullable = false, length = 32)
+    private EntryKind kind = EntryKind.STANDARD;
 
     @PreUpdate
     protected void onUpdate () {

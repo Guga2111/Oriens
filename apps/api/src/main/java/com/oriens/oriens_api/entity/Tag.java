@@ -36,6 +36,10 @@ public class Tag {
     @Column(name = "allow_negative", nullable = false)
     private Boolean allowNegative = true;
 
+    /** Stable identity of a predefined tag ("INVESTMENTS"); survives renames. */
+    @Column(name = "system_key", length = 32)
+    private String systemKey;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

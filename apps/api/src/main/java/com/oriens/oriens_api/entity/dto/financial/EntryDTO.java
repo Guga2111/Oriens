@@ -1,4 +1,5 @@
 package com.oriens.oriens_api.entity.dto.financial;
+import com.oriens.oriens_api.entity.enums.EntryKind;
 import com.oriens.oriens_api.entity.enums.RecurrencePattern;
 import lombok.*;
 
@@ -32,6 +33,11 @@ public class EntryDTO {
     private LocalDate recurrenceEndDate;
 
     private Long parentEntryId;
+
+    private EntryKind kind = EntryKind.STANDARD;
+
+    /** Set when an investment movement owns this entry; edit it through the investment. */
+    private Long investmentId;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -42,6 +42,29 @@ A primeira versão apresenta posição atual, aportes líquidos, rendimentos rec
 - A tag padrão Investimentos já é cadastrada para novos usuários. Resolva a tag predefinida da própria conta. O tipo do movimento determina se a entrada é transferência ou receita. Um lançamento comum com a tag Investimentos mantém sua classificação. Na #119, confirme a estratégia de identificação da tag em contas existentes e o contrato do vínculo antes de alterar persistência ou API.
 - Use dinheiro decimal, datas do calendário do Oriens, validação de posse, consultas em lote e migrações aditivas quando necessário. Cubra 404 de recurso alheio, precisão dos totais, reenvio sem duplicidade, correção consistente e leitura do histórico existente.
 
+## Modelo e contrato da carteira (#119)
+
+Aprovados em 25/11/2026. A migração `V15__investment_portfolio.sql` é aditiva. O número 15 evita colidir com a V14 da `dev`.
+
+- **Tag Investimentos.** A coluna `tags.system_key = 'INVESTMENTS'` identifica a tag em cada conta, e renomear a tag não a desfaz. A migração adota a tag que já se chama "Investimentos", padrão ou personalizada, e cria a tag nas contas sem ela. O cadastro de usuário grava a chave, e o servidor resolve a tag ao gravar cada movimento.
+- **Classificação explícita.** `financial_entry.kind` assume `STANDARD`, `INVESTMENT_TRANSFER` ou `INVESTMENT_INCOME`. Lançamentos existentes ficam `STANDARD`. Receitas, despesas, série diária e composição por categoria excluem `INVESTMENT_TRANSFER`. O resumo traz `investmentTransfers` com o líquido das transferências do período para compor o saldo.
+- **Tabelas.** `investments` guarda nome e classe (`FIXED_INCOME`, `STOCKS`, `REAL_ESTATE_FUNDS`, `OTHER`). `investment_valuations` guarda data e valor maior ou igual a zero. `investment_movements` guarda tipo (`CONTRIBUTION`, `WITHDRAWAL`, `INCOME`), valor positivo, data, descrição e `entry_id` único. As tabelas têm versão e FKs compostas com `user_id`. Uma sequência comum (`recorded_seq`) ordena avaliações e movimentos do mesmo dia.
+- **Lançamento vinculado.** Um aporte gera −valor e um resgate gera +valor, ambos `INVESTMENT_TRANSFER`. O rendimento gera +valor como `INVESTMENT_INCOME`. Movimento e lançamento mudam na mesma transação. A rota de lançamentos recusa editar ou excluir um lançamento vinculado com 422.
+- **Posição.** A posição parte da última avaliação e soma aportes e resgates posteriores, incluindo os do mesmo dia gravados depois da avaliação. O status é `VALUED` ou `ESTIMATED`. Com estimativa negativa o status é `NEEDS_VALUATION`, e sem avaliação é `UNAVAILABLE`. Nesses dois casos a posição vem nula e fica fora do total, que informa quantas aplicações cobre.
+- **Exclusão.** A aplicação pode ser excluída quando não tem movimentos ou quando a posição está exatamente em zero. Os lançamentos de caixa permanecem com sua classificação e passam a ser editáveis como lançamentos comuns.
+
+As rotas partem de `/financial/user/{userId}/investments`. As escritas exigem `Idempotency-Key`, e edição e exclusão exigem `If-Match`. Recurso de outra conta responde 404. Valores saem como string decimal e entram como número JSON.
+
+| Rota | Uso |
+| --- | --- |
+| `GET /`, `GET /{id}`, `GET /summary` | Aplicações paginadas com posição e status. Total, cobertura, aportes líquidos, rendimentos e composição por classe |
+| `POST /`, `PATCH /{id}`, `DELETE /{id}` | Cadastro com `initialValue` e `valuedOn`, edição de nome e classe, exclusão |
+| `GET` e `POST /{id}/valuations`, `PUT` e `DELETE /{id}/valuations/{valuationId}` | Histórico e correção de avaliações |
+| `GET /movements?investmentId&type&startDate&endDate` | Movimentos por aplicação, tipo e data |
+| `POST /{id}/movements`, `PUT` e `DELETE /{id}/movements/{movementId}` | Movimentos e o lançamento vinculado |
+
+`EntryDTO` ganha `kind` e `investmentId`. As ferramentas MCP de carteira ficam fora da #119.
+
 ## Referências públicas
 
 - A B3 apresenta posição, rendimentos e histórico de aplicações, eventos e vencimentos na Área do Investidor. A separação ajuda a escolher os conceitos da carteira. Leitura direta da página oficial, seção “Área do Investidor”. [B3](https://www.b3.com.br/pt_br/produtos-e-servicos/central-depositaria/canal-com-investidores/area-do-investidor/)
