@@ -12,3 +12,6 @@
 # Segredos - nunca commitar
 .env
 !.env.example
+
+# macOS
+.DS_Store
