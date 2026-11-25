@@ -126,6 +126,27 @@ describe('Investimentos — carteira manual', () => {
     expect(within(dialog).getByRole('button', { name: 'Corrigir avaliação de 01/10/2026' })).toBeInTheDocument();
   });
 
+  it('exclui uma avaliação a partir do detalhe com versão e chave, mantendo a chave ao repetir', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.delete).mockRejectedValueOnce({ isAxiosError: true, message: 'offline' }).mockResolvedValueOnce({});
+    renderWork(<FinancialInvestmentsPage />, '/financial/investments');
+
+    await user.click(await screen.findByRole('button', { name: /^CDB Inter/ }));
+    await user.click(await screen.findByRole('button', { name: 'Excluir avaliação de 01/10/2026' }));
+    const confirm = await screen.findByRole('alertdialog');
+    expect(within(confirm).getByText(/A posição volta a partir da avaliação anterior/)).toBeInTheDocument();
+    await user.click(within(confirm).getByRole('button', { name: 'Excluir' }));
+    expect(await within(confirm).findByRole('alert')).toBeInTheDocument();
+    await user.click(within(confirm).getByRole('button', { name: 'Excluir' }));
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledTimes(2));
+    const [first, second] = vi.mocked(api.delete).mock.calls;
+    expect(first).toEqual(second);
+    expect(first).toEqual(['/financial/user/7/investments/1/valuations/10', { headers: { 'Idempotency-Key': expect.any(String), 'If-Match': '"0"' } }]);
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
   it('carteira vazia oferece cadastrar a primeira aplicação', async () => {
     vi.mocked(api.get).mockImplementation(async (url: string) => url.endsWith('/summary')
       ? { data: { ...summary, total: '0.00', covered: 0, investments: 0, composition: [] } } : page([]));
