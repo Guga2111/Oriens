@@ -17,11 +17,41 @@ a publicação no ambiente `production` e aguarda todos os
 
 ## Fluxo
 
-O workflow compila o cliente e a imagem da API, abre a conexão SSH com
-verificação de chave do host e envia a imagem, o Compose e o `.env`. A API
-anterior fica em `oriens-api:previous`. O deploy espera a porta HTTP responder
-antes de publicar a SPA. Se a sondagem expirar, o workflow restaura a tag
-anterior quando disponível e retorna erro.
+O workflow chama [scripts/deploy.sh](../../scripts/deploy.sh) em duas fases. As
+credenciais da VPS ficam no workflow, que configura o alias SSH `vps` com
+verificação da chave do host. As credenciais de banco e MCP são passadas só à
+fase de publicação.
 
-Para mudar opções MCP no ambiente, consulte o
-[guia de configuração e operação](mcp-operations.md).
+| Comando | Entrada e execução |
+|---|---|
+| `./scripts/deploy.sh build` | `IMAGE_TAG` com o SHA completo do commit. Executa `npm ci` e `npm run build` em `apps/client` e constrói a imagem a partir de `apps/api`. O workflow fornece a chave pública do Google Maps ao cliente. |
+| `./scripts/deploy.sh publish` | Mesmo checkout, SHA, distribuição e imagem da fase de build. Usa o alias `vps`, `REMOTE_DIR`, `WEB_ROOT`, `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `API_PORT` e `ORIENS_MCP_ENABLED`. Com MCP habilitado, também recebe issuer, origem do frontend, senha de criptografia e salt. |
+
+A publicação envia a imagem via `docker save` e SSH, copia o Compose e atualiza
+o `.env` remoto. A tag `latest` anterior é salva em `previous` antes de recriar
+a API. A sondagem usa até 72 tentativas, com pausa de cinco segundos, e aceita
+uma resposta HTTP na porta local. A SPA é publicada depois dessa resposta.
+
+## Falha e rollback
+
+Se a API parar de responder durante a publicação, consulte o log do job e os
+logs do serviço `api` no Compose do VPS. Ao esgotar a sondagem, o script registra
+os logs, restaura `oriens-api:previous` quando disponível e termina com erro.
+A SPA nova só é enviada após a sondagem bem-sucedida. O rollback automático
+troca a imagem da API e reutiliza o `.env` e o banco.
+
+Se precisar recuperar a publicação manualmente, confirme o destino, qual
+imagem a tag `previous` identifica e a compatibilidade com o schema atual.
+Com autorização, restaure a tag e recrie o serviço no VPS. Se a SPA nova já foi
+publicada, recoloque a distribuição correspondente à API restaurada. Consulte
+o [guia de operação do MCP](mcp-operations.md) para alterações de integração.
+
+## Prova isolada
+
+Os testes executam o shell local e remoto com substitutos para npm, Docker,
+SSH, SCP e sondagem. Valide na raiz com os comandos abaixo.
+
+```sh
+bash -n scripts/deploy.sh
+python3 -B -m unittest discover -s scripts/tests -p 'test_deploy.py' -v
+```
