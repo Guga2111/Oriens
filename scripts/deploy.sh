@@ -19,6 +19,9 @@ upload_release() {
     ssh vps "mkdir -p ~/${REMOTE_DIR} ${WEB_ROOT}"
     docker save "oriens-api:${IMAGE_TAG}" | gzip | ssh vps 'gunzip | docker load'
     scp ops/compose/docker-compose-prod.yml "vps:${REMOTE_DIR}/docker-compose-prod.next.yml"
+    if [[ "$ORIENS_NGINX_APPLY" == true ]]; then
+        scp ops/nginx/oriens.conf "vps:${REMOTE_DIR}/oriens-nginx.next.conf"
+    fi
 }
 
 write_environment() {
@@ -43,10 +46,10 @@ write_environment() {
 }
 
 restart_api() {
-    ssh vps "IMAGE_TAG=${IMAGE_TAG} REMOTE_DIR=${REMOTE_DIR} ROLLBACK_COMPATIBLE_PAIR=${ROLLBACK_COMPATIBLE_PAIR:-} bash -s" <<'REMOTE'
+    ssh vps "IMAGE_TAG=${IMAGE_TAG} REMOTE_DIR=${REMOTE_DIR} ROLLBACK_COMPATIBLE_PAIR=${ROLLBACK_COMPATIBLE_PAIR:-} ORIENS_NGINX_APPLY=${ORIENS_NGINX_APPLY} bash -s" <<'REMOTE'
 set -euo pipefail
 cd ~/"${REMOTE_DIR}"
-trap 'rm -f .env.next docker-compose-prod.next.yml' EXIT
+trap 'rm -f .env.next docker-compose-prod.next.yml oriens-nginx.next.conf' EXIT
 
 image="oriens-api:${IMAGE_TAG}"
 next() {
@@ -114,6 +117,12 @@ if [[ -n "$running_id" && "$running_id" != "$previous_id" ]]; then
     echo "::error::A imagem em execução diverge da tag latest. Confira a versão ativa antes de publicar."
     exit 1
 fi
+if [[ "$ORIENS_NGINX_APPLY" == true ]]; then
+    if ! sudo -n /usr/local/sbin/oriens-install-nginx < oriens-nginx.next.conf; then
+        echo "::error::Falha ao instalar o Nginx. A API atual foi preservada."
+        exit 1
+    fi
+fi
 # The VPS observability stack shares this network with the API.
 docker network inspect observability >/dev/null 2>&1 || docker network create observability >/dev/null
 
@@ -139,10 +148,18 @@ REMOTE
 }
 
 publish_release() {
+    ORIENS_NGINX_APPLY=${ORIENS_NGINX_APPLY:-false}
     [[ "${REMOTE_DIR:-}" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_./-]*$ ]] || fail "REMOTE_DIR precisa ser um caminho relativo à home da VPS"
     [[ "${WEB_ROOT:-}" =~ ^/[a-zA-Z0-9_./-]+$ ]] || fail "WEB_ROOT precisa ser um caminho absoluto na VPS"
     [[ "${API_PORT:-}" =~ ^[1-9][0-9]{0,4}$ ]] && (( API_PORT <= 65535 )) || fail "API_PORT precisa ser uma porta fixa entre 1 e 65535"
     [[ "${ROLLBACK_COMPATIBLE_PAIR:-}" =~ ^([a-f0-9]{40}:[a-f0-9]{40})?$ ]] || fail "ROLLBACK_COMPATIBLE_PAIR precisa conter os SHAs completos da candidata e da anterior"
+    case "$ORIENS_NGINX_APPLY" in
+        false) ;;
+        true)
+            [[ "$API_PORT" == 8080 && "$WEB_ROOT" == /var/www/oriens ]] || fail "O vhost exige API_PORT=8080 e WEB_ROOT=/var/www/oriens"
+            ;;
+        *) fail "ORIENS_NGINX_APPLY precisa ser true ou false" ;;
+    esac
 
     upload_release
     write_environment

@@ -46,7 +46,7 @@ class InstallNginxTest(unittest.TestCase):
             (self.directory / name).symlink_to(stub)
 
     def install(self, contents, *, target=None, **overrides):
-        self.candidate.write_text(contents + "\n", encoding="utf-8")
+        self.candidate.write_text(contents + "\n" if contents else "", encoding="utf-8")
         environment = {"PATH": f"{self.directory}:{os.defpath}", "LOG": str(self.log),
                        "ACTIVE": str(self.active), **overrides}
         command = ["bash", ROOT / "scripts/install-nginx.sh", self.candidate, target or self.active]
@@ -69,6 +69,18 @@ class InstallNginxTest(unittest.TestCase):
         result, commands = self.install("invalid")
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(commands, ["test original", "test invalid", "test original"])
+        self.assertEqual(self.active.read_text(encoding="utf-8"), "original\n")
+
+    def test_identical_candidate_only_checks_active_configuration(self):
+        result, commands = self.install("original")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(commands, ["test original"])
+        self.assertEqual(list(self.directory.glob(".oriens-nginx.*/previous.conf")), [])
+
+    def test_empty_candidate_keeps_the_active_vhost(self):
+        result, commands = self.install("")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(commands, ["test original"])
         self.assertEqual(self.active.read_text(encoding="utf-8"), "original\n")
 
     def test_failed_reload_restores_and_reloads_original(self):

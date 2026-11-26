@@ -6,11 +6,19 @@ fail() {
     exit 1
 }
 
-[[ $# == 2 ]] || fail "Uso: scripts/install-nginx.sh CANDIDATA ARQUIVO_ATIVO_ABSOLUTO"
-candidate=$1
-active=$2
+case $# in
+    0)
+        candidate=-
+        active=/etc/nginx/sites-available/oriens
+        ;;
+    2)
+        candidate=$1
+        active=$2
+        [[ -f "$candidate" && ! "$candidate" -ef "$active" ]] || fail "Informe uma candidata separada do arquivo ativo."
+        ;;
+    *) fail "Uso: scripts/install-nginx.sh [CANDIDATA ARQUIVO_ATIVO_ABSOLUTO]" ;;
+esac
 [[ "$active" == /* && -f "$active" && ! -L "$active" ]] || fail "Informe o arquivo efetivo do Oriens, com caminho absoluto e sem link simbólico."
-[[ -f "$candidate" && ! "$candidate" -ef "$active" ]] || fail "Informe uma candidata separada do arquivo ativo."
 
 directory=$(dirname -- "$active")
 umask 077
@@ -22,6 +30,17 @@ backup=$(mktemp -d "$directory/.oriens-nginx.XXXXXXXX")
 cp -p -- "$active" "$backup/previous.conf"
 cp -p -- "$active" "$backup/next.conf"
 cat -- "$candidate" > "$backup/next.conf"
+if [[ ! -s "$backup/next.conf" ]]; then
+    rm -- "$backup/previous.conf" "$backup/next.conf"
+    rmdir -- "$backup"
+    fail "O vhost candidato está vazio."
+fi
+if cmp -s "$backup/previous.conf" "$backup/next.conf"; then
+    rm -- "$backup/previous.conf" "$backup/next.conf"
+    rmdir -- "$backup"
+    printf '%s\n' "O vhost do Oriens já corresponde à candidata."
+    exit 0
+fi
 reload_attempted=false
 
 recover_on_failure() {

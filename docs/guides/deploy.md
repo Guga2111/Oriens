@@ -29,11 +29,17 @@ fase de publicação.
 | Comando | Entrada e execução |
 |---|---|
 | `./scripts/deploy.sh build` | `IMAGE_TAG` com o SHA completo do commit. Executa `npm ci` e `npm run build` em `apps/client` e constrói a imagem a partir de `apps/api`. O workflow fornece a chave pública do Google Maps ao cliente. |
-| `./scripts/deploy.sh publish` | Mesmo checkout, SHA, distribuição e imagem da fase de build. Usa o alias `vps`, `REMOTE_DIR`, `WEB_ROOT`, `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `API_PORT` e `ORIENS_MCP_ENABLED`. Com MCP habilitado, também recebe issuer, origem do frontend, senha de criptografia e salt. `ROLLBACK_COMPATIBLE_PAIR` é opcional. |
+| `./scripts/deploy.sh publish` | Mesmo checkout, SHA, distribuição e imagem da fase de build. Usa o alias `vps`, `REMOTE_DIR`, `WEB_ROOT`, `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `API_PORT` e `ORIENS_MCP_ENABLED`. Com MCP habilitado, também recebe issuer, origem do frontend, senha de criptografia e salt. `ROLLBACK_COMPATIBLE_PAIR` é opcional. `ORIENS_NGINX_APPLY` é falso por padrão. |
 
 A publicação envia a imagem via `docker save` e SSH, prepara o Compose e o `.env`
 em arquivos temporários e confere os uploads com o UID/GID da candidata. Execute
 com uma versão do Docker Compose que suporte `up --wait --wait-timeout`.
+Com `ORIENS_NGINX_APPLY=true`, a publicação também prepara o vhost versionado e,
+depois das verificações prévias, chama o instalador no host antes de substituir
+a API. O vhost exige `API_PORT=8080` e `WEB_ROOT=/var/www/oriens`. Falha no
+instalador interrompe a publicação antes de trocar a API ou extrair a SPA.
+[Provisionamento e rollback do Nginx](../../ops/nginx/README.md)
+
 O healthcheck interno exige HTTP 200 do Actuator `/actuator/health/readiness`
 na porta 8081. A prontidão exige o startup completo, incluindo Flyway e a
 validação do Hibernate, e acesso ao PostgreSQL. O Compose aguarda até 360 s.
@@ -42,10 +48,11 @@ a configuração, aponta `latest` para a candidata e extrai a SPA em `WEB_ROOT`.
 
 ## Falha e rollback
 
-Se a candidata falhar, o job registra os logs, para o container da candidata
+Se a API candidata falhar, o job registra os logs, para o container da candidata
 quando presente e termina com erro. A configuração ativa, a tag `latest` e a
 distribuição anterior ficam disponíveis para recuperação. A política de retenção
 de imagens deve preservar os SHAs necessários antes de remover imagens antigas.
+Se o vhost já foi validado e instalado, ele continua atendendo no mesmo upstream.
 
 Para autorizar rollback automático, configure no ambiente `production` do
 GitHub a variável `ROLLBACK_COMPATIBLE_PAIR` com `SHA_CANDIDATA:SHA_ANTERIOR`
@@ -110,11 +117,9 @@ ampliar o acesso a outros usuários. O pré-teste do deploy rejeita tipos
 inesperados, inclusive links, e falha antes de substituir a API se o bind
 estiver ausente ou inacessível.
 
-O Nginx precisa encaminhar `/api/task/` para a API com o prefixo `/api` removido.
-Na rota de upload de anexos, permita corpo de pelo menos 20 MiB
-(`client_max_body_size 20m`). Valide e recarregue a configuração do proxy antes
-da publicação. Mantenha o `Range` para vídeo. Nas rotas de conteúdo assinado,
-registre apenas o caminho, sem a query string que contém a assinatura.
+O Nginx remove o prefixo `/api` e limita o corpo do upload binário nessa rota a
+20 MiB. O download conserva `Range`. Os logs de acesso preservam o caminho,
+sem a query assinada, e a rota de download descarta o error log da requisição.
 
 Para verificar o ambiente, envie e abra uma imagem e um vídeo com uma conta
 de teste. Em seguida, resolva um anexo pelo MCP e confirme o download por HTTPS.

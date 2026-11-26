@@ -88,11 +88,27 @@ case "$command:$*" in
     "ssh:"*)
         [[ "$#" == 2 && "$1" == vps ]]
         export HOME="$TEST_REMOTE"
-        exec bash -e -o pipefail -c "${2//\/opt\/oriens-uploads/$TEST_REMOTE\/uploads}"
+        remote=${2//\/var\/www\/oriens/$TEST_REMOTE\/web}
+        exec bash -e -o pipefail -c "${remote//\/opt\/oriens-uploads/$TEST_REMOTE\/uploads}"
         ;;
     "scp:"*)
         [[ "$#" == 2 && "$2" == vps:* ]]
         cp "$1" "$TEST_REMOTE/${2#vps:}"
+        ;;
+    "sudo:-n /usr/local/sbin/oriens-install-nginx")
+        candidate="$TEST_REMOTE/proxy.next"
+        cat > "$candidate"
+        cmp -s "$candidate" "$TEST_REPO/ops/nginx/oriens.conf"
+        exec bash "$TEST_REPO/scripts/install-nginx.sh" "$candidate" "$TEST_REMOTE/oriens.conf"
+        ;;
+    "flock:-n 9")
+        ;;
+    "nginx:-t")
+        if [[ "${FAIL_NGINX_VALIDATION:-0}" == 1 ]]; then
+            [[ "$(cat "$TEST_REMOTE/oriens.conf")" == "original vhost" ]]
+        fi
+        ;;
+    "nginx:-s reload")
         ;;
     *)
         printf 'Unexpected command: %s %s\n' "$command" "$*" >&2
@@ -114,12 +130,17 @@ class DeployTest(unittest.TestCase):
         self.log.touch()
         (self.repo / "scripts").mkdir(parents=True)
         self.script = shutil.copy2(ROOT / "scripts/deploy.sh", self.repo / "scripts")
+        shutil.copy2(ROOT / "scripts/install-nginx.sh", self.repo / "scripts")
         (self.repo / "apps/api").mkdir(parents=True)
         (self.repo / "apps/client/dist").mkdir(parents=True)
         (self.repo / "apps/client/dist/index.html").write_text("build output", encoding="utf-8")
         (self.repo / "ops/compose").mkdir(parents=True)
         self.compose = Path(shutil.copy2(ROOT / "ops/compose/docker-compose-prod.yml", self.repo / "ops/compose"))
+        (self.repo / "ops/nginx").mkdir(parents=True)
+        self.vhost = Path(shutil.copy2(ROOT / "ops/nginx/oriens.conf", self.repo / "ops/nginx"))
         self.remote.mkdir()
+        self.active_vhost = self.remote / "oriens.conf"
+        self.active_vhost.write_text("original vhost\n", encoding="utf-8")
         (self.remote / "latest").write_text("original image", encoding="utf-8")
         (self.remote / PREVIOUS_TAG).write_text("original image", encoding="utf-8")
         dependencies = self.root / "bin"
@@ -127,7 +148,7 @@ class DeployTest(unittest.TestCase):
         stub = dependencies / "stub"
         stub.write_text(STUB, encoding="utf-8")
         stub.chmod(0o755)
-        for name in ("npm", "docker", "ssh", "scp"):
+        for name in ("npm", "docker", "ssh", "scp", "sudo", "flock", "nginx"):
             (dependencies / name).symlink_to(stub)
         self.env = {
             "PATH": f"{dependencies}:{os.defpath}",
@@ -185,6 +206,42 @@ class DeployTest(unittest.TestCase):
         self.assertLess(readiness, commands.index("docker tag candidate image oriens-api:latest"))
         self.assertLess(readiness, commands.index(f"ssh vps tar -xzf - -C {self.web}"))
         self.assertEqual((self.remote / "previous").read_text(encoding="utf-8"), "original image")
+        self.assertFalse(any(command.startswith(("sudo ", "nginx ")) for command in commands))
+
+    def test_proxy_is_installed_and_validated_before_api_replacement_and_spa(self):
+        result, commands = self.deploy("publish", ORIENS_NGINX_APPLY="true", WEB_ROOT="/var/www/oriens")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        stage = commands.index("scp ops/nginx/oriens.conf vps:projects/oriens/oriens-nginx.next.conf")
+        reload = commands.index("nginx -s reload")
+        start = next(index for index, command in enumerate(commands) if "--force-recreate api" in command)
+        self.assertLess(stage, reload)
+        self.assertEqual(commands[reload - 2:reload], ["nginx -t", "nginx -t"])
+        self.assertLess(reload, start)
+        self.assertLess(start, commands.index("ssh vps tar -xzf - -C /var/www/oriens"))
+        self.assertEqual(self.active_vhost.read_bytes(), self.vhost.read_bytes())
+        self.assertFalse((self.remote / "projects/oriens/oriens-nginx.next.conf").exists())
+        self.assertTrue((self.web / "index.html").is_file())
+
+    def test_invalid_proxy_restores_vhost_and_aborts_before_starting_api(self):
+        prior = self.seed_previous_config()
+        result, commands = self.deploy("publish", ORIENS_NGINX_APPLY="true", WEB_ROOT="/var/www/oriens",
+                                       FAIL_NGINX_VALIDATION="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("A API atual foi preservada", result.stdout)
+        self.assertNotIn("nginx -s reload", commands)
+        self.assertFalse(any("--force-recreate api" in command for command in commands))
+        self.assertEqual(self.active_vhost.read_text(encoding="utf-8"), "original vhost\n")
+        self.assertEqual((prior / ".env").read_text(encoding="utf-8"), "original environment")
+        self.assertFalse((prior / "oriens-nginx.next.conf").exists())
+        self.assertFalse((self.web / "index.html").exists())
+
+    def test_proxy_rejects_unrecognized_flag_or_mismatched_web_settings(self):
+        for settings in ({"ORIENS_NGINX_APPLY": "yes"}, {"ORIENS_NGINX_APPLY": "true"},
+                         {"ORIENS_NGINX_APPLY": "true", "WEB_ROOT": "/var/www/oriens", "API_PORT": "8082"}):
+            with self.subTest(settings=settings):
+                result, commands = self.deploy("publish", **settings)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(commands, [])
 
     def test_failed_image_upload_does_not_restart_or_publish(self):
         result, commands = self.deploy("publish", FAIL_UPLOAD="1")
