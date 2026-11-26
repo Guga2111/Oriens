@@ -31,6 +31,7 @@ jobs:
     uses: ./.github/workflows/checks.yml
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     needs: [checks]
     runs-on: ubuntu-latest
     environment:
@@ -85,6 +86,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           API_PORT: ${{ vars.API_PORT || '8080' }}
+          ROLLBACK_COMPATIBLE_PAIR: ${{ vars.ROLLBACK_COMPATIBLE_PAIR }}
           ORIENS_MCP_ENABLED: ${{ vars.ORIENS_MCP_ENABLED || 'false' }}
           # The API serves MCP/OAuth at the public site root (nginx routes /mcp, /oauth2 and /.well-known there).
           ORIENS_MCP_ISSUER: https://oriens.luisgosampaio.com

@@ -12,13 +12,13 @@ build_release() {
         npm ci
         npm run build
     )
-    docker build -t "oriens-api:${IMAGE_TAG}" apps/api
+    docker build --label "org.opencontainers.image.revision=${IMAGE_TAG}" -t "oriens-api:${IMAGE_TAG}" apps/api
 }
 
 upload_release() {
-    ssh vps "mkdir -p ~/${REMOTE_DIR} ${WEB_ROOT} /opt/oriens-uploads"
+    ssh vps "mkdir -p ~/${REMOTE_DIR} ${WEB_ROOT}"
     docker save "oriens-api:${IMAGE_TAG}" | gzip | ssh vps 'gunzip | docker load'
-    scp ops/compose/docker-compose-prod.yml "vps:${REMOTE_DIR}/docker-compose-prod.yml"
+    scp ops/compose/docker-compose-prod.yml "vps:${REMOTE_DIR}/docker-compose-prod.next.yml"
 }
 
 write_environment() {
@@ -39,61 +39,115 @@ write_environment() {
 
     for name in "${names[@]}"; do
         printf "%s='%s'\n" "$name" "${!name}"
-    done | ssh vps "umask 077 && cat > ~/${REMOTE_DIR}/.env"
+    done | ssh vps "umask 077 && cat > ~/${REMOTE_DIR}/.env.next"
 }
 
 restart_api() {
-    ssh vps "IMAGE_TAG=${IMAGE_TAG} REMOTE_DIR=${REMOTE_DIR} bash -s" <<'REMOTE'
+    ssh vps "IMAGE_TAG=${IMAGE_TAG} REMOTE_DIR=${REMOTE_DIR} ROLLBACK_COMPATIBLE_PAIR=${ROLLBACK_COMPATIBLE_PAIR:-} bash -s" <<'REMOTE'
 set -euo pipefail
 cd ~/"${REMOTE_DIR}"
-set -a
-. ./.env
-set +a
-compose() {
-    docker compose -f docker-compose-prod.yml "$@"
+trap 'rm -f .env.next docker-compose-prod.next.yml' EXIT
+
+image="oriens-api:${IMAGE_TAG}"
+next() {
+    ORIENS_API_TAG="$IMAGE_TAG" docker compose --env-file .env.next -f docker-compose-prod.next.yml "$@"
 }
 
-if docker image inspect oriens-api:latest >/dev/null 2>&1; then
-    docker tag oriens-api:latest oriens-api:previous
-fi
-docker tag "oriens-api:${IMAGE_TAG}" oriens-api:latest
-# The VPS observability stack shares this network with the API.
-docker network create observability >/dev/null 2>&1 || true
-compose up -d --force-recreate --remove-orphans
+check_upload_permissions() {
+    docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
+        --mount type=bind,src=/opt/oriens-uploads,dst=/opt/oriens-uploads \
+        --entrypoint bash "$image" -ec '
+            unavailable=$(find /opt/oriens-uploads \( -type d \( ! -readable -o ! -writable -o ! -executable \
+                -o \( -perm -1000 ! -uid 10001 \) \) \
+                -o -type f ! -readable -o ! -type f ! -type d \) -printf x -quit)
+            test -z "$unavailable"
+        '
+}
 
-echo "Aguardando a API responder em 127.0.0.1:${API_PORT}..."
-# The shared VPS can take several minutes to boot the API under load.
-for _ in $(seq 1 72); do
-    # Any HTTP status means Spring finished booting.
-    if curl -s -o /dev/null --max-time 5 "http://127.0.0.1:${API_PORT}/"; then
-        compose ps
-        docker images oriens-api --format '{{.Tag}}' | grep -vxE 'latest|previous' | tail -n +4 \
-          | xargs -r -I {} docker rmi "oriens-api:{}" >/dev/null 2>&1 || true
-        docker image prune -f >/dev/null
-        echo "API ${IMAGE_TAG} no ar."
-        exit 0
+image_revision() {
+    docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$1"
+}
+
+has_healthcheck() {
+    [[ "$(docker image inspect --format '{{if .Config.Healthcheck}}{{index .Config.Healthcheck.Test 0}}{{end}}' "$1")" == CMD ]]
+}
+
+rollback_previous() {
+    local approved_tag
+    [[ "$ROLLBACK_COMPATIBLE_PAIR" == "$IMAGE_TAG:"* && -n "$previous_id" ]] || return 1
+    approved_tag="${ROLLBACK_COMPATIBLE_PAIR#*:}"
+    [[ "$approved_tag" != "$IMAGE_TAG" && -f .env && -f docker-compose-prod.yml ]] || return 1
+    [[ "$approved_tag" == "$(image_revision "$previous_id")" ]] || return 1
+    [[ "$(docker image inspect --format '{{.Id}}' "oriens-api:${approved_tag}")" == "$previous_id" ]] || return 1
+    has_healthcheck "$previous_id" || return 1
+
+    if ! ORIENS_API_TAG="$approved_tag" docker compose --env-file .env -f docker-compose-prod.yml \
+        up -d --wait --wait-timeout 360 api; then
+        stop_failed_image "$previous_id"
+        return 1
     fi
-    sleep 5
-done
+    echo "Versão anterior ${approved_tag} restaurada e pronta."
+}
 
-echo "::error::API não respondeu em 360s; restaurando a versão anterior."
-compose logs --tail 100 api || true
-if docker image inspect oriens-api:previous >/dev/null 2>&1; then
-    docker tag oriens-api:previous oriens-api:latest
-    compose up -d --force-recreate
+stop_failed_image() {
+    if [[ "$(docker container inspect --format '{{.Image}}' oriens-api 2>/dev/null)" == "$1" ]]; then
+        docker container stop oriens-api >/dev/null || {
+            echo "::error::Não foi possível parar a API com falha. Verifique o container na VPS."
+            exit 1
+        }
+    fi
+}
+
+candidate_id=$(docker image inspect --format '{{.Id}}' "$image")
+if [[ "$(image_revision "$candidate_id")" != "$IMAGE_TAG" ]] || ! has_healthcheck "$candidate_id"; then
+    echo "::error::A imagem candidata precisa corresponder ao SHA da publicação e ter healthcheck."
+    exit 1
 fi
-exit 1
+next config -q
+if ! check_upload_permissions; then
+    echo "::error::Prepare as permissões de /opt/oriens-uploads para UID/GID 10001 antes de publicar."
+    exit 1
+fi
+previous_id=$(docker image inspect --format '{{.Id}}' oriens-api:latest 2>/dev/null || true)
+running_id=$(docker container inspect --format '{{if .State.Running}}{{.Image}}{{end}}' oriens-api 2>/dev/null || true)
+if [[ -n "$running_id" && "$running_id" != "$previous_id" ]]; then
+    echo "::error::A imagem em execução diverge da tag latest. Confira a versão ativa antes de publicar."
+    exit 1
+fi
+# The VPS observability stack shares this network with the API.
+docker network inspect observability >/dev/null 2>&1 || docker network create observability >/dev/null
+
+echo "Aguardando a prontidão da API ${IMAGE_TAG}..."
+if ! next up -d --wait --wait-timeout 360 --force-recreate api; then
+    echo "::error::A API candidata não ficou pronta."
+    next logs --tail 100 api || true
+    stop_failed_image "$candidate_id"
+    if ! rollback_previous; then
+        echo "::error::Rollback automático indisponível ou falhou. Siga o guia de recuperação antes de reabrir escritas."
+    fi
+    exit 1
+fi
+
+if [[ -n "$previous_id" && "$previous_id" != "$candidate_id" ]]; then
+    docker tag "$previous_id" oriens-api:previous
+fi
+mv .env.next .env
+mv docker-compose-prod.next.yml docker-compose-prod.yml
+docker tag "$candidate_id" oriens-api:latest
+echo "API ${IMAGE_TAG} pronta."
 REMOTE
 }
 
 publish_release() {
     [[ "${REMOTE_DIR:-}" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_./-]*$ ]] || fail "REMOTE_DIR precisa ser um caminho relativo à home da VPS"
     [[ "${WEB_ROOT:-}" =~ ^/[a-zA-Z0-9_./-]+$ ]] || fail "WEB_ROOT precisa ser um caminho absoluto na VPS"
+    [[ "${API_PORT:-}" =~ ^[1-9][0-9]{0,4}$ ]] && (( API_PORT <= 65535 )) || fail "API_PORT precisa ser uma porta fixa entre 1 e 65535"
+    [[ "${ROLLBACK_COMPATIBLE_PAIR:-}" =~ ^([a-f0-9]{40}:[a-f0-9]{40})?$ ]] || fail "ROLLBACK_COMPATIBLE_PAIR precisa conter os SHAs completos da candidata e da anterior"
 
     upload_release
     write_environment
     restart_api
-    # Publish only after the API answers the readiness probe.
+    # Publish only after Compose confirms the image's readiness probe.
     tar -C apps/client/dist -czf - . | ssh vps "tar -xzf - -C ${WEB_ROOT}"
 }
 
