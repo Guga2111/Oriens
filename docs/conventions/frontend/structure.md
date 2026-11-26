@@ -2,6 +2,8 @@
 
 O cliente em `apps/client/` usa Vite, React 18, TypeScript, Tailwind CSS 3, shadcn/ui (Radix, estilo `default`, base `slate` e CSS variables), TanStack Query 5, Axios, date-fns, lucide-react, recharts e sonner.
 
+Consulte o [catálogo de dependências do cliente](../../guides/client-stack.md).
+
 ## Estrutura de pastas
 
 ```
