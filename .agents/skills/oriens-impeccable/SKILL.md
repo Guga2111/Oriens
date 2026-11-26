@@ -6,7 +6,7 @@ description: Use para desenhar, revisar ou refinar telas e componentes do app Or
 # Impeccable para o produto
 
 Leia o [guia de frontend](../../../docs/conventions/frontend.md), os
-[tokens vigentes](../../../docs/conventions/frontend/design-tokens.md), os
+[design system](../../../docs/conventions/frontend/design-tokens.md), os
 [componentes shadcn/ui](../../../docs/conventions/frontend/components.md) e o
 [guia de testes da UI](../../../docs/conventions/frontend/tests.md).
 Para páginas públicas, use [oriens-design-taste](../oriens-design-taste/SKILL.md).
