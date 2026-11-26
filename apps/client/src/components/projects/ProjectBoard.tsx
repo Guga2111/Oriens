@@ -172,13 +172,13 @@ function BoardColumn({ column, filtered, mobile, onAdd, children, incoming, outg
   column: Column; filtered: boolean; mobile: boolean; onAdd: (id: number) => void; children: ReactNode;
   incoming: boolean; outgoing: boolean; append: boolean;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `column-${column.id}` });
+  const { setNodeRef } = useDroppable({ id: `column-${column.id}` });
   const empty = !column.visibleCount;
   const shift = !empty && (incoming ? dragShift : outgoing && column.visibleCount > 1 ? `calc(-1 * ${dragShift})` : undefined);
   // plane.so's column: a light surface, the state icon, the name in regular weight and a quiet count.
   return <section ref={setNodeRef}
     className={cn('flex min-w-0 shrink-0 flex-col gap-[var(--board-card-gap)] rounded-lg bg-muted/40 p-2',
-      mobile ? 'w-full' : 'w-board-column', (isOver || incoming) && 'ring-2 ring-ring',
+      mobile ? 'w-full' : 'w-board-column',
       incoming && !empty && 'pb-[calc(theme(spacing.2)_+_var(--board-drag-height)_+_var(--board-card-gap))]')}
     aria-labelledby={`column-${column.id}`}>
     <div className="flex min-h-7 items-center gap-2 px-1">
