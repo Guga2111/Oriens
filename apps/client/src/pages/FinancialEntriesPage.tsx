@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronDown, Plus, Settings2 } from "lucide-react";
+import { CalendarDays, Tag, ChevronDown, Plus, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { HeaderActions } from "@/components/common/HeaderActions";
 import { HeaderFilterPanel } from "@/components/common/HeaderFilterPanel";
@@ -25,7 +25,7 @@ import {
   NO_ENTRIES_FILTERS,
   type EntriesFilters,
 } from "@/lib/financial-route";
-import { EntryFilterFields } from "@/components/financial/EntryFilterFields";
+import { EntryCategoryField, EntryPeriodFields } from "@/components/financial/EntryFilterFields";
 import { EntryHistoryTable } from "@/components/financial/EntryHistoryTable";
 import { CreateEntryDialog } from "@/components/financial/CreateEntryDialog";
 import { EditEntryDialog } from "@/components/financial/EditEntryDialog";
@@ -163,9 +163,13 @@ export default function FinancialEntriesPage() {
           value={searchDraft} onChange={setSearchDraft} open={isSearchOpen} onOpenChange={setIsSearchOpen}
           onSubmit={() => submitSearch(searchDraft)} onClear={() => submitSearch("")} />
         <HeaderFilterPanel count={activeFilters} onClear={clearFilters}
-          description="Refine o histórico por período e categoria.">
-          <EntryFilterFields filters={tableFilters} tags={tags.data ?? []} onChange={handleFilterChange} />
-        </HeaderFilterPanel>
+          description="Refine o histórico por período e categoria."
+          sections={[
+            { id: "period", icon: CalendarDays, label: "Período", count: Number(tableFilters.period !== "all"),
+              fields: <EntryPeriodFields filters={tableFilters} onChange={handleFilterChange} /> },
+            { id: "category", icon: Tag, label: "Categoria", count: Number(tableFilters.tagId !== null),
+              fields: <EntryCategoryField filters={tableFilters} tags={tags.data ?? []} onChange={handleFilterChange} /> },
+          ]} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">

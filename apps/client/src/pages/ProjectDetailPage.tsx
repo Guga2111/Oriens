@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { PageHeader } from '@/components/common/PageHeader';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
 import { HeaderActions } from '@/components/common/HeaderActions';
+import { HeaderSearch } from '@/components/common/HeaderSearch';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { CreateProjectDialog } from '@/components/projects/CreateProjectDialog';
 import { DeleteProjectDialog } from '@/components/projects/DeleteProjectDialog';
@@ -25,8 +26,8 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProjectBoard, useProjectFlags, useProjectWrites, useWorkProject } from '@/hooks/useWork';
 import { useTimelineBoard } from '@/hooks/useTimelineBoard';
-import { taskFilterQuery, taskFiltersFromParams, type TaskFilters } from '@/lib/task-filters';
-import type { BoardFilters } from '@/services/projectService';
+import { boardFiltersFromParams } from '@/lib/project-filters';
+import type { TaskFilters } from '@/lib/task-filters';
 import { objectiveLayoutFrom, projectSectionOf, projectTabFrom, WORK_VIEWS, workViewOf } from '@/lib/project-tabs';
 import type { WorkTask } from '@/types/work';
 
@@ -40,10 +41,13 @@ function ProjectDetail({ id }: { id: number }) {
   useRecordVisit('PROJECT', query.isSuccess ? id : undefined);
   const [params, setParams] = useSearchParams(); const navigate = useNavigate();
   const tab = projectTabFrom(params.get('tab'));
-  const taskFilters = taskFiltersFromParams(params);
-  const filters: BoardFilters = { ...taskFilterQuery(taskFilters), ...(params.get('objective') ? { objectiveId: Number(params.get('objective')) } : {}),
-    ...(['today', 'unscheduled'].includes(params.get('planning') ?? '') ? { planning: params.get('planning') as 'today' | 'unscheduled' } : {}),
-    ...(params.get('overdue') === '1' ? { overdue: true } : {}), ...(params.get('open') === '1' ? { open: true } : {}) };
+  const { taskFilters, filters } = boardFiltersFromParams(params);
+  const appliedSearch = taskFilters.search ?? '';
+  const [searchDraft, setSearchDraft] = useState({ applied: appliedSearch, text: appliedSearch });
+  const [searchOpen, setSearchOpen] = useState(Boolean(appliedSearch));
+  if (searchDraft.applied !== appliedSearch) setSearchDraft({ applied: appliedSearch, text: appliedSearch });
+  const searchText = searchDraft.applied === appliedSearch ? searchDraft.text : appliedSearch;
+  const isSearchOpen = searchOpen || Boolean(appliedSearch);
   const board = useProjectBoard(project?.mode === 'DEVELOPMENT' ? id : 0, filters);
   const allBoard = useProjectBoard(project?.mode === 'DEVELOPMENT' && tab === 'objectives' ? id : 0);
   const timeline = useTimelineBoard(project?.mode === 'DEVELOPMENT' && tab === 'timeline' ? id : 0).board;
@@ -60,13 +64,21 @@ function ProjectDetail({ id }: { id: number }) {
     }
     return next;
   });
-  const clearFilters = () => setParams(previous => {
-    const next = new URLSearchParams(previous);
-    for (const name of ['objective', 'planning', 'overdue', 'open', 'search', 'status', 'priority', 'labelId', 'dateField', 'startDate', 'endDate']) {
-      next.delete(name);
-    }
-    return next;
-  });
+  const submitSearch = (search: string) => {
+    const value = search.trim();
+    if (value !== appliedSearch) changeTaskFilters({ search: value });
+  };
+  const clearFilters = () => {
+    setSearchDraft({ applied: appliedSearch, text: '' });
+    setSearchOpen(false);
+    setParams(previous => {
+      const next = new URLSearchParams(previous);
+      for (const name of ['objective', 'planning', 'overdue', 'open', 'search', 'status', 'priority', 'labelId', 'dateField', 'startDate', 'endDate']) {
+        next.delete(name);
+      }
+      return next;
+    });
+  };
   if (!project) return <div className="min-w-0 w-full"><Button asChild variant="link"><Link to="/projects">Voltar a Projetos</Link></Button>{query.isPending ? <div className="mt-4 flex flex-col gap-4" aria-label="Carregando projeto"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 w-full" /></div> : <WorkFeedback error={query.error} retry={() => void query.refetch()} />}</div>;
   const development = project.mode === 'DEVELOPMENT';
   const editTask = (task: WorkTask) => setEditor({ task });
@@ -80,6 +92,10 @@ function ProjectDetail({ id }: { id: number }) {
   const newTask = () => setEditor({ columnId: project.defaultPendingColumnId! });
   return <div className="min-w-0 w-full tabular-nums">
     <HeaderActions>
+      {development && view === 'board' && <HeaderSearch label="Buscar tarefas" inputLabel="Buscar por título ou descrição"
+        placeholder="Buscar…" value={searchText} onChange={text => setSearchDraft({ applied: appliedSearch, text })}
+        open={isSearchOpen} onOpenChange={setSearchOpen} onSubmit={() => submitSearch(searchText)} onClear={() => submitSearch('')}
+        className={isSearchOpen ? 'max-sm:w-28 max-sm:[&_input]:px-7' : undefined} />}
       {development && view && <ViewSwitcher label="Visão dos itens de trabalho" views={WORK_VIEWS} value={view} onChange={next => setParam('tab', next)} />}
       {development && view === 'board' && <BoardFilterMenu filters={filters} taskFilters={taskFilters} objectives={project.objectives ?? []}
         onChange={setParam} onTaskFilterChange={changeTaskFilters} onClear={clearFilters} />}

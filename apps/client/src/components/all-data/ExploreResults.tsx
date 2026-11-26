@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { HeaderActions } from "@/components/common/HeaderActions";
-import { HeaderFilterPanel } from "@/components/common/HeaderFilterPanel";
+import { HeaderFilterPanel, type HeaderFilterSection } from "@/components/common/HeaderFilterPanel";
 import { HeaderSearch } from "@/components/common/HeaderSearch";
 import { WorkFeedback } from "@/components/common/WorkFeedback";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ interface ExploreResultsProps {
   emptyTitle: string;
   emptyDescription: string;
   search: { query: string; submit: (query: string) => void; inputLabel?: string };
-  filters: { count: number; clear: () => void; fields: ReactNode };
+  filters: { count: number; clear: () => void; sections: readonly HeaderFilterSection[] };
   pagination: ExplorePage;
   onPageChange: (page: number) => void;
   isLoading: boolean;
@@ -53,7 +53,7 @@ export function ExploreResults({ resources, emptyTitle, emptyDescription, search
         <HeaderSearch label={`Buscar ${resources}`} inputLabel={search.inputLabel ?? "Buscar por título"} placeholder="Buscar…"
           value={draft} onChange={setDraft} open={searchOpen} onOpenChange={setSearchOpen}
           onSubmit={() => search.submit(draft)} onClear={() => { if (search.query) search.submit(""); }} />
-        <HeaderFilterPanel count={count} onClear={clear} description="Refine os resultados desta aba.">{filters.fields}</HeaderFilterPanel>
+        <HeaderFilterPanel count={count} onClear={clear} description="Refine os resultados desta aba." sections={filters.sections} />
       </HeaderActions>
 
       {feedback && <WorkFeedback error={feedback.error} message={`Não foi possível atualizar ${resources === "tarefas" ? "as" : "os"} ${resources}.`}

@@ -46,8 +46,13 @@ Regras:
 
 ## Filtros de tarefas
 
-Use `TaskFilterFields` dentro de `HeaderFilterPanel` no quadro e em Explorar.
-O quadro guarda o recorte na URL e filtra dentro do projeto aberto.
+Use `taskFilterSections` com `HeaderFilterPanel` no quadro e em Explorar.
+A busca por título ou descrição fica na barra de ações, em `HeaderSearch`,
+e é aplicada ao enviar o campo.
+No desktop, as opções abrem ao lado das categorias. No celular, toque em uma
+categoria para ver suas opções e use a seta de voltar para trocar de categoria.
+O quadro guarda o recorte na URL e filtra dentro do projeto aberto. O contador
+de itens no breadcrumb usa o total visível retornado pelo quadro.
 Explorar oferece o seletor de projeto e volta à primeira página a cada alteração.
 Os períodos de 7 e 30 dias incluem hoje, e “Este mês” cobre o mês inteiro no calendário de Recife. O período personalizado
 permite informar uma data inicial, uma data final ou as duas.

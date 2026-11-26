@@ -1,74 +1,36 @@
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { DateRangeFields } from "@/components/common/DateRangeFields";
 import { WorkSelect } from "@/components/common/WorkSelect";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { useProductToday } from "@/hooks/useProductToday";
 import { useTaskLabels } from "@/hooks/useTaskLabels";
-import { PRIORITY, PRIORITY_ORDER, TASK_STATUS } from "@/lib/labels";
-import { TASK_STATUS_ORDER, taskPeriodPresets, type TaskFilters } from "@/lib/task-filters";
-import { ProjectFilter } from "./ProjectFilter";
+import { taskPeriodPresets, type TaskFilters } from "@/lib/task-filters";
 
-interface FilterProps {
+export interface TaskFilterProps {
   filters: TaskFilters;
   onChange: (update: Partial<TaskFilters>) => void;
 }
 
-export function TaskFilterFields({ filters, onChange, showProject }: FilterProps & { showProject?: boolean }) {
-  const id = useId();
-  return (
-    <FieldGroup className="gap-4">
-      <TaskFilterSearch value={filters.search ?? ""} onSubmit={search => onChange({ search })} />
-      {showProject && <Field className="gap-1.5">
-        <FieldLabel htmlFor={`${id}-project`}>Projeto</FieldLabel>
-        <ProjectFilter id={`${id}-project`} value={filters.projectId} onChange={projectId => onChange({ projectId })} />
-      </Field>}
-      <TaskPeriodFields filters={filters} onChange={onChange} />
-      <TaskFilterOptions label="Status" options={TASK_STATUS_ORDER} labels={TASK_STATUS}
-        selected={filters.status ?? []} onChange={status => onChange({ status })} />
-      <TaskFilterOptions label="Prioridade" options={PRIORITY_ORDER} labels={PRIORITY}
-        selected={filters.priority ?? []} onChange={priority => onChange({ priority })} />
-      <TaskLabelFilter value={filters.labelId} onChange={labelId => onChange({ labelId })} />
-    </FieldGroup>
-  );
-}
-
-function TaskFilterSearch({ value, onSubmit }: { value: string; onSubmit: (value: string) => void }) {
-  const id = useId();
-  const [draft, setDraft] = useState({ committed: value, text: value });
-  if (draft.committed !== value) setDraft({ committed: value, text: value });
-  const text = draft.committed === value ? draft.text : value;
-  return (
-    <form onSubmit={event => { event.preventDefault(); onSubmit(text.trim()); }}>
-      <Field className="gap-1.5">
-        <FieldLabel htmlFor={id}>Título ou descrição</FieldLabel>
-        <div className="flex gap-2">
-          <Input id={id} type="search" value={text} onChange={event => setDraft({ committed: value, text: event.target.value })} />
-          <Button type="submit" variant="outline">Buscar</Button>
-        </div>
-      </Field>
-    </form>
-  );
-}
-
-function TaskFilterOptions<T extends string>({ label, options, labels, selected, onChange }: {
+export function TaskFilterOptions<T extends string>({ label, options, labels, icon, selected, onChange }: {
   label: string;
   options: readonly T[];
   labels: Record<T, { label: string }>;
+  icon: (option: T) => ReactNode;
   selected: T[];
   onChange: (selected: T[]) => void;
 }) {
   return (
     <FieldSet className="gap-1">
-      <FieldLegend variant="label" className="mb-0">{label}</FieldLegend>
-      <FieldGroup className="grid grid-cols-2 gap-x-2 gap-y-0">
+      <FieldLegend variant="label" className="sr-only">{label}</FieldLegend>
+      <FieldGroup className="gap-0.5">
         {options.map(option => (
-          <FieldLabel key={option} className="min-h-8 items-center gap-2 font-normal max-lg:min-h-11">
+          <FieldLabel key={option} className="min-h-8 w-full cursor-pointer items-center gap-2.5 rounded-md px-2 font-normal hover:bg-accent focus-within:bg-accent max-lg:min-h-11">
             <Checkbox checked={selected.includes(option)} onCheckedChange={checked => onChange(
               options.filter(value => value === option ? checked === true : selected.includes(value)),
             )} />
+            {icon(option)}
             {labels[option].label}
           </FieldLabel>
         ))}
@@ -77,7 +39,7 @@ function TaskFilterOptions<T extends string>({ label, options, labels, selected,
   );
 }
 
-function TaskPeriodFields({ filters, onChange }: FilterProps) {
+export function TaskPeriodFields({ filters, onChange }: TaskFilterProps) {
   const id = useId();
   const today = useProductToday();
   const { dateField = "plannedDate", startDate, endDate } = filters;
@@ -100,12 +62,9 @@ function TaskPeriodFields({ filters, onChange }: FilterProps) {
   }
 
   return (
-    <>
-      <Field className="gap-1.5">
-        <FieldLabel htmlFor={`${id}-period`}>Período</FieldLabel>
-        <WorkSelect id={`${id}-period`} label="Período" value={period} onChange={selectPeriod}
-          options={[{ value: "all", label: "Todos os períodos" }, ...presets, { value: "custom", label: "Personalizado" }]} />
-      </Field>
+    <FieldGroup className="gap-3">
+      <WorkSelect label="Período" value={period} onChange={selectPeriod}
+        options={[{ value: "all", label: "Todos os períodos" }, ...presets, { value: "custom", label: "Personalizado" }]} />
       {period !== "all" && <Field className="gap-1.5">
         <FieldLabel htmlFor={`${id}-date-field`}>Campo de data</FieldLabel>
         <WorkSelect id={`${id}-date-field`} label="Campo de data" value={dateField}
@@ -115,17 +74,15 @@ function TaskPeriodFields({ filters, onChange }: FilterProps) {
       {period === "custom" && <DateRangeFields start={startDate ?? ""} end={endDate ?? ""}
         onStartChange={value => changeDate({ startDate: value || undefined })}
         onEndChange={value => changeDate({ endDate: value || undefined })} />}
-    </>
+    </FieldGroup>
   );
 }
 
-function TaskLabelFilter({ value, onChange }: { value?: number; onChange: (value?: number) => void }) {
-  const id = useId();
+export function TaskLabelFilter({ value, onChange }: { value?: number; onChange: (value?: number) => void }) {
   const labels = useTaskLabels();
   return (
     <Field className="gap-1.5">
-      <FieldLabel htmlFor={id}>Etiqueta</FieldLabel>
-      <WorkSelect id={id} label="Etiqueta" value={value ? String(value) : "all"}
+      <WorkSelect label="Etiqueta" value={value ? String(value) : "all"}
         onChange={label => onChange(label === "all" ? undefined : Number(label))}
         options={[
           { value: "all", label: "Todas as etiquetas" },

@@ -70,7 +70,42 @@ test('quadro do projeto em claro e escuro', async ({ page, colorScheme }) => {
   expect(unexpected).toEqual([]);
 });
 
-test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme, viewport }) => {
+test('busca do quadro no cabeçalho envia o termo e preserva os demais filtros', async ({ page, colorScheme, viewport }, testInfo) => {
+  if (viewport && viewport.width < 1024) await page.setViewportSize({ ...viewport, width: 360 });
+  const { unexpected } = await prepareBoard(page, colorScheme === 'dark' ? 'dark' : 'light');
+  await page.route(url => url.pathname === '/visual-api/project/9/board' && !!url.search,
+    route => route.fulfill({ json: { ...board, filtered: true } }));
+  const search = page.getByRole('search', { name: 'Buscar tarefas' });
+  await search.getByRole('button', { name: 'Buscar tarefas' }).click();
+  const input = search.getByRole('searchbox', { name: 'Buscar por título ou descrição' });
+  await expect(input).toBeFocused();
+  await input.fill('  Revisar  ');
+  await expect(page).toHaveURL(/\?tab=board$/);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  const request = page.waitForRequest(req => {
+    const url = new URL(req.url());
+    return url.pathname === '/visual-api/project/9/board' && url.searchParams.get('search') === 'Revisar';
+  });
+  await input.press('Enter');
+  await expect(page).toHaveURL(/search=Revisar$/);
+  await request;
+  await page.reload();
+  await expect(input).toHaveValue('Revisar');
+  await page.screenshot({ path: testInfo.outputPath('board-header-search.png') });
+
+  const filters = page.getByRole('dialog', { name: 'Filtros do quadro' });
+  await page.getByRole('button', { name: /^Filtros do quadro/ }).click();
+  await expect(filters.getByRole('button', { name: 'Busca', exact: true })).toHaveCount(0);
+  await filters.getByRole('button', { name: 'Status' }).click();
+  await filters.getByRole('checkbox', { name: 'A fazer' }).click();
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await search.getByRole('button', { name: 'Limpar busca' }).click();
+  await expect(page).toHaveURL(/\?tab=board&status=PENDING$/);
+  expect(unexpected).toEqual([]);
+});
+
+test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme, viewport }, testInfo) => {
   const { region, unexpected } = await prepareBoard(page, colorScheme === 'dark' ? 'dark' : 'light');
   const filteredBoard: BoardResponse = {
     ...board, filtered: true, tasks: [task],
@@ -80,11 +115,30 @@ test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme
   await page.route(url => url.pathname === '/visual-api/project/9/board' && !!url.search,
     route => route.fulfill({ json: filteredBoard }));
   const trigger = page.locator('button[aria-label^="Filtros do quadro"]');
+  const breadcrumb = page.locator('nav[aria-label="Breadcrumb"]');
+  await expect(breadcrumb.getByLabel('2 itens', { exact: true })).toHaveText('2');
   await trigger.focus();
   await page.keyboard.press('Enter');
   const panel = page.getByRole('dialog', { name: 'Filtros do quadro' });
-  await expect(panel.getByRole('searchbox', { name: 'Título ou descrição' })).toBeFocused();
-  await expect(panel.getByRole('button', { name: 'Fechar' })).toHaveCount((viewport?.width ?? 0) < 1024 ? 1 : 0);
+  const mobile = (viewport?.width ?? 0) < 1024;
+  const status = panel.getByRole('button', { name: 'Status' });
+  await expect(status).toBeFocused();
+  await expect(panel.getByRole('checkbox', { name: 'A fazer' })).toBeHidden();
+  await expect(panel.getByRole('button', { name: 'Fechar' })).toHaveCount(mobile ? 1 : 0);
+  await page.screenshot({ path: testInfo.outputPath('filter-categories.png') });
+  for (const name of ['Etiqueta', 'Objetivo', 'Planejamento', 'Período']) {
+    const category = panel.getByRole('button', { name, exact: true });
+    await category.click();
+    const heading = page.getByRole('heading', { name, exact: true });
+    const section = panel.locator('section').filter({ has: heading });
+    await expect(section.getByText(name, { exact: true })).toHaveCount(1);
+    await expect(section.getByRole('combobox', { name, exact: true })).toBeVisible();
+    if (name !== 'Período') {
+      await page.keyboard.press('Escape');
+      await expect(category).toBeFocused();
+    }
+  }
+  await page.screenshot({ path: testInfo.outputPath('filter-period.png') });
 
   await panel.getByRole('combobox', { name: 'Período' }).click();
   await page.getByRole('option', { name: 'Últimos 7 dias' }).click();
@@ -92,22 +146,37 @@ test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme
   await page.getByRole('option', { name: 'Personalizado' }).click();
   await panel.getByRole('button', { name: /Data inicial: 19\/11\/2026/ }).click();
   await page.getByRole('grid', { name: 'novembro 2026' }).getByRole('gridcell', { name: '18', exact: true }).click();
+  if (mobile) await panel.getByRole('button', { name: 'Voltar aos filtros' }).click();
+  await status.click();
   await panel.getByRole('checkbox', { name: 'A fazer' }).click();
   await panel.getByRole('checkbox', { name: 'Em andamento' }).click();
   await expect(trigger).toHaveAttribute('aria-label', 'Filtros do quadro (2 ativos)');
   await expect(page).toHaveURL(/status=PENDING%2CON_DOING/);
   await expect(page).toHaveURL(/startDate=2026-11-18/);
   await expect(region.getByText('1 de 2')).toBeVisible();
-  await expect(panel.getByRole('button', { name: 'Limpar filtros' })).toBeVisible();
+  await expect(breadcrumb.getByLabel('1 item', { exact: true })).toHaveText('1');
+  if (mobile) await panel.getByRole('button', { name: 'Voltar aos filtros' }).click();
+  const priority = panel.getByRole('button', { name: 'Prioridade' });
+  await priority.focus();
+  await page.keyboard.press('Enter');
+  await expect(panel.getByRole('heading', { name: 'Prioridade' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(panel.getByRole('checkbox', { name: 'Urgente' })).toBeFocused();
+  await panel.getByRole('checkbox', { name: 'Alta' }).click();
+  await expect(trigger).toHaveAttribute('aria-label', 'Filtros do quadro (3 ativos)');
+  await expect(page).toHaveURL(/priority=HIGH/);
   await page.mouse.move(-1, -1);
   await expect(page).toHaveScreenshot('project-board-filters.png');
 
   await panel.getByRole('button', { name: 'Limpar filtros' }).click();
-  await expect(panel.getByRole('checkbox', { name: 'A fazer' })).not.toBeChecked();
+  await expect(panel.getByRole('checkbox', { name: 'Alta' })).not.toBeChecked();
+  await page.keyboard.press('Escape');
+  await expect(priority).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(panel).toBeHidden();
   await expect(trigger).toBeFocused();
   await expect(page).toHaveURL(/\?tab=board$/);
+  await expect(breadcrumb.getByLabel('2 itens', { exact: true })).toHaveText('2');
   expect(unexpected).toEqual([]);
 });
 

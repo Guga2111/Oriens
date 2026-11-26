@@ -14,6 +14,6 @@ export function useTimelineBoard(projectId: number) {
   const scale = parseTimelineScale(params.get('scale'));
   const anchor = parseTimelineAnchor(params.get('anchor'), today);
   const period = useMemo(() => timelineWindow(scale, anchor), [scale, anchor]);
-  const board = useProjectBoard(projectId, { startDate: period.startDate, endDate: period.endDate }, true);
+  const board = useProjectBoard(projectId, { startDate: period.startDate, endDate: period.endDate }, { keepPrevious: true });
   return { board, today, scale, anchor, period };
 }

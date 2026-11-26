@@ -60,9 +60,9 @@ export function useTaskDetail(id: number, placeholder?: WorkTask) {
     placeholderData: placeholder, queryFn: ({ signal }) => taskService.task(id, signal) });
 }
 /** `keepPrevious` shows the same project's last board while new filters load (timeline window changes). */
-export function useProjectBoard(id: number, filters: BoardFilters = {}, keepPrevious = false) {
+export function useProjectBoard(id: number, filters: BoardFilters = {}, { keepPrevious = false, enabled = true } = {}) {
   const { userId } = useAuth();
-  return useQuery<BoardResponse>({ queryKey: workKey(userId, 'projects/board', id, filters), enabled: userId !== null && id > 0,
+  return useQuery<BoardResponse>({ queryKey: workKey(userId, 'projects/board', id, filters), enabled: enabled && userId !== null && id > 0,
     placeholderData: keepPrevious ? (previous?: BoardResponse) => previous?.projectId === id ? previous : undefined : undefined,
     queryFn: ({ signal }) => projectService.board(id, filters, signal) });
 }

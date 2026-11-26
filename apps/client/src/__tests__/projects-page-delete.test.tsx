@@ -64,6 +64,7 @@ it('o filtro do header pede só fixados à API, marca o botão e leva aos arquiv
   await screen.findByRole('link', { name: project.title });
   await userEvent.click(within(screen.getByRole('banner')).getByRole('button', { name: 'Filtros' }));
   expect(screen.getByRole('link', { name: 'Ver arquivados' })).toHaveAttribute('href', '/all-data?tab=projects&archived=1');
+  await userEvent.click(screen.getByRole('button', { name: 'Fixados' }));
   await userEvent.click(screen.getByRole('checkbox', { name: 'Somente fixados' }));
   await userEvent.keyboard('{Escape}');
   expect(await screen.findByRole('link', { name: 'Projeto fixado' })).toBeInTheDocument();
@@ -76,6 +77,7 @@ it('o filtro de tipo é feito pela API; os dois tipos marcados equivalem a nenhu
   renderWithHeader([project, simple], 1280);
   await screen.findByRole('link', { name: project.title });
   await userEvent.click(screen.getByRole('button', { name: 'Filtros' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Tipo' }));
   await userEvent.click(await screen.findByRole('checkbox', { name: 'Simples' }));
   expect(screen.getByRole('checkbox', { name: 'Simples' })).toHaveAttribute('aria-checked', 'true');
   await waitFor(() => expect(listQueries().at(-1)).toEqual({ mode: 'SIMPLE', page: 0, size: 6 }));
@@ -92,6 +94,7 @@ it('em tela estreita os tipos ficam no painel de filtros', async () => {
   await screen.findByRole('link', { name: project.title });
   await userEvent.click(screen.getByRole('button', { name: 'Filtros' }));
   expect(screen.getByRole('dialog', { name: 'Filtros' })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Tipo' }));
   await userEvent.click(screen.getByRole('checkbox', { name: 'Desenvolvimento' }));
   await waitFor(() => expect(listQueries().at(-1)).toEqual({ mode: 'DEVELOPMENT', page: 0, size: 6 }));
 });
