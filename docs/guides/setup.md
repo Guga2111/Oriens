@@ -1,7 +1,15 @@
 # Setup e verificação local
 
-Use Java 25, Docker com Compose, Node 22, npm e Python 3 para as rotinas
+Use Make, Java 25, Docker com Compose, Node 22, npm e Python 3 para as rotinas
 documentais e operacionais. As aplicações mantêm seus manifests e lockfiles.
+
+Na raiz, `make help` lista os atalhos. `make test` combina a suíte Maven
+com H2 e a suíte Vitest. Use `make test-postgres` para a suíte isolada,
+`make lint` para ESLint, `make build` para gerar o JAR e a SPA, e `make e2e`
+com Chromium instalado e a API de teste iniciada. Os comandos abaixo descrevem
+cada aplicação. Consulte o [pre-commit local](pre-commit.md) para verificações
+rápidas por commit e o [ADR de layout](../decisions/006-monorepo.md) para a
+organização do repositório.
 
 ## Ambiente local
 
@@ -52,7 +60,8 @@ npm test
 npm run build
 ```
 
-O Vite serve em `http://127.0.0.1:5173`. Mantenha a API local em execução
+Abra o Vite em `http://localhost:5173`, origem aceita pelo CORS da API.
+Mantenha a API local em execução
 durante os testes E2E.
 
 ```sh
