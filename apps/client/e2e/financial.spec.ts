@@ -152,12 +152,14 @@ test("busca e filtros do histórico combinam, seguem na URL e persistem após ed
   // Busca e categoria se combinam: a receita não tem "Mercado" na descrição.
   await page.getByRole("button", { name: /^Filtros/ }).click();
   const filters = page.getByRole("dialog", { name: "Filtros" });
+  await filters.getByRole("button", { name: "Categoria" }).click();
   await filters.getByRole("combobox", { name: "Categoria" }).click();
   await page.getByRole("option", { name: "Salário" }).click();
   await expect(page).toHaveURL(/[?&]tag=\d+/);
   await expect(page.getByText("Nenhum resultado encontrado")).toBeVisible();
 
   await filters.getByRole("button", { name: "Limpar filtros" }).click();
+  await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
   await expect(filters).toBeHidden();
   await expect(page).toHaveURL(/\/financial\/entries$/);

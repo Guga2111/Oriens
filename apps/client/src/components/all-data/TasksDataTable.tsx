@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { TaskFilterFields } from "@/components/tasks/TaskFilterFields";
+import { taskFilterSections } from "@/components/tasks/TaskFilterSections";
 import { PriorityIcon } from "@/components/tasks/PriorityIcon";
 import { StatusIcon } from "@/components/tasks/StatusIcon";
 import { TaskLabels } from "@/components/tasks/TaskLabels";
@@ -43,7 +43,7 @@ export function TasksDataTable({ tasks, isLoading, pagination, onPageChange, fil
       filters={{
         count: activeTaskFilterCount({ ...filters, search: undefined }),
         clear: onClearFilters,
-        fields: <TaskFilterFields showProject filters={filters} onChange={onFilterChange} />,
+        sections: taskFilterSections({ showProject: true, filters, onChange: onFilterChange }),
       }}>
       <ExploreTable label="Tarefas">
         <TableHeader>

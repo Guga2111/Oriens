@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { DateRangeFields } from "@/components/common/DateRangeFields";
 import { WorkSelect } from "@/components/common/WorkSelect";
 import { Button } from "@/components/ui/button";
@@ -7,35 +7,25 @@ import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/componen
 import { Input } from "@/components/ui/input";
 import { useProductToday } from "@/hooks/useProductToday";
 import { useTaskLabels } from "@/hooks/useTaskLabels";
-import { PRIORITY, PRIORITY_ORDER, TASK_STATUS } from "@/lib/labels";
-import { TASK_STATUS_ORDER, taskPeriodPresets, type TaskFilters } from "@/lib/task-filters";
+import { taskPeriodPresets, type TaskFilters } from "@/lib/task-filters";
 import { ProjectFilter } from "./ProjectFilter";
 
-interface FilterProps {
+export interface TaskFilterProps {
   filters: TaskFilters;
   onChange: (update: Partial<TaskFilters>) => void;
 }
 
-export function TaskFilterFields({ filters, onChange, showProject }: FilterProps & { showProject?: boolean }) {
+export function TaskProjectFilter({ value, onChange }: { value?: number; onChange: (value?: number) => void }) {
   const id = useId();
   return (
-    <FieldGroup className="gap-4">
-      <TaskFilterSearch value={filters.search ?? ""} onSubmit={search => onChange({ search })} />
-      {showProject && <Field className="gap-1.5">
-        <FieldLabel htmlFor={`${id}-project`}>Projeto</FieldLabel>
-        <ProjectFilter id={`${id}-project`} value={filters.projectId} onChange={projectId => onChange({ projectId })} />
-      </Field>}
-      <TaskPeriodFields filters={filters} onChange={onChange} />
-      <TaskFilterOptions label="Status" options={TASK_STATUS_ORDER} labels={TASK_STATUS}
-        selected={filters.status ?? []} onChange={status => onChange({ status })} />
-      <TaskFilterOptions label="Prioridade" options={PRIORITY_ORDER} labels={PRIORITY}
-        selected={filters.priority ?? []} onChange={priority => onChange({ priority })} />
-      <TaskLabelFilter value={filters.labelId} onChange={labelId => onChange({ labelId })} />
-    </FieldGroup>
+    <Field className="gap-1.5">
+      <FieldLabel htmlFor={id}>Projeto</FieldLabel>
+      <ProjectFilter id={id} value={value} onChange={onChange} />
+    </Field>
   );
 }
 
-function TaskFilterSearch({ value, onSubmit }: { value: string; onSubmit: (value: string) => void }) {
+export function TaskFilterSearch({ value, onSubmit }: { value: string; onSubmit: (value: string) => void }) {
   const id = useId();
   const [draft, setDraft] = useState({ committed: value, text: value });
   if (draft.committed !== value) setDraft({ committed: value, text: value });
@@ -53,22 +43,24 @@ function TaskFilterSearch({ value, onSubmit }: { value: string; onSubmit: (value
   );
 }
 
-function TaskFilterOptions<T extends string>({ label, options, labels, selected, onChange }: {
+export function TaskFilterOptions<T extends string>({ label, options, labels, icon, selected, onChange }: {
   label: string;
   options: readonly T[];
   labels: Record<T, { label: string }>;
+  icon: (option: T) => ReactNode;
   selected: T[];
   onChange: (selected: T[]) => void;
 }) {
   return (
     <FieldSet className="gap-1">
-      <FieldLegend variant="label" className="mb-0">{label}</FieldLegend>
-      <FieldGroup className="grid grid-cols-2 gap-x-2 gap-y-0">
+      <FieldLegend variant="label" className="sr-only">{label}</FieldLegend>
+      <FieldGroup className="gap-0.5">
         {options.map(option => (
-          <FieldLabel key={option} className="min-h-8 items-center gap-2 font-normal max-lg:min-h-11">
+          <FieldLabel key={option} className="min-h-8 w-full cursor-pointer items-center gap-2.5 rounded-md px-2 font-normal hover:bg-accent focus-within:bg-accent max-lg:min-h-11">
             <Checkbox checked={selected.includes(option)} onCheckedChange={checked => onChange(
               options.filter(value => value === option ? checked === true : selected.includes(value)),
             )} />
+            {icon(option)}
             {labels[option].label}
           </FieldLabel>
         ))}
@@ -77,7 +69,7 @@ function TaskFilterOptions<T extends string>({ label, options, labels, selected,
   );
 }
 
-function TaskPeriodFields({ filters, onChange }: FilterProps) {
+export function TaskPeriodFields({ filters, onChange }: TaskFilterProps) {
   const id = useId();
   const today = useProductToday();
   const { dateField = "plannedDate", startDate, endDate } = filters;
@@ -100,7 +92,7 @@ function TaskPeriodFields({ filters, onChange }: FilterProps) {
   }
 
   return (
-    <>
+    <FieldGroup className="gap-3">
       <Field className="gap-1.5">
         <FieldLabel htmlFor={`${id}-period`}>Período</FieldLabel>
         <WorkSelect id={`${id}-period`} label="Período" value={period} onChange={selectPeriod}
@@ -115,11 +107,11 @@ function TaskPeriodFields({ filters, onChange }: FilterProps) {
       {period === "custom" && <DateRangeFields start={startDate ?? ""} end={endDate ?? ""}
         onStartChange={value => changeDate({ startDate: value || undefined })}
         onEndChange={value => changeDate({ endDate: value || undefined })} />}
-    </>
+    </FieldGroup>
   );
 }
 
-function TaskLabelFilter({ value, onChange }: { value?: number; onChange: (value?: number) => void }) {
+export function TaskLabelFilter({ value, onChange }: { value?: number; onChange: (value?: number) => void }) {
   const id = useId();
   const labels = useTaskLabels();
   return (

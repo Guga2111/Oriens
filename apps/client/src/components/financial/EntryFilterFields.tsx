@@ -16,12 +16,13 @@ const PERIODS: { value: EntriesPeriod; label: string }[] = [
 
 const ALL_TAGS = "all";
 
-/** Period and category fields of the entries filter panel; the search lives in the header. */
-export function EntryFilterFields({ filters, tags, onChange }: {
+interface EntryFilterProps {
   filters: EntriesFilters;
   tags: TagDTO[];
   onChange: (update: Partial<EntriesFilters>) => void;
-}) {
+}
+
+export function EntryPeriodFields({ filters, onChange }: Omit<EntryFilterProps, "tags">) {
   const id = useId();
   return (
     <FieldGroup className="gap-3">
@@ -38,26 +39,32 @@ export function EntryFilterFields({ filters, tags, onChange }: {
       </Field>
       {filters.period === "custom" && <DateRangeFields start={filters.start} end={filters.end}
         onStartChange={start => onChange({ start })} onEndChange={end => onChange({ end })} />}
-      <Field className="gap-1.5">
-        <FieldLabel htmlFor={`${id}-tag`}>Categoria</FieldLabel>
-        <Select value={filters.tagId === null ? ALL_TAGS : String(filters.tagId)}
-          onValueChange={value => onChange({ tagId: value === ALL_TAGS ? null : Number(value) })}>
-          <SelectTrigger id={`${id}-tag`}><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value={ALL_TAGS}>Todas as categorias</SelectItem>
-              {tags.map(tag => (
-                <SelectItem key={tag.id} value={String(tag.id)}>
-                  <span className="flex items-center gap-2">
-                    <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: tag.color }} />
-                    {tag.name}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </Field>
     </FieldGroup>
+  );
+}
+
+export function EntryCategoryField({ filters, tags, onChange }: EntryFilterProps) {
+  const id = useId();
+  return (
+    <Field className="gap-1.5">
+      <FieldLabel htmlFor={`${id}-tag`}>Categoria</FieldLabel>
+      <Select value={filters.tagId === null ? ALL_TAGS : String(filters.tagId)}
+        onValueChange={value => onChange({ tagId: value === ALL_TAGS ? null : Number(value) })}>
+        <SelectTrigger id={`${id}-tag`}><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value={ALL_TAGS}>Todas as categorias</SelectItem>
+            {tags.map(tag => (
+              <SelectItem key={tag.id} value={String(tag.id)}>
+                <span className="flex items-center gap-2">
+                  <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: tag.color }} />
+                  {tag.name}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </Field>
   );
 }

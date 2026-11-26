@@ -53,10 +53,10 @@ export function ProjectsDataTable({ projects, isLoading, pagination, onPageChang
       filters={{
         count: Number(filters.includeArchived),
         clear: () => onFilterChange({ searchQuery: "", includeArchived: false }),
-        fields: <Field orientation="horizontal">
+        sections: [{ id: "archived", icon: Archive, label: "Arquivados", fields: <Field orientation="horizontal">
           <FieldLabel htmlFor={archivedId}>Mostrar arquivados</FieldLabel>
           <Switch id={archivedId} checked={filters.includeArchived} onCheckedChange={includeArchived => onFilterChange({ includeArchived })} />
-        </Field>,
+        </Field> }],
       }}>
       <ExploreTable label="Projetos">
         <TableHeader>
