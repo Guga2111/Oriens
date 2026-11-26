@@ -56,7 +56,7 @@ if "$client_changed"; then
   fi
   make lint
   if [[ "${#client_paths[@]}" -gt 0 ]]; then
-    (cd apps/client && npm exec -- vitest related --run --passWithNoTests -- "${client_paths[@]}")
+    (cd apps/client && npm exec -- vitest related --run --passWithNoTests "${client_paths[@]}")
   else
     (cd apps/client && npm test -- src/__tests__/cn-tokens.test.ts)
   fi
