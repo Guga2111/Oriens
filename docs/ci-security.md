@@ -34,8 +34,8 @@ O workflow também exige sucesso do step de análise: `invocations` é opcional 
 então sua ausência no relatório não é usada para adivinhar se a execução terminou.
 
 O status vermelho só **impede merge** quando exigido pela proteção de branches. Configurar essa
-proteção em `dev` e `main` é a tarefa #56; use os nomes efetivamente exibidos pelo GitHub, incluindo
-os prefixos da chamada reutilizada quando aplicáveis. Esta mudança não configura essa proteção.
+proteção em `dev` e `main` depende do dono na tarefa #56. A [política de merge](guides/merge-policy.md)
+registra os nomes reportados em PR, os contextos da chamada reutilizada e o roteiro de aceite.
 
 ## Execução local
 
@@ -106,31 +106,22 @@ com até cinco PRs abertos por ecossistema. Atualizações minor/patch podem ser
 permanecem em PRs separados. Nada é mesclado automaticamente.
 
 PRs de **versão** miram `dev`. PRs automáticos de **segurança** sempre miram a branch padrão, hoje
-`main`; `target-branch: dev` não muda essa regra do GitHub. O YAML deve chegar à branch padrão para
-ativar o agendamento normal. Dependabot acompanha as referências Maven/Actions; a versão e o
+`main`. Com `target-branch: dev`, as opções dos três blocos se aplicam aos PRs de versão. O YAML já
+está na branch padrão. Dependabot acompanha as referências Maven/Actions; a versão e o
 checksum do binário Gitleaks, instalados por URL no shell, precisam de manutenção explícita.
 
-Antes do aceite remoto, conferir no GitHub:
-
-1. Dependency graph, Dependabot alerts e security updates habilitados; YAML sozinho não ativa todos
-   esses recursos. Maven pode exigir submissão do grafo resolvido para ampliar alertas nativos;
-   o check NVD do CI independe disso.
-2. CodeQL em advanced setup. Se default setup estiver ativo, ele conflita com o upload produzido
-   pelo workflow versionado; ajustar a configuração de forma explícita antes de validar o CI.
-3. Primeira execução real dos dois jobs CodeQL, upload SARIF e check do relatório completo.
-4. Execução de PR do Dependabot/fork via `pull_request`, sem secrets de produção. O evento permite
-   o upload CodeQL de PRs com token restrito conforme as regras do GitHub; não contornar usando PAT
-   ou executando código do PR em `pull_request_target`.
-5. Checks obrigatórios nas duas branches, quando a #56 for executada.
-
-Esta entrega local não modifica configurações externas nem publica a branch.
+Em 2026-11-26, o grafo, os alertas e as atualizações de segurança estavam
+desabilitados. Os PRs de versão de npm já estavam sendo abertos para `dev`.
+O CodeQL versionado executou nos PRs e no deploy, e o default setup estava
+sem configuração. Em PRs de bot e de fork, mantenha `pull_request` e o token
+restrito do workflow para upload CodeQL.
 
 ## Dívida encontrada e aceite
 
-O primeiro scan pode reprovar a base existente. Registrar achados e encaminhar correção própria;
-não dispensar a política escolhida só porque o problema antecede o PR. A evidência datada da #65
-fica em `docs/plans/2026-11-22-ci-security-checks-evidence.md` e distingue provas locais de itens
-que ainda precisam executar no GitHub.
+Se o scan reprovar a base existente, registre e encaminhe o achado para
+correção própria. A [evidência da #65](plans/2026-11-22-ci-security-checks-evidence.md)
+registra os checks no GitHub, os limites da amostra e as ações que dependem
+do dono do repositório.
 
 ## Referências
 
