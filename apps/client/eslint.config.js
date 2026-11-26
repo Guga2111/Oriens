@@ -58,6 +58,11 @@ export default tseslint.config(
     },
   },
   {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/__tests__/**", "src/test/**", "src/**/*.{test,spec}.{ts,tsx}"],
+    rules: { complexity: ["error", 20] },
+  },
+  {
     // shadcn components are the only place allowed to render raw primitives and palette colors;
     // test doubles are not product UI.
     files: ["src/**/*.{ts,tsx}"],

@@ -33,6 +33,7 @@ function DetailSection({ title, children, summary }: { title: string; children: 
   </Collapsible>;
 }
 
+// eslint-disable-next-line complexity -- existing score 28; owner: client maintainers.
 export function ObjectiveDetails({ objective, project, tasks, tasksLoading, tasksError, onReloadTasks, onClose, onAddTask, onEditTask, onEdit, onDelete, onPatch, busy, error, onReload }: {
   objective: WorkObjective; project: WorkProject; tasks?: WorkTask[]; tasksLoading?: boolean; tasksError?: unknown; onReloadTasks?: () => void;
   onClose: () => void; onAddTask: (id: number) => void; onEditTask: (task: WorkTask) => void;

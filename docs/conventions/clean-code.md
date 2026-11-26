@@ -62,6 +62,36 @@ WorkHttp.agree(match, command.getVersion());
 Task before = read.task(user, id);
 ```
 
+### Complexidade ciclomática
+
+O limite é **20 por função de produção**, incluindo métodos, construtores e
+lambdas. A medição na base encontrou 84 funções do cliente e 38 da API acima de
+10. No limite 20, foram 19 no cliente e 7 na API. A adoção inicial limita código
+novo e conserva exceções pontuais sem refatorar fluxos de domínio neste PR.
+
+A medida começa em 1. O ESLint usa a regra nativa `complexity` na variante
+clássica em `apps/client/src`, com testes fora do escopo. A regra conta decisões
+como condicionais, encadeamento opcional e valores padrão. O
+[`CyclomaticComplexityTest`](../../apps/api/src/test/java/com/oriens/oriens_api/CyclomaticComplexityTest.java)
+usa a árvore sintática do JDK para `src/main/java`. Conta condicionais, `&&` e
+`||`, laços, `catch`, braços sem `default` e guardas de switch. Lambdas e
+métodos aninhados são medidos separadamente. Os números são comparáveis dentro
+de cada ferramenta, pois as construções de linguagem diferem.
+
+`make lint` e `./mvnw -B test` em `apps/api` aplicam os limites nos jobs
+existentes. A [lista Java](../../apps/api/src/test/resources/complexity-baseline.tsv)
+registra teto por assinatura ou lambda e é mantida pela equipe da API. No
+cliente, a equipe do cliente mantém diretivas de uma linha com a pontuação
+medida junto à função. Remova a entrada quando a função atingir o limite.
+Qualquer exceção adicional exige justificativa e revisão de código.
+
+Por exemplo, as regras acumuladas em `ProjectWorkService.patchTask` tornam
+caro seguir cada fluxo de atualização. Prefira extrair validação de vínculos e
+precondições para funções com nomes de domínio quando mudar esse fluxo. Em
+`TaskEditorForm`, derive estado e mensagens em funções testáveis quando a
+próxima mudança exigir nova ramificação. Evite substituir condicionais por
+expressões mais difíceis de ler só para reduzir o número.
+
 ## 4. Comentários
 
 - O código explica **o quê**; o comentário explica **por quê** (decisão, restrição, risco):

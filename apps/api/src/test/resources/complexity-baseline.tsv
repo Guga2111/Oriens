@@ -1,0 +1,8 @@
+# Source and method signature<TAB>maximum complexity. Owner: API maintainers.
+com/oriens/oriens_api/mcp/McpScopes.java#McpScopes.validate(Set<String>,Set<Long>,boolean)	22
+com/oriens/oriens_api/mcp/McpWorkTools.java#McpWorkTools.validate(McpWorkCatalog.Definition,JsonNode)	42
+com/oriens/oriens_api/mcp/McpWorkTools.java#McpWorkTools.mutate(McpWorkCatalog.Definition,McpStore.Policy,Access,JsonNode)	58
+com/oriens/oriens_api/service/FinancialEntryServiceImpl.java#FinancialEntryServiceImpl.write(Long,String,String,com.oriens.oriens_api.entity.dto.financial.FinancialCommands.Command)/lambda[1]	24
+com/oriens/oriens_api/service/ProjectWorkService.java#ProjectWorkService.patchTask(Long,Long,PatchTask)	56
+com/oriens/oriens_api/service/TaskAttachmentService.java#TaskAttachmentService.mediaType(String,byte[])	22
+com/oriens/oriens_api/service/TaskDescriptionCodec.java#Validation.node(JsonNode,int)	24

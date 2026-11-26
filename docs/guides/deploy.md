@@ -5,6 +5,8 @@ O [workflow Deploy](../../.github/workflows/deploy.yml) executa em pushes para
 a publicação no ambiente `production` e aguarda todos os
 [checks](../../.github/workflows/checks.yml).
 
+O [ADR de deploy](../decisions/007-deploy.md) registra a escolha dessa topologia.
+
 ## Destinos
 
 - A API usa a imagem local `oriens-api` com tag do commit. O

@@ -1,6 +1,8 @@
 # Componentes shadcn/ui
 
-Use os primitivos versionados em `apps/client/src/components/ui/`.
+Use os primitivos versionados em `apps/client/src/components/ui/` e o
+[design system](design-tokens.md). O [ADR do cliente](../../decisions/005-cliente.md)
+registra a escolha de shadcn/ui.
 
 ## shadcn primeiro
 

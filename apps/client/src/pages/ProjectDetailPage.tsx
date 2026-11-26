@@ -36,6 +36,7 @@ export default function ProjectDetailPage() {
   if (!Number.isSafeInteger(Number(id)) || Number(id) <= 0) return <div className="min-w-0 w-full"><PageHeader title="Projeto indisponível" /><Button asChild variant="link"><Link to="/projects">Voltar a Projetos</Link></Button></div>;
   return <ProjectDetail key={id} id={Number(id)} />;
 }
+// eslint-disable-next-line complexity -- existing score 59; owner: client maintainers.
 function ProjectDetail({ id }: { id: number }) {
   const query = useWorkProject(id); const project = query.data;
   useRecordVisit('PROJECT', query.isSuccess ? id : undefined);

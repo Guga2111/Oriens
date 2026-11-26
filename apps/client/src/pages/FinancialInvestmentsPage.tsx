@@ -32,6 +32,7 @@ type Removal =
 const day = (value: string) => format(parseISO(value), 'dd/MM/yyyy');
 
 /** Manual portfolio: register investments, update valuations and record movements that reach the cash history. */
+// eslint-disable-next-line complexity -- existing score 22; owner: client maintainers.
 export default function FinancialInvestmentsPage() {
   const { userId } = useAuth();
   const [movementPage, setMovementPage] = useState(0);

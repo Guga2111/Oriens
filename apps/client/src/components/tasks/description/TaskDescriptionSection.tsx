@@ -9,6 +9,7 @@ import './task-description.css';
 
 const TaskDescriptionEditor = lazy(() => import('./TaskDescriptionEditor').then(module => ({ default: module.TaskDescriptionEditor })));
 
+// eslint-disable-next-line complexity -- existing score 33; owner: client maintainers.
 export function TaskDescriptionSection({ task, loading }: { task: WorkTask; loading: boolean }) {
   const [editing, setEditing] = useState(false);
   const [expanded, setExpanded] = useState(false);

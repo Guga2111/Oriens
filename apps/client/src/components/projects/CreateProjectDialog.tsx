@@ -15,6 +15,7 @@ import { useCreationAttempt } from '@/hooks/useCreationAttempt';
 import { validCalendarDate } from '@/lib/work-form';
 import type { WorkProject } from '@/types/work';
 
+// eslint-disable-next-line complexity -- existing score 27; owner: client maintainers.
 export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEdit }: {
   open: boolean; onOpenChange: (open: boolean) => void; onSuccess: () => void; projectToEdit?: WorkProject | null;
 }) {
