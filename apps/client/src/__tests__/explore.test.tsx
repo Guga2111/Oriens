@@ -163,10 +163,13 @@ it("mantém os controles durante o carregamento e permite tentar novamente após
   await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
 });
 
-it("combina projeto, status, prioridades, etiqueta e busca no painel e limpa a consulta", async () => {
+it("combina a busca da barra com os filtros do painel e limpa a consulta", async () => {
   const user = userEvent.setup();
   renderWork(<AllDataPage />, "/all-data");
-  const trigger = screen.getByRole("button", { name: "Filtros" });
+  await user.click(screen.getByRole("button", { name: "Buscar tarefas" }));
+  await user.type(screen.getByRole("searchbox", { name: "Buscar por título ou descrição" }), " revisão ");
+  await user.keyboard("{Enter}");
+  const trigger = screen.getByRole("button", { name: "Filtros (1 ativo)" });
   await user.click(trigger);
   const filters = within(screen.getByRole("dialog", { name: "Filtros" }));
 
@@ -189,9 +192,7 @@ it("combina projeto, status, prioridades, etiqueta e busca no painel e limpa a c
   await category("Etiqueta");
   await user.click(filters.getByRole("combobox", { name: "Etiqueta" }));
   await user.click(await screen.findByRole("option", { name: "Site" }));
-  await category("Busca");
-  await user.type(filters.getByRole("searchbox", { name: "Título ou descrição" }), " revisão ");
-  await user.keyboard("{Enter}");
+  expect(filters.queryByRole("button", { name: "Busca", exact: true })).not.toBeInTheDocument();
   await waitFor(() => expect(fetchPage).toHaveBeenCalledWith("/task/user/7/all", expect.objectContaining({
     params: expect.objectContaining({
       projectId: project.id, status: "PENDING,ON_DOING", priority: "HIGH,MEDIUM", labelId: 1, search: "revisão", page: 0,
@@ -200,7 +201,6 @@ it("combina projeto, status, prioridades, etiqueta e busca no painel e limpa a c
   expect(screen.getByRole("button", { name: "Filtros (5 ativos)" })).toBe(trigger);
 
   await user.click(filters.getByRole("button", { name: "Limpar filtros" }));
-  expect(filters.getByRole("searchbox", { name: "Título ou descrição" })).toHaveValue("");
   await category("Status");
   expect(filters.getByRole("checkbox", { name: "A fazer" })).not.toBeChecked();
   expect(filters.queryByRole("button", { name: "Limpar filtros" })).not.toBeInTheDocument();
@@ -208,6 +208,8 @@ it("combina projeto, status, prioridades, etiqueta e busca no painel e limpa a c
   expect(filters.getByRole("button", { name: "Status" })).toHaveFocus();
   await user.keyboard("{Escape}");
   expect(trigger).toHaveFocus();
+  await user.click(screen.getByRole("button", { name: "Buscar tarefas" }));
+  expect(screen.getByRole("searchbox", { name: "Buscar por título ou descrição" })).toHaveValue("");
 });
 
 it("aplica o período de sete dias e permite editar as duas datas com o calendário", async () => {

@@ -4,7 +4,6 @@ import { WorkSelect } from "@/components/common/WorkSelect";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { useProductToday } from "@/hooks/useProductToday";
 import { useTaskLabels } from "@/hooks/useTaskLabels";
 import { taskPeriodPresets, type TaskFilters } from "@/lib/task-filters";
@@ -12,24 +11,6 @@ import { taskPeriodPresets, type TaskFilters } from "@/lib/task-filters";
 export interface TaskFilterProps {
   filters: TaskFilters;
   onChange: (update: Partial<TaskFilters>) => void;
-}
-
-export function TaskFilterSearch({ value, onSubmit }: { value: string; onSubmit: (value: string) => void }) {
-  const id = useId();
-  const [draft, setDraft] = useState({ committed: value, text: value });
-  if (draft.committed !== value) setDraft({ committed: value, text: value });
-  const text = draft.committed === value ? draft.text : value;
-  return (
-    <form onSubmit={event => { event.preventDefault(); onSubmit(text.trim()); }}>
-      <Field className="gap-1.5">
-        <FieldLabel htmlFor={id}>Título ou descrição</FieldLabel>
-        <div className="flex gap-2">
-          <Input id={id} type="search" value={text} onChange={event => setDraft({ committed: value, text: event.target.value })} />
-          <Button type="submit" variant="outline">Buscar</Button>
-        </div>
-      </Field>
-    </form>
-  );
 }
 
 export function TaskFilterOptions<T extends string>({ label, options, labels, icon, selected, onChange }: {

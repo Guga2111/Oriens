@@ -15,9 +15,10 @@ interface HeaderSearchProps {
   onOpenChange: (open: boolean) => void;
   onSubmit?: () => void;
   onClear?: () => void;
+  className?: string;
 }
 
-export function HeaderSearch({ label, inputLabel, placeholder, value, onChange, open, onOpenChange, onSubmit, onClear }: HeaderSearchProps) {
+export function HeaderSearch({ label, inputLabel, placeholder, value, onChange, open, onOpenChange, onSubmit, onClear, className }: HeaderSearchProps) {
   const trigger = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLInputElement>(null);
   function clear() {
@@ -27,7 +28,7 @@ export function HeaderSearch({ label, inputLabel, placeholder, value, onChange, 
 
   return (
     <form role="search" aria-label={label}
-      className={cn("relative shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none", open ? "w-36 sm:w-56" : "w-10 md:w-8")}
+      className={cn("relative shrink-0 transition-[width] duration-200 ease-out motion-reduce:transition-none", open ? "w-36 sm:w-56" : "w-10 md:w-8", className)}
       onSubmit={event => { event.preventDefault(); onSubmit?.(); }}
       onBlur={event => {
         if (!event.currentTarget.contains(event.relatedTarget) && !value.trim()) onOpenChange(false);

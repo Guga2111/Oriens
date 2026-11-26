@@ -70,6 +70,41 @@ test('quadro do projeto em claro e escuro', async ({ page, colorScheme }) => {
   expect(unexpected).toEqual([]);
 });
 
+test('busca do quadro no cabeçalho envia o termo e preserva os demais filtros', async ({ page, colorScheme, viewport }, testInfo) => {
+  if (viewport && viewport.width < 1024) await page.setViewportSize({ ...viewport, width: 360 });
+  const { unexpected } = await prepareBoard(page, colorScheme === 'dark' ? 'dark' : 'light');
+  await page.route(url => url.pathname === '/visual-api/project/9/board' && !!url.search,
+    route => route.fulfill({ json: { ...board, filtered: true } }));
+  const search = page.getByRole('search', { name: 'Buscar tarefas' });
+  await search.getByRole('button', { name: 'Buscar tarefas' }).click();
+  const input = search.getByRole('searchbox', { name: 'Buscar por título ou descrição' });
+  await expect(input).toBeFocused();
+  await input.fill('  Revisar  ');
+  await expect(page).toHaveURL(/\?tab=board$/);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
+  const request = page.waitForRequest(req => {
+    const url = new URL(req.url());
+    return url.pathname === '/visual-api/project/9/board' && url.searchParams.get('search') === 'Revisar';
+  });
+  await input.press('Enter');
+  await expect(page).toHaveURL(/search=Revisar$/);
+  await request;
+  await page.reload();
+  await expect(input).toHaveValue('Revisar');
+  await page.screenshot({ path: testInfo.outputPath('board-header-search.png') });
+
+  const filters = page.getByRole('dialog', { name: 'Filtros do quadro' });
+  await page.getByRole('button', { name: /^Filtros do quadro/ }).click();
+  await expect(filters.getByRole('button', { name: 'Busca', exact: true })).toHaveCount(0);
+  await filters.getByRole('button', { name: 'Status' }).click();
+  await filters.getByRole('checkbox', { name: 'A fazer' }).click();
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await search.getByRole('button', { name: 'Limpar busca' }).click();
+  await expect(page).toHaveURL(/\?tab=board&status=PENDING$/);
+  expect(unexpected).toEqual([]);
+});
+
 test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme, viewport }, testInfo) => {
   const { region, unexpected } = await prepareBoard(page, colorScheme === 'dark' ? 'dark' : 'light');
   const filteredBoard: BoardResponse = {
