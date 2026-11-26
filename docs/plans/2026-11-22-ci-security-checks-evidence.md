@@ -1,6 +1,9 @@
-# Segurança no CI — evidência local da #65
+# Segurança no CI — evidência da #65
 
 Data: 2026-11-22 · Branch: `ci/security-checks` · Base: `dev` em `3726a53`
+
+Consulta ao GitHub atualizada em 2026-11-26. Os resultados locais abaixo
+registram o estado do checkout de 22/11.
 
 ## Entrega
 
@@ -94,20 +97,45 @@ O perfil e a chave de cache finais usam o release 13.0.0 e o feed oficial.
 
 Não foram suprimidos achados nem atualizadas versões da aplicação para obter verde nesta tarefa.
 
-## Limites e pendências de aceite remoto
+## Execuções no GitHub
 
-- Ainda não houve push/PR nem execução dos workflows no GitHub. Os dois CodeQL completos, o upload
-  SARIF, os artefatos remotos e a restauração/gravação do cache precisam dessa primeira execução.
-- Compatibilidade de forks/Dependabot foi projetada conforme a documentação do evento `pull_request`
-  e conferida no código; ainda precisa de execução real desses tipos de PR.
-- Dependabot requer que o YAML chegue à branch padrão; conferir dependency graph, alerts e security
-  updates nas configurações do GitHub. Atualizações de versão miram `dev`; as de segurança miram `main`.
-- Se default setup do CodeQL estiver ativo, resolver explicitamente o conflito com advanced setup.
-- Os achados existentes mantêm os scans de segredos/dependências vermelhos até correção/triagem.
-- A proteção obrigatória de `dev`/`main` continua na tarefa #56. O encadeamento `deploy.needs: checks`
-  foi conferido estaticamente; não foi provocado um deploy de produção para testar reprovação.
-- As suítes de domínio H2/PostgreSQL/frontend e E2E não foram reexecutadas: não houve mudança de
-  regra de negócio, UI, schema ou runtime da aplicação. As provas foram direcionadas ao CI e ao build.
+Em 2026-11-26, os quatro runs abaixo concluíram com sucesso na primeira
+tentativa. Em cada run passaram Gitleaks, npm audit, Dependency-Check e os
+dois jobs CodeQL, incluindo os steps de análise/publicação e verificação do
+SARIF. Os SHAs da tabela são os heads reportados pelo Actions.
+
+| Run | Evento e destino | Head | Resultado |
+| --- | --- | --- | --- |
+| [45879671927](https://github.com/Guga2111/Oriens/actions/runs/45879671927) | `pull_request`, PR #62 → `dev` | `cfd6ed5` | 9 jobs do `Checks` passaram |
+| [45732701673](https://github.com/Guga2111/Oriens/actions/runs/45732701673) | `pull_request`, PR #56 do Dependabot → `dev` | `364eb75` | 9 jobs do `Checks` passaram |
+| [45728821162](https://github.com/Guga2111/Oriens/actions/runs/45728821162) | `pull_request`, release PR #51 → `main` | `5a75a40` | 9 jobs do `Checks` passaram |
+| [45732085997](https://github.com/Guga2111/Oriens/actions/runs/45732085997) | `push` em `main`, workflow `Deploy` | `59b4ede` | 9 jobs `checks / …` passaram, seguidos do job `deploy` |
+
+A API de artefatos listou `npm-audit`, `dependency-check`,
+`codeql-java-kotlin` e `codeql-javascript-typescript` nos quatro runs.
+A evidência registra nomes e resultados sanitizados. A política e os
+[nomes dos checks de PR e do deploy](../guides/merge-policy.md) ficam no guia de merge.
+
+O PR #56 do GitHub veio do Dependabot no mesmo repositório. Ele comprova o
+caso do bot. A lista de PRs não mostrou exemplo de fork externo para confirmar
+esse caso. O run do deploy comprova a chamada reutilizada no fluxo de sucesso.
+A evidência não cobre rejeição de merge por regra ativa, falha no deploy ou
+todos os caminhos de cache da NVD.
+
+## Dependabot, cadeia de dependências e ações do dono
+
+| Item | Leitura em 2026-11-26 | Ação pendente |
+| --- | --- | --- |
+| Atualizações de versão | [`dependabot.yml` em `main`](https://github.com/Guga2111/Oriens/blob/main/.github/dependabot.yml), com Maven (`/apps/api`), npm (`/apps/client`) e Actions (`/`) mirando `dev`. Os PRs de versão [#52](https://github.com/Guga2111/Oriens/pull/52) a [#56](https://github.com/Guga2111/Oriens/pull/56) confirmam atualizações de npm após o monorepo. | Conferir histórico dos jobs de versão dos demais ecossistemas quando disponível. |
+| Grafo de dependências | A [página do grafo](https://github.com/Guga2111/Oriens/network/dependencies) exibia `Dependency graph is disabled` e `dependency-graph/sbom` retornou HTTP 404. A composição do grafo não estava disponível. | Habilitar o grafo e validar a cobertura dos manifests/lockfile. Para transitivas Maven, conferir a submissão do grafo resolvido e habilitar a submissão automática se faltar cobertura. |
+| Dependabot alerts | `vulnerability-alerts` retornou HTTP 404 com `Vulnerability alerts are disabled`. | Habilitar alertas após o grafo e triar os resultados. |
+| Dependabot security updates | `automated-security-fixes` retornou `enabled: false`. | Habilitar atualizações de segurança e validar PR para a branch padrão `main` quando houver alerta elegível com correção. |
+| CodeQL | `code-scanning/default-setup` retornou `not-configured`. O setup versionado executou nos quatro runs, com análises de ambas as linguagens visíveis no GitHub. | Manter o setup versionado e acompanhar os resultados. |
+
+Qualquer ajuste de configuração do GitHub depende de autorização do dono.
+O Dependency-Check do CI tem cobertura própria, independente do grafo do
+GitHub. Veja [ecossistemas do grafo](https://docs.github.com/en/code-security/reference/supply-chain-security/dependency-graph-supported-package-ecosystems)
+e [operação dos checks](../ci-security.md).
 
 ## Referências
 
