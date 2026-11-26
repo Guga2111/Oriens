@@ -11,6 +11,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,10 +43,28 @@ class CyclomaticComplexityTest {
                     .as("duplicate exception %s", fields[0]).isNull();
         }
 
+        List<String> violations = findViolations(SOURCES, baseline);
+        assertThat(baseline).as("exceções sem método correspondente").isEmpty();
+        assertThat(violations).as("limite de complexidade ou exceção a remover").isEmpty();
+    }
+
+    @Test
+    void newMethodAboveTheLimitIsReported(@TempDir Path source) throws Exception {
+        String branches = IntStream.range(0, LIMIT)
+                .mapToObj(value -> "if (input == " + value + ") return " + value + ";")
+                .collect(Collectors.joining("\n"));
+        Files.writeString(source.resolve("Probe.java"),
+                "class Probe { int score(int input) {\n" + branches + "\nreturn -1; } }");
+
+        assertThat(findViolations(source, new HashMap<>()))
+                .singleElement().asString().contains("Probe.score(int)", "21 (limite 20");
+    }
+
+    private static List<String> findViolations(Path sources, Map<String, Integer> baseline) throws Exception {
         List<String> violations = new ArrayList<>();
         var compiler = ToolProvider.getSystemJavaCompiler();
         var diagnostics = new DiagnosticCollector<JavaFileObject>();
-        try (var paths = Files.walk(SOURCES);
+        try (var paths = Files.walk(sources);
              var fileManager = compiler.getStandardFileManager(diagnostics, null, null)) {
             var files = paths.filter(path -> path.toString().endsWith(".java")).sorted().toList();
             assertThat(files).isNotEmpty();
@@ -52,7 +72,7 @@ class CyclomaticComplexityTest {
                     List.of("-proc:none"), null, fileManager.getJavaFileObjectsFromPaths(files));
             var positions = Trees.instance(task).getSourcePositions();
             for (var unit : task.parse()) {
-                String file = SOURCES.toAbsolutePath().relativize(Path.of(unit.getSourceFile().toUri())).toString();
+                String file = sources.toAbsolutePath().relativize(Path.of(unit.getSourceFile().toUri())).toString();
                 new TreePathScanner<Void, Void>() {
                     private final Map<String, Integer> lambdaCounts = new HashMap<>();
 
@@ -100,8 +120,7 @@ class CyclomaticComplexityTest {
             }
         }
         assertThat(diagnostics.getDiagnostics()).noneMatch(diagnostic -> diagnostic.getKind() == Diagnostic.Kind.ERROR);
-        assertThat(baseline).as("exceções sem método correspondente").isEmpty();
-        assertThat(violations).as("limite de complexidade ou exceção a remover").isEmpty();
+        return violations;
     }
 
     private static final class Decisions extends TreeScanner<Integer, Void> {
