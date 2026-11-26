@@ -15,7 +15,7 @@ Reprodução a partir da raiz do repositório:
 
 ```sh
 npm --prefix oriens-front run build
-node docs/screenshots/projects-refactor/p5/fixture-server.mjs oriens-front/dist 4198
+node docs/screenshots/projects-refactor/p5/fixture-server.mjs apps/client/dist 4198
 ```
 
 Em outro terminal:

@@ -1,7 +1,17 @@
 *.sh
+!/scripts/*.sh
 *.txt
 *.claude
+!/.claude/
+/.claude/*
+!/.claude/skills/
+
+# Capturas e sessões locais de revisão
+/output/playwright/
 
 # Segredos - nunca commitar
 .env
 !.env.example
+
+# macOS
+.DS_Store

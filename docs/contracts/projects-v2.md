@@ -191,4 +191,27 @@ altera campos escalares, não há incremento duplicado. PATCH normal preserva as
 precondições de projeto existentes; não muda a versão estrutural do projeto ao
 editar somente etiquetas. Criação preserva recibos legados quando não há etiquetas.
 
-[Procedimento aditivo, rollback e compatibilidade](../../oriens-api/ops/projects-refactor/TASK_LABELS.md).
+[Procedimento aditivo, rollback e compatibilidade](../../ops/projects-refactor/TASK_LABELS.md).
+
+## Descrição de tarefa — revisão aditiva de 2026-11-25
+
+POST e PATCH de tarefa aceitam `descriptionDoc` no formato
+`{ schemaVersion: 1, content: { type: "doc", content: [...] } }`.
+O serviço valida os blocos e deriva a string `description` em Markdown com
+até 10.000 caracteres. Escritas pelo campo legado `description` aplicam texto
+simples. Em PATCH, omitir ambos preserva e enviar `null` em um limpa.
+Enviar os dois campos em PATCH ou duas descrições não nulas em POST é inválido.
+
+GET individual e mutações incluem `descriptionDoc` quando presente. As visões
+de lista trazem `descriptionText` para leitura sem marcação quando há um documento.
+A descrição legada permanece no campo `description`.
+Se uma versão anterior da API alterar só a string durante rollback, o banco
+descarta o documento então desatualizado e marca seus anexos para limpeza.
+
+| Operação | Corpo / parâmetros | Sucesso |
+| --- | --- | --- |
+| POST `/task/{id}/attachments?kind=image\|video` | Arquivo como `application/octet-stream`, dono autenticado | 201 com ID, tipo e MIME |
+| GET `/task/{id}/attachments/{attachmentId}` | Dono autenticado | 200 com URL assinada e expiração |
+| GET `/task/attachments/content/{id}/{attachmentId}` | Assinatura, ID do dono e expiração emitidos pelo Oriens | 200 conteúdo ou 206 para Range |
+
+Consulte as [convenções Markdown do MCP](../mcp.md#descrição-de-tarefas-em-markdown).

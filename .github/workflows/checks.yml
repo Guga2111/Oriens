@@ -4,7 +4,7 @@ name: Checks
 # what gates production. No path filter: a required check must always report, even on docs-only PRs.
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [dev, main, 'refac/**']
   workflow_call:
 
 permissions:
@@ -15,21 +15,32 @@ defaults:
     shell: bash
 
 jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 -B scripts/check-docs-links.py
+      - run: python3 -B -m unittest discover -s scripts/tests -p 'test_check_docs_links.py' -v
+
   test-api:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: oriens-api
+        working-directory: apps/api
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "25"
           cache: maven
+          cache-dependency-path: apps/api/pom.xml
       # McpP*PostgresTest fail without their Postgres; test-postgres runs them.
       - run: ./mvnw -B test '-Dtest=!McpP2PostgresTest,!McpP3PostgresTest,!McpP4PostgresTest' -Dsurefire.failIfNoSpecifiedTests=false
 
@@ -39,31 +50,32 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "25"
           cache: maven
-      - run: oriens-api/ops/postgres-tests.sh
+          cache-dependency-path: apps/api/pom.xml
+      - run: scripts/postgres-tests.sh
 
   test-front:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: oriens-front
+        working-directory: apps/client
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: oriens-front/package-lock.json
+          cache-dependency-path: apps/client/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm test
@@ -74,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -101,19 +113,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
       - name: Auditar dependências de produção e desenvolvimento
-        working-directory: oriens-front
+        working-directory: apps/client
         # Audit the lockfile without installing packages or running lifecycle scripts.
         run: npm audit --include=dev --audit-level=high --json > "$RUNNER_TEMP/npm-audit.json"
       - name: Preservar relatório completo do npm
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: npm-audit
           path: ${{ runner.temp }}/npm-audit.json
@@ -124,43 +136,44 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "25"
           cache: maven
+          cache-dependency-path: apps/api/pom.xml
       - name: Identificar a atualização diária da base NVD
         id: nvd-date
         run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: nvd-cache
         with:
-          path: oriens-api/target/dependency-check-data
+          path: apps/api/target/dependency-check-data
           key: nvd-feed-13.0.0-${{ runner.os }}-${{ steps.nvd-date.outputs.date }}
           restore-keys: nvd-feed-13.0.0-${{ runner.os }}-
       - name: Reprovar vulnerabilidades Java com CVSS maior ou igual a 7
-        working-directory: oriens-api
+        working-directory: apps/api
         # Official NVD feeds require no API key, including on fork/bot PRs.
         run: ./mvnw -B -Psecurity-audit dependency-check:check
       - name: Guardar a base mesmo quando achados reprovam a análise
         if: >-
           ${{ !cancelled() && steps.nvd-cache.outputs.cache-hit != 'true' &&
-          hashFiles('oriens-api/target/dependency-check-report.json') != '' }}
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+          hashFiles('apps/api/target/dependency-check-report.json') != '' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: oriens-api/target/dependency-check-data
+          path: apps/api/target/dependency-check-data
           key: ${{ steps.nvd-cache.outputs.cache-primary-key }}
       - name: Preservar relatórios completos do Dependency-Check
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dependency-check
           path: |
-            oriens-api/target/dependency-check-report.json
-            oriens-api/target/dependency-check-report.html
+            apps/api/target/dependency-check-report.json
+            apps/api/target/dependency-check-report.html
           if-no-files-found: error
           retention-days: 7
 
@@ -183,17 +196,18 @@ jobs:
           - language: javascript-typescript
             build-mode: none
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Provar a política de severidade e falha fechada
         run: python3 -B -m unittest discover -s .github/security -p 'test_codeql_gate.py' -v
-      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         if: matrix.language == 'java-kotlin'
         with:
           distribution: temurin
           java-version: "25"
           cache: maven
+          cache-dependency-path: apps/api/pom.xml
       - uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4
         with:
           languages: ${{ matrix.language }}
@@ -201,7 +215,7 @@ jobs:
           queries: security-extended
       - name: Compilar a API para análise estática
         if: matrix.language == 'java-kotlin'
-        working-directory: oriens-api
+        working-directory: apps/api
         run: ./mvnw -B -Dmaven.test.skip=true package
       - name: Analisar e publicar resultados CodeQL
         id: codeql-analysis
@@ -220,7 +234,7 @@ jobs:
           python3 -B .github/security/codeql_gate.py "$SARIF_DIRECTORY"
       - name: Preservar relatórios CodeQL
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: codeql-${{ matrix.language }}
           path: ${{ runner.temp }}/codeql-results/*.sarif

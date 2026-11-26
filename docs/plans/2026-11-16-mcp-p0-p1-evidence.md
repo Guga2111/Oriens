@@ -2,7 +2,7 @@
 
 Data: 2026-11-16. Base: `e4efeb2`; desenho de execução registrado em `cdd7186`.
 Contrato: [SPEC](2026-11-16-mcp-account-spec.md).
-Operação e reprodução: [README P0/P1](../../oriens-api/ops/mcp-account/README.md).
+Operação e reprodução: [README P0/P1](../../ops/mcp-account/README.md).
 
 [Resultados estruturados, sem credenciais](2026-11-16-mcp-p0-p1-evidence.json).
 

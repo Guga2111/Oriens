@@ -1,0 +1,76 @@
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import SignLoginPage from "./pages/SignLoginPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import { WorkHomePage } from "./pages/WorkHomePage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { LandingPage } from "./pages/LandingPage";
+import { ProtectedRoute } from "./router/ProtectedRoute";
+import { AppLayout } from "./components/layout/AppLayout";
+import ProjectsPage from "./pages/ProjectsPage";
+import ConfigurationPage from "./pages/ConfigurationPage";
+import HelpSupportPage from "./pages/HelpSupportPage";
+import AdminSupportPage from "./pages/AdminSupportPage";
+import AdminManagementPage from "./pages/AdminManagementPage";
+import { StatisticsPage } from "./pages/StatisticsPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
+import { useEffect } from "react";
+import FinancialPage from "./pages/FinancialPage";
+import FinancialEntriesPage from "./pages/FinancialEntriesPage";
+import FinancialInvestmentsPage from "./pages/FinancialInvestmentsPage";
+import AllDataPage from "./pages/AllDataPage";
+
+import { queryClient } from "@/lib/query-client";
+
+const App = () => {
+
+  useEffect(() => {
+    document.body.style.backgroundColor = "";
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Sonner />
+        <BrowserRouter>
+          <>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/auth" element={<SignLoginPage />} />
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/terms" element={<TermsOfServicePage />} />
+
+              {/* Protected Route / Tasks */}
+              <Route element={<ProtectedRoute />}>
+                {/* Shell único (SPEC §10.2): as URLs não mudam. */}
+                <Route element={<AppLayout />}>
+                  <Route path="/home" element={<WorkHomePage />} />
+                  <Route path="/tasks" element={<DashboardPage />} />
+                  <Route path="/projects" element={<ProjectsPage />} />
+                  <Route path="/stats" element={<StatisticsPage />} />
+                  <Route path="/config" element={<ConfigurationPage />} />
+                  <Route path="/tasks/project/:id" element={<ProjectDetailPage />} />
+                  <Route path="/financial" element={<FinancialPage />} />
+                  <Route path="/financial/entries" element={<FinancialEntriesPage />} />
+                  <Route path="/financial/investments" element={<FinancialInvestmentsPage />} />
+                  <Route path="/all-data" element={<AllDataPage />} />
+                  <Route path="/support" element={<HelpSupportPage />} />
+                  <Route path="/admin/support" element={<AdminSupportPage />} />
+                  <Route path="/admin/management" element={<AdminManagementPage />} />
+                </Route>
+              </Route>
+
+              {/* Catch-All "*" Route */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
+
+export default App;

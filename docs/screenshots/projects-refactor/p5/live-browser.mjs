@@ -1,5 +1,5 @@
 // Called by WorkApiPostgresTest. All work requests reach its real HTTP/JWT/JPA/PostgreSQL stack.
-import { chromium } from '../../../../oriens-front/node_modules/playwright/index.mjs';
+import { chromium } from '../../../../apps/client/node_modules/playwright/index.mjs';
 import assert from 'node:assert/strict';
 const [base, projectId, taskId, standaloneId] = process.argv.slice(2);
 const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROME_PATH || '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser' });

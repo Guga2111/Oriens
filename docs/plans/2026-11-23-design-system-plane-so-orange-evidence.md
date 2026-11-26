@@ -18,7 +18,7 @@ Todos os valores de §5.1 foram aplicados como escritos. `button.tsx` e `src/com
 
 ## 2. Verificação automática
 
-Executado em `oriens-front/`.
+Executado em `apps/client/`.
 
 ```
 $ grep -rnE "brand-(cream|burgundy|yellow)|background-brand" src tailwind.config.ts
@@ -75,7 +75,7 @@ por isso diferenças de até 0,04 em relação à spec).
 
 ## 4. Revisão visual
 
-Ambiente: `npm run dev` (Vite em `localhost:5173`) com a API local do `oriens-api/docker-compose.dev.yml`.
+Ambiente: `npm run dev` (Vite em `localhost:5173`) com a API local do `ops/compose/docker-compose.dev.yml`.
 As portas 8080 e 5432 estavam ocupadas por outro projeto, então o compose subiu com um override
 temporário (fora do repositório) que remapeou para `127.0.0.1:18080` e `127.0.0.1:15432`, e o front
 rodou com `VITE_API_BASE_URL=http://127.0.0.1:18080`. Os dados vieram de uma conta de teste

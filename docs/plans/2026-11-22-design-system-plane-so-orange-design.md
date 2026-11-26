@@ -234,15 +234,15 @@ tempo e linha vertical "hoje"), a forma resolve.
 
 | Arquivo | Mudança |
 |---|---|
-| `oriens-front/src/index.css` | §5.1 e §5.2 |
+| `apps/client/src/index.css` | §5.1 e §5.2 |
 | `oriens-front/tailwind.config.ts` | Remove `brand` e `background-brand` |
-| `oriens-front/src/components/common/OriensLogo.tsx` | §5.4 |
+| `apps/client/src/components/common/OriensLogo.tsx` | §5.4 |
 | `oriens-front/public/favicon.svg` | §5.5 |
-| `oriens-front/src/pages/{Landing,SignLogin,ResetPassword,NotFound,TermsOfService}Page.tsx` | §5.6 |
-| `oriens-front/src/components/dashboard/DayLine.tsx` | §5.7 |
+| `apps/client/src/pages/{Landing,SignLogin,ResetPassword,NotFound,TermsOfService}Page.tsx` | §5.6 |
+| `apps/client/src/components/dashboard/DayLine.tsx` | §5.7 |
 | `oriens-front/index.html` | §5.8 |
 | `docs/conventions/frontend.md`, `docs/specs/oriens-frontend-refactor.md` | §5.9 |
-| `oriens-front/src/__tests__/` | Testes de §9 |
+| `apps/client/src/__tests__/` | Testes de §9 |
 
 ## 9. Critérios de aceitação
 

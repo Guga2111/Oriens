@@ -33,7 +33,7 @@ rejeita propriedades desconhecidas. Não há busca de previews ou favicons remot
 - `npm run lint`: passou, zero erros; 14 avisos preexistentes.
 - `npm test`: **48 arquivos, 349 testes aprovados**, incluindo dez testes novos de Home.
 - `npm run build`: passou. Avisos existentes de tamanho do bundle e classe de duração Tailwind.
-- `JAVA_HOME=…/25-open ops/postgres-tests.sh WorkHomePostgresTest`: **7 testes aprovados**, nenhum ignorado.
+- `JAVA_HOME=…/25-open scripts/postgres-tests.sh WorkHomePostgresTest`: **7 testes aprovados**, nenhum ignorado.
   A prova cobre migração e validação do schema, autenticação, isolamento entre contas, CRUD, versão,
   replay idempotente, validação de URLs/JSON, recentes, exclusão/arquivamento, número constante de
   consultas e concorrência de visitas/criação no limite de vinte links.

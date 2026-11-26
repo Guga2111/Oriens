@@ -160,5 +160,5 @@ significa zero. Financeiro representa lançamentos registrados, sem confirmaçã
 pagamento ou saldo inicial. Recorrência não preenche lacunas anteriores à ativação.
 
 **A migração não foi aplicada a bancos existentes.** Antes de executar este código em
-um ambiente com dados, seguir o [runbook](../../../oriens-api/ops/projects-refactor/STATISTICS.md)
+um ambiente com dados, seguir o [runbook](../../../ops/projects-refactor/STATISTICS.md)
 com alvo explícito, backup e preflight. Não houve deploy nesta entrega.
