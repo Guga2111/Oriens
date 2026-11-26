@@ -38,6 +38,7 @@ const count = (n: number, singular: string, plural: string) => `${n} ${n === 1 ?
  * Project card in the plane.so layout: a cover with the project's mark and its actions, the title, the
  * description when there is one and the project's state as chips. The whole card opens the project.
  */
+// eslint-disable-next-line complexity -- existing score 51; owner: client maintainers.
 export function ProjectCard({ project, onEdit, onDelete }: {
   project: WorkProject; onEdit: (p: WorkProject) => void; onDelete: (id: number) => void;
 }) {

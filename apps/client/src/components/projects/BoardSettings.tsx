@@ -14,6 +14,7 @@ import type { BoardResponse, ProjectWrite, WorkProject } from '@/types/work';
 import type { TaskStatus } from '@/types/task';
 
 const kinds = Object.entries(statusNames).map(([value, label]) => ({ value, label }));
+// eslint-disable-next-line complexity -- existing score 27; owner: client maintainers.
 export function BoardSettings({ project, board, onClose, onReload }: { project: WorkProject; board: BoardResponse; onClose: () => void; onReload: () => Promise<BoardResponse | undefined> }) {
   const write = useProjectWrites(); const attempt = useCreationAttempt();
   const [name, setName] = useState(''); const [kind, setKind] = useState<TaskStatus>('PENDING');

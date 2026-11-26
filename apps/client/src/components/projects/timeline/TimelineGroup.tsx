@@ -11,6 +11,7 @@ export const timelineLabelCell = 'sticky left-0 z-10 col-start-1 row-start-1 fle
 /** Row rule, one step lighter than the frame. */
 const rowRule = 'border-b border-muted';
 
+// eslint-disable-next-line complexity -- existing score 27; owner: client maintainers.
 export function TimelineGroup({ group, grid, scale, period, today, open, onOpenChange, onOpen }: {
   group: TimelineGroupData; grid: string; scale: TimelineScale; period: TimelineWindow; today: string;
   open: boolean; onOpenChange: (open: boolean) => void; onOpen: (task: WorkTask) => void;

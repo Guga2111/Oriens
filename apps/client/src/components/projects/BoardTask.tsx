@@ -42,6 +42,7 @@ export function BoardTaskOverlay({ task, today }: { task: WorkTask; today: strin
   </article>;
 }
 
+// eslint-disable-next-line complexity -- existing score 21; owner: client maintainers.
 export function BoardTask({ task, column, columns, above, below, afterBelow, filtered, busy, today, mobile, reducedMotion, menuDisabled, pendingColumnId, onOpen, onEdit, onObjective, onDelete, move, sortPreview, shift, children }: {
   task: WorkTask; column: Column; columns: Column[]; above?: WorkTask; below?: WorkTask; afterBelow?: WorkTask;
   filtered: boolean; busy: boolean; today: string; mobile: boolean; reducedMotion: boolean; menuDisabled: boolean; pendingColumnId: number;

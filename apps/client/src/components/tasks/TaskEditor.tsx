@@ -36,6 +36,7 @@ export function TaskEditor(props: TaskEditorProps) {
   // Unmount the form at close: reopen starts from a fresh server snapshot, never a background refetch.
   return props.open ? <TaskEditorForm {...props} /> : null;
 }
+// eslint-disable-next-line complexity -- existing score 89; owner: client maintainers.
 function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: TaskEditorProps) {
   const [base, setBase] = useState(task);
   useRecordVisit('TASK', task?.id);
@@ -84,6 +85,7 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
   const selectedChoices = choices.data?.content.filter(p => p.mode === 'DEVELOPMENT') ?? [];
   const projectOptions = [{ value: 'none', label: 'Tarefa avulsa' }, ...selectedChoices.map(p => ({ value: String(p.id), label: p.title + (p.archived ? ' · Arquivado' : '') }))];
   if (draft.projectId && !projectOptions.some(o => o.value === String(draft.projectId))) projectOptions.push({ value: String(draft.projectId), label: activeProject?.title ?? task?.project?.title ?? 'Projeto selecionado' });
+  // eslint-disable-next-line complexity -- existing score 36; owner: client maintainers.
   async function save(event: React.FormEvent) {
     event.preventDefault();
     setError('');

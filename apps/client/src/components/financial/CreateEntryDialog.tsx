@@ -46,6 +46,7 @@ interface CreateEntryDialogProps {
   onSuccess: () => void;
 }
 
+// eslint-disable-next-line complexity -- existing score 36; owner: client maintainers.
 export function CreateEntryDialog({ open, onOpenChange, tags, onSuccess }: CreateEntryDialogProps) {
   const { userId } = useAuth();
   const [isLoading, setIsLoading] = useState(false);

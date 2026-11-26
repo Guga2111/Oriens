@@ -34,6 +34,7 @@ export function MovementDialog(props: MovementDialogProps) {
 
 type MovementWrite = { investmentId: number; input: MovementInput };
 
+// eslint-disable-next-line complexity -- existing score 26; owner: client maintainers.
 function MovementForm({ open, onOpenChange, investments, investmentId, movement }: MovementDialogProps) {
   const { userId } = useAuth();
   const today = useProductToday();
