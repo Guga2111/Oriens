@@ -8,21 +8,10 @@ import { Input } from "@/components/ui/input";
 import { useProductToday } from "@/hooks/useProductToday";
 import { useTaskLabels } from "@/hooks/useTaskLabels";
 import { taskPeriodPresets, type TaskFilters } from "@/lib/task-filters";
-import { ProjectFilter } from "./ProjectFilter";
 
 export interface TaskFilterProps {
   filters: TaskFilters;
   onChange: (update: Partial<TaskFilters>) => void;
-}
-
-export function TaskProjectFilter({ value, onChange }: { value?: number; onChange: (value?: number) => void }) {
-  const id = useId();
-  return (
-    <Field className="gap-1.5">
-      <FieldLabel htmlFor={id}>Projeto</FieldLabel>
-      <ProjectFilter id={id} value={value} onChange={onChange} />
-    </Field>
-  );
 }
 
 export function TaskFilterSearch({ value, onSubmit }: { value: string; onSubmit: (value: string) => void }) {
@@ -93,11 +82,8 @@ export function TaskPeriodFields({ filters, onChange }: TaskFilterProps) {
 
   return (
     <FieldGroup className="gap-3">
-      <Field className="gap-1.5">
-        <FieldLabel htmlFor={`${id}-period`}>Período</FieldLabel>
-        <WorkSelect id={`${id}-period`} label="Período" value={period} onChange={selectPeriod}
-          options={[{ value: "all", label: "Todos os períodos" }, ...presets, { value: "custom", label: "Personalizado" }]} />
-      </Field>
+      <WorkSelect label="Período" value={period} onChange={selectPeriod}
+        options={[{ value: "all", label: "Todos os períodos" }, ...presets, { value: "custom", label: "Personalizado" }]} />
       {period !== "all" && <Field className="gap-1.5">
         <FieldLabel htmlFor={`${id}-date-field`}>Campo de data</FieldLabel>
         <WorkSelect id={`${id}-date-field`} label="Campo de data" value={dateField}
@@ -112,12 +98,10 @@ export function TaskPeriodFields({ filters, onChange }: TaskFilterProps) {
 }
 
 export function TaskLabelFilter({ value, onChange }: { value?: number; onChange: (value?: number) => void }) {
-  const id = useId();
   const labels = useTaskLabels();
   return (
     <Field className="gap-1.5">
-      <FieldLabel htmlFor={id}>Etiqueta</FieldLabel>
-      <WorkSelect id={id} label="Etiqueta" value={value ? String(value) : "all"}
+      <WorkSelect label="Etiqueta" value={value ? String(value) : "all"}
         onChange={label => onChange(label === "all" ? undefined : Number(label))}
         options={[
           { value: "all", label: "Todas as etiquetas" },

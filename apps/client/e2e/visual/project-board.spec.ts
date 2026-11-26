@@ -89,7 +89,19 @@ test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme
   await expect(panel.getByRole('checkbox', { name: 'A fazer' })).toBeHidden();
   await expect(panel.getByRole('button', { name: 'Fechar' })).toHaveCount(mobile ? 1 : 0);
   await page.screenshot({ path: testInfo.outputPath('filter-categories.png') });
-  await panel.getByRole('button', { name: 'Período' }).click();
+  for (const name of ['Etiqueta', 'Objetivo', 'Planejamento', 'Período']) {
+    const category = panel.getByRole('button', { name, exact: true });
+    await category.click();
+    const heading = page.getByRole('heading', { name, exact: true });
+    const section = panel.locator('section').filter({ has: heading });
+    await expect(section.getByText(name, { exact: true })).toHaveCount(1);
+    await expect(section.getByRole('combobox', { name, exact: true })).toBeVisible();
+    if (name !== 'Período') {
+      await page.keyboard.press('Escape');
+      await expect(category).toBeFocused();
+    }
+  }
+  await page.screenshot({ path: testInfo.outputPath('filter-period.png') });
 
   await panel.getByRole('combobox', { name: 'Período' }).click();
   await page.getByRole('option', { name: 'Últimos 7 dias' }).click();

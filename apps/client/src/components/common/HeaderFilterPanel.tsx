@@ -103,7 +103,7 @@ export function HeaderFilterPanel({ count, onClear, description, title = "Filtro
               {!isDesktop && <Button type="button" variant="ghost" size="icon" aria-label="Voltar aos filtros" onClick={goBack}>
                 <ArrowLeft aria-hidden />
               </Button>}
-              <h3 ref={active?.id === section.id ? sectionTitleRef : undefined} tabIndex={-1} className="text-sm font-medium">
+              <h3 ref={active?.id === section.id ? sectionTitleRef : undefined} tabIndex={-1} className="text-sm font-medium focus:outline-none">
                 {section.label}
               </h3>
             </div>

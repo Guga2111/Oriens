@@ -2,9 +2,10 @@ import { CalendarDays, CircleDot, Flag, Folder, Search, Tag } from "lucide-react
 import type { HeaderFilterSection } from "@/components/common/HeaderFilterPanel";
 import { PRIORITY, PRIORITY_ORDER, TASK_STATUS } from "@/lib/labels";
 import { TASK_STATUS_ORDER } from "@/lib/task-filters";
+import { ProjectFilter } from "./ProjectFilter";
 import { PriorityIcon } from "./PriorityIcon";
 import { StatusIcon } from "./StatusIcon";
-import { TaskFilterOptions, TaskFilterSearch, TaskLabelFilter, TaskPeriodFields, TaskProjectFilter, type TaskFilterProps } from "./TaskFilterFields";
+import { TaskFilterOptions, TaskFilterSearch, TaskLabelFilter, TaskPeriodFields, type TaskFilterProps } from "./TaskFilterFields";
 
 export function taskFilterSections({ filters, onChange, showProject }: TaskFilterProps & { showProject?: boolean }): HeaderFilterSection[] {
   const sections: HeaderFilterSection[] = [
@@ -24,7 +25,7 @@ export function taskFilterSections({ filters, onChange, showProject }: TaskFilte
 
   if (showProject) {
     sections.push({ id: "project", icon: Folder, label: "Projeto", count: Number(!!filters.projectId),
-      fields: <TaskProjectFilter value={filters.projectId} onChange={projectId => onChange({ projectId })} /> });
+      fields: <ProjectFilter value={filters.projectId} onChange={projectId => onChange({ projectId })} /> });
   }
   sections.push({ id: "search", icon: Search, label: "Busca", count: Number(!!filters.search),
     fields: <TaskFilterSearch value={filters.search ?? ""} onSubmit={search => onChange({ search })} /> });

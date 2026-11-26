@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandGroup, CommandItem } from "@/components/ui/command";
 
-export function ProjectFilter({ id, value, onChange }: { id: string; value?: number; onChange: (id?: number) => void }) {
+export function ProjectFilter({ value, onChange }: { value?: number; onChange: (id?: number) => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<{ id: number; title: string }>();
   const projects = useWorkProjects({ size: 100, includeArchived: true, search: search || undefined });
   return <Popover open={open} onOpenChange={setOpen}>
     <PopoverTrigger asChild>
-      <Button id={id} variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
+      <Button variant="outline" role="combobox" aria-label="Projeto" aria-expanded={open} className="w-full justify-between">
         <span className="truncate">{value ? projects.data?.content.find(p => p.id === value)?.title || (selected?.id === value ? selected.title : undefined) || "Projeto selecionado" : "Todos os projetos"}</span>
         <ChevronDown className="ml-2 h-4 w-4 shrink-0" aria-hidden />
       </Button>

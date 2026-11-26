@@ -1,6 +1,5 @@
-import { useId } from "react";
 import { DateRangeFields } from "@/components/common/DateRangeFields";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { FieldGroup } from "@/components/ui/field";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { EntriesFilters, EntriesPeriod } from "@/lib/financial-route";
 import type { TagDTO } from "@/types/financial";
@@ -23,20 +22,16 @@ interface EntryFilterProps {
 }
 
 export function EntryPeriodFields({ filters, onChange }: Omit<EntryFilterProps, "tags">) {
-  const id = useId();
   return (
     <FieldGroup className="gap-3">
-      <Field className="gap-1.5">
-        <FieldLabel htmlFor={`${id}-period`}>Período</FieldLabel>
-        <Select value={filters.period} onValueChange={(period: EntriesPeriod) => onChange({ period })}>
-          <SelectTrigger id={`${id}-period`}><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {PERIODS.map(period => <SelectItem key={period.value} value={period.value}>{period.label}</SelectItem>)}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </Field>
+      <Select value={filters.period} onValueChange={(period: EntriesPeriod) => onChange({ period })}>
+        <SelectTrigger aria-label="Período"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {PERIODS.map(period => <SelectItem key={period.value} value={period.value}>{period.label}</SelectItem>)}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       {filters.period === "custom" && <DateRangeFields start={filters.start} end={filters.end}
         onStartChange={start => onChange({ start })} onEndChange={end => onChange({ end })} />}
     </FieldGroup>
@@ -44,27 +39,23 @@ export function EntryPeriodFields({ filters, onChange }: Omit<EntryFilterProps, 
 }
 
 export function EntryCategoryField({ filters, tags, onChange }: EntryFilterProps) {
-  const id = useId();
   return (
-    <Field className="gap-1.5">
-      <FieldLabel htmlFor={`${id}-tag`}>Categoria</FieldLabel>
-      <Select value={filters.tagId === null ? ALL_TAGS : String(filters.tagId)}
-        onValueChange={value => onChange({ tagId: value === ALL_TAGS ? null : Number(value) })}>
-        <SelectTrigger id={`${id}-tag`}><SelectValue /></SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectItem value={ALL_TAGS}>Todas as categorias</SelectItem>
-            {tags.map(tag => (
-              <SelectItem key={tag.id} value={String(tag.id)}>
-                <span className="flex items-center gap-2">
-                  <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: tag.color }} />
-                  {tag.name}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-    </Field>
+    <Select value={filters.tagId === null ? ALL_TAGS : String(filters.tagId)}
+      onValueChange={value => onChange({ tagId: value === ALL_TAGS ? null : Number(value) })}>
+      <SelectTrigger aria-label="Categoria"><SelectValue /></SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectItem value={ALL_TAGS}>Todas as categorias</SelectItem>
+          {tags.map(tag => (
+            <SelectItem key={tag.id} value={String(tag.id)}>
+              <span className="flex items-center gap-2">
+                <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: tag.color }} />
+                {tag.name}
+              </span>
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 }
