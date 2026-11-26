@@ -16,8 +16,8 @@ O [ADR de deploy](../decisions/007-deploy.md) registra a escolha dessa topologia
   alcança a API por `127.0.0.1:${API_PORT}`. O Prometheus acessa `oriens-api:8081`
   pela rede Docker, sem publicar a porta de gerenciamento no host.
 - O cliente estático é publicado em `/var/www/oriens`. O Nginx do VPS serve esse
-  diretório e encaminha a API e as rotas MCP/OAuth. A configuração do Nginx é
-  administrada no VPS.
+  diretório e encaminha a API e as rotas MCP/OAuth. O operador administra a
+  configuração do Nginx no VPS. [Instalação e rollback do Nginx](../../ops/nginx/README.md)
 
 ## Fluxo
 
