@@ -5,7 +5,7 @@ import { AppHeader } from '@/components/common/AppHeader';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useWorkProject, workKey } from '@/hooks/useWork';
 import api from '@/services/api';
-import { project, renderWork } from './work-fixtures';
+import { board, project, renderWork } from './work-fixtures';
 
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7 }) }));
 vi.mock('@/services/api', () => ({ default: { get: vi.fn() } }));
@@ -80,12 +80,30 @@ describe('AppHeader — navegação de contexto', () => {
     }
   });
 
-  it('nos itens de trabalho mostra a seção e o total de itens, em qualquer visão', async () => {
+  it('na timeline mostra a seção e o total de itens do projeto', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: { ...project, summary: { ...project.summary, totalTasks: 8 } } });
     renderHeader('/tasks/project/9?tab=timeline');
     const breadcrumb = screen.getByRole('navigation', { name: 'Breadcrumb' });
     expect((await within(breadcrumb).findByText('Itens de trabalho')).closest('[aria-current="page"]')).not.toBeNull();
     expect(within(breadcrumb).getByLabelText('8 itens')).toHaveTextContent('8');
+  });
+
+  it('no quadro usa o total visível da consulta existente, inclusive quando não há resultados', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: project });
+    const { client } = renderHeader('/tasks/project/9?tab=board&search=Publicar&priority=HIGH');
+    const breadcrumb = within(screen.getByRole('navigation', { name: 'Breadcrumb' }));
+    await breadcrumb.findByText('Itens de trabalho');
+    const key = workKey(7, 'projects/board', 9, { search: 'Publicar', priority: 'HIGH' });
+
+    act(() => {
+      client.setQueryData(key, { ...board, filtered: true, total: { ...board.total, totalTasks: 2 } });
+    });
+    expect(await breadcrumb.findByLabelText('1 item')).toHaveTextContent('1');
+    act(() => {
+      client.setQueryData(key, { ...board, filtered: true, visible: { ...board.visible, totalTasks: 0 } });
+    });
+    expect(await breadcrumb.findByLabelText('0 itens')).toHaveTextContent('0');
+    expect(api.get).toHaveBeenCalledTimes(1);
   });
 
   it('projeto simples não ganha seção no breadcrumb', async () => {

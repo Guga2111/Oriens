@@ -10,8 +10,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useWorkProject } from "@/hooks/useWork";
+import { useProjectBoard, useWorkProject } from "@/hooks/useWork";
 import { getContextItem } from "@/components/layout/app-contexts";
+import { boardFiltersFromParams } from "@/lib/project-filters";
 import { PROJECT_SECTIONS, projectSectionOf, projectTabFrom } from "@/lib/project-tabs";
 import { HeaderActionsSlot } from "./HeaderActions";
 
@@ -38,8 +39,12 @@ function ProjectBreadcrumb({ id }: { id: number }) {
   const [params] = useSearchParams();
   const title = project?.title ?? (id > 0 && isPending ? "Carregando projeto…" : "Projeto indisponível");
   // A development project has pages of its own (Panorama, Itens de trabalho, Objetivos), named after the project.
-  const section = project?.mode === "DEVELOPMENT" ? PROJECT_SECTIONS.find(item => item.value === projectSectionOf(projectTabFrom(params.get("tab")))) : undefined;
-  const count = section?.value === "work" ? project?.summary.totalTasks : null;
+  const tab = projectTabFrom(params.get("tab"));
+  const section = project?.mode === "DEVELOPMENT" ? PROJECT_SECTIONS.find(item => item.value === projectSectionOf(tab)) : undefined;
+  const isBoard = section?.value === "work" && tab === "board";
+  const { filters } = boardFiltersFromParams(params);
+  const { data: board } = useProjectBoard(isBoard ? id : 0, filters, { enabled: false });
+  const count = isBoard ? board?.visible.totalTasks : section?.value === "work" ? project?.summary.totalTasks : null;
 
   return (
     <>

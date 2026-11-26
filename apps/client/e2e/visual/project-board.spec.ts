@@ -115,6 +115,8 @@ test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme
   await page.route(url => url.pathname === '/visual-api/project/9/board' && !!url.search,
     route => route.fulfill({ json: filteredBoard }));
   const trigger = page.locator('button[aria-label^="Filtros do quadro"]');
+  const breadcrumb = page.locator('nav[aria-label="Breadcrumb"]');
+  await expect(breadcrumb.getByLabel('2 itens', { exact: true })).toHaveText('2');
   await trigger.focus();
   await page.keyboard.press('Enter');
   const panel = page.getByRole('dialog', { name: 'Filtros do quadro' });
@@ -152,6 +154,7 @@ test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme
   await expect(page).toHaveURL(/status=PENDING%2CON_DOING/);
   await expect(page).toHaveURL(/startDate=2026-11-18/);
   await expect(region.getByText('1 de 2')).toBeVisible();
+  await expect(breadcrumb.getByLabel('1 item', { exact: true })).toHaveText('1');
   if (mobile) await panel.getByRole('button', { name: 'Voltar aos filtros' }).click();
   const priority = panel.getByRole('button', { name: 'Prioridade' });
   await priority.focus();
@@ -173,6 +176,7 @@ test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme
   await expect(panel).toBeHidden();
   await expect(trigger).toBeFocused();
   await expect(page).toHaveURL(/\?tab=board$/);
+  await expect(breadcrumb.getByLabel('2 itens', { exact: true })).toHaveText('2');
   expect(unexpected).toEqual([]);
 });
 

@@ -26,8 +26,8 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProjectBoard, useProjectFlags, useProjectWrites, useWorkProject } from '@/hooks/useWork';
 import { useTimelineBoard } from '@/hooks/useTimelineBoard';
-import { taskFilterQuery, taskFiltersFromParams, type TaskFilters } from '@/lib/task-filters';
-import type { BoardFilters } from '@/services/projectService';
+import { boardFiltersFromParams } from '@/lib/project-filters';
+import type { TaskFilters } from '@/lib/task-filters';
 import { objectiveLayoutFrom, projectSectionOf, projectTabFrom, WORK_VIEWS, workViewOf } from '@/lib/project-tabs';
 import type { WorkTask } from '@/types/work';
 
@@ -41,16 +41,13 @@ function ProjectDetail({ id }: { id: number }) {
   useRecordVisit('PROJECT', query.isSuccess ? id : undefined);
   const [params, setParams] = useSearchParams(); const navigate = useNavigate();
   const tab = projectTabFrom(params.get('tab'));
-  const taskFilters = taskFiltersFromParams(params);
+  const { taskFilters, filters } = boardFiltersFromParams(params);
   const appliedSearch = taskFilters.search ?? '';
   const [searchDraft, setSearchDraft] = useState({ applied: appliedSearch, text: appliedSearch });
   const [searchOpen, setSearchOpen] = useState(Boolean(appliedSearch));
   if (searchDraft.applied !== appliedSearch) setSearchDraft({ applied: appliedSearch, text: appliedSearch });
   const searchText = searchDraft.applied === appliedSearch ? searchDraft.text : appliedSearch;
   const isSearchOpen = searchOpen || Boolean(appliedSearch);
-  const filters: BoardFilters = { ...taskFilterQuery(taskFilters), ...(params.get('objective') ? { objectiveId: Number(params.get('objective')) } : {}),
-    ...(['today', 'unscheduled'].includes(params.get('planning') ?? '') ? { planning: params.get('planning') as 'today' | 'unscheduled' } : {}),
-    ...(params.get('overdue') === '1' ? { overdue: true } : {}), ...(params.get('open') === '1' ? { open: true } : {}) };
   const board = useProjectBoard(project?.mode === 'DEVELOPMENT' ? id : 0, filters);
   const allBoard = useProjectBoard(project?.mode === 'DEVELOPMENT' && tab === 'objectives' ? id : 0);
   const timeline = useTimelineBoard(project?.mode === 'DEVELOPMENT' && tab === 'timeline' ? id : 0).board;
