@@ -1,9 +1,15 @@
 import api from './api';
+import type { TaskFilterQuery } from '@/lib/task-filters';
 import type { Page } from '@/types/financial';
 import type { WorkProject, BoardResponse, SidebarProject, ProjectWrite, DeletionPreview } from '@/types/work';
 
-/** startDate/endDate (YYYY-MM-DD, together) bound the queried period; they are not task fields. */
-export interface BoardFilters { objectiveId?: number; planning?: 'today' | 'unscheduled'; overdue?: boolean; open?: boolean; startDate?: string; endDate?: string }
+/** Without dateField, startDate and endDate together request a timeline overlap window. */
+export interface BoardFilters extends Omit<TaskFilterQuery, 'projectId'> {
+  objectiveId?: number;
+  planning?: 'today' | 'unscheduled';
+  overdue?: boolean;
+  open?: boolean;
+}
 export interface ProjectFilters {
   page?: number;
   size?: number;

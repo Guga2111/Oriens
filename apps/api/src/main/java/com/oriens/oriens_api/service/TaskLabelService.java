@@ -77,7 +77,7 @@ public class TaskLabelService {
             result.computeIfAbsent((Long) row[0], ignored -> new ArrayList<>()).add(view((TaskLabel) row[1]));
         return result;
     }
-    private TaskLabel owned(Long owner, Long id) { return labels.findByIdAndUserId(id, owner).orElseThrow(TaskLabelService::missing); }
+    TaskLabel owned(Long owner, Long id) { return labels.findByIdAndUserId(id, owner).orElseThrow(TaskLabelService::missing); }
     private void version(TaskLabel label, long expected) {
         if (label.getVersion() != expected) throw new WorkDomainException("VERSION_CONFLICT", "version", "A etiqueta mudou. Recarregue antes de salvar.");
     }

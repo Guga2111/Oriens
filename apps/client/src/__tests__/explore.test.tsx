@@ -10,6 +10,7 @@ import { pageOf, project, renderWork, task } from "./work-fixtures";
 
 vi.mock("@/context/AuthContext", () => ({ useAuth: () => ({ userId: 7 }) }));
 vi.mock("@/components/layout/AppLayout", () => ({ useSidebarProjects: () => ({ refreshSidebarProjects: vi.fn() }) }));
+vi.mock("@/hooks/useProductToday", () => ({ useProductToday: () => "2026-11-25" }));
 vi.mock("@/services/api", () => ({ default: { get: vi.fn(), patch: vi.fn() } }));
 
 const fetchPage = vi.mocked(api.get);
@@ -17,7 +18,9 @@ const baseWidth = window.innerWidth;
 
 beforeEach(() => {
   fetchPage.mockReset();
-  fetchPage.mockImplementation(async url => ({ data: pageOf(url === "/task/user/7/all" ? [task] : [project]) }));
+  fetchPage.mockImplementation(async url => ({
+    data: url === "/task-labels/user/7" ? [{ id: 1, name: "Site" }] : pageOf(url === "/task/user/7/all" ? [task] : [project]),
+  }));
 });
 
 afterEach(() => { window.innerWidth = baseWidth; });
@@ -42,7 +45,7 @@ it("mostra a busca e os filtros da aba ativa junto ao breadcrumb", async () => {
   expect(within(screen.getByRole("tabpanel")).queryByRole("search")).not.toBeInTheDocument();
 
   await user.click(header.getByRole("button", { name: "Buscar tarefas" }));
-  expect(header.getByRole("searchbox", { name: "Buscar por título" })).toHaveFocus();
+  expect(header.getByRole("searchbox", { name: "Buscar por título ou descrição" })).toHaveFocus();
   await user.keyboard("{Escape}");
   expect(header.queryByRole("searchbox")).not.toBeInTheDocument();
   await waitFor(() => expect(header.getByRole("button", { name: "Buscar tarefas" })).toHaveFocus());
@@ -65,7 +68,7 @@ it("envia a busca da barra para o servidor e volta à primeira página", async (
   await screen.findByText("Página 2 de 2");
 
   await user.click(screen.getByRole("button", { name: "Buscar tarefas" }));
-  const search = screen.getByRole("searchbox", { name: "Buscar por título" });
+  const search = screen.getByRole("searchbox", { name: "Buscar por título ou descrição" });
   await user.type(search, "Sem correspondência");
   expect(fetchPage).not.toHaveBeenCalledWith("/task/user/7/all", expect.objectContaining({
     params: expect.objectContaining({ search: "Sem correspondência" }),
@@ -79,7 +82,7 @@ it("envia a busca da barra para o servidor e volta à primeira página", async (
   await user.click(screen.getByRole("button", { name: "Limpar filtros" }));
   expect(await screen.findByText("Página 1 de 2")).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Buscar tarefas" }));
-  expect(screen.getByRole("searchbox", { name: "Buscar por título" })).toHaveValue("");
+  expect(screen.getByRole("searchbox", { name: "Buscar por título ou descrição" })).toHaveValue("");
 });
 
 it("ordena tarefas no servidor, volta à primeira página e mantém o foco no cabeçalho", async () => {
@@ -158,4 +161,58 @@ it("mantém os controles durante o carregamento e permite tentar novamente após
   await user.click(within(alert).getByRole("button", { name: "Tentar novamente" }));
   expect(await within(screen.getByRole("table", { name: "Tarefas" })).findByText(task.title)).toBeInTheDocument();
   await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+});
+
+it("combina projeto, status, prioridades, etiqueta e busca no painel e limpa a consulta", async () => {
+  const user = userEvent.setup();
+  renderWork(<AllDataPage />, "/all-data");
+  const trigger = screen.getByRole("button", { name: "Filtros" });
+  await user.click(trigger);
+  const filters = within(screen.getByRole("dialog", { name: "Filtros" }));
+
+  await user.click(filters.getByRole("combobox", { name: "Projeto" }));
+  await user.click(await screen.findByRole("option", { name: project.title }));
+  await user.click(filters.getByRole("checkbox", { name: "A fazer" }));
+  await user.click(filters.getByRole("checkbox", { name: "Em andamento" }));
+  await user.click(filters.getByRole("checkbox", { name: "Alta" }));
+  await user.click(filters.getByRole("checkbox", { name: "Média" }));
+  await user.click(filters.getByRole("combobox", { name: "Etiqueta" }));
+  await user.click(await screen.findByRole("option", { name: "Site" }));
+  await user.type(filters.getByRole("searchbox", { name: "Título ou descrição" }), " revisão ");
+  await user.keyboard("{Enter}");
+  await waitFor(() => expect(fetchPage).toHaveBeenCalledWith("/task/user/7/all", expect.objectContaining({
+    params: expect.objectContaining({
+      projectId: project.id, status: "PENDING,ON_DOING", priority: "HIGH,MEDIUM", labelId: 1, search: "revisão", page: 0,
+    }),
+  })));
+  expect(screen.getByRole("button", { name: "Filtros (5 ativos)" })).toBe(trigger);
+
+  await user.click(filters.getByRole("button", { name: "Limpar filtros" }));
+  expect(filters.getByRole("checkbox", { name: "A fazer" })).not.toBeChecked();
+  expect(filters.getByRole("searchbox", { name: "Título ou descrição" })).toHaveValue("");
+  expect(filters.queryByRole("button", { name: "Limpar filtros" })).not.toBeInTheDocument();
+  await user.keyboard("{Escape}");
+  expect(trigger).toHaveFocus();
+});
+
+it("aplica o período de sete dias e permite editar as duas datas com o calendário", async () => {
+  const user = userEvent.setup();
+  renderWork(<AllDataPage />, "/all-data");
+  await user.click(screen.getByRole("button", { name: "Filtros" }));
+  const filters = within(screen.getByRole("dialog", { name: "Filtros" }));
+  await user.click(filters.getByRole("combobox", { name: "Período" }));
+  await user.click(screen.getByRole("option", { name: "Últimos 7 dias" }));
+  await waitFor(() => expect(fetchPage).toHaveBeenCalledWith("/task/user/7/all", expect.objectContaining({
+    params: expect.objectContaining({ dateField: "plannedDate", startDate: "2026-11-19", endDate: "2026-11-25" }),
+  })));
+
+  await user.click(filters.getByRole("combobox", { name: "Período" }));
+  await user.click(screen.getByRole("option", { name: "Personalizado" }));
+  expect(filters.getByRole("button", { name: /Data inicial: 19/ })).toBeVisible();
+  expect(filters.getByRole("button", { name: /Data final: 25/ })).toBeVisible();
+  await user.click(filters.getByRole("button", { name: /Data inicial: 19/ }));
+  await user.click(within(screen.getByRole("grid", { name: "novembro 2026" })).getByRole("gridcell", { name: /^18$/ }));
+  await waitFor(() => expect(fetchPage).toHaveBeenCalledWith("/task/user/7/all", expect.objectContaining({
+    params: expect.objectContaining({ startDate: "2026-11-18", endDate: "2026-11-25" }),
+  })));
 });

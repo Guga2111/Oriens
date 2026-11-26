@@ -357,6 +357,49 @@ class WorkApiPostgresTest {
         assertThat(getJson("/task/user/"+owner+"/summary/weekly-counts").path("startDate").asText()).isEqualTo("2026-11-08");
         assertThat(getJson("/project/user/"+owner+"/summary").path("totalProjects").asInt()).isEqualTo(2);
     }
+    @Test void sharedTaskFiltersComposeBeforePaginationAndPreserveBoardTotalsAndOwnership() throws Exception {
+        JsonNode project = project("DEVELOPMENT");
+        long projectId = project.path("id").asLong();
+        JsonNode label = body(send("POST", "/task-labels/user/" + owner,
+            "{\"name\":\"Site\",\"color\":\"BLUE\"}", UUID.randomUUID().toString(), token, 201));
+        long labelId = label.path("id").asLong();
+        long activeColumn = columns.findByProjectIdOrderByPositionAscIdAsc(projectId).stream()
+            .filter(column -> column.getKind() == Status.ON_DOING).findFirst().orElseThrow().getId();
+        for (String taskFields : List.of(
+                "\"title\":\"Revisão inicial\",\"priority\":\"HIGH\"",
+                "\"title\":\"Publicar\",\"description\":\"Revisão do texto\",\"priority\":\"MEDIUM\",\"columnId\":" + activeColumn,
+                "\"title\":\"Outra revisão\",\"priority\":\"LOW\"")) {
+            String command = "{\"projectId\":" + projectId + ",\"projectVersion\":" + project(projectId).path("version")
+                + ",\"labelIds\":[" + labelId + "],\"plannedDate\":\"2026-11-13\"," + taskFields + "}";
+            send("POST", "/task/user/" + owner, command, UUID.randomUUID().toString(), token, 201);
+        }
+
+        String filters = "status=BACKLOG,ON_DOING&priority=HIGH,MEDIUM&search=REVISÃO&labelId=" + labelId
+            + "&dateField=plannedDate&startDate=2026-11-13&endDate=2026-11-13";
+        String list = "/task/user/" + owner + "/all?projectId=" + projectId;
+        JsonNode page = getJson(list + "&size=1&" + filters);
+        assertThat(page.path("totalElements").asInt()).isEqualTo(2);
+        assertThat(page.path("content").size()).isEqualTo(1);
+        assertThat(getJson(list + "&size=1&page=1&" + filters).path("content").get(0).path("id"))
+            .isNotEqualTo(page.path("content").get(0).path("id"));
+        assertThat(getJson(list + "&priority=HIGH").path("totalElements").asInt()).isEqualTo(1);
+
+        String board = "/project/" + projectId + "/board";
+        JsonNode filtered = getJson(board + "?" + filters);
+        assertThat(filtered.path("filtered").asBoolean()).isTrue();
+        assertThat(filtered.path("visible").path("totalTasks").asInt()).isEqualTo(2);
+        assertThat(filtered.path("total").path("totalTasks").asInt()).isEqualTo(3);
+        JsonNode visible = filtered.path("tasks");
+        assertThat(List.of(visible.get(0).path("title").asText(), visible.get(1).path("title").asText()))
+            .containsExactlyInAnyOrder("Revisão inicial", "Publicar");
+
+        mvc.perform(get(board + "?" + filters).header("Authorization", other)).andExpect(status().isNotFound());
+        mvc.perform(get("/task/user/" + stranger + "/all?labelId=" + labelId).header("Authorization", other))
+            .andExpect(status().isNotFound());
+        mvc.perform(get(list + "&status=PENDING,INVALID").header("Authorization", token)).andExpect(status().isBadRequest());
+        mvc.perform(get(board + "?dateField=dueDate&startDate=2026-11-14&endDate=2026-11-13")
+            .header("Authorization", token)).andExpect(status().isBadRequest());
+    }
     @Test void p3RemindersUsePlanningAcrossMidnightAndRecheckTerminalStates() {
         var pending = com.oriens.oriens_api.entity.enums.Status.PENDING;
         var doing = com.oriens.oriens_api.entity.enums.Status.ON_DOING;
