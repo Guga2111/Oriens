@@ -125,8 +125,8 @@ credenciais forem permitidas. CORS controla o browser. Posse e autenticação
 continuam sendo exigidas pelo backend.
 
 [`McpRateLimiter`](../../../apps/api/src/main/java/com/oriens/oriens_api/mcp/McpRateLimiter.java)
-controla taxas no fluxo MCP/OAuth. Consulte [limites do MCP](mcp.md) e os
-testes [MCP P2](../../../apps/api/src/test/java/com/oriens/oriens_api/work/McpP2PostgresTest.java).
+controla taxas no fluxo MCP/OAuth. Consulte [limites do MCP](mcp.md) e o teste
+do limitador em [`McpPostgresTest`](../../../apps/api/src/test/java/com/oriens/oriens_api/work/McpPostgresTest.java).
 As cotas MCP são específicas da cadeia de integração.
 
 ## Segredos e logs
@@ -134,7 +134,7 @@ As cotas MCP são específicas da cadeia de integração.
 - Use variáveis de ambiente ou o gerenciador de segredos. A
   [referência de variáveis](../../../.env.example) leva apenas placeholders.
   Valide contribuições conforme a [política de CI](../../ci-security.md).
-- Use códigos, contagens e IDs de correlação. Preserve query strings assinadas,
+- Use códigos, contagens e IDs de correlação. Mantenha query strings assinadas,
   tokens, cabeçalhos de autorização e corpos de requisição fora dos logs.
   A [configuração da API](../../../apps/api/src/main/resources/application.properties)
   desliga a categoria do SDK MCP para evitar payloads nos logs.

@@ -69,6 +69,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-O Playwright cria conta sintética e usa `http://localhost:8080` por padrão,
-configurável com `E2E_API_BASE_URL` para outro ambiente de teste.
+O Playwright cria uma conta sintética. A API padrão é `http://localhost:8080`.
+Ao usar outra API de teste, defina `E2E_API_BASE_URL` e `VITE_API_BASE_URL` com a
+mesma URL e reinicie o Vite se já estiver em execução.
 Leia os [padrões de testes do cliente](../conventions/frontend/tests.md).
