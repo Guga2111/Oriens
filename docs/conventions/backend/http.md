@@ -1,6 +1,7 @@
 # Contratos HTTP e erros
 
-Os endpoints do domínio work usam os contratos e envelopes abaixo.
+Os endpoints do domínio work usam os contratos e envelopes abaixo. Consulte o
+[ADR de concorrência](../../decisions/003-concorrencia.md) para a decisão sobre `If-Match`.
 
 ## Contrato HTTP, DTOs e validação
 

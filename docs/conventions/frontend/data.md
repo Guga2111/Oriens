@@ -1,6 +1,7 @@
 # Dados e formulários do cliente
 
 Use os contratos da API e os hooks do domínio para cache, concorrência e validação.
+O [ADR do cliente](../../decisions/005-cliente.md) descreve a escolha do cache.
 
 ## Dados: servidor e cache
 

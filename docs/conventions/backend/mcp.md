@@ -1,6 +1,7 @@
 # Contratos e segurança do MCP
 
-Complemente com o [guia de operação](../../guides/mcp-operations.md) e as [regras de autorização](security.md).
+Complemente com o [guia de operação](../../guides/mcp-operations.md), as
+[regras de autorização](security.md) e o [ADR de OAuth delegado](../../decisions/004-mcp-oauth.md).
 
 ## Contratos de gestão
 

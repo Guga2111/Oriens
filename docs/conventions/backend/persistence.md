@@ -1,6 +1,7 @@
 # Consultas, concorrência e migrações
 
-Consulte também as [regras de autorização](security.md).
+Consulte as [regras de autorização](security.md) e os ADRs de
+[Flyway](../../decisions/001-flyway.md) e [concorrência](../../decisions/003-concorrencia.md).
 
 ## N+1 e desempenho de consultas
 
