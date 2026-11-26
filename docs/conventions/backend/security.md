@@ -85,17 +85,58 @@ dono retornados por `findAllById` e lança 404 se a tarefa não for do dono).
 
 ### Teste obrigatório
 
-Todo endpoint novo ganha teste com **dois usuários**: o usuário B tenta ler, alterar e apagar o recurso de
-A pelo ID e recebe **404**, e o recurso de A permanece intacto. Ver `WorkApiPostgresTest`.
+Todo endpoint novo ganha teste com **dois usuários**. O usuário B tenta ler, alterar e apagar o recurso de
+A pelo ID e recebe **404**. O recurso de A permanece intacto. Consulte
+[`WorkApiPostgresTest`](../../../apps/api/src/test/java/com/oriens/oriens_api/work/WorkApiPostgresTest.java)
+e o [ADR de posse](../../decisions/002-posse.md).
 
-## Segurança geral
+## Sessão e JWT
 
-- Rotas públicas são exceção explícita em `SecurityConfig` (`permitAll`) e revisadas em PR.
-- Segredos só por variável de ambiente (`JWT_SECRET`, `ORIENS_MCP_*`); nada de default inseguro em produção.
-- Senhas com `PasswordEncoder` (BCrypt); campo de senha `@JsonProperty(access = WRITE_ONLY)`.
-- Upload: limite de tamanho (já 2 MB), lista permitida de tipo/extensão, nome gerado pelo servidor,
-  caminho normalizado (sem `..`), e posse do recurso ao qual o arquivo se vincula.
-- CORS: lista explícita de origens confiáveis (`CorsConfig`), nunca `*` com credenciais.
-- Limites de tamanho e taxa nas entradas abertas (OAuth/MCP já têm `McpRateLimiter` e
-  `max-http-form-post-size`).
-- Não registre em log JSON controlado por atacante (por isso `logging.level.io.modelcontextprotocol=OFF`).
+[`SecurityConfig`](../../../apps/api/src/main/java/com/oriens/oriens_api/security/SecurityConfig.java)
+declara as exceções públicas. A cadeia REST é stateless. O login em `/authenticate`
+valida a senha com BCrypt, emite JWT e o cliente envia `Authorization: Bearer`.
+O [filtro JWT](../../../apps/api/src/main/java/com/oriens/oriens_api/security/filters/JWTAuthorizationFilter.java)
+verifica o token antes de estabelecer a identidade. Confira a chave HS512 e a
+falha de inicialização para segredo ausente ou curto em
+[`JwtConfigurationTest`](../../../apps/api/src/test/java/com/oriens/oriens_api/security/JwtConfigurationTest.java).
+O fluxo delegado segue o [contrato MCP](mcp.md).
+
+## Uploads
+
+- Avatares e capas usam limite multipart de 2 MB nos perfis dev e prod.
+  [`ImageUploads`](../../../apps/api/src/main/java/com/oriens/oriens_api/service/ImageUploads.java)
+  confere tipos permitidos pela assinatura do arquivo, normaliza a extensão e
+  gera o nome. A leitura dessas imagens é pública. Os testes cobrem
+  [formatos](../../../apps/api/src/test/java/com/oriens/oriens_api/service/ImageUploadsTest.java)
+  e [upload de perfil](../../../apps/api/src/test/java/com/oriens/oriens_api/security/ProfilePictureUploadTest.java).
+- Anexos de tarefa passam por posse, validação de conteúdo e cotas de
+  [`TaskAttachmentService`](../../../apps/api/src/main/java/com/oriens/oriens_api/service/TaskAttachmentService.java).
+  O limite é 2 MiB por imagem e 20 MiB por vídeo, com 32 anexos por tarefa e
+  256 MiB por dono. O download confere assinatura, validade de cinco minutos
+  e vínculo com a tarefa. `WorkApiPostgresTest` cobre o fluxo. Consulte os
+  [requisitos de armazenamento, backup e proxy](../../guides/deploy.md#anexos-privados-de-tarefas).
+
+## CORS e taxa
+
+[`CorsConfig`](../../../apps/api/src/main/java/com/oriens/oriens_api/CorsConfig.java)
+lista as origens permitidas, incluindo `http://localhost:5173`, e expõe
+`Authorization`, `ETag` e `X-Request-Id`. Mantenha a lista explícita quando
+credenciais forem permitidas. CORS controla o browser. Posse e autenticação
+continuam sendo exigidas pelo backend.
+
+[`McpRateLimiter`](../../../apps/api/src/main/java/com/oriens/oriens_api/mcp/McpRateLimiter.java)
+controla taxas no fluxo MCP/OAuth. Consulte [limites do MCP](mcp.md) e os
+testes [MCP P2](../../../apps/api/src/test/java/com/oriens/oriens_api/work/McpP2PostgresTest.java).
+As cotas MCP são específicas da cadeia de integração.
+
+## Segredos e logs
+
+- Use variáveis de ambiente ou o gerenciador de segredos. A
+  [referência de variáveis](../../../.env.example) leva apenas placeholders.
+  Valide contribuições conforme a [política de CI](../../ci-security.md).
+- Use códigos, contagens e IDs de correlação. Preserve query strings assinadas,
+  tokens, cabeçalhos de autorização e corpos de requisição fora dos logs.
+  A [configuração da API](../../../apps/api/src/main/resources/application.properties)
+  desliga a categoria do SDK MCP para evitar payloads nos logs.
+- Consulte a [política de reporte](../../../SECURITY.md) e o
+  [fluxo de revisão](../../guides/pull-request-review.md) ao encontrar um problema.
