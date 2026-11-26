@@ -44,6 +44,14 @@ Regras:
 - Confiar no front para autorização. Esconder um botão é UX; a garantia é do backend.
 - Guardar no `localStorage` qualquer coisa além do token e preferências já existentes.
 
+## Filtros de tarefas
+
+Use `TaskFilterFields` dentro de `HeaderFilterPanel` no quadro e em Explorar.
+O quadro guarda o recorte na URL e filtra dentro do projeto aberto.
+Explorar oferece o seletor de projeto e volta à primeira página a cada alteração.
+Os períodos de 7 e 30 dias incluem hoje, e “Este mês” cobre o mês inteiro no calendário de Recife. O período personalizado
+permite informar uma data inicial, uma data final ou as duas.
+
 ## Movimentos no quadro
 
 No desktop, arraste pelo card ou use as ações do menu para mudar de coluna ou

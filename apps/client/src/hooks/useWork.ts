@@ -8,7 +8,7 @@ import { getDashboardData } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { taskService } from '@/services/taskService';
 import { projectService, type BoardFilters } from '@/services/projectService';
-import type { TaskFilters } from '@/services/taskService';
+import type { TaskListQuery } from '@/services/taskService';
 import type { ProjectFilters } from '@/services/projectService';
 import type { BoardResponse, TaskPatch, TaskCreation, TaskMutation, TaskDeletion, WorkTask, WorkProject, ProjectWrite, SidebarProject } from '@/types/work';
 
@@ -38,7 +38,7 @@ export function useTaskWeek(start: string, end: string, enabled = true) {
   return useQuery({ queryKey: workKey(userId, 'tasks/week', start, end), enabled: userId !== null && enabled,
     queryFn: ({ signal }) => taskService.week(userId!, start, end, signal) });
 }
-export function useAllTasks(filters: TaskFilters) {
+export function useAllTasks(filters: TaskListQuery) {
   const { userId } = useAuth();
   return useQuery({ queryKey: workKey(userId, 'tasks/all', filters), enabled: userId !== null,
     queryFn: ({ signal }) => taskService.all(userId!, filters, signal) });
@@ -169,7 +169,8 @@ export function useBoardTaskMoves(projectId: number, filters: BoardFilters) {
     },
     onSuccess: async (result, command) => {
       if (userId === null || !sessionIsCurrent()) return;
-      const hidden = Boolean(filters.open || filters.overdue) && !isOpenStatus(result.task.status);
+      const hidden = (Boolean(filters.open || filters.overdue) && !isOpenStatus(result.task.status))
+        || !!(filters.status && !filters.status.split(",").includes(result.task.status));
       client.setQueryData<BoardResponse>(boardKey, board => {
         if (!board || (result.task.project?.version ?? 0) <= board.projectVersion) return board;
         return applyBoardMove(board, command, { task: result.task, hidden });

@@ -70,6 +70,47 @@ test('quadro do projeto em claro e escuro', async ({ page, colorScheme }) => {
   expect(unexpected).toEqual([]);
 });
 
+test('painel de filtros do quadro em claro e escuro', async ({ page, colorScheme, viewport }) => {
+  const { region, unexpected } = await prepareBoard(page, colorScheme === 'dark' ? 'dark' : 'light');
+  const filteredBoard: BoardResponse = {
+    ...board, filtered: true, tasks: [task],
+    columns: columns.map(column => column.id === task.columnId ? { ...column, visibleCount: 1 } : column),
+    visible: { ...counts, totalTasks: 1, nonCancelledTasks: 1 },
+  };
+  await page.route(url => url.pathname === '/visual-api/project/9/board' && !!url.search,
+    route => route.fulfill({ json: filteredBoard }));
+  const trigger = page.locator('button[aria-label^="Filtros do quadro"]');
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  const panel = page.getByRole('dialog', { name: 'Filtros do quadro' });
+  await expect(panel.getByRole('searchbox', { name: 'Título ou descrição' })).toBeFocused();
+  await expect(panel.getByRole('button', { name: 'Fechar' })).toHaveCount((viewport?.width ?? 0) < 1024 ? 1 : 0);
+
+  await panel.getByRole('combobox', { name: 'Período' }).click();
+  await page.getByRole('option', { name: 'Últimos 7 dias' }).click();
+  await panel.getByRole('combobox', { name: 'Período' }).click();
+  await page.getByRole('option', { name: 'Personalizado' }).click();
+  await panel.getByRole('button', { name: /Data inicial: 19\/11\/2026/ }).click();
+  await page.getByRole('grid', { name: 'novembro 2026' }).getByRole('gridcell', { name: '18', exact: true }).click();
+  await panel.getByRole('checkbox', { name: 'A fazer' }).click();
+  await panel.getByRole('checkbox', { name: 'Em andamento' }).click();
+  await expect(trigger).toHaveAttribute('aria-label', 'Filtros do quadro (2 ativos)');
+  await expect(page).toHaveURL(/status=PENDING%2CON_DOING/);
+  await expect(page).toHaveURL(/startDate=2026-11-18/);
+  await expect(region.getByText('1 de 2')).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Limpar filtros' })).toBeVisible();
+  await page.mouse.move(-1, -1);
+  await expect(page).toHaveScreenshot('project-board-filters.png');
+
+  await panel.getByRole('button', { name: 'Limpar filtros' }).click();
+  await expect(panel.getByRole('checkbox', { name: 'A fazer' })).not.toBeChecked();
+  await page.keyboard.press('Escape');
+  await expect(panel).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await expect(page).toHaveURL(/\?tab=board$/);
+  expect(unexpected).toEqual([]);
+});
+
 test.describe('interação no quadro desktop', () => {
   test.use({ reducedMotion: 'no-preference' });
   test.skip(({ viewport }) => (viewport?.width ?? 0) < 640, 'A coluna única usa o menu para mover.');

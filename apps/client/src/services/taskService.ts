@@ -1,21 +1,14 @@
 import api from './api';
-import type { Priority, Status } from '@/types/task';
+import type { TaskFilterQuery } from '@/lib/task-filters';
 import type { Page } from '@/types/financial';
 import type { DayResponse, RangeResponse, WorkTask, PlanningCount, TaskPatch, TaskCreation,
   TaskMutation, TaskDeletion, WeeklyResponse } from '@/types/work';
 
-export interface TaskFilters {
-  projectId?: number;
-  dateField?: 'plannedDate' | 'dueDate';
+export interface TaskListQuery extends TaskFilterQuery {
   page?: number;
   size?: number;
   sortBy?: string;
   direction?: 'ASC' | 'DESC';
-  status?: Status;
-  priority?: Priority;
-  search?: string;
-  startDate?: string;
-  endDate?: string;
 }
 
 export type TaskMediaKind = 'image' | 'video';
@@ -27,7 +20,7 @@ export const taskService = {
     (await api.get<DayResponse>(`/task/user/${user}`, { params: { date }, signal })).data,
   week: async (user: number, startDate: string, endDate: string, signal?: AbortSignal) =>
     (await api.get<RangeResponse>(`/task/user/${user}/range`, { params: { startDate, endDate }, signal })).data,
-  all: async (user: number, params: TaskFilters, signal?: AbortSignal) =>
+  all: async (user: number, params: TaskListQuery, signal?: AbortSignal) =>
     (await api.get<Page<WorkTask>>(`/task/user/${user}/all`, { params, signal })).data,
   task: async (id: number, signal?: AbortSignal) => (await api.get<WorkTask>(`/task/${id}`, { signal })).data,
   uploadAttachment: async (id: number, kind: TaskMediaKind, file: File) =>

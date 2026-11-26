@@ -4,7 +4,9 @@ import com.oriens.oriens_api.entity.*;
 import com.oriens.oriens_api.entity.dto.work.*;
 import com.oriens.oriens_api.entity.dto.work.WorkCommands.*;
 import com.oriens.oriens_api.entity.dto.work.WorkResponses.*;
+import com.oriens.oriens_api.entity.enums.Priority;
 import com.oriens.oriens_api.entity.enums.ProjectMode;
+import com.oriens.oriens_api.entity.enums.Status;
 import com.oriens.oriens_api.repository.*;
 import com.oriens.oriens_api.security.WorkOwner;
 import com.oriens.oriens_api.service.*;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.time.LocalDate;
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -58,9 +61,13 @@ public class ProjectController {
     public ResponseEntity<BoardResponse> board(Authentication auth, @PathVariable Long id,
             @RequestParam(required=false) Long objectiveId, @RequestParam(required=false) String planning,
             @RequestParam(defaultValue="false") boolean overdue, @RequestParam(defaultValue="false") boolean open,
+            @RequestParam(required=false) Set<Status> status, @RequestParam(required=false) Set<Priority> priority,
+            @RequestParam(required=false) String search, @RequestParam(required=false) Long labelId,
+            @RequestParam(required=false) String dateField,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        BoardResponse result = read.board(owner.id(auth), id, objectiveId, planning, overdue, open, startDate, endDate);
+        var filters = new TaskReadFilters(status, priority, search, labelId, dateField, startDate, endDate);
+        BoardResponse result = read.board(owner.id(auth), id, objectiveId, planning, overdue, open, filters);
         return WorkHttp.ok(result, result.projectVersion());
     }
     @GetMapping("/user/{userId}/sidebar")

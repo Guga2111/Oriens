@@ -1,17 +1,17 @@
 import { useState } from "react";
-import { format } from "date-fns";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useSidebarProjects } from "@/components/layout/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TasksDataTable, type TasksFilters, type TaskSortField } from "@/components/all-data/TasksDataTable";
+import { TasksDataTable, type TaskSortField } from "@/components/all-data/TasksDataTable";
 import { ProjectsDataTable, type ProjectsFilters, type ProjectSortField } from "@/components/all-data/ProjectsDataTable";
 import type { ExploreOrder } from "@/components/all-data/ExploreSort";
 import { useAllTasks, useProjectFlags, useWorkProjects } from "@/hooks/useWork";
+import { taskFilterQuery, type TaskFilters } from "@/lib/task-filters";
 import type { WorkProject } from "@/types/work";
 
 const PAGE_SIZE = 20;
-const EMPTY_TASK_FILTERS: TasksFilters = { dateField: "plannedDate", status: "all", priority: "all", searchQuery: "" };
+const EMPTY_TASK_FILTERS: TaskFilters = {};
 
 function pagination(data: { totalPages: number; totalElements: number } | undefined, page: number) {
   return { page, size: PAGE_SIZE, totalPages: data?.totalPages ?? 0, totalElements: data?.totalElements ?? 0 };
@@ -22,7 +22,7 @@ export default function AllDataPage() {
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") === "projects" ? "projects" : "tasks";
   const includeArchived = params.get("archived") === "1";
-  const [filters, setFilters] = useState<TasksFilters>(EMPTY_TASK_FILTERS);
+  const [filters, setFilters] = useState<TaskFilters>(EMPTY_TASK_FILTERS);
   const [taskPage, setTaskPage] = useState(0);
   const [projectPage, setProjectPage] = useState(0);
   const [search, setSearch] = useState("");
@@ -30,11 +30,7 @@ export default function AllDataPage() {
   const [projectOrder, setProjectOrder] = useState<ExploreOrder<ProjectSortField>>({ sortBy: "id", direction: "DESC" });
   const tasks = useAllTasks({
     page: taskPage, size: PAGE_SIZE, ...taskOrder,
-    status: filters.status === "all" ? undefined : filters.status,
-    priority: filters.priority === "all" ? undefined : filters.priority,
-    search: filters.searchQuery || undefined, projectId: filters.projectId, dateField: filters.dateField,
-    startDate: filters.startDate ? format(filters.startDate, "yyyy-MM-dd") : undefined,
-    endDate: filters.endDate ? format(filters.endDate, "yyyy-MM-dd") : undefined,
+    ...taskFilterQuery(filters),
   });
   const projects = useWorkProjects({ page: projectPage, size: PAGE_SIZE, ...projectOrder, includeArchived, search });
   const updateProject = useProjectFlags();
@@ -52,7 +48,7 @@ export default function AllDataPage() {
     });
   }
 
-  function changeTasks(update: Partial<TasksFilters>) {
+  function changeTasks(update: Partial<TaskFilters>) {
     setFilters(current => ({ ...current, ...update }));
     setTaskPage(0);
   }

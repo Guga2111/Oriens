@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
 public interface TaskRepository extends JpaRepository<Task, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<Task> {
     @Query("select t from Task t where t.user.id = :owner and t.status <> 'CANCELLED' and (t.plannedDate = :date or (:recovery = true and t.status in ('BACKLOG','PENDING','ON_DOING') and (t.plannedDate < :date or t.dueDate <= :date)))")
@@ -49,12 +50,16 @@ public interface TaskRepository extends JpaRepository<Task, Long>, org.springfra
     }
 
     @Query("select t from Task t where t.user.id = :owner and (:projectId is null or t.projectId = :projectId) " +
-        "and (cast(:status as string) is null or t.status = :status) and (cast(:priority as string) is null or t.priority = :priority) " +
-        "and (cast(:search as string) is null or lower(t.title) like lower(concat('%',cast(:search as string),'%'))) " +
+        "and t.status in :statuses and t.priority in :priorities " +
+        "and (cast(:search as string) is null or locate(lower(cast(:search as string)), lower(t.title)) > 0 " +
+        "or locate(lower(cast(:search as string)), lower(t.description)) > 0) " +
+        "and (:labelId is null or exists (select 1 from TaskLabelAssignment a where a.userId = :owner " +
+        "and a.taskId = t.id and a.labelId = :labelId)) " +
         "and (cast(:start as date) is null or (case when :dateField = 'plannedDate' then t.plannedDate else t.dueDate end) >= :start) " +
         "and (cast(:end as date) is null or (case when :dateField = 'plannedDate' then t.plannedDate else t.dueDate end) <= :end)")
     Page<Task> findWorkFiltered(@Param("owner") Long owner, @Param("projectId") Long projectId,
-        @Param("status") Status status, @Param("priority") Priority priority, @Param("search") String search,
+        @Param("statuses") Set<Status> statuses, @Param("priorities") Set<Priority> priorities, @Param("search") String search,
+        @Param("labelId") Long labelId,
         @Param("dateField") String dateField, @Param("start") LocalDate start, @Param("end") LocalDate end, Pageable pageable);
     long countByProjectIdAndColumnId(Long projectId, Long columnId);
     long countByObjectiveId(Long objectiveId);
@@ -64,6 +69,7 @@ public interface TaskRepository extends JpaRepository<Task, Long>, org.springfra
     @Query("select t from Task t where t.id = :id and t.user.id = :ownerId")
     java.util.Optional<Task> lockOwned(@Param("id") Long id, @Param("ownerId") Long ownerId);
     List<Task> findByProjectIdOrderByPositionAscIdAsc(Long projectId);
+    List<Task> findByUserIdAndProjectIdOrderByPositionAscIdAsc(Long owner, Long projectId);
     List<Task> findByProjectIdAndColumnIdOrderByPositionAscIdAsc(Long projectId, Long columnId);
     List<Task> findByObjectiveId(Long objectiveId);
 

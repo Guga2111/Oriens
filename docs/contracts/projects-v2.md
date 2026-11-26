@@ -78,6 +78,16 @@ Listas agregadas não usam ETag de um recurso arbitrário.
 | GET `/project/{id}/deletion-preview` | ID | 200 DeletionPreview |
 | DELETE `/project/{id}` | If-Match do preview | 204, tarefas sobrevivem |
 
+O quadro e a listagem de tarefas aceitam `status` e `priority` como valores únicos ou listas separadas por vírgula.
+Os valores de um campo são alternativas. Campos diferentes precisam corresponder ao mesmo tempo.
+`search` busca texto no título e na descrição sem distinguir maiúsculas de minúsculas.
+`labelId` seleciona uma etiqueta da conta e devolve 404 para uma etiqueta indisponível nessa conta.
+Na listagem, o filtro é aplicado antes da paginação.
+
+Com `dateField=plannedDate` ou `dateField=dueDate`, `startDate` e `endDate` são limites inclusivos e independentes
+do campo selecionado. No quadro, a Timeline pode continuar usando os dois limites sem `dateField` para consultar
+a janela de sobreposição. As contagens do quadro distinguem o total do projeto das tarefas que passam pelo filtro.
+
 Rotas de upload e leitores de estatísticas/resumo semanal permanecem, com autorização e adaptação
 das datas em P2/P3. Esta tabela não cria rotas duplicadas para objetivos ou tarefas de quadro.
 

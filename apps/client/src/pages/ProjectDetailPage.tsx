@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProjectBoard, useProjectFlags, useProjectWrites, useWorkProject } from '@/hooks/useWork';
 import { useTimelineBoard } from '@/hooks/useTimelineBoard';
+import { taskFilterQuery, taskFiltersFromParams, type TaskFilters } from '@/lib/task-filters';
 import type { BoardFilters } from '@/services/projectService';
 import { objectiveLayoutFrom, projectSectionOf, projectTabFrom, WORK_VIEWS, workViewOf } from '@/lib/project-tabs';
 import type { WorkTask } from '@/types/work';
@@ -39,7 +40,8 @@ function ProjectDetail({ id }: { id: number }) {
   useRecordVisit('PROJECT', query.isSuccess ? id : undefined);
   const [params, setParams] = useSearchParams(); const navigate = useNavigate();
   const tab = projectTabFrom(params.get('tab'));
-  const filters: BoardFilters = { ...(params.get('objective') ? { objectiveId: Number(params.get('objective')) } : {}),
+  const taskFilters = taskFiltersFromParams(params);
+  const filters: BoardFilters = { ...taskFilterQuery(taskFilters), ...(params.get('objective') ? { objectiveId: Number(params.get('objective')) } : {}),
     ...(['today', 'unscheduled'].includes(params.get('planning') ?? '') ? { planning: params.get('planning') as 'today' | 'unscheduled' } : {}),
     ...(params.get('overdue') === '1' ? { overdue: true } : {}), ...(params.get('open') === '1' ? { open: true } : {}) };
   const board = useProjectBoard(project?.mode === 'DEVELOPMENT' ? id : 0, filters);
@@ -50,7 +52,21 @@ function ProjectDetail({ id }: { id: number }) {
   const [editor, setEditor] = useState<{ task?: WorkTask; columnId?: number; objectiveId?: number } | null>(null);
   const [uploadError, setUploadError] = useState('');
   const setParam = (name: string, value: string) => setParams(previous => { const next = new URLSearchParams(previous); if (!value || value === 'none') next.delete(name); else next.set(name, value); return next; });
-  const clearFilters = () => setParams(previous => { const next = new URLSearchParams(previous); ['objective', 'planning', 'overdue', 'open'].forEach(k => next.delete(k)); return next; });
+  const changeTaskFilters = (update: Partial<TaskFilters>) => setParams(previous => {
+    const next = new URLSearchParams(previous);
+    for (const [name, value] of Object.entries(update)) {
+      if (value && (!Array.isArray(value) || value.length > 0)) next.set(name, String(value));
+      else next.delete(name);
+    }
+    return next;
+  });
+  const clearFilters = () => setParams(previous => {
+    const next = new URLSearchParams(previous);
+    for (const name of ['objective', 'planning', 'overdue', 'open', 'search', 'status', 'priority', 'labelId', 'dateField', 'startDate', 'endDate']) {
+      next.delete(name);
+    }
+    return next;
+  });
   if (!project) return <div className="min-w-0 w-full"><Button asChild variant="link"><Link to="/projects">Voltar a Projetos</Link></Button>{query.isPending ? <div className="mt-4 flex flex-col gap-4" aria-label="Carregando projeto"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 w-full" /></div> : <WorkFeedback error={query.error} retry={() => void query.refetch()} />}</div>;
   const development = project.mode === 'DEVELOPMENT';
   const editTask = (task: WorkTask) => setEditor({ task });
@@ -65,7 +81,8 @@ function ProjectDetail({ id }: { id: number }) {
   return <div className="min-w-0 w-full tabular-nums">
     <HeaderActions>
       {development && view && <ViewSwitcher label="Visão dos itens de trabalho" views={WORK_VIEWS} value={view} onChange={next => setParam('tab', next)} />}
-      {development && view === 'board' && <BoardFilterMenu filters={filters} objectives={project.objectives ?? []} onChange={setParam} onClear={clearFilters} />}
+      {development && view === 'board' && <BoardFilterMenu filters={filters} taskFilters={taskFilters} objectives={project.objectives ?? []}
+        onChange={setParam} onTaskFilterChange={changeTaskFilters} onClear={clearFilters} />}
       {development && section !== 'objectives' && <Button size="sm" onClick={newTask}><Plus aria-hidden /><span className="max-md:sr-only">Nova tarefa</span></Button>}
       {/* Project actions belong to Panorama and the work items; the Objectives page keeps only its own actions. */}
       {!(development && section === 'objectives') && <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Ações do projeto"><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="max-sm:[&_[role=menuitem]]:min-h-11"><DropdownMenuGroup>
