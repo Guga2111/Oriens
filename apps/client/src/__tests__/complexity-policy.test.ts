@@ -1,5 +1,3 @@
-// @vitest-environment node
-
 import { ESLint } from "eslint";
 import { expect, test } from "vitest";
 
