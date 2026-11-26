@@ -72,6 +72,10 @@ pendentes e mostra a mensagem de `workError` em um toast.
 
 ## Formulários
 
+No editor de tarefas, o horário é opcional após selecionar o dia planejado.
+O campo aceita `0930` pelo teclado numérico, além de `9:30` e `09:30`. O formulário
+envia esses valores como `09:30:00` e mostra erros de formato junto ao campo.
+
 ✅ **Padrão** (ex.: `TaskEditor`, diálogos financeiros):
 - Layout com `FieldGroup`, `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldSet`/`FieldLegend`.
 - `<form noValidate onSubmit={…}>` e `<fieldset disabled={pending}>` durante envio; botão de envio com estado

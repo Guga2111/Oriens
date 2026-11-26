@@ -229,7 +229,7 @@ test.describe('transição ao soltar no quadro desktop', () => {
   test.skip(({ viewport }) => (viewport?.width ?? 0) < 640, 'A coluna única usa o menu para mover.');
 
   for (const scenario of ['mesma coluna', 'coluna vazia', 'coluna com card'] as const) {
-    test(`mantém a posição antecipada ao soltar na ${scenario}`, async ({ page, colorScheme }) => {
+    test(`mantém a posição antecipada ao soltar na ${scenario}`, async ({ page, colorScheme }, testInfo) => {
       const sameColumn = scenario === 'mesma coluna';
       const occupied = scenario === 'coluna com card';
       const initialBoard = occupied ? {
@@ -256,6 +256,9 @@ test.describe('transição ao soltar no quadro desktop', () => {
       await page.mouse.move(target.x + target.width / 2, target.y + target.height / 2, { steps: 12 });
       const overlay = region.locator('article[aria-hidden=true]');
       await expect(overlay).toBeVisible();
+      await expect(destination.locator('[data-board-insertion]')).toBeVisible();
+      await expect(destination).toHaveCSS('box-shadow', 'none');
+      if (scenario === 'coluna vazia') await region.screenshot({ path: testInfo.outputPath('posicao-de-soltar.png') });
 
       const recording = await page.evaluateHandle(({ taskId, neighborId }) => {
         const card = (id: number) => document.querySelector(`[data-board-task-title="${id}"]`)?.closest('article');

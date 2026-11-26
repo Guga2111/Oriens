@@ -32,6 +32,42 @@ it('cria tarefa pelo objetivo sem datas artificiais; vínculo pode ser removido'
   await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
   await waitFor(() => expect(api.post).toHaveBeenCalledWith('/task/user/7', expect.objectContaining({ objectiveId: null, columnId: 11, projectId: 9, projectVersion: 4, plannedDate: null, startTime: null, dueDate: null, priority: 'NONE' }), expect.any(Object)));
 });
+it.each([
+  ['0930', '09:30:00'],
+  ['9:30', '09:30:00'],
+  ['09:30', '09:30:00'],
+  ['', null],
+])('cria tarefa com dia planejado e horário %j', async (typed, startTime) => {
+  const plannedDate = '2026-11-26';
+  renderWork(<TaskEditor open onOpenChange={vi.fn()} plannedDate={plannedDate} />);
+  await userEvent.type(screen.getByLabelText('Título'), 'Telefonar');
+  if (typed) await userEvent.type(screen.getByRole('textbox', { name: /Horário/ }), typed);
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  expect(api.post).toHaveBeenCalledWith('/task/user/7', expect.objectContaining({ plannedDate, startTime }), expect.any(Object));
+});
+it('associa o erro de formato ao campo de horário e permite corrigir o rascunho', async () => {
+  renderWork(<TaskEditor open onOpenChange={vi.fn()} plannedDate="2026-11-26" />);
+  const time = screen.getByRole('textbox', { name: /Horário/ });
+  await userEvent.type(screen.getByLabelText('Título'), 'Telefonar');
+  await userEvent.type(time, '2400');
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  expect(time).toHaveAccessibleDescription('Informe um horário válido, como 0930 ou 09:30.');
+  expect(time).toHaveFocus();
+  expect(api.post).not.toHaveBeenCalled();
+
+  await userEvent.clear(time);
+  await userEvent.type(time, '2359');
+  expect(time).not.toHaveAttribute('aria-invalid', 'true');
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  expect(api.post).toHaveBeenCalledWith('/task/user/7', expect.objectContaining({ startTime: '23:59:00' }), expect.any(Object));
+});
+it('pede o dia planejado quando o editor abre com horário e sem data', async () => {
+  renderWork(<TaskEditor open onOpenChange={vi.fn()} startTime="09:30" />);
+  await userEvent.type(screen.getByLabelText('Título'), 'Telefonar');
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar tarefa' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('Selecione um dia planejado para informar o horário.');
+  expect(api.post).not.toHaveBeenCalled();
+});
 it('timeout reenvia exatamente o mesmo payload e chave, preservando o rascunho', async () => {
   vi.mocked(api.post).mockRejectedValueOnce(new Error('timeout'));
   renderWork(<TaskEditor open onOpenChange={vi.fn()} />);
