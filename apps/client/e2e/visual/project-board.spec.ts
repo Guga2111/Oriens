@@ -1,6 +1,8 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import type { BoardResponse, WorkProject, WorkTask } from '../../src/types/work';
 import { prepareVisualPage } from './fixtures';
+
+test.use({ video: 'retain-on-failure' });
 
 const counts = { totalTasks: 2, nonCancelledTasks: 2, completedTasks: 0, cancelledTasks: 0 };
 const project: WorkProject = {
@@ -31,16 +33,27 @@ const board: BoardResponse = {
   projectId: 9, projectVersion: 4, filtered: false, columns, tasks: [task, secondTask], total: counts, visible: counts,
 };
 
-async function prepareBoard(page: Page, theme: 'light' | 'dark') {
+async function prepareBoard(page: Page, theme: 'light' | 'dark', initialBoard = board) {
   const unexpected = await prepareVisualPage(page, theme, true);
   await page.route('**/visual-api/work/home/recents', route => route.fulfill({ status: 204 }));
   await page.route('**/visual-api/project/9', route => route.fulfill({ json: project }));
-  await page.route('**/visual-api/project/9/board', route => route.fulfill({ json: board }));
+  await page.route('**/visual-api/project/9/board', route => route.fulfill({ json: initialBoard }));
   await page.route('**/visual-api/task/101', route => route.fulfill({ json: task }));
   await page.goto('/tasks/project/9?tab=board');
   const region = page.getByRole('region', { name: 'Quadro do projeto' });
   await expect(region.getByRole('button', { name: task.title, exact: true })).toBeVisible();
   return { region, unexpected };
+}
+
+async function pickTaskWithKeyboard(page: Page, region: Locator) {
+  const title = region.getByRole('button', { name: task.title, exact: true });
+  await page.evaluate(async () => { await document.fonts.ready; });
+  await title.focus();
+  await page.keyboard.press('Space');
+  await expect(region.locator('article[aria-hidden=true]')).toBeVisible();
+  // The keyboard sensor installs its document listener after the activation event.
+  await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  return title;
 }
 
 test('quadro do projeto em claro e escuro', async ({ page, colorScheme }) => {
@@ -133,9 +146,7 @@ test.describe('interação no quadro desktop', () => {
 
   test('abre detalhes com Enter e arrasta com Espaço, setas e Escape', async ({ page, colorScheme }) => {
     const { region } = await prepareBoard(page, colorScheme === 'dark' ? 'dark' : 'light');
-    const title = region.getByRole('button', { name: task.title, exact: true });
-    await title.focus();
-    await page.keyboard.press('Space');
+    const title = await pickTaskWithKeyboard(page, region);
     const announcement = region.getByText(`Arrastando ${task.title}.`, { exact: true });
     await expect(announcement).toHaveCount(1);
     await page.keyboard.press('ArrowDown');
@@ -147,9 +158,137 @@ test.describe('interação no quadro desktop', () => {
     await page.keyboard.press('Enter');
     const detail = page.getByRole('dialog', { name: task.title });
     await expect(detail).toBeVisible();
-    await page.keyboard.press('Escape');
+    await detail.getByRole('button', { name: 'Fechar painel' }).click();
     await expect(detail).toBeHidden();
     await title.click();
     await expect(detail).toBeVisible();
   });
+});
+
+test.describe('transição ao soltar no quadro desktop', () => {
+  test.use({ reducedMotion: 'no-preference' });
+  test.skip(({ viewport }) => (viewport?.width ?? 0) < 640, 'A coluna única usa o menu para mover.');
+
+  for (const scenario of ['mesma coluna', 'coluna vazia', 'coluna com card'] as const) {
+    test(`mantém a posição antecipada ao soltar na ${scenario}`, async ({ page, colorScheme }) => {
+      const sameColumn = scenario === 'mesma coluna';
+      const occupied = scenario === 'coluna com card';
+      const initialBoard = occupied ? {
+        ...board,
+        columns: columns.map(column => column.id === 13 ? column : { ...column, totalCount: 1, visibleCount: 1 }),
+        tasks: [task, { ...secondTask, columnId: 12, column: columns[1], status: 'ON_DOING', position: 0 }],
+      } : board;
+      const { region, unexpected } = await prepareBoard(page, colorScheme === 'dark' ? 'dark' : 'light', initialBoard);
+      const response = Promise.withResolvers<void>();
+      const writes: unknown[] = [];
+      await page.route('**/visual-api/task/101', async route => {
+        writes.push(route.request().postDataJSON());
+        await response.promise;
+        await route.fulfill({ status: 500, json: { message: 'Erro ao mover no quadro.' } });
+      });
+      const title = region.getByRole('button', { name: task.title, exact: true });
+      const neighbor = region.getByRole('button', { name: secondTask.title, exact: true });
+      const destination = region.getByRole('region', { name: sameColumn ? 'A fazer' : 'Fazendo' });
+      const source = await title.boundingBox();
+      const target = await (sameColumn || occupied ? neighbor : destination).boundingBox();
+      if (!source || !target) throw new Error('Alvo do arraste ausente.');
+      await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(target.x + target.width / 2, target.y + target.height / 2, { steps: 12 });
+      const overlay = region.locator('article[aria-hidden=true]');
+      await expect(overlay).toBeVisible();
+
+      const recording = await page.evaluateHandle(({ taskId, neighborId }) => {
+        const card = (id: number) => document.querySelector(`[data-board-task-title="${id}"]`)?.closest('article');
+        const y = (element: Element | null | undefined) => element?.getBoundingClientRect().top;
+        const promise = new Promise<{
+          insertion: number | undefined;
+          neighborBefore: number | undefined;
+          frames: { overlay: boolean; task: number | undefined; neighbor: number | undefined }[];
+        }>(resolve => {
+          window.addEventListener('pointerup', () => {
+            const insertion = y(document.querySelector('[data-board-insertion]'));
+            const neighborBefore = y(card(neighborId));
+            const start = performance.now();
+            const frames: { overlay: boolean; task: number | undefined; neighbor: number | undefined }[] = [];
+            const sample = () => {
+              const copy = document.querySelector('article[aria-hidden=true]');
+              frames.push({ overlay: Boolean(copy), task: y(card(taskId)), neighbor: y(card(neighborId)) });
+              if (performance.now() - start < 350) requestAnimationFrame(sample);
+              else resolve({ insertion, neighborBefore, frames });
+            };
+            requestAnimationFrame(sample);
+          }, { capture: true, once: true });
+        });
+        return { promise };
+      }, { taskId: task.id, neighborId: secondTask.id });
+
+      // Let the preview settle, then sample every frame during the old drop animation window.
+      await region.evaluate(async element => {
+        await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+        await Promise.all(element.getAnimations({ subtree: true })
+          .filter(animation => animation instanceof CSSTransition && animation.transitionProperty === 'transform')
+          .map(animation => animation.finished.catch(() => undefined)));
+      });
+      await page.mouse.up();
+      const { insertion, neighborBefore, frames } = await recording.evaluate(({ promise }) => promise);
+      try {
+        await expect(destination.getByRole('button', { name: task.title, exact: true })).toBeVisible();
+        const finalTask = frames.at(-1)?.task ?? NaN;
+        const finalNeighbor = frames.at(-1)?.neighbor ?? NaN;
+        expect.soft(insertion, 'prévia da posição de inserção').toBeDefined();
+        if (insertion !== undefined) expect.soft(Math.abs(finalTask - insertion), `inserção em ${insertion}, card em ${finalTask}`).toBeLessThan(2);
+        expect.soft(frames.filter(frame => frame.overlay), 'quadros com uma cópia após soltar').toHaveLength(0);
+        expect.soft(Math.max(...frames.map(frame => Math.abs((frame.task ?? NaN) - finalTask)))).toBeLessThan(2);
+        expect.soft(Math.max(...frames.map(frame => Math.abs((frame.neighbor ?? NaN) - finalNeighbor)))).toBeLessThan(2);
+        expect.soft(Math.abs((neighborBefore ?? NaN) - finalNeighbor), `vizinho em ${neighborBefore} antes e ${finalNeighbor} depois`).toBeLessThan(2);
+        await expect.poll(() => writes).toEqual([expect.objectContaining({
+          columnId: sameColumn ? 11 : 12, beforeTaskId: occupied ? secondTask.id : null,
+        })]);
+      } finally {
+        response.resolve();
+      }
+      await expect(page.getByText('Erro ao mover no quadro.')).toBeVisible();
+      await expect(region.getByRole('region', { name: 'A fazer' }).getByRole('button', { name: task.title, exact: true })).toBeVisible();
+      expect(unexpected).toEqual([]);
+    });
+  }
+});
+
+test('com movimento reduzido, o teclado preserva a ordenação filtrada', async ({ page, colorScheme, viewport }) => {
+  test.skip((viewport?.width ?? 0) < 640, 'A coluna única usa o menu para mover.');
+  const { region, unexpected } = await prepareBoard(page, colorScheme === 'dark' ? 'dark' : 'light', { ...board, filtered: true });
+  const title = await pickTaskWithKeyboard(page, region);
+  const overlay = region.locator('article[aria-hidden=true]');
+  const insertion = region.locator('[data-board-insertion]');
+  await page.keyboard.press('ArrowDown');
+  await expect(region.getByText(`Destino: ${secondTask.title}.`, { exact: true })).toHaveCount(1);
+  await expect(insertion).toHaveCount(0);
+  await page.keyboard.press('Space');
+  await expect(overlay).toHaveCount(0);
+  await expect(title).toBeFocused();
+
+  await page.route('**/visual-api/task/101', route => route.fulfill({ status: 500, json: { message: 'Erro ao mover no quadro.' } }));
+  await pickTaskWithKeyboard(page, region);
+  await page.keyboard.press('ArrowRight');
+  await expect(region.getByRole('region', { name: 'Fazendo' }).locator('[data-board-insertion]')).toBeVisible();
+  const request = page.waitForRequest(req => req.url().endsWith('/visual-api/task/101') && req.method() === 'PATCH');
+  await page.keyboard.press('Space');
+  expect((await request).postDataJSON()).toMatchObject({ columnId: 12, beforeTaskId: null });
+  await expect(overlay).toHaveCount(0);
+  await expect(page.getByText('Erro ao mover no quadro.')).toBeVisible();
+  await expect(title).toBeFocused();
+  expect(unexpected).toEqual([]);
+});
+
+test('no celular, move pelo menu do card e mostra erro de salvamento', async ({ page, colorScheme, viewport }) => {
+  test.skip((viewport?.width ?? 0) >= 640, 'No desktop o fluxo principal é o arraste.');
+  const { region } = await prepareBoard(page, colorScheme === 'dark' ? 'dark' : 'light');
+  await page.route('**/visual-api/task/101', route => route.fulfill({ status: 500, json: { message: 'Erro ao mover no quadro.' } }));
+  await region.getByRole('button', { name: `Ações da tarefa ${task.title}` }).click();
+  const request = page.waitForRequest(req => req.url().endsWith('/visual-api/task/101') && req.method() === 'PATCH');
+  await page.getByRole('menuitem', { name: 'Fazendo · Em andamento' }).click();
+  expect((await request).postDataJSON()).toMatchObject({ columnId: 12, beforeTaskId: null });
+  await expect(page.getByText('Erro ao mover no quadro.')).toBeVisible();
+  await expect(region.getByRole('region', { name: 'A fazer' }).getByRole('button', { name: task.title, exact: true })).toBeVisible();
 });

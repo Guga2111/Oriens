@@ -153,7 +153,6 @@ export function useBoardTaskMoves(projectId: number, filters: BoardFilters) {
     // Reordering can bump neighboring task versions as well as the project's version.
     scope: { id: `board-move:${userId}:${projectId}` },
     retry: false,
-    onMutate: () => publishPreview(),
     mutationFn: async (command: BoardMove) => {
       if (!sessionIsCurrent()) throw new Error('Sessão necessária.');
       const cached = client.getQueryState<BoardResponse>(boardKey);
@@ -192,7 +191,11 @@ export function useBoardTaskMoves(projectId: number, filters: BoardFilters) {
   function moveTask(command: BoardMove) {
     const alreadyMoving = client.getMutationCache().findAll(pending)
       .some(mutation => (mutation.state.variables as BoardMove).taskId === command.taskId);
-    if (!alreadyMoving) return move.mutateAsync(command);
+    if (alreadyMoving) return;
+    const request = move.mutateAsync(command);
+    // Publish before the drag preview unmounts so both layouts hand off in the same render.
+    publishPreview();
+    return request;
   }
 
   return { preview: preview.data, moving, moveTask };

@@ -47,9 +47,12 @@ Regras:
 ## Movimentos no quadro
 
 No desktop, arraste pelo card ou use as ações do menu para mudar de coluna ou
-posição. Pelo teclado, use Espaço no título para pegar ou soltar, as setas para
-escolher o destino e Escape para cancelar. Enter abre os detalhes quando o card
-está em repouso. No celular, o movimento continua disponível pelo menu.
+posição. Durante o arraste, o contorno tracejado indica onde o card ficará ao
+soltar, inclusive em uma coluna vazia. Com filtros ativos, o arraste entre
+colunas insere o card no fim do destino. Pelo teclado, use Espaço no título para
+pegar ou soltar, as setas para escolher o destino e Escape para cancelar. Enter
+abre os detalhes quando o card está em repouso. No celular, o movimento continua
+disponível pelo menu.
 
 O hook de movimento mantém a projeção otimista no cache do quadro e reserva
 apenas o card em salvamento no desktop. Os envios do mesmo projeto passam em
