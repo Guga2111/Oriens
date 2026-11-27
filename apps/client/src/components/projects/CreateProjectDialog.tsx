@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { WorkDatePicker } from '@/components/common/WorkDatePicker';
 import { toast } from 'sonner';
@@ -16,9 +16,11 @@ import { validCalendarDate } from '@/lib/work-form';
 import type { WorkProject } from '@/types/work';
 
 // eslint-disable-next-line complexity -- existing score 27; owner: client maintainers.
-export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEdit }: {
+export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEdit, descriptionTrigger }: {
   open: boolean; onOpenChange: (open: boolean) => void; onSuccess: () => void; projectToEdit?: WorkProject | null;
+  descriptionTrigger?: RefObject<HTMLButtonElement>;
 }) {
+  const descriptionInput = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('');
@@ -57,6 +59,16 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
   }
   return <DraftDialog uncertain={attempt.uncertain} open={open} onOpenChange={onOpenChange} dirty={dirty} busy={write.isPending}
     title={projectToEdit ? 'Editar projeto' : 'Novo projeto'} description="Um contexto para seus objetivos e próximos passos."
+    onOpenAutoFocus={event => {
+      if (!descriptionTrigger || !descriptionInput.current) return;
+      event.preventDefault();
+      descriptionInput.current.focus();
+    }}
+    onCloseAutoFocus={event => {
+      if (!descriptionTrigger?.current) return;
+      event.preventDefault();
+      descriptionTrigger.current.focus();
+    }}
     className="sm:max-w-project-dialog" footer={<Button form="project-form" type="submit" disabled={write.isPending}>{write.isPending ? 'Salvando…' : projectToEdit ? 'Salvar alterações' : 'Criar Projeto'}</Button>}>
     <form id="project-form" onSubmit={submit} noValidate>
       <fieldset disabled={write.isPending || attempt.uncertain} className="min-w-0"><FieldGroup>
@@ -67,7 +79,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
           </RadioGroup>
         </Field>}
         <Field data-invalid={!!error}><FieldLabel htmlFor="project-title">Título do Projeto</FieldLabel><Input id="project-title" value={title} onChange={e => setTitle(e.target.value)} maxLength={200} required aria-invalid={!!error} aria-describedby={error ? 'project-title-error' : undefined} />{error && <FieldError id="project-title-error">{error}</FieldError>}</Field>
-        <Field><FieldLabel htmlFor="project-description">Descrição (opcional)</FieldLabel><Textarea id="project-description" value={description} onChange={e => setDescription(e.target.value)} maxLength={10000} /></Field>
+        <Field><FieldLabel htmlFor="project-description">Descrição (opcional)</FieldLabel><Textarea ref={descriptionInput} id="project-description" value={description} onChange={e => setDescription(e.target.value)} maxLength={10000} /></Field>
         <Field><FieldLabel htmlFor="project-color">Cor (opcional)</FieldLabel><div className="flex items-center gap-3"><Input id="project-color" type="color" value={color || '#808080'} onChange={e => setColor(e.target.value)} className="h-11 w-14 p-1" /><Button type="button" variant="ghost" onClick={() => setColor('')}>Usar marca neutra</Button></div></Field>
         {!projectToEdit && <Field><FieldLabel>Objetivos (opcionais)</FieldLabel>
           {objectives.map((o, i) => <div key={i} className="flex flex-col gap-2 rounded-md border p-3">
