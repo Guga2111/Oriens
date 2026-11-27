@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { ImagePlus } from 'lucide-react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { ProjectActivityFeed } from './ProjectActivityFeed';
 import { ProjectDescriptionSection } from './ProjectDescriptionSection';
@@ -26,10 +25,10 @@ export function ProjectOverview({ project, notices, coverPending, onChooseCover,
       <article className="flex min-w-0 flex-col gap-6">
         <header className="flex min-w-0 flex-col gap-4">
           {project.imageUrl && (
-            <AspectRatio ratio={3} className="overflow-hidden rounded-lg">
-              <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="size-full object-cover" />
+            <div className="relative aspect-project-cover max-h-48 overflow-hidden rounded-lg">
+              <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="absolute inset-0 size-full object-cover" />
               <div className="absolute bottom-3 right-3">{coverAction}</div>
-            </AspectRatio>
+            </div>
           )}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h1 className="min-w-0 break-words text-page-title font-semibold tracking-tight">{project.title}</h1>

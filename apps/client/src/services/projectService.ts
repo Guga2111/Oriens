@@ -55,7 +55,7 @@ export const projectService = {
     (await api.get<Page<WorkProject>>(`/project/user/${user}`, { params, signal })).data,
   project: async (id: number, signal?: AbortSignal) => (await api.get<WorkProject>(`/project/${id}`, { signal })).data,
   activity: async (id: number, page: number, signal?: AbortSignal) =>
-    (await api.get<ProjectActivityPage>(`/project/${id}/activity`, { params: { page }, signal })).data,
+    (await api.get<ProjectActivityPage>(`/project/${id}/activity`, { params: { page, size: 5 }, signal })).data,
   board: async (id: number, params: BoardFilters, signal?: AbortSignal) =>
     (await api.get<BoardResponse>(`/project/${id}/board`, { params, signal })).data,
   projectFlag: async (project: WorkProject | SidebarProject, field: 'favorite' | 'archive', value: boolean) =>

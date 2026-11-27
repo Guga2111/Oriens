@@ -26,3 +26,16 @@ e o [projeto sem capa nem descrição](../screenshots/project-panorama-rich-acti
 - O [Playwright](../../apps/client/e2e/visual/project-panorama.spec.ts) cobre o editor em blocos, erro e nova tentativa de salvamento, upload de capa, atividade e recarga nos quatro projetos visuais.
 - O [Vitest](../../apps/client/src/__tests__/project-overview.test.tsx) cobre a descrição legada, o estado vazio, o salvamento, a paginação de atividade e o resumo de projeto simples.
 - O [teste PostgreSQL](../../apps/api/src/test/java/com/oriens/oriens_api/work/WorkApiPostgresTest.java) cobre versão, 404 de outro usuário, envio idempotente, eventos ordenados, consultas de tamanho constante e a escrita legada após rollback.
+
+## Capa compacta e controles de página
+
+| Viewport | Tema | Versão anterior | Capa compacta |
+| --- | --- | --- | --- |
+| 1440 × 900 | Claro | [Antes](../screenshots/project-panorama-rich-activity/after-1440-light.png) | [Depois](../screenshots/project-panorama-pagination/after-1440-light.png) |
+| 1440 × 900 | Escuro | [Antes](../screenshots/project-panorama-rich-activity/after-1440-dark.png) | [Depois](../screenshots/project-panorama-pagination/after-1440-dark.png) |
+| 390 × 844 | Claro | [Antes](../screenshots/project-panorama-rich-activity/after-390-light.png) | [Depois](../screenshots/project-panorama-pagination/after-390-light.png) |
+| 390 × 844 | Escuro | [Antes](../screenshots/project-panorama-rich-activity/after-390-dark.png) | [Depois](../screenshots/project-panorama-pagination/after-390-dark.png) |
+
+O roteiro com `playwright-cli` usou um projeto sintético na API local. A capa mediu 192 px de altura a 1440 e 1920 px de largura, 119 px a 390 px e 96 px a 320 px, sem rolagem horizontal nos dois temas. A comparação usa as capturas da versão anterior, com outro conjunto de eventos sintéticos.
+
+Na atividade, **Anterior** e **Próxima** trocam a lista em grupos de até cinco eventos. Enter avançou e voltou pelo teclado, Shift+Tab moveu o foco visível para **Anterior** e o indicador mostrou a página exibida. Confira a [atividade anterior](../screenshots/project-panorama-rich-activity/after-activity-390-dark.png), a [página 1](../screenshots/project-panorama-pagination/after-activity-page-1-390-dark.png) e a [página 2](../screenshots/project-panorama-pagination/after-activity-page-2-390-dark.png). O teste do cliente também cobre erro e nova tentativa de carregar a segunda página.

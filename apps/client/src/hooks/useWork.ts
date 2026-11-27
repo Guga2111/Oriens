@@ -53,14 +53,14 @@ export function useWorkProject(id: number) {
   return useQuery({ queryKey: workKey(userId, 'projects/detail', id), enabled: userId !== null && id > 0,
     queryFn: ({ signal }) => projectService.project(id, signal) });
 }
-export function useProjectActivity(id: number) {
+export function useProjectActivity(id: number, page: number) {
   const { userId } = useAuth();
-  return useInfiniteQuery({
-    queryKey: workKey(userId, 'projects/activity', id),
+  return useQuery({
+    queryKey: workKey(userId, 'projects/activity', id, page),
     enabled: userId !== null && id > 0,
-    initialPageParam: 0,
-    queryFn: ({ pageParam, signal }) => projectService.activity(id, pageParam, signal),
-    getNextPageParam: page => page.hasNext ? page.page + 1 : undefined,
+    queryFn: ({ signal }) => projectService.activity(id, page, signal),
+    placeholderData: (previous, query) =>
+      query && query.queryKey[1] === userId && query.queryKey[3] === id ? previous : undefined,
   });
 }
 /** `placeholder` shows a confirmed list snapshot while the detail is fetched. */

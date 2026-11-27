@@ -115,26 +115,54 @@ it('salva o documento de blocos no Panorama e lê o valor ao reabrir a rota', as
   expect(within(screen.getByRole('region', { name: 'Descrição' })).getByRole('paragraph').textContent).toBe(description);
 });
 
-it('lista a atividade do projeto e acrescenta a página seguinte', async () => {
-  serve(() => project, page => ({
-    page, actor: 'Pessoa de teste', hasNext: page === 0,
-    items: [{
-      id: 2 - page, kind: page === 0 ? 'TASK_COMPLETED' : 'PROJECT_CREATED', occurredAt: '2026-11-27T14:00:00Z',
-      subjectId: page === 0 ? 17 : null, subjectTitle: page === 0 ? 'Revisar a landing' : null,
-    }],
-  }));
+it('pagina a atividade, recupera uma falha da próxima página e permite voltar', async () => {
+  let failNext = true;
+  serve(() => project, page => {
+    if (page === 1 && failNext) {
+      failNext = false;
+      throw { isAxiosError: true, response: { status: 500, data: { message: 'Atividade indisponível.' } } };
+    }
+    return {
+      page, actor: 'Pessoa de teste', hasNext: page === 0,
+      items: [{
+        id: 2 - page, kind: page === 0 ? 'TASK_COMPLETED' : 'PROJECT_CREATED', occurredAt: '2026-11-27T14:00:00Z',
+        subjectId: page === 0 ? 17 : null, subjectTitle: page === 0 ? 'Revisar a landing' : null,
+      }],
+    };
+  });
+  const user = userEvent.setup();
   showProject();
 
   const feed = await screen.findByRole('region', { name: 'Atividade' });
-  const more = await within(feed).findByRole('button', { name: 'Carregar mais' });
-  expect(within(feed).getByRole('listitem')).toHaveTextContent('Pessoa de teste concluiu a tarefa Revisar a landing.');
-  await userEvent.click(more);
-  expect(await within(feed).findAllByRole('listitem')).toHaveLength(2);
-  const [completed, created] = within(feed).getAllByRole('listitem');
+  const navigation = within(await within(feed).findByRole('navigation', { name: 'Paginação da atividade' }));
+  const previous = navigation.getByRole('button', { name: 'Página anterior' });
+  const next = navigation.getByRole('button', { name: 'Próxima página' });
+  const currentItem = async () => within(await within(feed).findByRole('list', { name: 'Alterações no projeto' })).getByRole('listitem');
+  const completed = await currentItem();
+  expect(completed).toHaveTextContent('Pessoa de teste concluiu a tarefa Revisar a landing.');
+  const completedIcon = completed.querySelector('svg[aria-hidden="true"]');
+  expect(completedIcon).toBeInTheDocument();
+  expect(previous).toHaveAttribute('aria-disabled', 'true');
+  expect(navigation.getByRole('status')).toHaveTextContent('Página 1');
+
+  await user.click(next);
+  const feedback = await within(feed).findByRole('alert');
+  expect(feedback).toHaveTextContent('Atividade indisponível.');
+  expect(next).toHaveFocus();
+  await user.click(within(feedback).getByRole('button', { name: 'Recarregar dados' }));
+  expect(api.get).toHaveBeenCalledWith('/project/9/activity', expect.objectContaining({ params: { page: 1, size: 5 } }));
+  const created = await currentItem();
   expect(created).toHaveTextContent('Pessoa de teste criou o projeto.');
-  expect(completed.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
-  expect(created.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
-  expect(created.querySelector('svg')?.innerHTML).not.toBe(completed.querySelector('svg')?.innerHTML);
+  const createdIcon = created.querySelector('svg[aria-hidden="true"]');
+  expect(createdIcon).toBeInTheDocument();
+  expect(createdIcon?.innerHTML).not.toBe(completedIcon?.innerHTML);
+  expect(navigation.getByRole('status')).toHaveTextContent('Página 2');
+  expect(next).toHaveAttribute('aria-disabled', 'true');
+
+  await user.click(previous);
+  expect(await currentItem()).toHaveTextContent('Pessoa de teste concluiu a tarefa Revisar a landing.');
+  expect(navigation.getByRole('status')).toHaveTextContent('Página 1');
+  expect(previous).toHaveFocus();
 });
 
 it('permite recuperar a descrição após uma falha de carregamento', async () => {
