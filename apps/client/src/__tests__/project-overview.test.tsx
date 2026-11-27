@@ -130,7 +130,11 @@ it('lista a atividade do projeto e acrescenta a página seguinte', async () => {
   expect(within(feed).getByRole('listitem')).toHaveTextContent('Pessoa de teste concluiu a tarefa Revisar a landing.');
   await userEvent.click(more);
   expect(await within(feed).findAllByRole('listitem')).toHaveLength(2);
-  expect(within(feed).getAllByRole('listitem')[1]).toHaveTextContent('Pessoa de teste criou o projeto.');
+  const [completed, created] = within(feed).getAllByRole('listitem');
+  expect(created).toHaveTextContent('Pessoa de teste criou o projeto.');
+  expect(completed.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
+  expect(created.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
+  expect(created.querySelector('svg')?.innerHTML).not.toBe(completed.querySelector('svg')?.innerHTML);
 });
 
 it('permite recuperar a descrição após uma falha de carregamento', async () => {

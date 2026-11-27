@@ -17,7 +17,7 @@ e o [projeto sem capa nem descrição](../screenshots/project-panorama-rich-acti
 - Abrir projeto com descrição legada de dois parágrafos, ativar **Editar descrição** por teclado e inserir dois títulos e uma lista pelo editor.
 - Salvar e recarregar a rota. Conferir os blocos renderizados, o retorno do foco à ação e o evento na atividade.
 - Acionar **Adicionar capa** e carregar uma imagem de teste. Conferir a mesma URL na capa do Panorama, na navegação, em Projetos e na tarefa vinculada. Recarregar e conferir **Trocar capa**.
-- Avançar e voltar no calendário. Conferir progresso e atividade de conclusão de tarefa.
+- Avançar e voltar no calendário. Conferir progresso e os ícones de criação de projeto, objetivo e tarefa, edição de descrição, troca de capa e conclusão de tarefa.
 - Alterar o projeto por outra requisição enquanto a edição está aberta. Conferir que o conflito mantém o rascunho e que **Cancelar** preserva o valor salvo.
 - Usar Tab nas larguras de 1440, 390 e 320 px nos dois temas. Em cada cenário, a largura da área de conteúdo coincidiu com a largura útil da página e o botão de edição teve foco visível.
 

@@ -81,6 +81,8 @@ test('Panorama edita blocos, troca a capa e mostra a atividade do projeto', asyn
   const banner = page.getByRole('img', { name: 'Capa de Lançamento do portfólio' });
   await expect(banner).toBeVisible();
   await expect(feed).toContainText('Conta visual atualizou a capa');
+  const icons = await feed.locator('li svg[aria-hidden="true"]').evaluateAll(elements => elements.map(icon => icon.innerHTML));
+  expect(new Set(icons).size).toBe(2);
 
   await page.reload();
   await expect(description.getByRole('heading', { name: 'Plano de entrega', level: 2 })).toBeVisible();
