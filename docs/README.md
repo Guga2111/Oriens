@@ -12,7 +12,7 @@ Use os guias da tarefa para localizar a regra canônica.
 | Verificar uma fronteira de segurança | [JWT e posse](conventions/backend/security.md), [uploads](guides/security-uploads.md), [CORS e taxa](guides/security-browser-and-rate-limits.md), [segredos e logs](guides/security-secrets-and-logs.md), [MCP/OAuth](conventions/backend/mcp.md) |
 | Mudar API | [Estrutura e datas](conventions/backend/structure.md), [autorização](conventions/backend/security.md), [contratos HTTP](conventions/backend/http.md), [testes](conventions/backend/tests.md) |
 | Mudar consultas, concorrência ou schema | [Persistência e migrações](conventions/backend/persistence.md), [inventário, backup e restore](guides/database-operations.md) |
-| Mudar UI | [Estrutura](conventions/frontend/structure.md), [shadcn](conventions/frontend/components.md), [tokens](conventions/frontend/design-tokens.md), [dados e formulários](conventions/frontend/data.md), [acessibilidade e testes](conventions/frontend/tests.md), [regressão visual](guides/visual-regression.md), [marca](brand/GUIA-DE-USO.md) |
+| Mudar UI | [Estrutura](conventions/frontend/structure.md), [design system](conventions/frontend/design-tokens.md), [shadcn](conventions/frontend/components.md), [dados e formulários](conventions/frontend/data.md), [acessibilidade e testes](conventions/frontend/tests.md), [regressão visual](guides/visual-regression.md), [marca](brand/GUIA-DE-USO.md) |
 | Mudar MCP/OAuth | [Contratos e segurança](conventions/backend/mcp.md), [operação](guides/mcp-operations.md), [uso nos clientes de IA](mcp.md) |
 | Mudar deploy ou CI | [Deploy](guides/deploy.md), [checks de segurança](ci-security.md) |
 | Revisar um PR | [Fluxo de revisão](guides/pull-request-review.md) |

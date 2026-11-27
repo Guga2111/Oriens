@@ -8,7 +8,7 @@ Mínimo para todo componente:
 - Operável só com teclado; foco visível (`ring-ring`); ordem de foco lógica; `Esc` fecha sobreposições.
 - Todo controle com nome acessível (`Label` associado, `aria-label` em botão só de ícone, `sr-only` quando
   necessário).
-- Contraste AA nos dois temas (tokens já calibrados — por isso não use cor fora deles).
+- Contraste AA entre os pares de tokens nos dois temas, incluindo os estados interativos.
 - Sem informação só por cor (status com texto/ícone além da cor).
 - Atualizações assíncronas relevantes com `role="status"`/`aria-live`; erros com `role="alert"`.
 - Respeite `prefers-reduced-motion` em animações próprias.
@@ -24,4 +24,5 @@ Mínimo para todo componente:
 - Rode `npm run lint && npm test` antes de abrir PR.
 
 Use a [regressão visual](../../guides/visual-regression.md) para comparar
-a renderização da landing, do editor de tarefas e do quadro em temas e viewports fixos.
+a renderização em temas e viewports fixos. Os [exemplos do design system](design-system-examples.md#reproduzir-em-claro-e-escuro)
+indicam os cenários de referência para ações, formulários e o quadro.
