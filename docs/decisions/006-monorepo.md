@@ -9,9 +9,9 @@ precisam acompanhar alterações que atravessam as duas aplicações.
 
 A [entrega #102](../plans/2026-11-24-monorepo-layout-design.md) agrupou as
 aplicações em [`apps/api`](../../apps/api/) e [`apps/client`](../../apps/client/).
-[`ops/`](../../ops/) guarda Compose, inventário e runbooks. [`docs/`](../README.md)
+[`ops/`](../../ops/) guarda Compose, vhost Nginx, inventário e runbooks. [`docs/`](../README.md)
 é a entrada de documentação e [`scripts/`](../../scripts/) contém executáveis
-de operação e validação.
+de deploy, operação e validação.
 
 ## Alternativas
 
