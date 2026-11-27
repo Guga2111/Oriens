@@ -16,6 +16,8 @@ organização do repositório.
 Na raiz do repositório, use [.env.example](../../.env.example) como modelo para
 `.env` e configure `JWT_SECRET` com pelo menos 64 bytes. O Compose local
 publica API em `127.0.0.1:8080` e PostgreSQL em `5432`.
+Avatares e capas enviados nesse ambiente ficam em `/opt/oriens-uploads`
+dentro do contêiner da API e são descartados quando o contêiner é removido.
 
 ```sh
 docker compose -f ops/compose/docker-compose.dev.yml config -q

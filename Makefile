@@ -2,12 +2,15 @@
 
 help:
 	@printf '%s\n' \
+	  'make help          Lista os comandos disponíveis' \
 	  'make dev           Sobe API e PostgreSQL locais e executa o Vite' \
 	  'make test          Executa testes da API (H2) e do cliente' \
 	  'make test-postgres Executa a suíte PostgreSQL descartável' \
 	  'make lint          Executa o ESLint do cliente' \
 	  'make build         Empacota a API e gera o cliente estático' \
-	  'make e2e           Executa o Playwright contra uma API de teste em execução'
+	  'make e2e           Executa o Playwright contra uma API de teste em execução' \
+	  '' \
+	  'Pré-requisitos e configuração local em docs/guides/setup.md'
 
 dev:
 	docker compose -f ops/compose/docker-compose.dev.yml up -d
