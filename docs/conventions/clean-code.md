@@ -64,33 +64,27 @@ Task before = read.task(user, id);
 
 ### Complexidade ciclomática
 
-O limite é **20 por função de produção**, incluindo métodos, construtores e
-lambdas. A medição na base encontrou 84 funções do cliente e 38 da API acima de
-10. No limite 20, foram 19 no cliente e 7 na API. A adoção inicial limita código
-novo e conserva exceções pontuais sem refatorar fluxos de domínio neste PR.
+O limite é **20 por função de produção**, incluindo métodos, construtores e lambdas.
+A métrica parte de 1 e soma pontos de decisão. Um `if` com `&&`, por exemplo,
+leva uma função de 1 a 3. Quanto mais decisões no mesmo corpo, mais caminhos para
+acompanhar na revisão e cobrir em testes. Na medição inicial, o teto 10 exigiria
+122 exceções (84 no cliente e 38 na API), ante 26 no teto 20 (19 e 7).
 
-A medida começa em 1. O ESLint usa a regra nativa `complexity` na variante
-clássica em `apps/client/src`, com testes fora do escopo. A regra conta decisões
-como condicionais, encadeamento opcional e valores padrão. O
+No cliente, [ESLint `complexity`](../../apps/client/eslint.config.js) mede TypeScript
+em `src/`, com a variante clássica e exclusões para testes. A regra conta também
+encadeamento opcional e valores padrão. Na API, o
 [`CyclomaticComplexityTest`](../../apps/api/src/test/java/com/oriens/oriens_api/CyclomaticComplexityTest.java)
-usa a árvore sintática do JDK para `src/main/java`. Conta condicionais, `&&` e
-`||`, laços, `catch`, braços sem `default` e guardas de switch. Lambdas e
-métodos aninhados são medidos separadamente. Os números são comparáveis dentro
-de cada ferramenta, pois as construções de linguagem diferem.
+usa a árvore sintática do JDK em `src/main/java`. Conta condicionais, `&&`, `||`, laços,
+`catch`, braços sem `default` e guardas de `switch`. Compare pontuações dentro de cada ferramenta.
 
-`make lint` e `./mvnw -B test` em `apps/api` aplicam os limites nos jobs
-existentes. A [lista Java](../../apps/api/src/test/resources/complexity-baseline.tsv)
-registra teto por assinatura ou lambda e é mantida pela equipe da API. No
-cliente, a equipe do cliente mantém diretivas de uma linha com a pontuação
-medida junto à função. Remova a entrada quando a função atingir o limite.
-Qualquer exceção adicional exige justificativa e revisão de código.
+`make lint` e a [suíte Maven padrão de CI](../guides/setup.md#api) reprovam novas
+violações nos jobs `test-front` e `test-api`. Consulte o [inventário de exceções](debt.md#exceções-de-complexidade).
 
-Por exemplo, as regras acumuladas em `ProjectWorkService.patchTask` tornam
-caro seguir cada fluxo de atualização. Prefira extrair validação de vínculos e
-precondições para funções com nomes de domínio quando mudar esse fluxo. Em
-`TaskEditorForm`, derive estado e mensagens em funções testáveis quando a
-próxima mudança exigir nova ramificação. Evite substituir condicionais por
-expressões mais difíceis de ler só para reduzir o número.
+Em `ProjectWorkService.patchTask`, alterações de vínculos, ordenação e precondições
+de versão disputam espaço no mesmo método. Ao mudar o fluxo, extraia regras de domínio
+com nomes próprios e preserve posse e concorrência. Em `TaskEditorForm`, separe o
+cálculo dos valores iniciais e a validação do rascunho da montagem do formulário.
+Evite encadear ternários ou mover decisões para helpers genéricos só para baixar a pontuação.
 
 ## 4. Comentários
 
