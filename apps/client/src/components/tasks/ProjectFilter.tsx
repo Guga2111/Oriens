@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { useWorkProjects } from "@/hooks/useWork";
+import { ProjectCoverThumbnail } from "@/components/projects/ProjectCoverThumbnail";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandGroup, CommandItem } from "@/components/ui/command";
@@ -8,12 +9,16 @@ import { Command, CommandInput, CommandList, CommandGroup, CommandItem } from "@
 export function ProjectFilter({ value, onChange }: { value?: number; onChange: (id?: number) => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<{ id: number; title: string }>();
+  const [selected, setSelected] = useState<{ id: number; title: string; imageUrl?: string | null }>();
   const projects = useWorkProjects({ size: 100, includeArchived: true, search: search || undefined });
+  const current = projects.data?.content.find(project => project.id === value) ?? (selected?.id === value ? selected : undefined);
   return <Popover open={open} onOpenChange={setOpen}>
     <PopoverTrigger asChild>
       <Button variant="outline" role="combobox" aria-label="Projeto" aria-expanded={open} className="w-full justify-between">
-        <span className="truncate">{value ? projects.data?.content.find(p => p.id === value)?.title || (selected?.id === value ? selected.title : undefined) || "Projeto selecionado" : "Todos os projetos"}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          <ProjectCoverThumbnail imageUrl={current?.imageUrl} />
+          <span className="truncate">{value ? current?.title ?? "Projeto selecionado" : "Todos os projetos"}</span>
+        </span>
         <ChevronDown className="ml-2 h-4 w-4 shrink-0" aria-hidden />
       </Button>
     </PopoverTrigger>
@@ -30,6 +35,7 @@ export function ProjectFilter({ value, onChange }: { value?: number; onChange: (
           <CommandGroup>{projects.data?.content.map(p => <CommandItem key={p.id} value={String(p.id)}
             onSelect={() => { onChange(p.id); setSelected(p); setOpen(false); }}>
             <Check className={value === p.id ? "mr-2 h-4 w-4" : "mr-2 h-4 w-4 invisible"} aria-hidden />
+            <ProjectCoverThumbnail imageUrl={p.imageUrl} />
             {p.title}{p.archived ? " · Arquivado" : ""}
           </CommandItem>)}</CommandGroup>
           {(projects.data?.totalElements ?? 0) > 100 && <p className="p-3 text-sm">Refine a busca para encontrar outros projetos.</p>}

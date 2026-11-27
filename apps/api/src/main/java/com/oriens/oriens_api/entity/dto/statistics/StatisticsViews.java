@@ -32,7 +32,7 @@ public final class StatisticsViews {
     public record Planning(Period period, PlanCounts current, PlanCounts previous, long overdue,
                            List<OverdueGroup> overdueByProject) {}
     public record TaskEvidence(Long id, String title, LocalDate completedAt, LocalDate plannedDate,
-                               LocalDate dueDate, String status, Long projectId, String projectTitle) {}
+                               LocalDate dueDate, String status, Long projectId, String projectTitle, String projectImageUrl) {}
     public record Money(@JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal income, @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal expenses, @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal result, long entries,
                         /** Net investment transfers (withdrawals minus contributions): move the balance, never income or expenses. */
                         @JsonFormat(shape=JsonFormat.Shape.STRING) BigDecimal investmentTransfers) {}

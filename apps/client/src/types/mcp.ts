@@ -1,5 +1,5 @@
 export interface McpPage<T> { items: T[]; page: number; pageSize: number; totalElements: number; hasNext: boolean }
-export interface McpProject { id: number; title: string; archived: boolean }
+export interface McpProject { id: number; title: string; archived: boolean; imageUrl?: string | null }
 export interface McpConnection {
   id: string; clientId: string; name: string; version: number; policyRevision: number;
   allowStandaloneTasks: boolean; allowedProjectIds: number[]; allowedProjects: McpProject[]; scopes: string[];

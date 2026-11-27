@@ -53,6 +53,16 @@ export function useWorkProject(id: number) {
   return useQuery({ queryKey: workKey(userId, 'projects/detail', id), enabled: userId !== null && id > 0,
     queryFn: ({ signal }) => projectService.project(id, signal) });
 }
+export function useProjectActivity(id: number) {
+  const { userId } = useAuth();
+  return useInfiniteQuery({
+    queryKey: workKey(userId, 'projects/activity', id),
+    enabled: userId !== null && id > 0,
+    initialPageParam: 0,
+    queryFn: ({ pageParam, signal }) => projectService.activity(id, pageParam, signal),
+    getNextPageParam: page => page.hasNext ? page.page + 1 : undefined,
+  });
+}
 /** `placeholder` shows a confirmed list snapshot while the detail is fetched. */
 export function useTaskDetail(id: number, placeholder?: WorkTask) {
   const { userId } = useAuth();
@@ -83,7 +93,7 @@ export function taskAffectsKey(key: QueryKey, user: number, result: TaskMutation
     case 'tasks/all': case 'projects/list': case 'projects/sidebar': return true;
     case 'home': return key[3] === 'recents';
     case 'statistics': return key.length === 3 || ['activity', 'planning', 'task-evidence', 'streak'].includes(key[3] as string);
-    case 'projects/detail': case 'projects/board': case 'projects/objectives':
+    case 'projects/detail': case 'projects/board': case 'projects/objectives': case 'projects/activity':
       return result.affectedProjectIds.includes(key[3] as number);
     default: return false;
   }
@@ -216,7 +226,7 @@ export function useProjectFlags() {
           if (k[0] !== 'work' || k[1] !== userId) return false;
           if (['projects/list', 'projects/sidebar', 'statistics'].includes(k[2] as string)) return true;
           if (k[2] === 'home' && k[3] === 'recents') return true;
-          if (['projects/board', 'projects/objectives'].includes(k[2] as string)) return k[3] === result.id;
+          if (['projects/board', 'projects/objectives', 'projects/activity'].includes(k[2] as string)) return k[3] === result.id;
           return field === 'archive' && (k[2] as string).startsWith('tasks/');
         } }, { throwOnError: true });
         return { result, saved: true as const, refreshFailed: false };

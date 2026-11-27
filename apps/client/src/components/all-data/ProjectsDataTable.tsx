@@ -6,6 +6,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ProjectCoverThumbnail } from "@/components/projects/ProjectCoverThumbnail";
 import { cn } from "@/lib/utils";
 import type { WorkProject } from "@/types/work";
 import { ExploreList, ExploreResults, ExploreTable, type ExplorePage } from "./ExploreResults";
@@ -115,7 +116,9 @@ function ProjectIdentity({ project }: { project: WorkProject }) {
   const color = project.color ? { "--project-color": project.color } as CSSProperties : undefined;
   return (
     <div className="flex min-w-0 items-start gap-2">
-      <span aria-hidden style={color} className={cn("mt-1.5 size-2.5 shrink-0 rounded-full", color ? "bg-[var(--project-color)]" : "bg-muted-foreground")} />
+      <ProjectCoverThumbnail imageUrl={project.imageUrl} className="mt-0.5" fallback={
+        <span aria-hidden style={color} className={cn("mt-1.5 size-2.5 shrink-0 rounded-full", color ? "bg-[var(--project-color)]" : "bg-muted-foreground")} />
+      } />
       <p className="min-w-0 break-words font-medium">{project.title}</p>
     </div>
   );

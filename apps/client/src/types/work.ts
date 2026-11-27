@@ -9,7 +9,7 @@ export interface WorkTask {
   projectId: number | null; objectiveId: number | null; columnId: number | null; position: number | null;
   plannedDate: string | null; startTime: string | null; dueDate: string | null; completedAt: string | null;
   createdAt: string; priority: TaskPriority; status: TaskStatus; location: LocationDTO | null; version: number;
-  project: { id: number; title: string; archived: boolean; version: number } | null;
+  project: { id: number; title: string; archived: boolean; version: number; imageUrl?: string | null } | null;
   objective: { id: number; title: string } | null;
   column: { id: number; name: string; kind: TaskStatus } | null;
 }
@@ -34,6 +34,7 @@ export interface ProjectSummary {
 }
 export interface WorkProject {
   id: number; userId: number; title: string; description: string | null; color: string | null; imageUrl: string | null;
+  descriptionDoc?: TaskDescriptionDocument | null;
   mode: 'SIMPLE' | 'DEVELOPMENT'; favorite: boolean; archived: boolean; lastAccessed: string | null;
   defaultPendingColumnId: number | null; defaultCompletedColumnId: number | null; version: number;
   objectives: WorkObjective[] | null; summary: ProjectSummary;
@@ -65,7 +66,19 @@ export interface TaskPatch {
 export type TaskCreation = Omit<TaskPatch, 'version' | 'targetProjectVersion' | 'beforeTaskId' | 'status'> & { title: string };
 
 export interface WeeklyResponse { startDate: string; endDate: string; timezone: string; completedTasks: number; totalTasks: number }
-export type SidebarProject = Pick<WorkProject, 'id' | 'title' | 'color' | 'mode' | 'favorite' | 'archived' | 'lastAccessed' | 'version'>;
+export type SidebarProject = Pick<WorkProject, 'id' | 'title' | 'color' | 'mode' | 'favorite' | 'archived' | 'lastAccessed' | 'version'> &
+  { imageUrl?: string | null };
+
+export type ProjectActivityKind =
+  | 'PROJECT_CREATED' | 'PROJECT_UPDATED' | 'DESCRIPTION_UPDATED' | 'COVER_UPDATED'
+  | 'OBJECTIVE_CREATED' | 'OBJECTIVE_UPDATED' | 'OBJECTIVE_REMOVED'
+  | 'TASK_CREATED' | 'TASK_ADDED' | 'TASK_MOVED' | 'TASK_COMPLETED' | 'TASK_REMOVED';
+export interface ProjectActivityPage {
+  page: number;
+  hasNext: boolean;
+  actor: string;
+  items: { id: number; kind: ProjectActivityKind; occurredAt: string; subjectId: number | null; subjectTitle: string | null }[];
+}
 
 export interface ProjectCreation {
   title: string; mode: WorkProject['mode']; description?: string | null; color?: string | null;
@@ -74,7 +87,8 @@ export interface ProjectCreation {
 export interface DeletionPreview { projectVersion: number; objectiveCount: number; columnCount: number; taskCount: number }
 export type ProjectWrite =
   | { action: 'create'; body: ProjectCreation; key: string }
-  | { action: 'metadata'; id: number; body: { version: number; title: string; description: string | null; color: string | null } }
+  | { action: 'metadata'; id: number; body: { version: number; title: string; description?: string | null; color: string | null } }
+  | { action: 'description'; id: number; body: { version: number; descriptionDoc: TaskDescriptionDocument | null } }
   | { action: 'convert'; id: number; version: number }
   | { action: 'delete'; id: number; version: number }
   | { action: 'picture'; id: number; version: number; file: File }

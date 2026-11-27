@@ -15,7 +15,7 @@ public class McpStore {
     private final JdbcTemplate db;
     private final Clock clock;
     public McpStore(JdbcTemplate db, Clock clock) { this.db=db; this.clock=clock; }
-    public record ProjectChoice(long id, String title, boolean archived) {}
+    public record ProjectChoice(long id, String title, boolean archived, String imageUrl) {}
     public record Connection(UUID id, long userId, String clientId, String name, long version,
             long policyRevision, boolean allowStandaloneTasks, Instant createdAt, Instant authorizedAt,
             Instant expiresAt, Instant lastUsedAt, Instant revokedAt, Set<String> scopes, Set<Long> allowedProjectIds,
@@ -58,8 +58,8 @@ public class McpStore {
             c.authorizedAt,c.expiresAt,c.lastUsedAt,c.revokedAt,
             new HashSet<>(db.queryForList("select scope from mcp_connection_scopes where connection_id=?",String.class,id)),
             new HashSet<>(db.queryForList("select project_id from mcp_connection_projects where connection_id=?",Long.class,id)),
-            db.query("select p.id,p.title,p.archived from project p join mcp_connection_projects a on a.project_id=p.id and a.user_id=p.user_id where a.connection_id=? and p.user_id=? order by p.title,p.id",
-                (r,n)->new ProjectChoice(r.getLong("id"),r.getString("title"),r.getBoolean("archived")),id,c.userId));
+            db.query("select p.id,p.title,p.archived,p.image_url from project p join mcp_connection_projects a on a.project_id=p.id and a.user_id=p.user_id where a.connection_id=? and p.user_id=? order by p.title,p.id",
+                (r,n)->new ProjectChoice(r.getLong("id"),r.getString("title"),r.getBoolean("archived"),r.getString("image_url")),id,c.userId));
     }
     private void lockOwner(long owner) {
         if(db.queryForList("select id from users where id=? for no key update",Long.class,owner).isEmpty()) throw missing();

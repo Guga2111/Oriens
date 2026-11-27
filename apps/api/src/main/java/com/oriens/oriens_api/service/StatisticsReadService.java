@@ -88,16 +88,16 @@ public class StatisticsReadService {
         if (kind.equals("overdue")) args.add(p.today()); else {args.add(start);args.add(end);}
         if(unassigned) filter+=" and t.project_id is null";
         if(projectId!=null) {filter+=" and t.project_id=?";args.add(projectId);}
-        String where=" from tasks t where t.user_id=? and "+filter;
-        long total=db.queryForObject("select count(*)"+where,Long.class,args.toArray());
+        String where=" where t.user_id=? and "+filter;
+        long total=db.queryForObject("select count(*) from tasks t"+where,Long.class,args.toArray());
         args.add(size);args.add((long)page*size);
         String order=switch(kind){case "completed"->"t.completed_at desc";case "planned"->"t.planned_date asc";default->"t.due_date asc";};
         List<TaskEvidence> rows=db.query("""
-            select t.id,t.title,t.completed_at,t.planned_date,t.due_date,t.status,t.project_id,
-              (select p.title from project p where p.id=t.project_id and p.user_id=t.user_id)
+            select t.id,t.title,t.completed_at,t.planned_date,t.due_date,t.status,t.project_id,p.title,p.image_url
+              from tasks t left join project p on p.id=t.project_id and p.user_id=t.user_id
             """+where+" order by "+order+",t.id desc limit ? offset ?",
             (r,i)->new TaskEvidence(r.getLong(1),r.getString(2),r.getObject(3,LocalDate.class),r.getObject(4,LocalDate.class),
-                r.getObject(5,LocalDate.class),r.getString(6),r.getObject(7,Long.class),r.getString(8)),args.toArray());
+                r.getObject(5,LocalDate.class),r.getString(6),r.getObject(7,Long.class),r.getString(8),r.getString(9)),args.toArray());
         return new PageImpl<>(rows,PageRequest.of(page,size),total);
     }
 }

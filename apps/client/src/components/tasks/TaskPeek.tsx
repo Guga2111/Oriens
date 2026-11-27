@@ -1,6 +1,7 @@
 import { useRecordVisit } from '@/hooks/useHome';
 import { useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { ProjectCoverThumbnail } from "@/components/projects/ProjectCoverThumbnail";
 import { isAxiosError } from "axios";
 import {
   ArrowRight, CalendarCheck, CalendarPlus, Check, ChevronDown, Circle, Columns3, Folder,
@@ -172,7 +173,7 @@ function PeekBody({ task, onSave, disabled, descriptionLoading }: { task: WorkTa
         </Section>
         {task.project && (
           <Section title="Estrutura do projeto">
-            <Row icon={Folder} label="Projeto"><Link className="truncate hover:underline" to={`/tasks/project/${task.project.id}`}>{task.project.title}</Link></Row>
+            <Row icon={Folder} label="Projeto"><Link className="truncate hover:underline" to={`/tasks/project/${task.project.id}`}><ProjectCoverThumbnail imageUrl={task.project.imageUrl} className="mr-1 inline-block align-text-bottom" />{task.project.title}</Link></Row>
             <Row icon={Columns3} label="Coluna"><ColumnProperty task={task} onSave={onSave} disabled={disabled} name="Coluna" className="-ml-1.5" /></Row>
             <Row icon={Target} label="Objetivo">{task.objective
               ? <Link className="truncate hover:underline" to={`/tasks/project/${task.project.id}?tab=objectives#objective-${task.objective.id}`}>{task.objective.title}</Link>
@@ -298,7 +299,7 @@ export function TaskPeek({ taskId, placeholder, onClose, onEdit }: {
         <div className={cn("mx-auto flex w-full flex-col", mode === "full" && "max-w-4xl")}>
           {task ? (
             <div className="flex flex-col gap-2">
-              <p className="text-xs text-muted-foreground">{task.project?.title ?? "Tarefa avulsa"} · #{task.id}</p>
+              <p className="text-xs text-muted-foreground"><ProjectCoverThumbnail imageUrl={task.project?.imageUrl} className="mr-1 inline-block align-text-bottom" />{task.project?.title ?? "Tarefa avulsa"} · #{task.id}</p>
               {/* The dialog keeps the saved title as its name; the field below edits it in place. */}
               <SheetTitle className="sr-only">{task.title}</SheetTitle>
               <InlineText value={task.title} label="Título da tarefa" required="Informe o título da tarefa." maxLength={200}
