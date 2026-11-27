@@ -115,8 +115,9 @@ long done = taskRepository.findByUserId(owner).stream().filter(t -> t.getStatus(
 2. **Mudança de schema é uma migração Flyway aditiva** em
    `apps/api/src/main/resources/db/migration/postgresql/V<n>__descricao.sql` (próximo número livre).
    O Flyway aplica no startup da API, em transação, e valida o checksum das já aplicadas: **nunca edite
-   uma migração já aplicada** — crie a próxima. Rollback é de aplicação (a migração é aditiva, a versão
-   anterior da API continua compatível); remover algo exige uma migração própria em entrega posterior.
+   uma migração já aplicada** — crie a próxima. Para rollback de aplicação, comprove a compatibilidade
+   da versão anterior com o schema e os dados escritos pela versão atual. Remoções exigem migração
+   própria em entrega posterior. [Falha e rollback](../../guides/deploy.md#falha-e-rollback)
    O diretório `{vendor}` mantém o SQL PostgreSQL fora dos testes H2. Bancos instalados pelos antigos
    runners de migração são adotados por `LegacySchemaSeal` (versão de `oriens_schema_baseline` → baseline).
 3. **Restrições no banco, não só no Java**: `NOT NULL`, `CHECK`, `UNIQUE`, FKs (inclusive compostas com

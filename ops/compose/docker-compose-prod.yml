@@ -1,6 +1,6 @@
 services:
   api:
-    image: oriens-api:latest
+    image: oriens-api:${ORIENS_API_TAG:-latest}
     container_name: oriens-api
     restart: unless-stopped
     environment:
@@ -18,9 +18,13 @@ services:
       ORIENS_MCP_CODEXREDIRECTS: ${ORIENS_MCP_CODEX_REDIRECTS:-http://127.0.0.1/callback}
       ORIENS_MCP_CLAUDEREDIRECTS: ${ORIENS_MCP_CLAUDE_REDIRECTS:-http://localhost:8765/callback}
     ports:
-      - "${API_PORT:-8080}:8080"
+      - "127.0.0.1:${API_PORT:-8080}:8080"
     volumes:
-      - /opt/oriens-uploads:/opt/oriens-uploads
+      - type: bind
+        source: /opt/oriens-uploads
+        target: /opt/oriens-uploads
+        bind:
+          create_host_path: false
     # The shared Prometheus of the VPS (FutspringV2 ops/observability) scrapes oriens-api:8081 over this
     # network; the management port is never published on the host.
     networks:

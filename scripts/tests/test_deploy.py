@@ -10,6 +10,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 IMAGE_TAG = "a" * 40
+PREVIOUS_TAG = "b" * 40
 STUB = r"""#!/usr/bin/env bash
 set -euo pipefail
 command=${0##*/}
@@ -30,37 +31,84 @@ case "$command:$*" in
         ;;
     "docker:load")
         [[ "$(cat)" == "test image" ]]
+        printf 'candidate image' > "$TEST_REMOTE/$IMAGE_TAG"
         ;;
-    "docker:image inspect oriens-api:"*)
-        [[ -f "$TEST_REMOTE/${3#oriens-api:}" ]]
+    "docker:image inspect --format {{.Id}} oriens-api:"*)
+        cat "$TEST_REMOTE/${5#oriens-api:}"
         ;;
-    "docker:tag "*)
-        target="$TEST_REMOTE/${3#oriens-api:}"
-        source="$TEST_REMOTE/${2#oriens-api:}"
-        if [[ -f "$source" ]]; then
-            cp "$source" "$target"
+    "docker:image inspect --format {{index .Config.Labels "*)
+        if [[ "$5" == 'candidate image' ]]; then
+            printf '%s' "$IMAGE_TAG"
         else
-            printf '%s' "${2#oriens-api:}" > "$target"
+            [[ "$5" == 'original image' ]]
+            printf '%s' "${PREVIOUS_REVISION:-$PREVIOUS_TAG}"
         fi
         ;;
-    "docker:compose "*)
-        [[ "$PWD" == "$TEST_REMOTE/projects/oriens" && -f "$3" ]]
+    "docker:image inspect --format {{if .Config.Healthcheck}}"*)
+        if [[ "$5" == 'candidate image' ]]; then
+            printf '%s' "${CANDIDATE_PROBE:-CMD}"
+        else
+            [[ "$5" == 'original image' ]]
+            printf '%s' "${PREVIOUS_PROBE:-CMD}"
+        fi
         ;;
-    "docker:network create observability"|"docker:images "*|"docker:image prune -f")
+    "docker:tag "*)
+        printf '%s' "$2" > "$TEST_REMOTE/${3#oriens-api:}"
+        ;;
+    "docker:container inspect "*)
+        cat "$TEST_REMOTE/running"
+        ;;
+    "docker:container stop oriens-api")
+        rm "$TEST_REMOTE/running"
+        ;;
+    "docker:run --rm --network none "*)
+        [[ "${FAIL_PERMISSIONS:-0}" != 1 ]]
+        ;;
+    "docker:compose "*)
+        [[ "$PWD" == "$TEST_REMOTE/projects/oriens" && -f "$3" && -f "$5" ]]
+        case "$6" in
+            config|logs)
+                ;;
+            up)
+                [[ "$*" == *' --wait --wait-timeout 360 '* ]]
+                if [[ "$5" == docker-compose-prod.next.yml ]]; then
+                    [[ "$ORIENS_API_TAG" == "$IMAGE_TAG" ]]
+                    printf 'candidate image' > "$TEST_REMOTE/running"
+                    [[ "${FAIL_READINESS:-0}" != 1 ]]
+                else
+                    [[ "$ORIENS_API_TAG" == "$PREVIOUS_TAG" ]]
+                    printf 'original image' > "$TEST_REMOTE/running"
+                fi
+                ;;
+            *) exit 70 ;;
+        esac
+        ;;
+    "docker:network inspect observability")
         ;;
     "ssh:"*)
         [[ "$#" == 2 && "$1" == vps ]]
         export HOME="$TEST_REMOTE"
-        exec bash -e -o pipefail -c "${2//\/opt\/oriens-uploads/$TEST_REMOTE\/uploads}"
+        remote=${2//\/var\/www\/oriens/$TEST_REMOTE\/web}
+        exec bash -e -o pipefail -c "${remote//\/opt\/oriens-uploads/$TEST_REMOTE\/uploads}"
         ;;
     "scp:"*)
         [[ "$#" == 2 && "$2" == vps:* ]]
         cp "$1" "$TEST_REMOTE/${2#vps:}"
         ;;
-    "curl:"*)
-        [[ "${FAIL_READINESS:-0}" != 1 ]]
+    "sudo:-n /usr/local/sbin/oriens-install-nginx")
+        candidate="$TEST_REMOTE/proxy.next"
+        cat > "$candidate"
+        cmp -s "$candidate" "$TEST_REPO/ops/nginx/oriens.conf"
+        exec bash "$TEST_REPO/scripts/install-nginx.sh" "$candidate" "$TEST_REMOTE/oriens.conf"
         ;;
-    "sleep:5")
+    "flock:-n 9")
+        ;;
+    "nginx:-t")
+        if [[ "${FAIL_NGINX_VALIDATION:-0}" == 1 ]]; then
+            [[ "$(cat "$TEST_REMOTE/oriens.conf")" == "original vhost" ]]
+        fi
+        ;;
+    "nginx:-s reload")
         ;;
     *)
         printf 'Unexpected command: %s %s\n' "$command" "$*" >&2
@@ -82,23 +130,30 @@ class DeployTest(unittest.TestCase):
         self.log.touch()
         (self.repo / "scripts").mkdir(parents=True)
         self.script = shutil.copy2(ROOT / "scripts/deploy.sh", self.repo / "scripts")
+        shutil.copy2(ROOT / "scripts/install-nginx.sh", self.repo / "scripts")
         (self.repo / "apps/api").mkdir(parents=True)
         (self.repo / "apps/client/dist").mkdir(parents=True)
         (self.repo / "apps/client/dist/index.html").write_text("build output", encoding="utf-8")
         (self.repo / "ops/compose").mkdir(parents=True)
         self.compose = Path(shutil.copy2(ROOT / "ops/compose/docker-compose-prod.yml", self.repo / "ops/compose"))
+        (self.repo / "ops/nginx").mkdir(parents=True)
+        self.vhost = Path(shutil.copy2(ROOT / "ops/nginx/oriens.conf", self.repo / "ops/nginx"))
         self.remote.mkdir()
+        self.active_vhost = self.remote / "oriens.conf"
+        self.active_vhost.write_text("original vhost\n", encoding="utf-8")
         (self.remote / "latest").write_text("original image", encoding="utf-8")
+        (self.remote / PREVIOUS_TAG).write_text("original image", encoding="utf-8")
         dependencies = self.root / "bin"
         dependencies.mkdir()
         stub = dependencies / "stub"
         stub.write_text(STUB, encoding="utf-8")
         stub.chmod(0o755)
-        for name in ("npm", "docker", "ssh", "scp", "curl", "sleep"):
+        for name in ("npm", "docker", "ssh", "scp", "sudo", "flock", "nginx"):
             (dependencies / name).symlink_to(stub)
         self.env = {
             "PATH": f"{dependencies}:{os.defpath}",
             "IMAGE_TAG": IMAGE_TAG,
+            "PREVIOUS_TAG": PREVIOUS_TAG,
             "TEST_REPO": str(self.repo),
             "TEST_REMOTE": str(self.remote),
             "TEST_LOG": str(self.log),
@@ -122,7 +177,9 @@ class DeployTest(unittest.TestCase):
     def test_build_runs_from_checkout_without_publish_credentials(self):
         result, commands = self.deploy("build")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(commands, ["npm ci", "npm run build", f"docker build -t oriens-api:{IMAGE_TAG} apps/api"])
+        self.assertEqual(commands, ["npm ci", "npm run build",
+                                    f"docker build --label org.opencontainers.image.revision={IMAGE_TAG} "
+                                    f"-t oriens-api:{IMAGE_TAG} apps/api"])
 
     def test_failed_build_does_not_build_api_or_connect(self):
         result, commands = self.deploy("build", FAIL_BUILD="1")
@@ -143,9 +200,48 @@ class DeployTest(unittest.TestCase):
         self.assertIn("ORIENS_MCP_ISSUER='https://test.invalid'\n", env_file.read_text(encoding="utf-8"))
         self.assertEqual(stat.S_IMODE(env_file.stat().st_mode), 0o600)
         self.assertEqual((self.web / "index.html").read_text(encoding="utf-8"), "build output")
-        self.assertLess(commands.index("docker load"), commands.index(f"docker tag oriens-api:{IMAGE_TAG} oriens-api:latest"))
-        self.assertLess(commands.index("curl -s -o /dev/null --max-time 5 http://127.0.0.1:8080/"),
-                        commands.index(f"ssh vps tar -xzf - -C {self.web}"))
+        readiness = commands.index("docker compose --env-file .env.next -f docker-compose-prod.next.yml "
+                                   "up -d --wait --wait-timeout 360 --force-recreate api")
+        self.assertLess(commands.index("docker load"), readiness)
+        self.assertLess(readiness, commands.index("docker tag candidate image oriens-api:latest"))
+        self.assertLess(readiness, commands.index(f"ssh vps tar -xzf - -C {self.web}"))
+        self.assertEqual((self.remote / "previous").read_text(encoding="utf-8"), "original image")
+        self.assertFalse(any(command.startswith(("sudo ", "nginx ")) for command in commands))
+
+    def test_proxy_is_installed_and_validated_before_api_replacement_and_spa(self):
+        result, commands = self.deploy("publish", ORIENS_NGINX_APPLY="true", WEB_ROOT="/var/www/oriens")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        stage = commands.index("scp ops/nginx/oriens.conf vps:projects/oriens/oriens-nginx.next.conf")
+        reload = commands.index("nginx -s reload")
+        start = next(index for index, command in enumerate(commands) if "--force-recreate api" in command)
+        self.assertLess(stage, reload)
+        self.assertEqual(commands[reload - 2:reload], ["nginx -t", "nginx -t"])
+        self.assertLess(reload, start)
+        self.assertLess(start, commands.index("ssh vps tar -xzf - -C /var/www/oriens"))
+        self.assertEqual(self.active_vhost.read_bytes(), self.vhost.read_bytes())
+        self.assertFalse((self.remote / "projects/oriens/oriens-nginx.next.conf").exists())
+        self.assertTrue((self.web / "index.html").is_file())
+
+    def test_invalid_proxy_restores_vhost_and_aborts_before_starting_api(self):
+        prior = self.seed_previous_config()
+        result, commands = self.deploy("publish", ORIENS_NGINX_APPLY="true", WEB_ROOT="/var/www/oriens",
+                                       FAIL_NGINX_VALIDATION="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("A API atual foi preservada", result.stdout)
+        self.assertNotIn("nginx -s reload", commands)
+        self.assertFalse(any("--force-recreate api" in command for command in commands))
+        self.assertEqual(self.active_vhost.read_text(encoding="utf-8"), "original vhost\n")
+        self.assertEqual((prior / ".env").read_text(encoding="utf-8"), "original environment")
+        self.assertFalse((prior / "oriens-nginx.next.conf").exists())
+        self.assertFalse((self.web / "index.html").exists())
+
+    def test_proxy_rejects_unrecognized_flag_or_mismatched_web_settings(self):
+        for settings in ({"ORIENS_NGINX_APPLY": "yes"}, {"ORIENS_NGINX_APPLY": "true"},
+                         {"ORIENS_NGINX_APPLY": "true", "WEB_ROOT": "/var/www/oriens", "API_PORT": "8082"}):
+            with self.subTest(settings=settings):
+                result, commands = self.deploy("publish", **settings)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(commands, [])
 
     def test_failed_image_upload_does_not_restart_or_publish(self):
         result, commands = self.deploy("publish", FAIL_UPLOAD="1")
@@ -163,23 +259,85 @@ class DeployTest(unittest.TestCase):
         self.assertEqual(prior.read_text(encoding="utf-8"), "original")
         self.assertFalse(any(command.startswith("docker compose") for command in commands))
 
-    def test_failed_readiness_restores_previous_image_and_leaves_frontend_untouched(self):
+    def seed_previous_config(self):
+        prior = self.remote / "projects/oriens"
+        prior.mkdir(parents=True)
+        (prior / ".env").write_text("original environment", encoding="utf-8")
+        (prior / "docker-compose-prod.yml").write_text("original compose", encoding="utf-8")
+        return prior
+
+    def test_failed_readiness_preserves_previous_state_and_stops_unapproved_candidate(self):
+        prior = self.seed_previous_config()
         result, commands = self.deploy("publish", FAIL_READINESS="1")
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("API não respondeu em 360s", result.stdout)
-        self.assertEqual(sum(command.startswith("curl ") for command in commands), 72)
-        self.assertIn("docker compose -f docker-compose-prod.yml logs --tail 100 api", commands)
-        self.assertIn("docker tag oriens-api:previous oriens-api:latest", commands)
-        self.assertIn("docker compose -f docker-compose-prod.yml up -d --force-recreate", commands)
+        self.assertIn("Rollback automático indisponível", result.stdout)
+        self.assertIn("docker container stop oriens-api", commands)
         self.assertEqual((self.remote / "latest").read_text(encoding="utf-8"), "original image")
+        self.assertFalse((self.remote / "running").exists())
         self.assertFalse((self.web / "index.html").exists())
-        self.assertNotIn("ORIENS_MCP_ISSUER", (self.remote / "projects/oriens/.env").read_text(encoding="utf-8"))
+        self.assertEqual((prior / ".env").read_text(encoding="utf-8"), "original environment")
+        self.assertEqual((prior / "docker-compose-prod.yml").read_text(encoding="utf-8"), "original compose")
+        self.assertFalse((prior / ".env.next").exists())
+
+    def test_failed_readiness_restores_only_exact_approved_previous_image(self):
+        self.seed_previous_config()
+        result, commands = self.deploy("publish", FAIL_READINESS="1",
+                                       ROLLBACK_COMPATIBLE_PAIR=f"{IMAGE_TAG}:{PREVIOUS_TAG}")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(f"Versão anterior {PREVIOUS_TAG} restaurada e pronta", result.stdout)
+        self.assertIn("docker compose --env-file .env -f docker-compose-prod.yml up -d --wait "
+                      "--wait-timeout 360 api", commands)
+        self.assertEqual((self.remote / "running").read_text(encoding="utf-8"), "original image")
+        self.assertFalse((self.web / "index.html").exists())
+
+    def test_previous_image_with_wrong_revision_cannot_be_restored(self):
+        self.seed_previous_config()
+        result, commands = self.deploy("publish", FAIL_READINESS="1", PREVIOUS_REVISION="c" * 40,
+                                       ROLLBACK_COMPATIBLE_PAIR=f"{IMAGE_TAG}:{PREVIOUS_TAG}")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Rollback automático indisponível", result.stdout)
+        self.assertFalse(any(command.startswith("docker compose --env-file .env ") for command in commands))
+
+    def test_upload_permissions_failure_leaves_running_image_untouched(self):
+        self.seed_previous_config()
+        running = self.remote / "running"
+        running.write_text("original image", encoding="utf-8")
+        result, commands = self.deploy("publish", FAIL_PERMISSIONS="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Prepare as permissões", result.stdout)
+        self.assertFalse(any(" up -d" in command for command in commands))
+        self.assertEqual(running.read_text(encoding="utf-8"), "original image")
+
+    def test_candidate_without_healthcheck_cannot_replace_the_running_image(self):
+        prior = self.seed_previous_config()
+        result, commands = self.deploy("publish", CANDIDATE_PROBE="NONE")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("ter healthcheck", result.stdout)
+        self.assertFalse(any(" up -d" in command for command in commands))
+        self.assertEqual((prior / ".env").read_text(encoding="utf-8"), "original environment")
+
+    def test_running_image_must_match_latest_to_start_replacement(self):
+        running = self.remote / "running"
+        running.write_text("different image", encoding="utf-8")
+        result, commands = self.deploy("publish")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("imagem em execução diverge da tag latest", result.stdout)
+        self.assertFalse(any(" up -d" in command for command in commands))
+        self.assertEqual(running.read_text(encoding="utf-8"), "different image")
 
     def test_unsafe_destination_fails_before_contacting_remote(self):
         result, commands = self.deploy("publish", REMOTE_DIR="projects/oriens; exit 0")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("REMOTE_DIR", result.stderr)
         self.assertEqual(commands, [])
+
+    def test_dynamic_or_invalid_port_fails_before_contacting_remote(self):
+        for port in ("0", "65536", "08080", "127.0.0.1"):
+            with self.subTest(port=port):
+                result, commands = self.deploy("publish", API_PORT=port)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("API_PORT", result.stderr)
+                self.assertEqual(commands, [])
 
 
 if __name__ == "__main__":

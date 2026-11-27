@@ -1,0 +1,10 @@
+**
+!Dockerfile
+!healthcheck.sh
+!mvnw
+!.mvn/
+!.mvn/**
+!pom.xml
+!src/
+!src/main/
+!src/main/**
