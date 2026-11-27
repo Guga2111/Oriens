@@ -5,21 +5,25 @@ Gestão pessoal de tarefas, projetos, hábitos, estatísticas e finanças, com i
 - [API](apps/api/) em Java 25, Spring Boot 4.2 e PostgreSQL 15.
 - [Cliente](apps/client/README.md) em React, TypeScript e Vite.
 
-## Caminho rápido
+## Primeiros passos
 
-Na raiz, execute `make help` para ver os atalhos. Para abrir o ambiente local,
-instale os pré-requisitos do [setup](docs/guides/setup.md), copie
-[.env.example](.env.example) para `.env` e configure `JWT_SECRET` com uma
-chave local de pelo menos 64 bytes. Você pode gerá-la com `openssl rand -hex 64`.
+Na raiz, liste os comandos disponíveis.
+
+```sh
+make help
+```
+
+Para iniciar o ambiente local, prepare as ferramentas e o `.env` conforme o
+[guia de setup](docs/guides/setup.md). Depois, execute os comandos na raiz.
 
 ```sh
 npm --prefix apps/client ci
 make dev
 ```
 
-Abra [o cliente local](http://localhost:5173). A API fica em
-`127.0.0.1:8080`. Use Ctrl+C para parar o Vite. Para parar também a API e o
-banco local, rode `docker compose -f ops/compose/docker-compose.dev.yml stop`.
+Abra [o cliente local](http://localhost:5173). Use Ctrl+C para parar o Vite e
+`docker compose -f ops/compose/docker-compose.dev.yml stop` para parar a API e
+o PostgreSQL.
 
 Siga o [índice da documentação](docs/README.md) e o
 [AGENTS.md](AGENTS.md) para contribuir. Use a
