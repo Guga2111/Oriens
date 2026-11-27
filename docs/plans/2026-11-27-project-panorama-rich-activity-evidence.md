@@ -39,3 +39,16 @@ e o [projeto sem capa nem descrição](../screenshots/project-panorama-rich-acti
 O roteiro com `playwright-cli` usou um projeto sintético na API local. A capa mediu 192 px de altura a 1440 e 1920 px de largura, 119 px a 390 px e 96 px a 320 px, sem rolagem horizontal nos dois temas. A comparação usa as capturas da versão anterior, com outro conjunto de eventos sintéticos.
 
 Na atividade, **Anterior** e **Próxima** trocam a lista em grupos de até cinco eventos. Enter avançou e voltou pelo teclado, Shift+Tab moveu o foco visível para **Anterior** e o indicador mostrou a página exibida. Confira a [atividade anterior](../screenshots/project-panorama-rich-activity/after-activity-390-dark.png), a [página 1](../screenshots/project-panorama-pagination/after-activity-page-1-390-dark.png) e a [página 2](../screenshots/project-panorama-pagination/after-activity-page-2-390-dark.png). O teste do cliente também cobre erro e nova tentativa de carregar a segunda página.
+
+## Propriedades na lateral
+
+O Panorama mostra situação, tipo, cor e favorito acima do Resumo. Os dados vêm do detalhe do projeto. Em telas estreitas, os blocos aparecem em sequência depois do conteúdo principal.
+
+| Viewport | Tema | Captura |
+| --- | --- | --- |
+| 1440 × 900 | Claro | [Antes](../screenshots/project-panorama-pagination/after-1440-light.png) · [Depois](../screenshots/project-panorama-properties/after-1440-light.png) |
+| 1440 × 900 | Escuro | [Antes](../screenshots/project-panorama-pagination/after-1440-dark.png) · [Depois](../screenshots/project-panorama-properties/after-1440-dark.png) |
+| 390 × 844 | Claro | [Depois](../screenshots/project-panorama-properties/after-390-light.png) |
+| 390 × 844 | Escuro | [Depois](../screenshots/project-panorama-properties/after-390-dark.png) |
+
+No Chromium com API local, o roteiro abriu a conta sintética, conferiu os campos com e sem cor, acionou **Favoritar** por teclado no menu e confirmou a atualização no bloco e após recarregar. Conferiu também o estado **Arquivado**, o foco no calendário e a ausência de rolagem horizontal nas larguras de 1440, 390 e 320 px nos dois temas. Ao recarregar o projeto arquivado, o registro de visita aos Recentes retornou o 404 já previsto pelo serviço. As propriedades foram exibidas.

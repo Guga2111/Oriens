@@ -3,6 +3,7 @@ import { ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProjectActivityFeed } from './ProjectActivityFeed';
 import { ProjectDescriptionSection } from './ProjectDescriptionSection';
+import { ProjectPropertiesCard } from './ProjectPropertiesCard';
 import { ProjectSummaryCard } from './ProjectSummaryCard';
 import type { WorkProject } from '@/types/work';
 
@@ -39,7 +40,10 @@ export function ProjectOverview({ project, notices, coverPending, onChooseCover,
         <ProjectDescriptionSection project={project} onReload={onReload} />
         <ProjectActivityFeed projectId={project.id} />
       </article>
-      <ProjectSummaryCard project={project} fitCalendar />
+      <div className="flex min-w-0 flex-col gap-4">
+        <ProjectPropertiesCard project={project} />
+        <ProjectSummaryCard project={project} fitCalendar />
+      </div>
     </div>
   );
 }

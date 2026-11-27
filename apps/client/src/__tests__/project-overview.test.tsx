@@ -67,6 +67,18 @@ it('mostra título, capa, texto com quebras de linha e os indicadores de progres
   expect(within(summary).getByRole('button', { name: 'Próximo mês' })).toBeEnabled();
 });
 
+it.each([
+  { archived: false, color: null, favorite: false, state: 'Ativo', colorLabel: 'Sem cor', favoriteLabel: 'Não' },
+  { archived: true, color: '#d95721', favorite: true, state: 'Arquivado', colorLabel: '#D95721', favoriteLabel: 'Sim' },
+])('mostra as propriedades do projeto de desenvolvimento ($state)', async ({ archived, color, favorite, state, colorLabel, favoriteLabel }) => {
+  serve(() => ({ ...project, archived, color, favorite }));
+  showProject();
+
+  const properties = within(await screen.findByRole('region', { name: 'Propriedades' }));
+  expect(properties.getAllByRole('term').map(term => term.textContent)).toEqual(['Situação', 'Tipo', 'Cor', 'Favorito']);
+  expect(properties.getAllByRole('definition').map(definition => definition.textContent)).toEqual([state, 'Desenvolvimento', colorLabel, favoriteLabel]);
+});
+
 it.each([null, '  \n  '])('oferece adicionar descrição e omite a capa ausente (%j)', async emptyDescription => {
   serve(() => ({ ...project, description: emptyDescription }));
   showProject();
@@ -186,4 +198,5 @@ it('mantém o resumo e a ação de conversão na rota do projeto simples', async
   expect(within(summary).getByRole('button', { name: 'Próximo mês' })).toBeEnabled();
   expect(within(summary).getByRole('button', { name: 'Usar quadro de tarefas' })).toBeEnabled();
   expect(screen.queryByRole('region', { name: 'Descrição' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('region', { name: 'Propriedades' })).not.toBeInTheDocument();
 });
