@@ -12,10 +12,9 @@ IDOR), porque muda contrato com o front.
 | `exception/config/GlobalExceptionHandler` + `ErrorResponse` | Formata `Instant` com padrão sem fuso: o Jackson falha ao serializar e a exceção original vaza como erro do servlet em todos os controllers legados | Alto |
 | JWT | Papel lido do *claim*: admin rebaixado mantém acesso até o token expirar; `updateUserRole` não impede remover o último admin | Médio |
 | `UserController`, `NotificationController`, `SupportController` | Entidade JPA na resposta e `@RequestBody User`/`SupportTicketDTO` sem validação; `clearAll` responde 204 com corpo | Médio (vazamento / mass assignment) |
-| `SupportTicketServiceImpl` | `getTicketsByStatus`/`getDashboardStats` carregam todos os chamados e contam em Java; e-mail enviado dentro da requisição; `System.err` | Médio |
-| `ProjectServiceImpl` e outros `*ServiceImpl` legados | `findById` sem dono; par interface/impl sem necessidade | Médio |
+| `SupportTicketServiceImpl` | `getTicketsByStatus` e `getDashboardStats` carregam todos os chamados para filtrar ou calcular contagens em Java | Médio |
+| `ProjectServiceImpl` | Implementação legada sem consumidores na API. Contém consultas `findById` sem filtro por dono | Médio |
 | `application-*.properties` | `spring.jpa.open-in-view` não desligado em dev/prod | Médio (N+1 escondido) |
-| `WorkExceptionHandler` | Código `FORBIDDEN` fora do `switch` (um `WorkDomainException("FORBIDDEN")` vira 422); o 403 de papel vem do handler de `AccessDeniedException` | Baixo |
 | `McpP2/P3/P4PostgresTest` | Não usam `@EnabledIfEnvironmentVariable`: sem `MCP_JDBC_URL`, `./mvnw test` falha com 113 erros | Médio (suíte sempre vermelha) |
 
 **Resolvido em 2026-11-16** (branch `fix/security-and-ui-conventions`): IDOR em `UserController`

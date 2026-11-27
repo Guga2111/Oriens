@@ -1,18 +1,20 @@
 # Autorização e segurança da API
 
-As rotas HTTP e as ferramentas MCP precisam provar a posse no banco.
+Este guia define a autenticação REST e as regras de posse para HTTP e MCP.
+Consulte a [política de segurança](../../../SECURITY.md) para as demais fronteiras.
 
 ## Autorização e IDOR
 
-**IDOR** (Insecure Direct Object Reference): o cliente troca um ID na URL/corpo e lê ou altera dados de
-outra pessoa. Estar autenticado **não** é estar autorizado. No Oriens, todo dado de domínio pertence a um
-usuário, então **toda leitura e escrita precisa provar posse no banco**.
+Dados de domínio pertencem a uma conta. A aplicação verifica a posse no banco
+em cada leitura e escrita para prevenir acesso indevido por referência a um ID (IDOR).
 
 ### Regras
 
-1. **O dono vem do token, nunca do cliente.** Obtenha-o com `WorkOwner.id(auth)`.
-2. **Rotas com `{userId}`** usam `WorkOwner.matching(auth, userId)`, que falha se o `userId` da URL não for
-   o do token. Rotas novas devem preferir **não** ter `userId` na URL (o dono já está no token).
+1. Resolva o dono com [`WorkOwner.id(auth)`](../../../apps/api/src/main/java/com/oriens/oriens_api/security/WorkOwner.java).
+   O helper usa a identidade autenticada para buscar a conta no banco.
+2. **Rotas com `{userId}`** usam `WorkOwner.matching(auth, userId)` para comparar
+   o ID da URL com o ID da conta resolvida. Em rotas novas, prefira derivar o dono
+   da identidade autenticada e omitir `userId` da URL.
 3. **Rotas com `{id}` de recurso** buscam com o dono na própria consulta:
    `findByIdAndUserId(id, owner)`, `lockOwned(id, owner)`. Nunca `findById(id)` seguido de "se o dono for
    diferente, lança".
@@ -26,8 +28,8 @@ usuário, então **toda leitura e escrita precisa provar posse no banco**.
    inexistente. Retornar 403 revela que o ID existe e permite enumeração.
 7. **Papéis administrativos** usam `@PreAuthorize("hasRole('ADMIN')")` no método *e* não aceitam o papel
    vindo do corpo da requisição.
-8. **MCP** adiciona escopos: toda ferramenta checa o escopo exigido (`McpScopes`/`McpAuthorizations`)
-   **além** da posse. Escopo nunca substitui o filtro por dono.
+8. **MCP** exige o escopo da ferramenta e a prova de posse. A política da conexão
+   também delimita o acesso a projetos e tarefas avulsas. [Contrato MCP](mcp.md)
 
 ### Exemplos
 
@@ -47,33 +49,6 @@ public Task task(Long owner, Long id) {
 }
 ```
 
-❌ **Antipadrão** — confiar no ID da URL (exemplo histórico, corrigido no `NotificationController`):
-
-```java
-@PostMapping("/{notificationId}/read")
-public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId) {
-    notificationService.markAsRead(notificationId);   // qualquer usuário marca a notificação de qualquer outro
-    ...
-}
-
-@GetMapping("/user/{userId}")
-public List<Notification> list(@PathVariable Long userId) { ... } // troque o número e leia dados alheios
-```
-
-❌ **Antipadrão** — checar depois de carregar:
-
-```java
-Project p = projects.findById(id).orElseThrow();
-if (!p.getUser().getId().equals(owner)) throw new AccessDeniedException(); // 403 revela existência;
-// e é fácil esquecer em um dos caminhos. A posse precisa estar na consulta.
-```
-
-❌ **Antipadrão** — associar sem validar posse do ID recebido:
-
-```java
-task.setProjectId(command.projectId());   // projectId de outro usuário vira vínculo válido
-```
-
 ### Consultas agregadas e em lote também filtram por dono
 
 `count`, `sum`, `exists`, `update`/`delete` em massa e consultas de estatística recebem o dono como
@@ -85,58 +60,33 @@ dono retornados por `findAllById` e lança 404 se a tarefa não for do dono).
 
 ### Teste obrigatório
 
-Todo endpoint novo ganha teste com **dois usuários**. O usuário B tenta ler, alterar e apagar o recurso de
-A pelo ID e recebe **404**. O recurso de A permanece intacto. Consulte
-[`WorkApiPostgresTest`](../../../apps/api/src/test/java/com/oriens/oriens_api/work/WorkApiPostgresTest.java)
-e o [ADR de posse](../../decisions/002-posse.md).
+Cubra cada operação nova com **dois usuários**. Verifique que o acesso a recurso
+alheio devolve **404**, assim como um ID inexistente, e que os dados do dono
+permanecem intactos após a tentativa de escrita. Use os testes de
+[projetos e tarefas](../../../apps/api/src/test/java/com/oriens/oriens_api/work/WorkApiPostgresTest.java),
+[conta](../../../apps/api/src/test/java/com/oriens/oriens_api/security/UserControllerOwnershipTest.java)
+e [notificações e suporte](../../../apps/api/src/test/java/com/oriens/oriens_api/controller/NotificationSupportAccessTest.java).
+O [ADR de posse](../../decisions/002-posse.md) registra a decisão.
 
 ## Sessão e JWT
 
-[`SecurityConfig`](../../../apps/api/src/main/java/com/oriens/oriens_api/security/SecurityConfig.java)
-declara as exceções públicas. A cadeia REST é stateless. O login em `/authenticate`
-valida a senha com BCrypt, emite JWT e o cliente envia `Authorization: Bearer`.
-O [filtro JWT](../../../apps/api/src/main/java/com/oriens/oriens_api/security/filters/JWTAuthorizationFilter.java)
-verifica o token antes de estabelecer a identidade. Confira a chave HS512 e a
-falha de inicialização para segredo ausente ou curto em
-[`JwtConfigurationTest`](../../../apps/api/src/test/java/com/oriens/oriens_api/security/JwtConfigurationTest.java).
-O fluxo delegado segue o [contrato MCP](mcp.md).
+A cadeia REST é stateless. A lista de rotas públicas está em
+[`SecurityConfig`](../../../apps/api/src/main/java/com/oriens/oriens_api/security/SecurityConfig.java).
+O login em `/authenticate` valida a senha com BCrypt e devolve no cabeçalho
+`Authorization` um JWT HS512 com validade de 16 horas. O cliente envia o token
+como `Authorization: Bearer` nas requisições seguintes.
+[Verificação da senha](../../../apps/api/src/main/java/com/oriens/oriens_api/security/manager/CustomAuthManager.java) ·
+[Emissão do JWT](../../../apps/api/src/main/java/com/oriens/oriens_api/security/filters/AuthenticationFilter.java) ·
+[Validade](../../../apps/api/src/main/java/com/oriens/oriens_api/security/SecurityConstants.java)
 
-## Uploads
+O filtro verifica o JWT antes de estabelecer a identidade. Uma rota protegida
+devolve 401 sem autenticação válida. A autorização por posse acontece a partir
+dessa identidade. Use o [contrato MCP](mcp.md) para credenciais delegadas.
+[Filtro JWT](../../../apps/api/src/main/java/com/oriens/oriens_api/security/filters/JWTAuthorizationFilter.java)
 
-- Avatares e capas usam limite multipart de 2 MB nos perfis dev e prod.
-  [`ImageUploads`](../../../apps/api/src/main/java/com/oriens/oriens_api/service/ImageUploads.java)
-  confere tipos permitidos pela assinatura do arquivo, normaliza a extensão e
-  gera o nome. A leitura dessas imagens é pública. Os testes cobrem
-  [formatos](../../../apps/api/src/test/java/com/oriens/oriens_api/service/ImageUploadsTest.java)
-  e [upload de perfil](../../../apps/api/src/test/java/com/oriens/oriens_api/security/ProfilePictureUploadTest.java).
-- Anexos de tarefa passam por posse, validação de conteúdo e cotas de
-  [`TaskAttachmentService`](../../../apps/api/src/main/java/com/oriens/oriens_api/service/TaskAttachmentService.java).
-  O limite é 2 MiB por imagem e 20 MiB por vídeo, com 32 anexos por tarefa e
-  256 MiB por dono. O download confere assinatura, validade de cinco minutos
-  e vínculo com a tarefa. `WorkApiPostgresTest` cobre o fluxo. Consulte os
-  [requisitos de armazenamento, backup e proxy](../../guides/deploy.md#anexos-privados-de-tarefas).
-
-## CORS e taxa
-
-[`CorsConfig`](../../../apps/api/src/main/java/com/oriens/oriens_api/CorsConfig.java)
-lista as origens permitidas, incluindo `http://localhost:5173`, e expõe
-`Authorization`, `ETag` e `X-Request-Id`. Mantenha a lista explícita quando
-credenciais forem permitidas. CORS controla o browser. Posse e autenticação
-continuam sendo exigidas pelo backend.
-
-[`McpRateLimiter`](../../../apps/api/src/main/java/com/oriens/oriens_api/mcp/McpRateLimiter.java)
-controla taxas no fluxo MCP/OAuth. Consulte [limites do MCP](mcp.md) e o teste
-do limitador em [`McpPostgresTest`](../../../apps/api/src/test/java/com/oriens/oriens_api/work/McpPostgresTest.java).
-As cotas MCP são específicas da cadeia de integração.
-
-## Segredos e logs
-
-- Use variáveis de ambiente ou o gerenciador de segredos. A
-  [referência de variáveis](../../../.env.example) leva apenas placeholders.
-  Valide contribuições conforme a [política de CI](../../ci-security.md).
-- Use códigos, contagens e IDs de correlação. Mantenha query strings assinadas,
-  tokens, cabeçalhos de autorização e corpos de requisição fora dos logs.
-  A [configuração da API](../../../apps/api/src/main/resources/application.properties)
-  desliga a categoria do SDK MCP para evitar payloads nos logs.
-- Consulte a [política de reporte](../../../SECURITY.md) e o
-  [fluxo de revisão](../../guides/pull-request-review.md) ao encontrar um problema.
+O teste `p6RegistrationLoginAndRetiredBootstrap` cobre login, senha incorreta e
+rejeição de token assinado com outra chave. `JwtConfigurationTest` cobre a
+configuração da chave e a invalidação do JWT assinado pela chave anterior.
+[WorkApiPostgresTest](../../../apps/api/src/test/java/com/oriens/oriens_api/work/WorkApiPostgresTest.java) ·
+[JwtConfigurationTest](../../../apps/api/src/test/java/com/oriens/oriens_api/security/JwtConfigurationTest.java) ·
+[Gestão do segredo](../../guides/security-secrets-and-logs.md#segredos)
