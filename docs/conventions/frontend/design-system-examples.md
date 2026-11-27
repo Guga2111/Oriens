@@ -57,12 +57,15 @@ fecha a sobreposição. Veja o
 
 ## Etiqueta e painel de filtros no quadro
 
-O quadro mostra o nome da etiqueta no cartão e usa `TaskLabelBadge` para
-escolher a variante. Na fixture visual, `BLUE` mapeia para `label-blue`,
-que emparelha `bg-label-blue` com `text-label-blue-foreground`. O mesmo
-cartão exibe a etiqueta **Site** nos dois temas. Veja
-[`TaskLabels`](../../../apps/client/src/components/tasks/TaskLabels.tsx) e o
-[mapeamento de variantes](../../../apps/client/src/lib/task-labels.ts).
+O cartão mantém o nome **Site** da fixture visível nos dois temas. No
+viewport móvel, `TaskLabels` compõe `TaskLabelBadge` com a variante
+`label-blue`, que emparelha `bg-label-blue` com
+`text-label-blue-foreground`. Em desktop, `BoardTaskProperties` mostra
+o texto ao lado de um ponto com `bg-label-blue-dot`. As duas composições
+consultam o mesmo [mapeamento de cores](../../../apps/client/src/lib/task-labels.ts).
+Veja [`BoardTask`](../../../apps/client/src/components/projects/BoardTask.tsx),
+[`TaskLabels`](../../../apps/client/src/components/tasks/TaskLabels.tsx) e
+[`BoardTaskProperties`](../../../apps/client/src/components/dashboard/TaskProperties.tsx).
 
 ```tsx
 <TaskLabelBadge label={{ name: 'Site', color: 'BLUE' }} />
