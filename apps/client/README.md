@@ -17,4 +17,4 @@ testes, build e Playwright.
 - [Índice da documentação do Oriens](../../docs/README.md)
 - [Convenções do cliente](../../docs/conventions/frontend.md)
 - [Design system](../../docs/conventions/frontend/design-tokens.md)
-- [Dependências do cliente](../../docs/guides/client-stack.md)
+- [Dependências do cliente](../../docs/conventions/frontend/stack.md)

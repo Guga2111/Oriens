@@ -7,7 +7,7 @@ Use os guias da tarefa para localizar a regra canônica.
 |---|---|
 | Trabalhar com agentes de IA | [Skills do Oriens](guides/agent-skills.md) |
 | Instalar ou testar | [Setup e verificação](guides/setup.md), [pre-commit local](guides/pre-commit.md) |
-| Entender a arquitetura ou a stack | [Decisões de arquitetura](decisions/README.md), [dependências da API](guides/api-stack.md), [dependências do cliente](guides/client-stack.md) |
+| Entender a arquitetura ou a stack | [Decisões de arquitetura](decisions/README.md), [dependências da API](conventions/backend/stack.md), [dependências do cliente](conventions/frontend/stack.md) |
 | Reportar uma vulnerabilidade | [Política de segurança](../SECURITY.md) |
 | Verificar uma fronteira de segurança | [JWT e posse](conventions/backend/security.md), [uploads](guides/security-uploads.md), [CORS e taxa](guides/security-browser-and-rate-limits.md), [segredos e logs](guides/security-secrets-and-logs.md), [MCP/OAuth](conventions/backend/mcp.md) |
 | Mudar API | [Estrutura e datas](conventions/backend/structure.md), [autorização](conventions/backend/security.md), [contratos HTTP](conventions/backend/http.md), [testes](conventions/backend/tests.md) |
