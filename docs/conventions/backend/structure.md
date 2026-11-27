@@ -1,7 +1,7 @@
 # Estrutura da API
 
-A API em `apps/api/` usa Spring Boot 4.2, Java 25, JPA/Hibernate, PostgreSQL 15, Spring Security, MCP e Lombok.
-Consulte o [catálogo de dependências](../../guides/api-stack.md).
+A API em `apps/api/` usa Spring Boot e Java com PostgreSQL.
+Consulte o [catálogo de dependências](stack.md).
 
 ## Camadas e responsabilidades
 
