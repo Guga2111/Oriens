@@ -46,7 +46,7 @@ test("abas e arquivados vivem na URL", async ({ page }) => {
 
   await page.goto("/projects");
   await page.getByRole("button", { name: "Filtros" }).click();
-  await page.getByRole("menuitem", { name: "Ver arquivados" }).click();
+  await page.getByRole("link", { name: "Ver arquivados" }).click();
   await expect(page).toHaveURL(/\/all-data\?tab=projects&archived=1/);
   await openExploreFilters(page);
   await expect(
@@ -60,10 +60,9 @@ test("filtro de status inclui Em andamento", async ({ page }) => {
   await page.goto("/all-data?tab=tasks");
   await openExploreFilters(page);
 
-  await page.getByRole("combobox", { name: "Status" }).click();
-  await expect(
-    page.getByRole("option", { name: "Em andamento" })
-  ).toBeVisible();
+  const filters = page.getByRole("dialog", { name: "Filtros" });
+  await filters.getByRole("button", { name: "Status" }).click();
+  await expect(filters.getByRole("checkbox", { name: "Em andamento" })).toBeVisible();
 });
 
 // Em um painel estreito, Explorar usa lista, oferece filtros no Sheet

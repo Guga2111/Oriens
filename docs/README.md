@@ -1,26 +1,50 @@
 # Documentação do Oriens
 
-O [AGENTS.md](../AGENTS.md) define as regras transversais e o fluxo de contribuição.
-Use os guias da tarefa para localizar a regra canônica.
+O Oriens reúne a [API](../apps/api/) e o [cliente](../apps/client/) no mesmo
+repositório. As rotinas ficam em [`scripts/`](../scripts/) e a configuração de
+operação fica em [`ops/`](../ops/). O [ADR do monorepo](decisions/006-monorepo.md)
+explica a organização.
 
-| Tarefa | Guias vigentes |
-|---|---|
-| Trabalhar com agentes de IA | [Skills do Oriens](guides/agent-skills.md) |
-| Instalar ou testar | [Setup e verificação](guides/setup.md) |
-| Mudar API | [Estrutura e datas](conventions/backend/structure.md), [autorização](conventions/backend/security.md), [contratos HTTP](conventions/backend/http.md), [testes](conventions/backend/tests.md) |
-| Mudar consultas, concorrência ou schema | [Persistência e migrações](conventions/backend/persistence.md), [inventário, backup e restore](guides/database-operations.md) |
-| Mudar UI | [Estrutura](conventions/frontend/structure.md), [shadcn](conventions/frontend/components.md), [tokens](conventions/frontend/design-tokens.md), [dados e formulários](conventions/frontend/data.md), [acessibilidade e testes](conventions/frontend/tests.md), [regressão visual](guides/visual-regression.md), [marca](brand/GUIA-DE-USO.md) |
-| Mudar MCP/OAuth | [Contratos e segurança](conventions/backend/mcp.md), [operação](guides/mcp-operations.md), [uso nos clientes de IA](mcp.md) |
-| Mudar deploy ou CI | [Deploy](guides/deploy.md), [checks de segurança](ci-security.md) |
-| Revisar um PR | [Fluxo de revisão](guides/pull-request-review.md) |
-| Revisar qualquer mudança | [Clean code](conventions/clean-code.md), [dívida conhecida](conventions/debt.md) |
+## Desenvolvimento local
+
+- [Setup e verificação](guides/setup.md) para preparar o ambiente e executar
+  os comandos do Makefile, da API e do cliente.
+- [AGENTS.md](../AGENTS.md) para as leituras por tipo de mudança e
+  [skills do Oriens](guides/agent-skills.md) para a rotina de agentes.
+- [Clean code](conventions/clean-code.md), [dívida conhecida](conventions/debt.md),
+  [pre-commit local](guides/pre-commit.md) e [revisão de PR](guides/pull-request-review.md).
+
+## Guias por camada
+
+- [API](conventions/backend.md) com estrutura, contratos HTTP, autorização,
+  persistência, migrações e testes. [Dependências da API](conventions/backend/stack.md)
+- [Cliente](conventions/frontend.md) com estrutura, componentes, dados,
+  acessibilidade e testes. [Dependências do cliente](conventions/frontend/stack.md)
+- [Design system](conventions/frontend/design-tokens.md),
+  [catálogo de tokens](conventions/frontend/design-token-catalog.md),
+  [exemplos de composição](conventions/frontend/design-system-examples.md),
+  [regressão visual](guides/visual-regression.md) e [marca](brand/GUIA-DE-USO.md).
+- [MCP e OAuth](conventions/backend/mcp.md) para contratos e segurança e
+  [acesso MCP em clientes de IA](mcp.md) para configuração da conexão.
 
 O [contrato de Projetos v2](contracts/projects-v2.md) documenta a interface HTTP
 do domínio de projetos e tarefas. Os guias apontam para specs quando uma decisão
 da entrega segue em vigor.
 
-## Registros de entregas
+## Operação e segurança
 
+- [Deploy](guides/deploy.md), [instalação e rollback do Nginx](../ops/nginx/README.md)
+  e [checks de segurança do CI](ci-security.md).
+- [Inventário, backup e restore](guides/database-operations.md) e
+  [operação do MCP](guides/mcp-operations.md).
+- [Política de segurança e reporte privado](../SECURITY.md), com os guias de
+  [JWT e posse](conventions/backend/security.md), [uploads](guides/security-uploads.md),
+  [CORS e limites de taxa](guides/security-browser-and-rate-limits.md) e
+  [segredos e logs](guides/security-secrets-and-logs.md).
+
+## Decisões e histórico
+
+- [ADRs](decisions/README.md) registram as decisões de arquitetura vigentes.
 - [Planos e evidências datados](plans/) e [specs](specs/) registram decisões e
   verificações por entrega. Confira a data e o estado antes de repetir comandos.
 - [Capturas e provas visuais](screenshots/) e [evidências do cliente](client/)

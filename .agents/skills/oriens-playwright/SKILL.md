@@ -6,7 +6,7 @@ description: Inspecione UI do Oriens no navegador com playwright-cli e confira a
 # Revisão de UI com Playwright
 
 Leia os [testes do frontend](../../../docs/conventions/frontend/tests.md), os
-[tokens](../../../docs/conventions/frontend/design-tokens.md) e o
+[design system](../../../docs/conventions/frontend/design-tokens.md) e o
 [guia visual](../../../docs/guides/visual-regression.md).
 
 1. Inicie cliente e API local se o fluxo exigir autenticação. Use conta e dados

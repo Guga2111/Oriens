@@ -63,8 +63,9 @@ it('o filtro do header pede só fixados à API, marca o botão e leva aos arquiv
   renderWithHeader([project, { ...project, id: 10, title: 'Projeto fixado', favorite: true }], 1280);
   await screen.findByRole('link', { name: project.title });
   await userEvent.click(within(screen.getByRole('banner')).getByRole('button', { name: 'Filtros' }));
-  expect(screen.getByRole('menuitem', { name: 'Ver arquivados' })).toHaveAttribute('href', '/all-data?tab=projects&archived=1');
-  await userEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Somente fixados' }));
+  expect(screen.getByRole('link', { name: 'Ver arquivados' })).toHaveAttribute('href', '/all-data?tab=projects&archived=1');
+  await userEvent.click(screen.getByRole('button', { name: 'Fixados' }));
+  await userEvent.click(screen.getByRole('checkbox', { name: 'Somente fixados' }));
   await userEvent.keyboard('{Escape}');
   expect(await screen.findByRole('link', { name: 'Projeto fixado' })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: project.title })).not.toBeInTheDocument();
@@ -76,25 +77,25 @@ it('o filtro de tipo é feito pela API; os dois tipos marcados equivalem a nenhu
   renderWithHeader([project, simple], 1280);
   await screen.findByRole('link', { name: project.title });
   await userEvent.click(screen.getByRole('button', { name: 'Filtros' }));
-  await userEvent.click(screen.getByRole('menuitem', { name: 'Tipo' }));
-  await userEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'Simples' }));
-  // The type submenu stays open so both kinds can be ticked in one go, as on plane.so.
-  expect(screen.getByRole('menuitemcheckbox', { name: 'Simples' })).toHaveAttribute('aria-checked', 'true');
+  await userEvent.click(screen.getByRole('button', { name: 'Tipo' }));
+  await userEvent.click(await screen.findByRole('checkbox', { name: 'Simples' }));
+  expect(screen.getByRole('checkbox', { name: 'Simples' })).toHaveAttribute('aria-checked', 'true');
   await waitFor(() => expect(listQueries().at(-1)).toEqual({ mode: 'SIMPLE', page: 0, size: 6 }));
-  await userEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Desenvolvimento' }));
-  await userEvent.keyboard('{Escape}{Escape}');
+  await userEvent.click(screen.getByRole('checkbox', { name: 'Desenvolvimento' }));
+  await userEvent.keyboard('{Escape}');
   expect(await screen.findByRole('link', { name: project.title })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Projeto simples' })).toBeInTheDocument();
   expect(listQueries().at(-1)).toEqual({ page: 0, size: 6 });
   expect(screen.getByRole('button', { name: 'Filtros (2 ativos)' })).toBeInTheDocument();
 });
 
-it('em tela estreita os tipos ficam no próprio menu, sem submenu fora da tela', async () => {
+it('em tela estreita os tipos ficam no painel de filtros', async () => {
   renderWithHeader([project, simple], 390);
   await screen.findByRole('link', { name: project.title });
   await userEvent.click(screen.getByRole('button', { name: 'Filtros' }));
-  expect(screen.queryByRole('menuitem', { name: 'Tipo' })).not.toBeInTheDocument();
-  await userEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Desenvolvimento' }));
+  expect(screen.getByRole('dialog', { name: 'Filtros' })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Tipo' }));
+  await userEvent.click(screen.getByRole('checkbox', { name: 'Desenvolvimento' }));
   await waitFor(() => expect(listQueries().at(-1)).toEqual({ mode: 'DEVELOPMENT', page: 0, size: 6 }));
 });
 it('o breadcrumb nomeia a página: o título visível sai e o h1 fica só para leitores de tela', async () => {

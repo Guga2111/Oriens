@@ -1,6 +1,7 @@
 # Estrutura do cliente
 
-O cliente em `apps/client/` usa Vite, React 18, TypeScript, Tailwind CSS 3, shadcn/ui (Radix, estilo `default`, base `slate` e CSS variables), TanStack Query 5, Axios, date-fns, lucide-react, recharts e sonner.
+O cliente em `apps/client/` é uma SPA em React e TypeScript, compilada pelo Vite.
+Consulte o [catálogo de dependências](stack.md) e a [configuração shadcn](components.md).
 
 ## Estrutura de pastas
 

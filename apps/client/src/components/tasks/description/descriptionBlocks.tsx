@@ -85,6 +85,7 @@ const Toggle = Node.create({
   addNodeView: () => ReactNodeViewRenderer(ToggleBlock),
 });
 
+// eslint-disable-next-line complexity -- existing score 23; owner: client maintainers.
 function MediaBlock({ node, selected, updateAttributes }: ReactNodeViewProps) {
   const { taskId, editable } = useContext(DescriptionContext);
   const { userId } = useAuth();

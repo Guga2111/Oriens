@@ -62,6 +62,30 @@ WorkHttp.agree(match, command.getVersion());
 Task before = read.task(user, id);
 ```
 
+### Complexidade ciclomática
+
+O limite é **20 por função de produção**, incluindo métodos, construtores e lambdas.
+A métrica parte de 1 e soma pontos de decisão. Um `if` com `&&`, por exemplo,
+leva uma função de 1 a 3. Quanto mais decisões no mesmo corpo, mais caminhos para
+acompanhar na revisão e cobrir em testes. Na medição inicial, o teto 10 exigiria
+122 exceções (84 no cliente e 38 na API), ante 26 no teto 20 (19 e 7).
+
+No cliente, [ESLint `complexity`](../../apps/client/eslint.config.js) mede TypeScript
+em `src/`, com a variante clássica e exclusões para testes. A regra conta também
+encadeamento opcional e valores padrão. Na API, o
+[`CyclomaticComplexityTest`](../../apps/api/src/test/java/com/oriens/oriens_api/CyclomaticComplexityTest.java)
+usa a árvore sintática do JDK em `src/main/java`. Conta condicionais, `&&`, `||`, laços,
+`catch`, braços sem `default` e guardas de `switch`. Compare pontuações dentro de cada ferramenta.
+
+`make lint` e a [suíte Maven padrão de CI](../guides/setup.md#api) reprovam novas
+violações nos jobs `test-front` e `test-api`. Consulte o [inventário de exceções](debt.md#exceções-de-complexidade).
+
+Em `ProjectWorkService.patchTask`, alterações de vínculos, ordenação e precondições
+de versão disputam espaço no mesmo método. Ao mudar o fluxo, extraia regras de domínio
+com nomes próprios e preserve posse e concorrência. Em `TaskEditorForm`, separe o
+cálculo dos valores iniciais e a validação do rascunho da montagem do formulário.
+Evite encadear ternários ou mover decisões para helpers genéricos só para baixar a pontuação.
+
 ## 4. Comentários
 
 - O código explica **o quê**; o comentário explica **por quê** (decisão, restrição, risco):

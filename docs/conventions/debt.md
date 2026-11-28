@@ -12,10 +12,9 @@ IDOR), porque muda contrato com o front.
 | `exception/config/GlobalExceptionHandler` + `ErrorResponse` | Formata `Instant` com padrão sem fuso: o Jackson falha ao serializar e a exceção original vaza como erro do servlet em todos os controllers legados | Alto |
 | JWT | Papel lido do *claim*: admin rebaixado mantém acesso até o token expirar; `updateUserRole` não impede remover o último admin | Médio |
 | `UserController`, `NotificationController`, `SupportController` | Entidade JPA na resposta e `@RequestBody User`/`SupportTicketDTO` sem validação; `clearAll` responde 204 com corpo | Médio (vazamento / mass assignment) |
-| `SupportTicketServiceImpl` | `getTicketsByStatus`/`getDashboardStats` carregam todos os chamados e contam em Java; e-mail enviado dentro da requisição; `System.err` | Médio |
-| `ProjectServiceImpl` e outros `*ServiceImpl` legados | `findById` sem dono; par interface/impl sem necessidade | Médio |
+| `SupportTicketServiceImpl` | `getTicketsByStatus` e `getDashboardStats` carregam todos os chamados para filtrar ou calcular contagens em Java | Médio |
+| `ProjectServiceImpl` | Implementação legada sem consumidores na API. Contém consultas `findById` sem filtro por dono | Médio |
 | `application-*.properties` | `spring.jpa.open-in-view` não desligado em dev/prod | Médio (N+1 escondido) |
-| `WorkExceptionHandler` | Código `FORBIDDEN` fora do `switch` (um `WorkDomainException("FORBIDDEN")` vira 422); o 403 de papel vem do handler de `AccessDeniedException` | Baixo |
 | `McpP2/P3/P4PostgresTest` | Não usam `@EnabledIfEnvironmentVariable`: sem `MCP_JDBC_URL`, `./mvnw test` falha com 113 erros | Médio (suíte sempre vermelha) |
 
 **Resolvido em 2026-11-16** (branch `fix/security-and-ui-conventions`): IDOR em `UserController`
@@ -52,3 +51,54 @@ outro motivo, não amplie o problema.
 todos os `<button>`, `<input>`, `<select>`, `<label>` e `<table>` crus para shadcn (restam só as duas exceções
 documentadas no [guia shadcn](frontend/components.md#quando-o-componente-não-existe)); `<a href="/terms">` → `Link`; cor padrão de tag em `DEFAULT_TAG_COLOR`; `console.error`
 removido de `services/api.ts`.
+
+## Exceções de complexidade
+
+O [limite por função](clean-code.md#complexidade-ciclomática) é 20. A exceção vale
+para a função inventariada. Remova a entrada ou diretiva quando a função atingir
+o limite. Toda nova exceção exige justificativa e revisão de código.
+
+### API
+
+A equipe mantenedora da API é dona das sete exceções. A
+[lista verificada pelo Maven](../../apps/api/src/test/resources/complexity-baseline.tsv)
+registra o teto e identifica cada método por arquivo e assinatura. A exceção de
+`FinancialEntryServiceImpl` cobre apenas a primeira lambda de `write`.
+
+| Função | Teto da exceção |
+|---|---:|
+| `McpScopes.validate` | 22 |
+| `McpWorkTools.validate` | 42 |
+| `McpWorkTools.mutate` | 58 |
+| `FinancialEntryServiceImpl.write`, primeira lambda | 24 |
+| `ProjectWorkService.patchTask` | 56 |
+| `TaskAttachmentService.mediaType` | 22 |
+| `TaskDescriptionCodec.Validation.node` | 24 |
+
+### Cliente
+
+A equipe mantenedora do cliente é dona das 19 exceções. Cada diretiva do ESLint
+cobre a linha de declaração da função. A pontuação registra a medição de origem
+e serve de referência para a revisão de alterações na função.
+
+| Arquivo | Função | Pontuação de origem |
+|---|---|---:|
+| [ActivityStreak.tsx](../../apps/client/src/components/statistics/ActivityStreak.tsx) | `ActivityStreak` | 24 |
+| [BoardSettings.tsx](../../apps/client/src/components/projects/BoardSettings.tsx) | `BoardSettings` | 27 |
+| [BoardTask.tsx](../../apps/client/src/components/projects/BoardTask.tsx) | `BoardTask` | 21 |
+| [CreateEntryDialog.tsx](../../apps/client/src/components/financial/CreateEntryDialog.tsx) | `CreateEntryDialog` | 36 |
+| [CreateProjectDialog.tsx](../../apps/client/src/components/projects/CreateProjectDialog.tsx) | `CreateProjectDialog` | 27 |
+| [DashboardPage.tsx](../../apps/client/src/pages/DashboardPage.tsx) | `DashboardPage` | 39 |
+| [descriptionBlocks.tsx](../../apps/client/src/components/tasks/description/descriptionBlocks.tsx) | `MediaBlock` | 23 |
+| [EditEntryDialog.tsx](../../apps/client/src/components/financial/EditEntryDialog.tsx) | `EditEntryDialog` | 38 |
+| [FinancialInvestmentsPage.tsx](../../apps/client/src/pages/FinancialInvestmentsPage.tsx) | `FinancialInvestmentsPage` | 22 |
+| [HabitAnalysis.tsx](../../apps/client/src/components/statistics/HabitAnalysis.tsx) | `HabitEditor` | 41 |
+| [MovementDialog.tsx](../../apps/client/src/components/financial/investments/MovementDialog.tsx) | `MovementForm` | 26 |
+| [ObjectiveDetails.tsx](../../apps/client/src/components/projects/ObjectiveDetails.tsx) | `ObjectiveDetails` | 28 |
+| [ProjectCard.tsx](../../apps/client/src/components/projects/ProjectCard.tsx) | `ProjectCard` | 51 |
+| [ProjectDetailPage.tsx](../../apps/client/src/pages/ProjectDetailPage.tsx) | `ProjectDetail` | 59 |
+| [ProjectObjectives.tsx](../../apps/client/src/components/projects/ProjectObjectives.tsx) | `ProjectObjectives` | 25 |
+| [TaskDescriptionSection.tsx](../../apps/client/src/components/tasks/description/TaskDescriptionSection.tsx) | `TaskDescriptionSection` | 33 |
+| [TaskEditor.tsx](../../apps/client/src/components/tasks/TaskEditor.tsx) | `TaskEditorForm` | 89 |
+| [TaskEditor.tsx](../../apps/client/src/components/tasks/TaskEditor.tsx) | `TaskEditorForm.save` | 36 |
+| [TimelineGroup.tsx](../../apps/client/src/components/projects/timeline/TimelineGroup.tsx) | `TimelineGroup` | 27 |

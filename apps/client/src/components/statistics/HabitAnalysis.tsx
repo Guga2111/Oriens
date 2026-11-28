@@ -101,6 +101,7 @@ export function HabitManager({ open, onOpenChange, today, opener }: { open: bool
     <AlertDialog open={!!archiving} onOpenChange={next => { if (!next) setArchiving(null); }}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Arquivar {archiving?.name}?</AlertDialogTitle><AlertDialogDescription>As execuções e a programação de hoje serão preservadas. Não haverá novas ocorrências a partir de amanhã.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction disabled={write.isPending} onClick={e => { e.preventDefault(); if (archiving) void submit({ action: 'archive', habit: archiving }).then(() => setArchiving(null)).catch(() => {}); }}>Arquivar hábito</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </>;
 }
+// eslint-disable-next-line complexity -- existing score 41; owner: client maintainers.
 function HabitEditor({ habit, today, pending, onClose, onSave }: { habit: Habit | 'new'; today: string; pending: boolean; onClose: () => void; onSave: (command: HabitCommand) => Promise<unknown> }) {
   const existing = habit === 'new' ? null : habit;
   const schedule = existing?.schedules.slice(-1)[0];

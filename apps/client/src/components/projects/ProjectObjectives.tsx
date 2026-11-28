@@ -45,6 +45,7 @@ type ObjectivePatch = { status?: ObjectiveStatus; startDate?: string | null; due
  * The Objectives page: a list, a gallery or a timeline (`layout`, chosen in the header when `onLayoutChange` is
  * given; projects without a board only have the list). Pinned objectives come first in every layout.
  */
+// eslint-disable-next-line complexity -- existing score 25; owner: client maintainers.
 export function ProjectObjectives({ project, tasks, tasksLoading, tasksError, onReloadTasks, onAddTask, onEditTask, selectedObjective, onSelectObjective, layout = 'list', onLayoutChange }: {
   project: WorkProject; tasks?: WorkTask[]; tasksLoading?: boolean; tasksError?: unknown; onReloadTasks?: () => void;
   onAddTask: (id: number) => void; onEditTask: (task: WorkTask) => void;

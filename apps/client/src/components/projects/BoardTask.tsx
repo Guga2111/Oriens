@@ -42,16 +42,21 @@ export function BoardTaskOverlay({ task, today }: { task: WorkTask; today: strin
   </article>;
 }
 
-export function BoardTask({ task, column, columns, above, below, afterBelow, filtered, busy, today, mobile, reducedMotion, menuDisabled, pendingColumnId, onOpen, onEdit, onObjective, onDelete, move }: {
+// eslint-disable-next-line complexity -- existing score 21; owner: client maintainers.
+export function BoardTask({ task, column, columns, above, below, afterBelow, filtered, busy, today, mobile, reducedMotion, menuDisabled, pendingColumnId, onOpen, onEdit, onObjective, onDelete, move, sortPreview, shift, children }: {
   task: WorkTask; column: Column; columns: Column[]; above?: WorkTask; below?: WorkTask; afterBelow?: WorkTask;
   filtered: boolean; busy: boolean; today: string; mobile: boolean; reducedMotion: boolean; menuDisabled: boolean; pendingColumnId: number;
   onOpen: (task: WorkTask) => void; onEdit: (task: WorkTask) => void; onObjective: (id: number) => void; onDelete: (task: WorkTask) => void; move: Move;
+  sortPreview: boolean; shift?: string; children?: ReactNode;
 }) {
   // Keep a saving card as a drop target for other tasks.
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
+    data: { columnId: column.id },
     disabled: { draggable: busy || mobile, droppable: mobile },
     transition: reducedMotion ? null : undefined,
+    // The on-drag transforms already preview the final layout. Do not replay them on commit.
+    animateLayoutChanges: () => false,
   });
   const menu = (
     <DropdownMenu>
@@ -87,16 +92,23 @@ export function BoardTask({ task, column, columns, above, below, afterBelow, fil
       data-board-task-title={task.id} aria-haspopup="dialog" onClick={() => onOpen(task)}>{task.title}</Button>
   );
 
-  return <article ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }}
-    className={cn(cardClass, !mobile && !busy && 'cursor-grab touch-none active:cursor-grabbing', isDragging && 'opacity-40')}
+  return <article ref={setNodeRef} style={{
+    transform: shift ? `translateY(${shift})` : sortPreview ? CSS.Translate.toString(transform) : undefined,
+    transition: sortPreview ? transition : undefined,
+  }}
+    className={cn(cardClass, !mobile && !busy && 'cursor-grab touch-none active:cursor-grabbing',
+      shift && 'motion-safe:transition-transform motion-safe:duration-200', isDragging && 'border-transparent bg-transparent hover:bg-transparent')}
     aria-busy={busy}
     onPointerDown={event => {
       if (!(event.target instanceof Element) || !event.currentTarget.contains(event.target) || event.target.closest('[data-board-control]')) return;
       listeners?.onPointerDown?.(event);
     }}>
-    {mobile
-      ? <MobileTaskCard task={task} today={today} title={title} menu={menu} onObjective={onObjective} />
-      : <DesktopTaskCard task={task} today={today} title={title} menu={menu} />}
+    <div className={cn(isDragging && 'opacity-0')}>
+      {mobile
+        ? <MobileTaskCard task={task} today={today} title={title} menu={menu} onObjective={onObjective} />
+        : <DesktopTaskCard task={task} today={today} title={title} menu={menu} />}
+    </div>
+    {children}
   </article>;
 }
 

@@ -19,6 +19,7 @@ import { useGoogleMapsScript } from '@/hooks/useGoogleMapsScript';
 import { usePlanningCount, useProjectBoard, useTaskDetail, useTaskWrites, useWorkProject, useWorkProjects } from '@/hooks/useWork';
 import { useCreationAttempt } from '@/hooks/useCreationAttempt';
 import { validCalendarDate, statusNames } from '@/lib/work-form';
+import { parseTimeOfDay } from '@/lib/time-of-day';
 import { PRIORITY, PRIORITY_ORDER } from '@/lib/labels';
 import type { LocationDTO, TaskPriority } from '@/types/task';
 import type { TaskCreation, TaskDescriptionDocument, TaskPatch, WorkTask } from '@/types/work';
@@ -35,6 +36,7 @@ export function TaskEditor(props: TaskEditorProps) {
   // Unmount the form at close: reopen starts from a fresh server snapshot, never a background refetch.
   return props.open ? <TaskEditorForm {...props} /> : null;
 }
+// eslint-disable-next-line complexity -- existing score 89; owner: client maintainers.
 function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: TaskEditorProps) {
   const [base, setBase] = useState(task);
   useRecordVisit('TASK', task?.id);
@@ -47,8 +49,10 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
   const descriptionDetail = useTaskDetail(task?.id ?? 0, task);
   const [original, setOriginal] = useState(JSON.stringify(initial));
   const titleInput = useRef<HTMLInputElement>(null);
+  const timeInput = useRef<HTMLInputElement>(null);
   const autoDestination = useRef(false);
   const [error, setError] = useState('');
+  const [timeError, setTimeError] = useState('');
   const [notice, setNotice] = useState('');
   const [search, setSearch] = useState('');
   const [targetVersion, setTargetVersion] = useState<number | null>(null);
@@ -60,6 +64,10 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
   const { isLoaded, loadError } = useGoogleMapsScript({ apiKey: import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY || '', libraries });
   const pending = writes.create.isPending || writes.patch.isPending;
   const change = <K extends keyof Draft>(field: K, value: Draft[K]) => setDraft(d => ({ ...d, [field]: value }));
+  const changeStartTime = (value: string) => {
+    change('startTime', value);
+    setTimeError('');
+  };
   useEffect(() => {
     if (project.data && targetVersion === null) setTargetVersion(project.data.version);
   }, [project.data, targetVersion]);
@@ -77,18 +85,30 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
   const selectedChoices = choices.data?.content.filter(p => p.mode === 'DEVELOPMENT') ?? [];
   const projectOptions = [{ value: 'none', label: 'Tarefa avulsa' }, ...selectedChoices.map(p => ({ value: String(p.id), label: p.title + (p.archived ? ' · Arquivado' : '') }))];
   if (draft.projectId && !projectOptions.some(o => o.value === String(draft.projectId))) projectOptions.push({ value: String(draft.projectId), label: activeProject?.title ?? task?.project?.title ?? 'Projeto selecionado' });
+  // eslint-disable-next-line complexity -- existing score 36; owner: client maintainers.
   async function save(event: React.FormEvent) {
-    event.preventDefault(); setError('');
+    event.preventDefault();
+    setError('');
+    setTimeError('');
     if (!draft.title.trim()) {
       setError('Informe o título da tarefa.');
       titleInput.current?.focus();
       return;
     }
     if ([draft.plannedDate, draft.dueDate].some(d => d && !validCalendarDate(d))) { setError('Informe datas de calendário válidas.'); return; }
-    if (draft.startTime && (!draft.plannedDate || !/^([01]\d|2[0-3]):[0-5]\d$/.test(draft.startTime))) { setError('Horário válido exige um dia planejado.'); return; }
+    if (draft.startTime && !draft.plannedDate) {
+      setTimeError('Selecione um dia planejado para informar o horário.');
+      return;
+    }
+    const startTime = parseTimeOfDay(draft.startTime);
+    if (draft.startTime && !startTime) {
+      setTimeError('Informe um horário válido, como 0930 ou 09:30.');
+      timeInput.current?.focus();
+      return;
+    }
     if (draft.projectId && (!destination || activeProject?.mode !== 'DEVELOPMENT' || targetVersion === null)) { setError('Escolha uma coluna válida no projeto de destino.'); return; }
     const common = { title: draft.title.trim(),
-      plannedDate: draft.plannedDate || null, startTime: draft.startTime ? `${draft.startTime}:00` : null,
+      plannedDate: draft.plannedDate || null, startTime: startTime ? `${startTime}:00` : null,
       labelIds: draft.labelIds, dueDate: draft.dueDate || null, priority: draft.priority, location: draft.location };
     try {
       let result;
@@ -175,8 +195,36 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
         </Field></FieldGroup></>}
       </FieldGroup></FieldSet>
       <FieldSet className="gap-3"><FieldLegend>Planejamento</FieldLegend><FieldDescription>Quando você pretende fazer esta tarefa.</FieldDescription><FieldGroup className="grid min-w-0 gap-4 sm:grid-cols-2">
-        <Field><FieldLabel htmlFor="task-planned">Dia planejado</FieldLabel><WorkDatePicker id="task-planned" label="Dia planejado" value={draft.plannedDate} onChange={value => setDraft(d => ({ ...d, plannedDate: value, startTime: value ? d.startTime : '' }))} /></Field>
-        <Field><FieldLabel htmlFor="task-time">Horário (HH:mm)</FieldLabel><div className="flex items-center gap-1"><div className="relative min-w-0 flex-1"><Clock aria-hidden className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input id="task-time" type="text" inputMode="numeric" placeholder="Ex.: 09:30" maxLength={5} className="pl-9" value={draft.startTime} disabled={!draft.plannedDate} onChange={e => change('startTime', e.target.value)} /></div>{draft.startTime && <Button type="button" variant="ghost" size="icon" aria-label="Limpar horário" onClick={() => change('startTime', '')}><X aria-hidden /></Button>}</div></Field>
+        <Field>
+          <FieldLabel htmlFor="task-planned">Dia planejado</FieldLabel>
+          <WorkDatePicker id="task-planned" label="Dia planejado" value={draft.plannedDate} onChange={value => {
+            setDraft(d => ({ ...d, plannedDate: value, startTime: value ? d.startTime : '' }));
+            setTimeError('');
+          }} />
+        </Field>
+        <Field data-invalid={!!timeError}>
+          <FieldLabel htmlFor="task-time">Horário (HH:mm)</FieldLabel>
+          <div className="flex items-center gap-1">
+            <div className="relative min-w-0 flex-1">
+              <Clock aria-hidden className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" />
+              <Input
+                ref={timeInput}
+                id="task-time"
+                type="text"
+                inputMode="numeric"
+                placeholder="Ex.: 09:30"
+                className="pl-9"
+                value={draft.startTime}
+                disabled={!draft.plannedDate}
+                onChange={e => changeStartTime(e.target.value)}
+                aria-invalid={!!timeError}
+                aria-describedby={timeError ? 'task-time-validation' : undefined}
+              />
+            </div>
+            {draft.startTime && <Button type="button" variant="ghost" size="icon" aria-label="Limpar horário" onClick={() => changeStartTime('')}><X aria-hidden /></Button>}
+          </div>
+          {timeError && <FieldError id="task-time-validation">{timeError}</FieldError>}
+        </Field>
       </FieldGroup>
       {draft.plannedDate && <p className="text-sm text-muted-foreground" role="status">{count.data ? `${count.data.activeCount} outras tarefas ativas planejadas · ${count.data.completedCount} concluídas` : count.isError ? 'Quantidade planejada indisponível. Você pode salvar.' : 'Consultando planejamento…'}</p>}
       </FieldSet>

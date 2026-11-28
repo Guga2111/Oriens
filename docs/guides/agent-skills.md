@@ -36,11 +36,11 @@ sem instalação global das skills de origem.
 | [security-review](../../.agents/skills/security-review/SKILL.md) | Triagem de segurança em todo PR | Aprofundamento dispensado quando o impacto nulo estiver justificado |
 | [code-review](../../.agents/skills/code-review/SKILL.md) | Revisão de correção em todo PR | Escopo da revisão acompanha o diff |
 
-Escolha uma skill de design primária por superfície. Enquanto a #72 estiver
-pendente, use o [guia de frontend](../conventions/frontend.md), os
-[tokens](../conventions/frontend/design-tokens.md) e os
-[componentes](../conventions/frontend/components.md). A
-[regressão visual](visual-regression.md) tem os comandos e a rotina de baselines.
+Escolha uma skill de design primária por superfície. Consulte o
+[design system](../conventions/frontend/design-tokens.md) para aplicar tokens
+e compor os componentes locais. Use os
+[exemplos](../conventions/frontend/design-system-examples.md) e o
+[guia de regressão visual](visual-regression.md) para verificar os dois temas.
 
 Antes de concluir um PR, use as duas skills de revisão e registre a evidência
 no [fluxo de revisão](pull-request-review.md). No Claude Code, o comando

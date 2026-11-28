@@ -8,6 +8,7 @@ import { shortDate } from '@/lib/statistics';
 import { cn } from '@/lib/utils';
 import type { ActivityStreakData } from '@/types/statistics';
 
+// eslint-disable-next-line complexity -- existing score 24; owner: client maintainers.
 export function ActivityStreak({ query }: { query: UseQueryResult<ActivityStreakData, Error> }) {
   if (!query.data && query.isPending) return <Skeleton className="h-8 w-40" role="status" aria-label="Carregando sequência de atividade" />;
   const data = query.data, days = data?.days, active = days != null && days > 0;

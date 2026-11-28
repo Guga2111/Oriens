@@ -5,7 +5,10 @@ Use [security-review](../../.agents/skills/security-review/SKILL.md) e
 documentação, dependências e release. A revisão de segurança sempre faz triagem.
 Quando o diff preserva as fronteiras, basta justificar o impacto nulo. Se o
 impacto persistir ou for incerto, siga as fronteiras e os chamadores afetados.
-Os [checks de CI](../ci-security.md) são evidência complementar.
+A [política de segurança](../../SECURITY.md) reúne os guias por fronteira e
+indica o canal privado para relatar vulnerabilidades.
+Os [checks de CI](../ci-security.md) são evidência complementar. Consulte a
+[política de merge](merge-policy.md) para os checks previstos em `dev` e `main`.
 
 ## Fixar o diff
 
@@ -26,9 +29,9 @@ afetadas. Um release revisa todo o intervalo contra seu próprio destino.
 
 ## Campos do PR
 
-Quando o template da #64 aparecer em `.github/pull_request_template.md`,
-preencha os campos correspondentes.
-Até lá, registre-os na descrição do PR. A #64 deve reservar espaço para:
+Preencha o [template](../../.github/pull_request_template.md) na descrição do PR.
+O GitHub preenche o formulário quando o arquivo está na branch padrão (`main`).
+Até chegar a `main`, use o arquivo como modelo ao abrir o PR.
 
 - **Comportamento e escopo** com contexto, resultado esperado e tarefa.
 - **Revisões realizadas** com SHA do destino, merge-base, head e revisão das
@@ -43,5 +46,14 @@ Até lá, registre-os na descrição do PR. A #64 deve reservar espaço para:
   guias afetados. Use o [AGENTS.md](../../AGENTS.md) para a verificação da área.
 
 Mantenha credenciais, dados pessoais e detalhes sensíveis fora do resumo.
-Encaminhe evidência restrita pelo canal autorizado. Trate um achado confirmado
-no escopo antes de recomendar merge e registre a revalidação da correção.
+Encaminhe evidência sensível pelo [canal privado](../../SECURITY.md#reporte-privado).
+Trate um achado confirmado no escopo antes de recomendar merge e registre a
+revalidação da correção.
+
+No [PR #19](https://github.com/Guga2111/Oriens/pull/19), a descrição delimita
+uma mudança de documentação e o defeito que ela registra. Para um PR assim,
+registre também os SHAs, as duas revisões e a validação documental executada.
+No [PR de release #51](https://github.com/Guga2111/Oriens/pull/51), os checks
+passaram e a revisão registrou um bloqueio de integridade ao restaurar a API
+anterior sobre o banco migrado. Use a seção de rollback para explicitar essa
+compatibilidade e a evidência que falta para autorizar a promoção.

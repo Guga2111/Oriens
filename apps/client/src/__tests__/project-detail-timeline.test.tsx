@@ -119,6 +119,7 @@ it('os filtros do quadro ficam no botão de filtro e vão para a URL', async () 
   show('/tasks/project/9?tab=board');
   await screen.findByRole('region', { name: 'Quadro do projeto' });
   await userEvent.click(screen.getByRole('button', { name: 'Filtros do quadro' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Opções do quadro' }));
   await userEvent.click(await screen.findByRole('checkbox', { name: 'Somente abertas' }));
   expect(screen.getByLabelText('url')).toHaveTextContent('open=1');
   expect(screen.getByRole('button', { name: 'Filtros do quadro (1 ativo)' })).toBeInTheDocument();

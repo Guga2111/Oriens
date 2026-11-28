@@ -89,21 +89,19 @@ public class TaskController {
     public Page<TaskView> all(Authentication auth, @PathVariable Long userId,
             @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size,
             @RequestParam(defaultValue="dueDate") String sortBy, @RequestParam(defaultValue="DESC") Sort.Direction direction,
-            @RequestParam(required=false) Status status, @RequestParam(required=false) Priority priority,
+            @RequestParam(required=false) Set<Status> status, @RequestParam(required=false) Set<Priority> priority,
+            @RequestParam(required=false) Long labelId,
             @RequestParam(required=false) String search,
             @RequestParam(required=false) Long projectId, @RequestParam(required=false) String dateField,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate endDate) {
         Long user = owner.matching(auth, userId);
-        WorkReadService.interval(startDate, endDate);
-        if ((startDate != null || endDate != null) && dateField == null)
-            throw new com.oriens.oriens_api.exception.WorkDomainException("INVALID_REQUEST", "dateField", "Informe qual data filtrar.");
-        if (dateField != null && !Set.of("plannedDate", "dueDate").contains(dateField))
-            throw new com.oriens.oriens_api.exception.WorkDomainException("INVALID_REQUEST", "dateField", "Campo de data inválido.");
-        if (dateField == null) dateField = "plannedDate";
-        if (projectId != null) read.project(user, projectId);
+        var filters = new TaskReadFilters(status, priority, search, labelId, dateField, startDate, endDate);
+        filters.validateDateField();
+        read.validateTaskFilterLinks(user, projectId, labelId);
         var pageable = WorkPagination.of(page, size, sortBy, direction, "id", "title", "dueDate", "plannedDate", "startTime", "priority", "status", "createdAt");
-        Page<Task> result = tasks.findWorkFiltered(user, projectId, status, priority, search, dateField, startDate, endDate, TaskRepository.workOrder(pageable));
+        Page<Task> result = tasks.findWorkFiltered(user, projectId, filters.statusesOrAll(), filters.prioritiesOrAll(),
+            filters.search(), labelId, dateField, startDate, endDate, TaskRepository.workOrder(pageable));
         return new PageImpl<>(read.views(user, result.getContent()), pageable, result.getTotalElements());
     }
     @GetMapping("/user/{userId}/summary/weekly-counts")

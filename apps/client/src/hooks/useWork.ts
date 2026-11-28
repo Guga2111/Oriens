@@ -8,7 +8,7 @@ import { getDashboardData } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { taskService } from '@/services/taskService';
 import { projectService, type BoardFilters } from '@/services/projectService';
-import type { TaskFilters } from '@/services/taskService';
+import type { TaskListQuery } from '@/services/taskService';
 import type { ProjectFilters } from '@/services/projectService';
 import type { BoardResponse, TaskPatch, TaskCreation, TaskMutation, TaskDeletion, WorkTask, WorkProject, ProjectWrite, SidebarProject } from '@/types/work';
 
@@ -38,7 +38,7 @@ export function useTaskWeek(start: string, end: string, enabled = true) {
   return useQuery({ queryKey: workKey(userId, 'tasks/week', start, end), enabled: userId !== null && enabled,
     queryFn: ({ signal }) => taskService.week(userId!, start, end, signal) });
 }
-export function useAllTasks(filters: TaskFilters) {
+export function useAllTasks(filters: TaskListQuery) {
   const { userId } = useAuth();
   return useQuery({ queryKey: workKey(userId, 'tasks/all', filters), enabled: userId !== null,
     queryFn: ({ signal }) => taskService.all(userId!, filters, signal) });
@@ -60,9 +60,9 @@ export function useTaskDetail(id: number, placeholder?: WorkTask) {
     placeholderData: placeholder, queryFn: ({ signal }) => taskService.task(id, signal) });
 }
 /** `keepPrevious` shows the same project's last board while new filters load (timeline window changes). */
-export function useProjectBoard(id: number, filters: BoardFilters = {}, keepPrevious = false) {
+export function useProjectBoard(id: number, filters: BoardFilters = {}, { keepPrevious = false, enabled = true } = {}) {
   const { userId } = useAuth();
-  return useQuery<BoardResponse>({ queryKey: workKey(userId, 'projects/board', id, filters), enabled: userId !== null && id > 0,
+  return useQuery<BoardResponse>({ queryKey: workKey(userId, 'projects/board', id, filters), enabled: enabled && userId !== null && id > 0,
     placeholderData: keepPrevious ? (previous?: BoardResponse) => previous?.projectId === id ? previous : undefined : undefined,
     queryFn: ({ signal }) => projectService.board(id, filters, signal) });
 }
@@ -153,7 +153,6 @@ export function useBoardTaskMoves(projectId: number, filters: BoardFilters) {
     // Reordering can bump neighboring task versions as well as the project's version.
     scope: { id: `board-move:${userId}:${projectId}` },
     retry: false,
-    onMutate: () => publishPreview(),
     mutationFn: async (command: BoardMove) => {
       if (!sessionIsCurrent()) throw new Error('Sessão necessária.');
       const cached = client.getQueryState<BoardResponse>(boardKey);
@@ -170,7 +169,8 @@ export function useBoardTaskMoves(projectId: number, filters: BoardFilters) {
     },
     onSuccess: async (result, command) => {
       if (userId === null || !sessionIsCurrent()) return;
-      const hidden = Boolean(filters.open || filters.overdue) && !isOpenStatus(result.task.status);
+      const hidden = (Boolean(filters.open || filters.overdue) && !isOpenStatus(result.task.status))
+        || !!(filters.status && !filters.status.split(",").includes(result.task.status));
       client.setQueryData<BoardResponse>(boardKey, board => {
         if (!board || (result.task.project?.version ?? 0) <= board.projectVersion) return board;
         return applyBoardMove(board, command, { task: result.task, hidden });
@@ -192,7 +192,11 @@ export function useBoardTaskMoves(projectId: number, filters: BoardFilters) {
   function moveTask(command: BoardMove) {
     const alreadyMoving = client.getMutationCache().findAll(pending)
       .some(mutation => (mutation.state.variables as BoardMove).taskId === command.taskId);
-    if (!alreadyMoving) return move.mutateAsync(command);
+    if (alreadyMoving) return;
+    const request = move.mutateAsync(command);
+    // Publish before the drag preview unmounts so both layouts hand off in the same render.
+    publishPreview();
+    return request;
   }
 
   return { preview: preview.data, moving, moveTask };

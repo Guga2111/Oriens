@@ -1,6 +1,7 @@
 # Dados e formulários do cliente
 
 Use os contratos da API e os hooks do domínio para cache, concorrência e validação.
+O [ADR do cliente](../../decisions/005-cliente.md) descreve a escolha do cache.
 
 ## Dados: servidor e cache
 
@@ -44,12 +45,28 @@ Regras:
 - Confiar no front para autorização. Esconder um botão é UX; a garantia é do backend.
 - Guardar no `localStorage` qualquer coisa além do token e preferências já existentes.
 
+## Filtros de tarefas
+
+Use `taskFilterSections` com `HeaderFilterPanel` no quadro e em Explorar.
+A busca por título ou descrição fica na barra de ações, em `HeaderSearch`,
+e é aplicada ao enviar o campo.
+No desktop, as opções abrem ao lado das categorias. No celular, toque em uma
+categoria para ver suas opções e use a seta de voltar para trocar de categoria.
+O quadro guarda o recorte na URL e filtra dentro do projeto aberto. O contador
+de itens no breadcrumb usa o total visível retornado pelo quadro.
+Explorar oferece o seletor de projeto e volta à primeira página a cada alteração.
+Os períodos de 7 e 30 dias incluem hoje, e “Este mês” cobre o mês inteiro no calendário de Recife. O período personalizado
+permite informar uma data inicial, uma data final ou as duas.
+
 ## Movimentos no quadro
 
 No desktop, arraste pelo card ou use as ações do menu para mudar de coluna ou
-posição. Pelo teclado, use Espaço no título para pegar ou soltar, as setas para
-escolher o destino e Escape para cancelar. Enter abre os detalhes quando o card
-está em repouso. No celular, o movimento continua disponível pelo menu.
+posição. Durante o arraste, o contorno tracejado indica onde o card ficará ao
+soltar, inclusive em uma coluna vazia. Com filtros ativos, o arraste entre
+colunas insere o card no fim do destino. Pelo teclado, use Espaço no título para
+pegar ou soltar, as setas para escolher o destino e Escape para cancelar. Enter
+abre os detalhes quando o card está em repouso. No celular, o movimento continua
+disponível pelo menu.
 
 O hook de movimento mantém a projeção otimista no cache do quadro e reserva
 apenas o card em salvamento no desktop. Os envios do mesmo projeto passam em
@@ -58,6 +75,10 @@ de erro, o hook restaura a posição anterior, reaplica os demais movimentos
 pendentes e mostra a mensagem de `workError` em um toast.
 
 ## Formulários
+
+No editor de tarefas, o horário é opcional após selecionar o dia planejado.
+O campo aceita `0930` pelo teclado numérico, além de `9:30` e `09:30`. O formulário
+envia esses valores como `09:30:00` e mostra erros de formato junto ao campo.
 
 ✅ **Padrão** (ex.: `TaskEditor`, diálogos financeiros):
 - Layout com `FieldGroup`, `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldSet`/`FieldLegend`.

@@ -55,6 +55,10 @@ class ActuatorExposureTest {
             .contains("hikaricp_connections");
 
         assertThat(get(managementPort, "/actuator/health", null).statusCode()).isEqualTo(200);
+
+        var readiness = get(managementPort, "/actuator/health/readiness", null);
+        assertThat(readiness.statusCode()).isEqualTo(200);
+        assertThat(readiness.body()).isEqualTo("{\"status\":\"UP\"}");
     }
 
     @Test
@@ -69,6 +73,7 @@ class ActuatorExposureTest {
         assertThat(authenticated.statusCode()).isNotEqualTo(200);
         assertThat(anonymous.body() + authenticated.body()).doesNotContain("jvm_memory_used_bytes");
         assertThat(get(publicPort, "/actuator/health", jwt).statusCode()).isNotEqualTo(200);
+        assertThat(get(publicPort, "/actuator/health/readiness", jwt).statusCode()).isNotEqualTo(200);
     }
 
     @Test

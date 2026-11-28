@@ -38,6 +38,7 @@ import { useProductToday } from '@/hooks/useProductToday';
 import { compareTaskPriority } from '@/lib/tasks';
 import type { Task } from "@/types/task";
 
+// eslint-disable-next-line complexity -- existing score 39; owner: client maintainers.
 export function DashboardPage() {
   const today = useProductToday();
   const [taskSearch, setTaskSearch] = useState('');

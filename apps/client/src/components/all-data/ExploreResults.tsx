@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { HeaderActions } from "@/components/common/HeaderActions";
-import { HeaderFilterPanel } from "@/components/common/HeaderFilterPanel";
+import { HeaderFilterPanel, type HeaderFilterSection } from "@/components/common/HeaderFilterPanel";
 import { HeaderSearch } from "@/components/common/HeaderSearch";
 import { WorkFeedback } from "@/components/common/WorkFeedback";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,8 @@ interface ExploreResultsProps {
   resources: "tarefas" | "projetos";
   emptyTitle: string;
   emptyDescription: string;
-  search: { query: string; submit: (query: string) => void };
-  filters: { count: number; clear: () => void; fields: ReactNode };
+  search: { query: string; submit: (query: string) => void; inputLabel?: string };
+  filters: { count: number; clear: () => void; sections: readonly HeaderFilterSection[] };
   pagination: ExplorePage;
   onPageChange: (page: number) => void;
   isLoading: boolean;
@@ -35,7 +35,10 @@ interface ExploreResultsProps {
 
 export function ExploreResults({ resources, emptyTitle, emptyDescription, search, filters, pagination,
   onPageChange, isLoading, hasRows, feedback, children }: ExploreResultsProps) {
-  const [draft, setDraft] = useState(search.query);
+  const [searchDraft, setSearchDraft] = useState({ query: search.query, value: search.query });
+  if (searchDraft.query !== search.query) setSearchDraft({ query: search.query, value: search.query });
+  const draft = searchDraft.query === search.query ? searchDraft.value : search.query;
+  const setDraft = (value: string) => setSearchDraft({ query: search.query, value });
   const [searchOpen, setSearchOpen] = useState(Boolean(search.query));
   const count = filters.count + Number(Boolean(search.query));
   const clear = () => {
@@ -47,10 +50,10 @@ export function ExploreResults({ resources, emptyTitle, emptyDescription, search
   return (
     <div className={cn(styles.results, "flex min-w-0 flex-col gap-3")}>
       <HeaderActions>
-        <HeaderSearch label={`Buscar ${resources}`} inputLabel="Buscar por título" placeholder="Buscar…"
+        <HeaderSearch label={`Buscar ${resources}`} inputLabel={search.inputLabel ?? "Buscar por título"} placeholder="Buscar…"
           value={draft} onChange={setDraft} open={searchOpen} onOpenChange={setSearchOpen}
           onSubmit={() => search.submit(draft)} onClear={() => { if (search.query) search.submit(""); }} />
-        <HeaderFilterPanel count={count} onClear={clear} description="Refine os resultados desta aba.">{filters.fields}</HeaderFilterPanel>
+        <HeaderFilterPanel count={count} onClear={clear} description="Refine os resultados desta aba." sections={filters.sections} />
       </HeaderActions>
 
       {feedback && <WorkFeedback error={feedback.error} message={`Não foi possível atualizar ${resources === "tarefas" ? "as" : "os"} ${resources}.`}

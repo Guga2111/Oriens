@@ -6,7 +6,7 @@ description: Use para desenhar ou revisar landing pages e outras páginas públi
 # Design Taste para páginas públicas
 
 Leia o [guia de frontend](../../../docs/conventions/frontend.md), os
-[tokens vigentes](../../../docs/conventions/frontend/design-tokens.md) e o
+[design system](../../../docs/conventions/frontend/design-tokens.md) e o
 [guia da marca](../../../docs/brand/GUIA-DE-USO.md). Confira os primitivos
 shadcn/ui e as composições existentes indicadas no guia. Para telas de operação
 do produto, use [oriens-impeccable](../oriens-impeccable/SKILL.md).

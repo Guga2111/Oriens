@@ -1,7 +1,7 @@
 # Regressão visual da UI
 
 Use o [guia de testes](../conventions/frontend/tests.md) e os
-[tokens vigentes](../conventions/frontend/design-tokens.md) na revisão.
+[design system](../conventions/frontend/design-tokens.md) na revisão da entrega #110.
 A [skill oriens-playwright](../../.agents/skills/oriens-playwright/SKILL.md)
 orienta a inspeção interativa. O teste automatizado compara as baselines
 versionadas da landing, do editor de tarefas em Hoje e do quadro de projetos.

@@ -2,6 +2,7 @@
 
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -74,6 +75,33 @@ class GitleaksTest(unittest.TestCase):
         config.write_text("[[malformed", encoding="utf-8")
         result, _ = self.scan(config)
         self.assertNotEqual(0, result.returncode)
+
+    def test_pre_commit_blocks_the_index_and_hides_the_finding(self):
+        source = self.config.parent
+        hooks = self.root / ".githooks"
+        hooks.mkdir()
+        shutil.copy2(source / ".githooks/pre-commit", hooks)
+        for name in (".gitleaks.toml", ".gitleaksignore"):
+            shutil.copy2(source / name, self.root / name)
+        self.git("add", ".githooks", ".gitleaks.toml", ".gitleaksignore")
+        self.commit("# clean baseline\n")
+
+        password = "smtp-" + "staged-only-fixture-123456"
+        payload = f"spring.mail.password={password} # gitleaks:allow\n"
+        properties = self.root / "application.properties"
+        properties.write_text(payload, encoding="utf-8")
+        self.git("add", "application.properties")
+        properties.write_text("# clean working tree\n", encoding="utf-8")
+
+        args = ["git", "-c", "core.hooksPath=.githooks", "commit", "-qm", "test: exercise pre-commit"]
+        result = subprocess.run(args, cwd=self.root, capture_output=True, text=True, timeout=20)
+        self.assertEqual(1, result.returncode)
+        self.assertIn("Segredo suspeito no staged", result.stderr)
+        self.assertNotIn(password, result.stdout + result.stderr)
+
+        self.git("add", "application.properties")
+        properties.write_text(payload, encoding="utf-8")
+        subprocess.run(args, cwd=self.root, check=True, capture_output=True, timeout=20)
 
 
 if __name__ == "__main__":

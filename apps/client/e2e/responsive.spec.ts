@@ -164,7 +164,10 @@ test("mobile: /financial não tem rolagem horizontal e os filtros ficam no Sheet
   // Busca e filtros ficam na barra superior; em tela estreita os filtros abrem num Sheet.
   await page.getByRole("button", { name: /^Filtros/ }).click();
   const filters = page.getByRole("dialog", { name: "Filtros" });
+  await filters.getByRole("button", { name: "Período" }).click();
   await expect(filters.getByRole("combobox", { name: "Período" })).toBeVisible();
+  await filters.getByRole("button", { name: "Voltar aos filtros" }).click();
+  await filters.getByRole("button", { name: "Categoria" }).click();
   await expect(filters.getByRole("combobox", { name: "Categoria" })).toBeVisible();
   expect(await pageOverflow(page)).toBeLessThanOrEqual(0);
 });
@@ -191,7 +194,7 @@ test("mobile: /all-data vira lista e os filtros ficam no Sheet", async ({
 
   await page.getByRole("button", { name: /Filtros/ }).first().click();
   await expect(page.getByRole("heading", { name: "Filtros" })).toBeVisible();
-  await expect(page.getByLabel("Status")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Status" })).toBeVisible();
 
   await page.keyboard.press("Escape");
 
