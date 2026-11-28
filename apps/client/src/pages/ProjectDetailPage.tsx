@@ -67,7 +67,7 @@ function ProjectDetail({ id }: { id: number }) {
   if (searchDraft.applied !== appliedSearch) setSearchDraft({ applied: appliedSearch, text: appliedSearch });
   const searchText = searchDraft.applied === appliedSearch ? searchDraft.text : appliedSearch;
   const isSearchOpen = searchOpen || Boolean(appliedSearch);
-  const board = useProjectBoard(project?.mode === 'DEVELOPMENT' ? id : 0, filters);
+  const board = useProjectBoard(project?.mode === 'DEVELOPMENT' ? id : 0, tab === 'overview' ? {} : filters);
   const allBoard = useProjectBoard(project?.mode === 'DEVELOPMENT' && tab === 'objectives' ? id : 0);
   const timeline = useTimelineBoard(project?.mode === 'DEVELOPMENT' && tab === 'timeline' ? id : 0).board;
   const flags = useProjectFlags(); const write = useProjectWrites(); const file = useRef<HTMLInputElement>(null);
@@ -137,7 +137,7 @@ function ProjectDetail({ id }: { id: number }) {
       </DropdownMenuGroup></DropdownMenuContent></DropdownMenu>}
     </HeaderActions>
     {isOverview ? (
-      <ProjectOverview project={project} notices={notices} coverPending={write.isPending}
+      <ProjectOverview project={project} board={board} notices={notices} coverPending={write.isPending}
         onChooseCover={chooseCover} onReload={() => void query.refetch()} />
     ) : <>
       {project.imageUrl && <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="mb-6 aspect-project-cover w-full rounded-lg object-cover" />}

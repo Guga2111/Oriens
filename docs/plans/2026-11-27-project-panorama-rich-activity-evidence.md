@@ -52,3 +52,16 @@ O Panorama mostra situação, tipo, cor e favorito acima do Resumo. Os dados vê
 | 390 × 844 | Escuro | [Depois](../screenshots/project-panorama-properties/after-390-dark.png) |
 
 No Chromium com API local, o roteiro abriu a conta sintética, conferiu os campos com e sem cor, acionou **Favoritar** por teclado no menu e confirmou a atualização no bloco e após recarregar. Conferiu também o estado **Arquivado**, o foco no calendário e a ausência de rolagem horizontal nas larguras de 1440, 390 e 320 px nos dois temas. Ao recarregar o projeto arquivado, o registro de visita aos Recentes retornou o 404 já previsto pelo serviço. As propriedades foram exibidas.
+
+## Distribuição no resumo
+
+O Panorama de desenvolvimento mostra dois gráficos de rosca com totais e legendas. Os objetivos usam os estágios cadastrados e as tarefas usam as colunas reais do quadro. A contagem inclui todos os itens do projeto, independentemente de filtros na URL. O aviso aparece quando há objetivos atrasados. O calendário fica no resumo de projetos simples.
+
+| Janela | Tema | Resumo |
+| --- | --- | --- |
+| 1440 × 900 | Claro | [Antes](../screenshots/project-panorama-properties/after-1440-light.png) · [Depois](../screenshots/project-panorama-charts/summary-1440-light.png) |
+| 1440 × 900 | Escuro | [Antes](../screenshots/project-panorama-properties/after-1440-dark.png) · [Depois](../screenshots/project-panorama-charts/summary-1440-dark.png) |
+| 390 × 844 | Claro | [Antes](../screenshots/project-panorama-properties/after-390-light.png) · [Depois](../screenshots/project-panorama-charts/summary-390-light.png) |
+| 390 × 844 | Escuro | [Antes](../screenshots/project-panorama-properties/after-390-dark.png) · [Depois](../screenshots/project-panorama-charts/summary-390-dark.png) |
+
+O Chromium com API local confirmou seis objetivos em cinco estágios e quatro tarefas em quatro colunas, incluindo **Em revisão**. Conferiu legendas, segmentos, foco visível, estados vazios e ausência de rolagem horizontal de 320 a 1440 px nos dois temas. Os testes do cliente cobrem contagens com filtro na URL, tarefas sem coluna, carregamento e nova tentativa após falha.

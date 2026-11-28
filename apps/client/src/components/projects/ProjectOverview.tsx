@@ -1,21 +1,23 @@
 import type { ReactNode } from 'react';
 import { ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { useProjectBoard } from '@/hooks/useWork';
 import { ProjectActivityFeed } from './ProjectActivityFeed';
 import { ProjectDescriptionSection } from './ProjectDescriptionSection';
 import { ProjectPropertiesCard } from './ProjectPropertiesCard';
-import { ProjectSummaryCard } from './ProjectSummaryCard';
+import { ProjectProgressSummary } from './ProjectProgressSummary';
 import type { WorkProject } from '@/types/work';
 
 interface ProjectOverviewProps {
   project: WorkProject;
+  board: ReturnType<typeof useProjectBoard>;
   notices: ReactNode;
   coverPending: boolean;
   onChooseCover: () => void;
   onReload: () => void;
 }
 
-export function ProjectOverview({ project, notices, coverPending, onChooseCover, onReload }: ProjectOverviewProps) {
+export function ProjectOverview({ project, board, notices, coverPending, onChooseCover, onReload }: ProjectOverviewProps) {
   const coverAction = <Button type="button" variant="outline" size="sm" disabled={coverPending} onClick={onChooseCover}>
     <ImagePlus aria-hidden />
     {coverPending ? 'Salvando capa…' : project.imageUrl ? 'Trocar capa' : 'Adicionar capa'}
@@ -42,7 +44,7 @@ export function ProjectOverview({ project, notices, coverPending, onChooseCover,
       </article>
       <div className="flex min-w-0 flex-col gap-4">
         <ProjectPropertiesCard project={project} />
-        <ProjectSummaryCard project={project} fitCalendar />
+        <ProjectProgressSummary project={project} board={board} />
       </div>
     </div>
   );

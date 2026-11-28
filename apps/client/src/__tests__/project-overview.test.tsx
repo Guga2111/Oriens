@@ -5,8 +5,8 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import ProjectDetailPage from '@/pages/ProjectDetailPage';
 import api from '@/services/api';
 import { descriptionFromText } from '@/components/tasks/description/descriptionContent';
-import type { WorkProject, TaskDescriptionDocument, ProjectActivityPage } from '@/types/work';
-import { board, project, renderWork } from './work-fixtures';
+import type { BoardResponse, WorkProject, TaskDescriptionDocument, ProjectActivityPage } from '@/types/work';
+import { board, objective, project, renderWork } from './work-fixtures';
 
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ userId: 7 }) }));
 vi.mock('@/hooks/useHome', () => ({ useRecordVisit: vi.fn() }));
@@ -33,10 +33,10 @@ const overviewUrl = '/tasks/project/9?tab=overview';
 
 function serve(readProject: () => WorkProject = () => project, readActivity: (page: number) => ProjectActivityPage = page => ({
   page, actor: 'Conta de teste', hasNext: false, items: [],
-})) {
+}), readBoard: () => BoardResponse | Promise<BoardResponse> = () => board) {
   vi.mocked(api.get).mockImplementation(async (url, config) => {
     if (url === '/project/9/activity') return { data: readActivity(config.params.page) };
-    return { data: url === '/project/9/board' ? board : readProject() };
+    return { data: url === '/project/9/board' ? await readBoard() : readProject() };
   });
 }
 
@@ -49,10 +49,17 @@ beforeEach(() => {
   serve();
 });
 
-it('mostra título, capa, texto com quebras de linha e os indicadores de progresso', async () => {
+it('mostra título, capa, texto com quebras de linha e a distribuição por estágio', async () => {
   const imageUrl = '/projects-pictures/portfolio.png';
-  serve(() => ({ ...project, description, imageUrl, summary: { ...project.summary, overdueObjectiveCount: 2 } }));
-  showProject();
+  serve(() => ({
+    ...project, description, imageUrl, summary: { ...project.summary, overdueObjectiveCount: 2 },
+    objectives: [objective, { ...objective, id: 82, status: 'ON_DOING' }, { ...objective, id: 83, status: 'ON_DOING' }],
+  }), undefined, () => ({
+    ...board,
+    columns: [board.columns[0], { ...board.columns[1], name: 'Em revisão', totalCount: 2, visibleCount: 0 }, board.columns[2]],
+    total: { ...board.total, totalTasks: 4 },
+  }));
+  showProject(overviewUrl + '&search=um filtro antigo');
 
   expect(await screen.findByRole('heading', { level: 1, name: project.title })).toBeVisible();
   expect(screen.getByRole('img', { name: `Capa de ${project.title}` })).toHaveAttribute('src', imageUrl);
@@ -61,10 +68,40 @@ it('mostra título, capa, texto com quebras de linha e os indicadores de progres
   expect(within(section).getByRole('paragraph').textContent).toBe(description);
   expect(within(section).getByRole('button', { name: 'Editar descrição' })).toBeEnabled();
   const summary = screen.getByRole('complementary', { name: 'Informações do projeto' });
-  expect(within(summary).getByRole('progressbar', { name: '0% dos objetivos concluídos' })).toBeInTheDocument();
-  expect(within(summary).getByRole('progressbar', { name: '0% das tarefas concluídas' })).toBeInTheDocument();
+  const objectives = within(summary).getByRole('region', { name: 'Objetivos por estágio' });
+  expect(within(objectives).getAllByRole('listitem').map(item => item.textContent)).toEqual([
+    'Backlog0', 'Planejado1', 'Em andamento2', 'Pausado0', 'Concluído0', 'Cancelado0',
+  ]);
+  const tasks = within(await within(summary).findByRole('region', { name: 'Tarefas por coluna' }));
+  expect((await tasks.findAllByRole('listitem')).map(item => item.textContent)).toEqual([
+    'A fazer1', 'Em revisão2', 'Concluídas0', 'Sem coluna1',
+  ]);
+  expect(tasks.getByText('4', { exact: true })).toBeVisible();
+  expect(api.get).toHaveBeenCalledWith('/project/9/board', expect.objectContaining({ params: {} }));
   expect(within(summary).getByText('2 objetivos com prazo ultrapassado')).toBeVisible();
-  expect(within(summary).getByRole('button', { name: 'Próximo mês' })).toBeEnabled();
+  expect(within(summary).queryByRole('heading', { name: 'Calendário' })).not.toBeInTheDocument();
+});
+
+it('carrega os estágios de tarefas, permite tentar de novo e mostra o projeto vazio', async () => {
+  let failBoard = true;
+  let rejectBoard: (reason: unknown) => void;
+  const firstBoard = new Promise<BoardResponse>((_, reject) => { rejectBoard = reject; });
+  serve(() => ({ ...project, objectives: [] }), undefined, () => {
+    if (failBoard) {
+      failBoard = false;
+      return firstBoard;
+    }
+    return { ...board, columns: [], total: { totalTasks: 0, nonCancelledTasks: 0, completedTasks: 0, cancelledTasks: 0 } };
+  });
+  showProject();
+  expect(await screen.findByText('Nenhum objetivo definido.')).toBeVisible();
+  const tasks = within(screen.getByRole('region', { name: 'Tarefas por coluna' }));
+  expect(tasks.getByRole('status', { name: 'Carregando distribuição de tarefas' })).toBeVisible();
+  rejectBoard!({ isAxiosError: true, response: { status: 500, data: { message: 'Quadro indisponível.' } } });
+  const feedback = await tasks.findByRole('alert');
+  expect(feedback).toHaveTextContent('Quadro indisponível.');
+  await userEvent.click(within(feedback).getByRole('button', { name: 'Recarregar dados' }));
+  expect(await tasks.findByText('Nenhuma tarefa no projeto.')).toBeVisible();
 });
 
 it.each([

@@ -10,7 +10,8 @@ O [Panorama](../../apps/client/src/components/projects/ProjectOverview.tsx) entr
 
 - Mostrar a descrição rica em largura de leitura no Panorama e editar no próprio conteúdo com o editor de blocos do Oriens. Incluir títulos, formatação, links, listas e tabelas. Preservar descrições de texto já salvas.
 - Expor **Adicionar capa** ou **Trocar capa** no Panorama. Usar a mesma capa nos cards e uma miniatura nas representações compactas do projeto, como navegação, recentes, seletores e tarefas vinculadas. Para projetos sem imagem, manter a identificação atual por cor ou ícone.
-- Mostrar atividade em ordem cronológica decrescente no Panorama, com autor ou origem, horário, ação e um ícone correspondente. Incluir criação e alteração de projeto, troca de capa, alterações de objetivos e criação, movimentação, conclusão e remoção de tarefas do projeto. Manter resumo e calendário acessíveis.
+- Mostrar atividade em ordem cronológica decrescente no Panorama, com autor ou origem, horário, ação e um ícone correspondente. Incluir criação e alteração de projeto, troca de capa, alterações de objetivos e criação, movimentação, conclusão e remoção de tarefas do projeto.
+- No resumo do Panorama, mostrar a distribuição de objetivos por estágio e de tarefas por coluna do quadro, com totais e legendas. Exibir o aviso quando houver objetivos atrasados. O calendário de prazos pertence ao resumo de projetos simples.
 - Anexos privados na descrição do projeto e publicações manuais de status ficam para entregas próprias. Anexos das tarefas têm posse e ciclo de vida vinculados à tarefa.
 
 ## Alternativas e decisão
@@ -58,4 +59,4 @@ As mudanças de código partem de `dev`, que já inclui o PR #72, na branch `Gug
 
 ## Validação e evidência
 
-Executar lint, build, testes do cliente e da API e integração com PostgreSQL. Cobrir duas contas, 404, paginação, ausência de N+1, conflito de versão, rollback de escrita e reenvio. Em Chromium, conferir título, edição e leitura dos blocos, capa nas referências, atividade e calendário em desktop e celular, claro e escuro e navegação por teclado. Registrar as capturas e resultados em `docs/plans/2026-11-27-project-panorama-rich-activity-evidence.md`. [Setup](../guides/setup.md)
+Executar lint, build, testes do cliente e da API e integração com PostgreSQL. Cobrir duas contas, 404, paginação, ausência de N+1, conflito de versão, rollback de escrita e reenvio. Em Chromium, conferir título, edição e leitura dos blocos, capa nas referências, atividade e distribuição por estágio em desktop e celular, claro e escuro e navegação por teclado. Registrar as capturas e resultados em `docs/plans/2026-11-27-project-panorama-rich-activity-evidence.md`. [Setup](../guides/setup.md)

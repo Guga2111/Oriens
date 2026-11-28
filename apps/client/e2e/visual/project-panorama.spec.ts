@@ -89,7 +89,10 @@ test('Panorama edita blocos, troca a capa e mostra a atividade do projeto', asyn
   await expect(description.getByRole('heading', { name: 'Plano de entrega', level: 2 })).toBeVisible();
   await expect(banner).toBeVisible();
   await expect(page.getByRole('button', { name: 'Trocar capa', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Próximo mês' })).toBeVisible();
+  const summary = page.getByRole('complementary', { name: 'Informações do projeto' });
+  await expect(summary.getByRole('region', { name: 'Objetivos por estágio' })).toContainText('Nenhum objetivo definido.');
+  await expect(summary.getByRole('region', { name: 'Tarefas por coluna' })).toContainText('Nenhuma tarefa no projeto.');
+  await expect(summary.getByRole('heading', { name: 'Calendário' })).toHaveCount(0);
   await expect.poll(() => page.locator('[data-page-content]').evaluate(element => element.scrollWidth - element.clientWidth)).toBe(0);
   expect(unexpected).toEqual([]);
 });
