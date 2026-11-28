@@ -10,6 +10,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       ORIENS_MCP_ENABLED: ${ORIENS_MCP_ENABLED:-false}
+      ORIENS_MCP_OPENBOTENABLED: ${ORIENS_MCP_OPENBOT_ENABLED:-false}
       ORIENS_MCP_ISSUER: ${ORIENS_MCP_ISSUER:-}
       ORIENS_MCP_FRONTEND: ${ORIENS_MCP_FRONTEND:-}
       # Spring removes property-name hyphens when binding environment variables.

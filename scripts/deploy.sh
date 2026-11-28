@@ -29,6 +29,9 @@ write_environment() {
     local -a names=(DB_URL DB_USER DB_PASSWORD JWT_SECRET API_PORT ORIENS_MCP_ENABLED)
     if [[ "${ORIENS_MCP_ENABLED:-}" == true ]]; then
         names+=(ORIENS_MCP_ISSUER ORIENS_MCP_FRONTEND ORIENS_MCP_ENCRYPTION_PASSWORD ORIENS_MCP_ENCRYPTION_SALT)
+        if [[ -n "${ORIENS_MCP_OPENBOT_ENABLED:-}" ]]; then
+            names+=(ORIENS_MCP_OPENBOT_ENABLED)
+        fi
     fi
     # Validate all values before opening the remote file.
     for name in "${names[@]}"; do
