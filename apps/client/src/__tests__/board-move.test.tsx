@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { toast } from 'sonner';
 import { ProjectBoard } from '@/components/projects/ProjectBoard';
 import { useProjectBoard } from '@/hooks/useWork';
@@ -55,8 +55,12 @@ function pendingResponse() {
 }
 
 beforeEach(() => {
-  vi.mocked(api.get).mockResolvedValue({ data: initial });
+  vi.setSystemTime(new Date('2026-11-27T15:00:00Z'));
+  vi.mocked(api.get).mockReset().mockResolvedValue({ data: initial });
+  vi.mocked(api.patch).mockReset();
 });
+
+afterEach(() => vi.useRealTimers());
 
 it.each([
   [409, 'Os dados mudaram em outra sessão.'],
@@ -78,6 +82,9 @@ it.each([
   await waitFor(() => expect(card(first.title)).toHaveAttribute('aria-busy', 'true'));
   expect(menuButton(first.title)).toBeDisabled();
   expect(menuButton(second.title)).toBeEnabled();
+  await waitFor(() => expect(api.patch).toHaveBeenCalledExactlyOnceWith('/task/42', {
+    version: 2, projectVersion: 4, columnId: 12, beforeTaskId: null,
+  }));
 
   response.reject({ isAxiosError: true, response: { status } });
   await waitFor(() => expect(column('A fazer')).toContainElement(card(first.title)));
@@ -122,8 +129,12 @@ it('reordena pelo menu e usa as versões confirmadas ao enviar o próximo card',
   await selectMove(first.title, 'Mover abaixo');
   const titles = () => within(column('A fazer')).getAllByRole('article').map(article => article.querySelector('[aria-haspopup=dialog]')?.textContent);
   await waitFor(() => expect(titles()).toEqual([second.title, first.title]));
+  await waitFor(() => expect(api.patch).toHaveBeenCalledExactlyOnceWith('/task/42', {
+    version: 2, projectVersion: 4, columnId: 11, beforeTaskId: null,
+  }));
   await selectMove(second.title, 'Fazendo · Em andamento');
   expect(column('Fazendo')).toContainElement(card(second.title));
+  expect(api.patch).toHaveBeenCalledTimes(1);
   const moved = { ...first, position: 1, version: 3, project: { ...first.project, version: 5 } };
   vi.mocked(api.get).mockResolvedValue({ data: { ...initial, projectVersion: 5, tasks: [{ ...second, position: 0, version: 3 }, moved] } });
   vi.mocked(api.patch).mockRejectedValueOnce({ isAxiosError: true, response: { status: 500 } });
