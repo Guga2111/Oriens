@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -21,6 +22,7 @@ public class WorkReadService {
     private final Clock clock;
     private final TaskLabelService taskLabels;
     private final ProjectRepository projects;
+    private final ProjectActivityRepository projectActivity;
     private final TaskRepository tasks;
     private final TaskDescriptionCodec descriptions;
     private final ObjectiveRepository objectives;
@@ -33,6 +35,13 @@ public class WorkReadService {
     }
     public TaskView taskView(Long owner, Long id) { return view(owner, task(owner, id)); }
     public ProjectView projectView(Long owner, Long id) { return projectViews(owner, List.of(project(owner, id)), true).get(0); }
+    public ProjectActivityPage projectActivity(Long owner, Long id, Pageable page) {
+        Project owned = project(owner, id);
+        var slice = projectActivity.findByProjectIdAndProjectUserIdOrderByOccurredAtDescIdDesc(id, owner, page);
+        return new ProjectActivityPage(slice.getNumber(), slice.hasNext(), owned.getUser().getName(),
+            slice.map(event -> new ProjectActivityView(event.getId(), event.getKind(), event.getOccurredAt(),
+                event.getSubjectId(), event.getSubjectTitle())).getContent());
+    }
     public TaskView view(Long owner, Task task) { return views(owner, List.of(task), true).get(0); }
 
     /** Bounded batch projection: one query per link type, never one query per task. */
@@ -58,7 +67,7 @@ public class WorkReadService {
             String descriptionText = document == null ? null : TaskDescriptionCodec.plainText(document.content());
             return new TaskView(t.getId(), owner, t.getTitle(), t.getDescription(), t.getProjectId(), t.getObjectiveId(), t.getColumnId(),
                 t.getPosition(), t.getPlannedDate(), t.getStartTime(), t.getDueDate(), t.getPriority(), t.getStatus(), t.getCompletedAt(),
-                t.getCreatedAt(), t.getLocation(), t.getVersion(), p == null ? null : new ProjectLink(p.getId(), p.getTitle(), p.getArchived(), p.getVersion()),
+                t.getCreatedAt(), t.getLocation(), t.getVersion(), p == null ? null : new ProjectLink(p.getId(), p.getTitle(), p.getArchived(), p.getVersion(), p.getImageUrl()),
                 o == null ? null : new ObjectiveLink(o.getId(), o.getTitle()), c == null ? null : new ColumnLink(c.getId(), c.getName(), c.getKind()),
                 labels.getOrDefault(t.getId(), List.of()), descriptionText, includeDocument ? document : null);
         }).toList();
@@ -183,7 +192,7 @@ public class WorkReadService {
                     .min(Comparator.comparing(ObjectiveView::dueDate).thenComparing(ObjectiveView::id)).orElse(null));
             return new ProjectView(p.getId(), owner, p.getTitle(), p.getDescription(), p.getColor(), p.getImageUrl(), p.getMode(),
                 p.isFavorite(), p.getArchived(), p.getLastAccessed(), p.getDefaultPendingColumnId(), p.getDefaultCompletedColumnId(), p.getVersion(),
-                detail ? goals : null, summary);
+                detail ? goals : null, summary, detail ? descriptions.read(p.getDescriptionDoc()) : null);
         }).toList();
     }
     public BoardConfigMutation config(Long owner, Long id) {

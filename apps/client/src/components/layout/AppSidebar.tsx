@@ -4,6 +4,7 @@ import {
   ChevronDown, ChevronRight, Circle, PanelLeftClose, Pin, PinOff, Plus,
 } from 'lucide-react';
 import { OverviewIcon } from '@/components/icons/OverviewIcon';
+import { ProjectCoverThumbnail } from '@/components/projects/ProjectCoverThumbnail';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuButton, SidebarMenuItem,
@@ -60,7 +61,9 @@ function SidebarProjects({ projectsVersion, onNewProject }: { projectsVersion: n
                     <Collapsible key={String(active)} defaultOpen={active} className="group/project">
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton className="relative group-has-[[data-sidebar=menu-action]]/menu-item:pr-14 max-desktop:group-has-[[data-sidebar=menu-action]]/menu-item:pr-20 max-desktop:min-h-10 [&>svg:last-child]:size-3.5">
-                          <Circle aria-hidden className={cn('size-3 shrink-0 fill-current', project.color ? 'text-[var(--project-color)]' : 'text-muted-foreground')} style={project.color ? { '--project-color': project.color } as CSSProperties : undefined} />
+                          <ProjectCoverThumbnail imageUrl={project.imageUrl} fallback={
+                            <Circle aria-hidden className={cn('size-3 shrink-0 fill-current', project.color ? 'text-[var(--project-color)]' : 'text-muted-foreground')} style={project.color ? { '--project-color': project.color } as CSSProperties : undefined} />
+                          } />
                           <span className="truncate">{project.title}</span>
                           <ChevronRight aria-hidden className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground group-data-[state=open]/project:rotate-90" />
                         </SidebarMenuButton>

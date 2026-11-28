@@ -1,5 +1,5 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { ComponentProps, ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import {
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 
-interface ResponsiveDialogProps extends Pick<ComponentProps<typeof DialogContent>, "onOpenAutoFocus" | "onCloseAutoFocus"> {
+interface ResponsiveDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: ReactNode;
@@ -43,16 +43,13 @@ export function ResponsiveDialog({
   children,
   footer,
   className,
-  onOpenAutoFocus,
-  onCloseAutoFocus,
 }: ResponsiveDialogProps) {
   const isDrawer = useMediaQuery("(max-width: 639px)");
 
   if (isDrawer) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange} autoFocus>
-        <DrawerContent className={cn("max-h-dialog outline-none", className)}
-          onOpenAutoFocus={onOpenAutoFocus} onCloseAutoFocus={onCloseAutoFocus}>
+        <DrawerContent className={cn("max-h-dialog outline-none", className)}>
           <DrawerHeader className="shrink-0 text-left">
             <DrawerTitle>{title}</DrawerTitle>
             {description && (
@@ -74,8 +71,6 @@ export function ResponsiveDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn("flex max-h-dialog flex-col overflow-hidden", className)}
-        onOpenAutoFocus={onOpenAutoFocus}
-        onCloseAutoFocus={onCloseAutoFocus}
       >
         <DialogHeader className="shrink-0">
           <DialogTitle>{title}</DialogTitle>

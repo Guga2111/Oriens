@@ -89,6 +89,7 @@ jobs:
           ORIENS_NGINX_APPLY: ${{ vars.ORIENS_NGINX_APPLY || 'false' }}
           ROLLBACK_COMPATIBLE_PAIR: ${{ vars.ROLLBACK_COMPATIBLE_PAIR }}
           ORIENS_MCP_ENABLED: ${{ vars.ORIENS_MCP_ENABLED || 'false' }}
+          ORIENS_MCP_OPENBOT_ENABLED: ${{ vars.ORIENS_MCP_OPENBOT_ENABLED || 'false' }}
           # The API serves MCP/OAuth at the public site root (nginx routes /mcp, /oauth2 and /.well-known there).
           ORIENS_MCP_ISSUER: https://oriens.luisgosampaio.com
           ORIENS_MCP_FRONTEND: https://oriens.luisgosampaio.com

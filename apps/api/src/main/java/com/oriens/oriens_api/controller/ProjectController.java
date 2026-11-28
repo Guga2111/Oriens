@@ -81,6 +81,11 @@ public class ProjectController {
     public ResponseEntity<ProjectView> get(Authentication auth, @PathVariable Long id) {
         ProjectView p = read.projectView(owner.id(auth), id); return WorkHttp.ok(p, p.version());
     }
+    @GetMapping("/{id}/activity")
+    public ProjectActivityPage activity(Authentication auth, @PathVariable Long id,
+            @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size) {
+        return read.projectActivity(owner.id(auth), id, WorkPagination.fixed(page, size, 100, Sort.unsorted()));
+    }
     @PostMapping("/user/{userId}")
     public ResponseEntity<Object> create(Authentication auth, @PathVariable Long userId,
             @RequestHeader(value="Idempotency-Key", required=false) String key, @RequestBody CreateProject command) {

@@ -29,7 +29,7 @@ fase de publicação.
 | Comando | Entrada e execução |
 |---|---|
 | `./scripts/deploy.sh build` | `IMAGE_TAG` com o SHA completo do commit. Executa `npm ci` e `npm run build` em `apps/client` e constrói a imagem a partir de `apps/api`. O workflow fornece a chave pública do Google Maps ao cliente. |
-| `./scripts/deploy.sh publish` | Mesmo checkout, SHA, distribuição e imagem da fase de build. Usa o alias `vps`, `REMOTE_DIR`, `WEB_ROOT`, `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `API_PORT` e `ORIENS_MCP_ENABLED`. Com MCP habilitado, também recebe issuer, origem do frontend, senha de criptografia e salt. `ROLLBACK_COMPATIBLE_PAIR` é opcional. `ORIENS_NGINX_APPLY` é falso por padrão. |
+| `./scripts/deploy.sh publish` | Mesmo checkout, SHA, distribuição e imagem da fase de build. Usa o alias `vps`, `REMOTE_DIR`, `WEB_ROOT`, `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `API_PORT` e `ORIENS_MCP_ENABLED`. Com MCP habilitado, também recebe issuer, origem do frontend, senha de criptografia, salt e a opção `ORIENS_MCP_OPENBOT_ENABLED`, falsa por padrão. `ROLLBACK_COMPATIBLE_PAIR` é opcional. `ORIENS_NGINX_APPLY` é falso por padrão. |
 
 A publicação envia a imagem via `docker save` e SSH, prepara o Compose e o `.env`
 em arquivos temporários e confere os uploads com o UID/GID da candidata. Execute

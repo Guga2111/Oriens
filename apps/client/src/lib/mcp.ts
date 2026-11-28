@@ -41,7 +41,14 @@ export function mcpFlow(search: string): string | null {
   return values.length === 1 && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(values[0]) ? values[0] : null;
 }
 export const mcpResume = (search: string) => { const id = mcpFlow(search); return id ? `/config?mcpFlow=${id}` : '/tasks'; };
-export const clientName = (id: string) => id === 'oriens-codex' ? 'Codex' : id === 'oriens-claude-code' ? 'Claude Code' : 'Outro cliente';
+export function clientName(id: string) {
+  switch (id) {
+    case 'oriens-codex': return 'Codex';
+    case 'oriens-claude-code': return 'Claude Code';
+    case 'oriens-openbot': return 'OpenBot';
+    default: return 'Outro cliente';
+  }
+}
 export const connectionStatus = (c: McpConnection) => c.revokedAt ? 'Revogada' : Date.parse(c.expiresAt) <= Date.now() ? 'Expirada' : 'Ativa';
 export const mcpDate = (value: string | null) => value ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Recife' }).format(new Date(value)) : 'Ainda não utilizada';
 export const mcpErrorCode = (error: unknown) => isAxiosError(error) ? error.response?.data?.code : undefined;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { WorkDatePicker } from '@/components/common/WorkDatePicker';
 import { toast } from 'sonner';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Field, FieldGroup, FieldLabel, FieldError } from '@/components/ui/field';
+import { Field, FieldGroup, FieldLabel, FieldDescription, FieldError } from '@/components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { DraftDialog } from '@/components/common/DraftDialog';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
@@ -16,11 +16,10 @@ import { validCalendarDate } from '@/lib/work-form';
 import type { WorkProject } from '@/types/work';
 
 // eslint-disable-next-line complexity -- existing score 27; owner: client maintainers.
-export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEdit, descriptionTrigger }: {
+export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEdit }: {
   open: boolean; onOpenChange: (open: boolean) => void; onSuccess: () => void; projectToEdit?: WorkProject | null;
-  descriptionTrigger?: RefObject<HTMLButtonElement>;
 }) {
-  const descriptionInput = useRef<HTMLTextAreaElement>(null);
+  const initialDescription = useRef('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('');
@@ -34,13 +33,16 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
   const attempt = useCreationAttempt();
   useEffect(() => {
     if (!open) return;
-    setTitle(projectToEdit?.title ?? ''); setDescription(projectToEdit?.description ?? '');
+    initialDescription.current = projectToEdit?.description ?? '';
+    setTitle(projectToEdit?.title ?? ''); setDescription(initialDescription.current);
     setColor(projectToEdit?.color ?? ''); setMode(projectToEdit?.mode ?? 'SIMPLE');
     setNotice(''); setBaseVersion(projectToEdit?.version ?? 0); setObjectives([]); setError(''); write.reset(); attempt.reset();
     // A background refresh must never replace a draft or silently advance its version.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, projectToEdit?.id]);
-  const dirty = title !== (projectToEdit?.title ?? '') || description !== (projectToEdit?.description ?? '') ||
+  const hasRichDescription = Boolean(projectToEdit?.descriptionDoc);
+  const descriptionChanged = !hasRichDescription && description !== initialDescription.current;
+  const dirty = title !== (projectToEdit?.title ?? '') || descriptionChanged ||
     color !== (projectToEdit?.color ?? '') || mode !== (projectToEdit?.mode ?? 'SIMPLE') || objectives.length > 0;
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -49,9 +51,11 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
     setError('');
     const metadata = { title: title.trim(), description: description.trim() || null, color: color || null };
     const body = { ...metadata, mode, objectives: objectives.map(o => ({ title: o.title.trim(), dueDate: o.dueDate || null })) };
+    const changes = { title: metadata.title, color: metadata.color, version: baseVersion,
+      ...(descriptionChanged ? { description: metadata.description } : {}) };
     try {
       const saved = await write.mutateAsync(projectToEdit
-        ? { action: 'metadata', id: projectToEdit.id, body: { ...metadata, version: baseVersion } }
+        ? { action: 'metadata', id: projectToEdit.id, body: changes }
         : { action: 'create', ...attempt.prepare(body) });
       toast.success(saved.refreshFailed ? 'Projeto salvo. Não foi possível atualizar as listas; recarregue os dados.' : 'Projeto salvo.');
       attempt.reset(); onSuccess(); onOpenChange(false);
@@ -59,16 +63,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
   }
   return <DraftDialog uncertain={attempt.uncertain} open={open} onOpenChange={onOpenChange} dirty={dirty} busy={write.isPending}
     title={projectToEdit ? 'Editar projeto' : 'Novo projeto'} description="Um contexto para seus objetivos e próximos passos."
-    onOpenAutoFocus={event => {
-      if (!descriptionTrigger || !descriptionInput.current) return;
-      event.preventDefault();
-      descriptionInput.current.focus();
-    }}
-    onCloseAutoFocus={event => {
-      if (!descriptionTrigger?.current) return;
-      event.preventDefault();
-      descriptionTrigger.current.focus();
-    }}
     className="sm:max-w-project-dialog" footer={<Button form="project-form" type="submit" disabled={write.isPending}>{write.isPending ? 'Salvando…' : projectToEdit ? 'Salvar alterações' : 'Criar Projeto'}</Button>}>
     <form id="project-form" onSubmit={submit} noValidate>
       <fieldset disabled={write.isPending || attempt.uncertain} className="min-w-0"><FieldGroup>
@@ -79,7 +73,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
           </RadioGroup>
         </Field>}
         <Field data-invalid={!!error}><FieldLabel htmlFor="project-title">Título do Projeto</FieldLabel><Input id="project-title" value={title} onChange={e => setTitle(e.target.value)} maxLength={200} required aria-invalid={!!error} aria-describedby={error ? 'project-title-error' : undefined} />{error && <FieldError id="project-title-error">{error}</FieldError>}</Field>
-        <Field><FieldLabel htmlFor="project-description">Descrição (opcional)</FieldLabel><Textarea ref={descriptionInput} id="project-description" value={description} onChange={e => setDescription(e.target.value)} maxLength={10000} /></Field>
+        <ProjectDescriptionField value={description} readOnly={hasRichDescription} onChange={setDescription} />
         <Field><FieldLabel htmlFor="project-color">Cor (opcional)</FieldLabel><div className="flex items-center gap-3"><Input id="project-color" type="color" value={color || '#808080'} onChange={e => setColor(e.target.value)} className="h-11 w-14 p-1" /><Button type="button" variant="ghost" onClick={() => setColor('')}>Usar marca neutra</Button></div></Field>
         {!projectToEdit && <Field><FieldLabel>Objetivos (opcionais)</FieldLabel>
           {objectives.map((o, i) => <div key={i} className="flex flex-col gap-2 rounded-md border p-3">
@@ -95,4 +89,17 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, projectToEd
       }); } : undefined} />{attempt.uncertain && <WorkFeedback message="Confirmação indisponível. Reenvie o mesmo pedido pelo botão de salvar para evitar duplicação." />}</div>
     </form>
   </DraftDialog>;
+}
+
+function ProjectDescriptionField({ value, readOnly, onChange }: {
+  value: string;
+  readOnly: boolean;
+  onChange: (value: string) => void;
+}) {
+  return <Field>
+    <FieldLabel htmlFor="project-description">Descrição (opcional)</FieldLabel>
+    <Textarea id="project-description" value={value} onChange={event => onChange(event.target.value)} maxLength={10000}
+      readOnly={readOnly} aria-describedby={readOnly ? 'project-description-help' : undefined} />
+    {readOnly && <FieldDescription id="project-description-help">Para editar a descrição, abra o Panorama.</FieldDescription>}
+  </Field>;
 }

@@ -21,8 +21,11 @@ public final class WorkResponses {
     public record ProjectView(Long id, Long userId, String title, String description, String color, String imageUrl,
                               ProjectMode mode, boolean favorite, Boolean archived, Instant lastAccessed,
                               Long defaultPendingColumnId, Long defaultCompletedColumnId, long version,
-                              List<ObjectiveView> objectives, ProjectSummary summary) {
+                              List<ObjectiveView> objectives, ProjectSummary summary,
+                              @JsonInclude(JsonInclude.Include.NON_NULL) TaskDescriptionDocument descriptionDoc) {
     }
+    public record ProjectActivityView(Long id, ProjectActivity.Kind kind, Instant occurredAt, Long subjectId, String subjectTitle) {}
+    public record ProjectActivityPage(int page, boolean hasNext, String actor, List<ProjectActivityView> items) {}
     public record ProjectSummary(long totalObjectives, long completedObjectives, Long totalTasks,
         Long nonCancelledTasks, Long completedTasks, Long cancelledTasks, Long plannedTodayCount,
         Long previousPlansCount, Long overdueTaskCount, Long dueTodayTaskCount, long overdueObjectiveCount,
@@ -38,7 +41,7 @@ public final class WorkResponses {
         List<TaskView> tasks, TaskCounts total, TaskCounts visible, boolean filtered) {}
     public record ProjectTotals(long totalProjects, long activeProjects, long favoriteProjects, long archivedProjects) {}
     public record WeeklyResponse(LocalDate startDate, LocalDate endDate, String timezone, long completedTasks, long totalTasks) {}
-    public record ProjectLink(Long id, String title, Boolean archived, long version) {}
+    public record ProjectLink(Long id, String title, Boolean archived, long version, String imageUrl) {}
     public record ObjectiveLink(Long id, String title) {}
     public record ColumnLink(Long id, String name, Status kind) {}
     public record LabelView(Long id, String name, TaskLabelColor color, long version) {}
@@ -50,8 +53,8 @@ public final class WorkResponses {
                            @JsonInclude(JsonInclude.Include.NON_NULL) String descriptionText,
                            @JsonInclude(JsonInclude.Include.NON_NULL) TaskDescriptionDocument descriptionDoc) {}
     public record SidebarProject(Long id, String title, String color, ProjectMode mode, boolean favorite,
-                                 Boolean archived, Instant lastAccessed, long version) {
-        public static SidebarProject of(Project p) { return new SidebarProject(p.getId(), p.getTitle(), p.getColor(), p.getMode(), p.isFavorite(), p.getArchived(), p.getLastAccessed(), p.getVersion()); }
+                                 Boolean archived, Instant lastAccessed, long version, String imageUrl) {
+        public static SidebarProject of(Project p) { return new SidebarProject(p.getId(), p.getTitle(), p.getColor(), p.getMode(), p.isFavorite(), p.getArchived(), p.getLastAccessed(), p.getVersion(), p.getImageUrl()); }
     }
     public record TaskDeletion(Long id, List<Long> affectedProjectIds, LocalDate previousPlannedDate) {}
     public record ObjectiveMutation(ObjectiveView objective, long projectVersion) {}

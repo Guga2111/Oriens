@@ -24,6 +24,7 @@ const windowed = { ...board, filtered: true, tasks: [scheduled] };
 function serve(current = project, timeline = windowed) {
   vi.mocked(api.get).mockImplementation(async (url, config) => {
     const path = String(url);
+    if (path.endsWith('/activity')) return { data: { page: 0, actor: 'Conta de teste', hasNext: false, items: [] } };
     if (path.startsWith('/task-labels/')) return { data: [] };
     // The detail never answers: the dialog can only show the placeholder.
     if (path.startsWith('/task/')) return new Promise(() => {});

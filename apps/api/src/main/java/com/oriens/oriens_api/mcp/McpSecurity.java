@@ -34,8 +34,9 @@ public class McpSecurity {
             .authorizeHttpRequests(a->a.anyRequest().denyAll()).exceptionHandling(e->e.authenticationEntryPoint((r,s,x)->s.setStatus(404))).build();
     }
     @Bean @ConditionalOnProperty(name="oriens.mcp.enabled",havingValue="true")
-    McpFlows mcpFlows(org.springframework.jdbc.core.JdbcTemplate db,McpProperties p,McpAuthorizations auth,McpStore store,McpRateLimiter limits,Clock clock,OAuth2AuthorizationCodeRequestAuthenticationProvider provider) {
-        return new McpFlows(db,p,auth,store,limits,clock,provider);
+    McpFlows mcpFlows(org.springframework.jdbc.core.JdbcTemplate db,McpProperties p,McpAuthorizations auth,McpStore store,McpRateLimiter limits,Clock clock,
+            OAuth2AuthorizationCodeRequestAuthenticationProvider provider,RegisteredClientRepository clients) {
+        return new McpFlows(db,p,auth,store,limits,clock,provider,clients);
     }
     @Bean @Order(0) @ConditionalOnProperty(name="oriens.mcp.enabled",havingValue="true")
     SecurityFilterChain mcpOAuth(HttpSecurity http,McpProperties props,McpFlows flows,RegisteredClientRepository clients,

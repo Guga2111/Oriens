@@ -13,6 +13,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PriorityIcon } from "@/components/tasks/PriorityIcon";
+import { ProjectCoverThumbnail } from "@/components/projects/ProjectCoverThumbnail";
 import { useTaskLabels } from "@/hooks/useTaskLabels";
 import { useProductToday } from "@/hooks/useProductToday";
 import { parseLocalDate } from "@/lib/date";
@@ -349,7 +350,8 @@ export function TaskProperties({ task, onSave, onOpenMap, disabled }: {
       <LabelsProperty task={task} onSave={onSave} disabled={disabled} />
       {task.project && (
         <span className={cn(chip, "max-w-56")} title={task.project.archived ? `${task.project.title} · Projeto arquivado` : task.project.title}>
-          {task.project.archived ? <Archive aria-hidden className="text-muted-foreground" /> : <Folder aria-hidden className="text-muted-foreground" />}
+          <ProjectCoverThumbnail imageUrl={task.project.imageUrl} fallback={task.project.archived
+            ? <Archive aria-hidden className="text-muted-foreground" /> : <Folder aria-hidden className="text-muted-foreground" />} />
           <Link className="truncate hover:underline" to={`/tasks/project/${task.project.id}`}>{task.project.title}</Link>
           {task.column && <span className="shrink-0 text-muted-foreground">· {task.column.name}</span>}
           {task.project.archived && <span className="sr-only"> · Projeto arquivado</span>}

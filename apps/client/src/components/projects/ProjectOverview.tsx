@@ -1,50 +1,53 @@
-import type { ReactNode, RefObject } from 'react';
-import { Pencil, Plus } from 'lucide-react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+import type { ReactNode } from 'react';
+import { ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Empty, EmptyDescription } from '@/components/ui/empty';
-import { ProjectSummaryCard } from './ProjectSummaryCard';
+import type { useProjectBoard } from '@/hooks/useWork';
+import { ProjectActivityFeed } from './ProjectActivityFeed';
+import { ProjectDescriptionSection } from './ProjectDescriptionSection';
+import { ProjectPropertiesCard } from './ProjectPropertiesCard';
+import { ProjectProgressSummary } from './ProjectProgressSummary';
 import type { WorkProject } from '@/types/work';
 
 interface ProjectOverviewProps {
   project: WorkProject;
-  descriptionTrigger: RefObject<HTMLButtonElement>;
+  board: ReturnType<typeof useProjectBoard>;
   notices: ReactNode;
-  onEditDescription: () => void;
+  coverPending: boolean;
+  onChooseCover: () => void;
+  onReload: () => void;
 }
 
-export function ProjectOverview({ project, descriptionTrigger, notices, onEditDescription }: ProjectOverviewProps) {
-  const hasDescription = Boolean(project.description?.trim());
-  const DescriptionIcon = hasDescription ? Pencil : Plus;
+export function ProjectOverview({ project, board, notices, coverPending, onChooseCover, onReload }: ProjectOverviewProps) {
+  const coverAction = <Button type="button" variant="outline" size="sm" disabled={coverPending} onClick={onChooseCover}>
+    <ImagePlus aria-hidden />
+    {coverPending ? 'Salvando capa…' : project.imageUrl ? 'Trocar capa' : 'Adicionar capa'}
+  </Button>;
 
   return (
-    <div className="grid min-w-0 items-start gap-8 desktop:grid-cols-project-detail">
-      <article className="flex min-w-0 flex-col gap-6">
-        {project.imageUrl && (
-          <AspectRatio ratio={3} className="overflow-hidden rounded-lg">
-            <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="size-full object-cover" />
-          </AspectRatio>
-        )}
-        <h1 className="break-words text-page-title font-semibold tracking-tight">{project.title}</h1>
-        {notices}
-        <section className="flex min-w-0 flex-col gap-3" aria-labelledby="project-description-heading">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 id="project-description-heading" className="text-base font-semibold">Descrição</h2>
-            <Button ref={descriptionTrigger} type="button" variant="outline" size="sm" onClick={onEditDescription}>
-              <DescriptionIcon data-icon="inline-start" aria-hidden />
-              {hasDescription ? 'Editar descrição' : 'Adicionar descrição'}
-            </Button>
-          </div>
-          {hasDescription ? (
-            <p className="max-w-prose whitespace-pre-wrap break-words leading-relaxed">{project.description}</p>
-          ) : (
-            <Empty className="items-start border p-4 text-left md:p-4">
-              <EmptyDescription>Inclua o propósito, o escopo ou os próximos passos do projeto.</EmptyDescription>
-            </Empty>
+    <div className="grid min-w-0 items-start gap-6 desktop:grid-cols-project-detail desktop:grid-rows-[auto_1fr] desktop:gap-x-8">
+      <article className="flex min-w-0 flex-col gap-6 desktop:col-start-1 desktop:row-start-1">
+        <header className="flex min-w-0 flex-col gap-6">
+          {project.imageUrl && (
+            <div className="relative aspect-project-cover max-h-48 overflow-hidden rounded-lg">
+              <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="absolute inset-0 size-full object-cover" />
+              <div className="absolute bottom-3 right-3">{coverAction}</div>
+            </div>
           )}
-        </section>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="min-w-0 break-words text-xl font-semibold tracking-tight md:text-2xl">{project.title}</h1>
+            {!project.imageUrl && coverAction}
+          </div>
+        </header>
+        {notices}
+        <ProjectDescriptionSection project={project} onReload={onReload} />
       </article>
-      <ProjectSummaryCard project={project} fitCalendar />
+      <div className="flex min-w-0 flex-col gap-4 desktop:col-start-2 desktop:row-span-2 desktop:row-start-1 desktop:flex-col-reverse">
+        <ProjectProgressSummary project={project} board={board} />
+        <ProjectPropertiesCard project={project} />
+      </div>
+      <div className="min-w-0 desktop:col-start-1 desktop:row-start-2">
+        <ProjectActivityFeed projectId={project.id} />
+      </div>
     </div>
   );
 }

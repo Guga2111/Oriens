@@ -42,15 +42,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  "server.port=${MCP_HTTP_PORT:8764}","management.server.port=0","oriens.mcp.enabled=true","oriens.mcp.issuer=http://127.0.0.1:${MCP_HTTP_PORT:8764}","oriens.mcp.frontend=http://127.0.0.1:${MCP_FRONTEND_PORT:5173}",
  "oriens.mcp.encryption-password=synthetic-encryption-password-only-1234567890","oriens.mcp.encryption-salt=0123456789abcdef0123456789abcdef",
  "oriens.mcp.codex-redirects=http://127.0.0.1/callback","oriens.mcp.claude-redirects=http://localhost:8765/callback",
+ "oriens.mcp.openbot-enabled=true",
  "spring.task.scheduling.enabled=false"})
 @AutoConfigureMockMvc
 @EnabledIfEnvironmentVariable(named="MCP_JDBC_URL",matches="jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_mcp_proof")
 class McpPostgresTest {
+ private static final String OPENBOT = "oriens-openbot";
+ private static final String OPENBOT_CALLBACK = "http://127.0.0.1:28417/mcp-auth";
  @Configuration(proxyBeanMethods=false) @EnableAutoConfiguration @EntityScan(basePackageClasses=User.class)
  @EnableJpaRepositories(basePackageClasses=UserRepository.class)
  @Import({com.oriens.oriens_api.CorsConfig.class,McpConfiguration.class,McpSecurity.class,McpTransport.class,McpController.class,McpMaintenance.class,
      SecurityConfig.class,JwtConfiguration.class,WorkOwner.class,UserServiceImpl.class,CustomAuthManager.class,
-     WorkExceptionHandler.class,WorkRequestBodyAdvice.class,ProjectWorkService.class,WorkReadService.class,
+     WorkExceptionHandler.class,WorkRequestBodyAdvice.class,ProjectWorkService.class,ProjectActivityService.class,WorkReadService.class,
      TaskDescriptionCodec.class,TaskAttachmentService.class,TaskAttachmentController.class,
      WorkCreationService.class,TaskLabelService.class,ScopedWorkReadService.class,ProjectController.class,TaskController.class,TagController.class,TagServiceImpl.class,FinancialEntryController.class,FinancialEntryServiceImpl.class,FinancialStatisticsService.class,RecurringFinancialService.class,com.oriens.oriens_api.mapper.FinancialMapper.class})
  static class App {
@@ -71,13 +74,22 @@ class McpPostgresTest {
  JsonNode body(MvcResult r)throws Exception{return json.readTree(r.getResponse().getContentAsString());}
  String str(Object v)throws Exception{return json.writeValueAsString(v);}
  record Flow(UUID id,Cookie cookie,String verifier,String callback,String client){}
+ org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder authorize(
+     Set<String> scopes, String client, String callback, String challenge) {
+  return get("/oauth2/authorize").queryParam("response_type","code").queryParam("client_id",client).queryParam("redirect_uri",callback)
+      .queryParam("scope",String.join(" ",scopes)).queryParam("state","synthetic-state").queryParam("resource",properties.resource())
+      .queryParam("code_challenge",challenge).queryParam("code_challenge_method","S256");
+ }
  Flow begin(Set<String> scopes,String client)throws Exception{
   String verifier=UUID.randomUUID().toString().replace("-","")+UUID.randomUUID().toString().replace("-","");
   String challenge=Base64.getUrlEncoder().withoutPadding().encodeToString(MessageDigest.getInstance("SHA-256").digest(verifier.getBytes(StandardCharsets.US_ASCII)));
-  String callback=client.equals("oriens-codex")?"http://127.0.0.1:54321/callback":"http://localhost:8765/callback";
-  var result=mvc.perform(get("/oauth2/authorize").queryParam("response_type","code").queryParam("client_id",client).queryParam("redirect_uri",callback)
-      .queryParam("scope",String.join(" ",scopes)).queryParam("state","synthetic-state").queryParam("resource",properties.resource())
-      .queryParam("code_challenge",challenge).queryParam("code_challenge_method","S256")).andExpect(status().is3xxRedirection()).andReturn();
+  String callback = switch (client) {
+   case "oriens-codex" -> "http://127.0.0.1:54321/callback";
+   case "oriens-claude-code" -> "http://localhost:8765/callback";
+   case OPENBOT -> OPENBOT_CALLBACK;
+   default -> throw new IllegalArgumentException("Unknown test client: " + client);
+  };
+  var result=mvc.perform(authorize(scopes, client, callback, challenge)).andExpect(status().is3xxRedirection()).andReturn();
   String location=result.getResponse().getRedirectedUrl();assertThat(location).startsWith(properties.frontend()+"/config?mcpFlow=").doesNotContain(jwt);
   UUID id=UUID.fromString(location.substring(location.indexOf('=')+1));String cookie=result.getResponse().getHeader("Set-Cookie").split(";",2)[0];
   return new Flow(id,new Cookie(cookie.substring(0,cookie.indexOf('=')),cookie.substring(cookie.indexOf('=')+1)),verifier,callback,client);
@@ -87,7 +99,7 @@ class McpPostgresTest {
   var decision=Map.of("version",0,"approve",true,"name","Teste MCP","scopes",scopes,"allowedProjectIds",projects,"allowStandaloneTasks",false);
   String redirect=body(mvc.perform(post("/integrations/mcp/authorization-requests/"+f.id+"/decision").cookie(f.cookie).header("Authorization",jwt).header("Origin",properties.frontend().toString())
       .contentType("application/json").content(str(decision))).andExpect(status().isOk()).andReturn()).path("redirectUrl").asText();
-  assertThat(redirect).contains("state=synthetic-state","iss=");
+  assertThat(redirect).startsWith(f.callback + "?").contains("state=synthetic-state","iss=");
   return org.springframework.web.util.UriComponentsBuilder.fromUriString(redirect).build().getQueryParams().getFirst("code");
  }
  JsonNode exchange(Flow f,String code)throws Exception{
@@ -103,6 +115,41 @@ class McpPostgresTest {
   return mvc.perform(post("/mcp").header("Authorization",token).header("Accept","application/json, text/event-stream").contentType("application/json")
       .content("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\""+method+"\",\"params\":"+params+"}")).andExpect(status().is(status)).andReturn();
  }
+ @Test void openbotPublicClientReadsOnlyTheConsentedProjectAndCanBeRevoked() throws Exception {
+  var scopes = Set.of("mcp:context", "projects:read", "tasks:read");
+  Long project = db.queryForObject("insert into project(user_id,title,mode,last_accessed) values(?,'Projeto sintético','SIMPLE',now()) returning id", Long.class, owner);
+  db.update("insert into project(user_id,title,mode,last_accessed) values(?,'Fora do recorte OpenBot','SIMPLE',now())", owner);
+  var flow = begin(scopes, OPENBOT);
+  mvc.perform(get("/integrations/mcp/authorization-requests/" + flow.id).header("Authorization", jwt).cookie(flow.cookie))
+      .andExpect(status().isOk()).andExpect(jsonPath("clientId").value(OPENBOT)).andExpect(jsonPath("clientName").value("OpenBot"))
+      .andExpect(jsonPath("requestedScopes").value(org.hamcrest.Matchers.containsInAnyOrder(scopes.toArray(String[]::new))));
+  var tokens = exchange(flow, approve(flow, scopes, Set.of(project)));
+  assertThat(tokens.has("refresh_token")).isFalse();
+  String access = tokens.path("access_token").asText();
+  var page = body(rpc("Bearer " + access, "tools/call", "{\"name\":\"oriens_list_projects\",\"arguments\":{}}", 200))
+      .at("/result/structuredContent/data");
+  assertThat(page.path("totalElements").asLong()).isEqualTo(1);
+  assertThat(page.toString()).contains("Projeto sintético").doesNotContain("Fora do recorte OpenBot");
+  mvc.perform(post("/oauth2/revoke").contentType("application/x-www-form-urlencoded").param("client_id", OPENBOT).param("token", access))
+      .andExpect(status().isOk());
+  rpc("Bearer " + access, "tools/list", "{}", 401);
+ }
+
+ @Test void openbotRejectsCallbacksOutsideItsRegistration() throws Exception {
+  for (String callback : List.of("http://127.0.0.1:28417/callback", "http://127.0.0.1:28418/mcp-auth", "http://localhost:28417/mcp-auth")) {
+   mvc.perform(authorize(Set.of("mcp:context"), OPENBOT, callback, "A".repeat(43))).andExpect(status().isBadRequest())
+       .andExpect(header().doesNotExist("Location")).andExpect(header().doesNotExist("Set-Cookie"));
+  }
+ }
+
+ @Test void claudeCodeKeepsItsRegisteredCallbackAndPublicCodeExchange() throws Exception {
+  var scopes = Set.of("mcp:context");
+  var flow = begin(scopes, "oriens-claude-code");
+  mvc.perform(get("/integrations/mcp/authorization-requests/" + flow.id).header("Authorization", jwt).cookie(flow.cookie))
+      .andExpect(status().isOk()).andExpect(jsonPath("clientName").value("Claude Code"));
+  assertThat(exchange(flow, approve(flow, scopes, Set.of())).path("access_token").asText()).isNotBlank();
+ }
+
  @Test void publicPkcePersistentRotationAndBoundary()throws Exception{
   var scopes=Set.of("mcp:context","offline_access");var tokens=grant(scopes);
   String access=tokens.path("access_token").asText(),refresh=tokens.path("refresh_token").asText();assertThat(refresh).isNotBlank();
@@ -246,12 +293,19 @@ class McpPostgresTest {
  @Test void restartAndSecondInstanceShareAuthorizationAndRevocation()throws Exception{
   var tokens=grant(Set.of("mcp:context","offline_access"));String token=tokens.path("access_token").asText();
   var delegated=authorizations.authenticate(token,properties);
+  var openbotFlow = begin(Set.of("mcp:context"), OPENBOT);
+  String openbotToken = exchange(openbotFlow, approve(openbotFlow, Set.of("mcp:context"), Set.of())).path("access_token").asText();
   Map<String,Object> settings=new HashMap<>();
   for(String key:List.of("JWT_SECRET","spring.datasource.url","spring.datasource.username","spring.datasource.password","oriens.mcp.enabled","oriens.mcp.issuer","oriens.mcp.frontend","oriens.mcp.encryption-password","oriens.mcp.encryption-salt","oriens.mcp.codex-redirects","oriens.mcp.claude-redirects"))settings.put(key,environment.getRequiredProperty(key));
   settings.put("server.port",0);settings.put("management.server.port",0);settings.put("spring.jpa.hibernate.ddl-auto","validate");settings.put("spring.jpa.open-in-view",false);settings.put("spring.main.banner-mode","off");
+  settings.put("oriens.mcp.openbot-enabled", false);
   // Independent full application instances: deterministic client registration and key survive restart.
   try(var second=new org.springframework.boot.builder.SpringApplicationBuilder(App.class).properties(settings).run()){
    var fresh=second.getBean(McpAuthorizations.class);assertThat(fresh.authenticate(token,properties).userId()).isEqualTo(owner);
+   var clients = second.getBean(org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository.class);
+   assertThat(clients.findByClientId(OPENBOT)).isNull();
+   assertThatThrownBy(() -> fresh.authenticate(openbotToken, properties))
+       .isInstanceOf(com.oriens.oriens_api.exception.WorkDomainException.class);
    var c=store.find(delegated.connectionId(),false);store.revoke(owner,c.id(),c.version());
    assertThatThrownBy(()->fresh.authenticate(token,properties)).isInstanceOf(com.oriens.oriens_api.exception.WorkDomainException.class);
   }

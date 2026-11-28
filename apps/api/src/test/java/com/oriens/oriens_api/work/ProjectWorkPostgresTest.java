@@ -10,6 +10,7 @@ import com.oriens.oriens_api.entity.enums.*;
 import com.oriens.oriens_api.exception.WorkDomainException;
 import com.oriens.oriens_api.repository.*;
 import com.oriens.oriens_api.service.ProjectWorkService;
+import com.oriens.oriens_api.service.ProjectActivityService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -40,7 +41,7 @@ import static org.assertj.core.api.Assertions.*;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnabledIfEnvironmentVariable(named = "P1_JDBC_URL", matches = "jdbc:postgresql://127\\.0\\.0\\.1:[0-9]+/oriens_(p1|mcp)_proof")
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
-@Import({com.oriens.oriens_api.service.TaskLabelService.class, ProjectWorkService.class, ProjectWorkPostgresTest.FixedClock.class,
+@Import({com.oriens.oriens_api.service.TaskLabelService.class, ProjectWorkService.class, ProjectActivityService.class, ProjectWorkPostgresTest.FixedClock.class,
     com.oriens.oriens_api.service.TaskDescriptionCodec.class})
 class ProjectWorkPostgresTest {
     @TestConfiguration static class FixedClock {

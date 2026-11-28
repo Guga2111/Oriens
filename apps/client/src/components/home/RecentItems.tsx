@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { CircleCheck, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QueryContent, AnalysisEmpty } from '@/components/statistics/AnalysisPrimitives';
+import { ProjectCoverThumbnail } from '@/components/projects/ProjectCoverThumbnail';
 import { useHomeRecents } from '@/hooks/useHome';
 
 export function RecentItems({ onOpenTask }: { onOpenTask: (id: number) => void }) {
@@ -13,7 +14,9 @@ export function RecentItems({ onOpenTask }: { onOpenTask: (id: number) => void }
     <QueryContent query={query} label="acessos recentes">{items => items.length === 0
       ? <AnalysisEmpty title="Retome de onde parou" description="Os projetos e tarefas que você abrir aparecerão aqui." />
       : <ul className="flex flex-col gap-1">{items.map(item => {
-        const content = <><span className="shrink-0 text-muted-foreground">{item.type === 'PROJECT' ? <Folder className="size-4" aria-hidden /> : <CircleCheck className="size-4" aria-hidden />}</span>
+        const content = <><span className="shrink-0 text-muted-foreground">{item.type === 'PROJECT'
+          ? <ProjectCoverThumbnail imageUrl={item.imageUrl} fallback={<Folder className="size-4" aria-hidden />} />
+          : <CircleCheck className="size-4" aria-hidden />}</span>
           <span className="min-w-0 flex-1 truncate">{item.title}</span>
           <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">{item.type === 'PROJECT' ? 'Projeto' : 'Tarefa'}</span>
           <time dateTime={item.visitedAt} className="shrink-0 text-xs font-normal text-muted-foreground">{formatDistanceToNow(new Date(item.visitedAt), { addSuffix: true, locale: ptBR })}</time></>;

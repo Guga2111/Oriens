@@ -31,6 +31,27 @@ esse software e seu callback exato. Não há registro automático; não reutiliz
 ID de Codex ou Claude Code para outro aplicativo. Transporte: Streamable HTTP;
 OAuth público Authorization Code, PKCE S256, recurso explícito e sem client secret.
 
+### Conectar o OpenBot
+
+1. Confirme com o operador que o OpenBot está habilitado no ambiente. No
+   aplicativo distribuído pelo openbot.run, adicione e salve um servidor
+   MCP **HTTP** chamado **Oriens**. Use `https://oriens.luisgosampaio.com/mcp`
+   para o ambiente público ou a URL MCP do ambiente de teste.
+2. Na seção **Sign-in app** (App de login), informe `oriens-openbot` como
+   **Client ID** e `mcp:context projects:read tasks:read` em **Scopes**.
+   Deixe **Client secret** vazio e confirme que a URL de retorno exibida é
+   `http://127.0.0.1:28417/mcp-auth`. Salve e escolha **Sign in**.
+3. No navegador, confira **OpenBot** e a conta na tela de consentimento. Para
+   o primeiro teste, permita a leitura de projetos e tarefas e selecione
+   apenas um projeto sintético. Mantenha a opção de tarefas avulsas desmarcada.
+4. De volta ao OpenBot, solicite uma listagem de projetos. A listagem mostra
+   apenas o projeto selecionado. Use **Configurações → Integrações → Gerenciar**
+   no Oriens para revogar a conexão ao concluir o teste.
+
+O teste inicial usa apenas o token de acesso de 15 minutos. O cliente pode
+solicitar `offline_access` em outra autorização se precisar de renovação.
+[Cadastro manual na documentação do OpenBot](https://github.com/nightly-labs/openbot/blob/main/docs/architecture/integrations.md#add-an-application)
+
 ## Escolher acesso
 
 - **Projetos:** selecione nomes existentes, inclusive arquivados. Novos projetos

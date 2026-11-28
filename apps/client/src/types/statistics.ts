@@ -7,7 +7,7 @@ export interface ActivityStreakData { today: string; days: number | null; startD
 export interface ActivityData { period: AnalysisPeriod; coverageFrom: string; total: number; previousTotal: number; days: DayCount[]; previousDays: DayCount[] }
 export interface PlanCounts { planned: number; completed: number }
 export interface PlanningData { period: AnalysisPeriod; current: PlanCounts; previous: PlanCounts; overdue: number; overdueByProject: { projectId: number | null; title: string; total: number }[] }
-export interface TaskEvidence { id: number; title: string; completedAt: string | null; plannedDate: string | null; dueDate: string | null; status: string; projectId: number | null; projectTitle: string | null }
+export interface TaskEvidence { id: number; title: string; completedAt: string | null; plannedDate: string | null; dueDate: string | null; status: string; projectId: number | null; projectTitle: string | null; projectImageUrl?: string | null }
 export type MoneyAmount = string;
 export interface Money { income: MoneyAmount; expenses: MoneyAmount; result: MoneyAmount; entries: number }
 export interface MoneyDay { date: string; income: MoneyAmount; expenses: MoneyAmount }

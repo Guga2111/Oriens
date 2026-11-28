@@ -54,7 +54,7 @@ class WorkApiPostgresTest {
     @Import({UserController.class, UserServiceImpl.class, CustomAuthManager.class, ProjectController.class, TaskController.class, StatisticsController.class, WorkExceptionHandler.class,
         WorkRequestBodyAdvice.class, WorkOwner.class, WorkReadService.class, WorkCreationService.class,
         TaskDescriptionCodec.class, TaskAttachmentService.class, TaskAttachmentController.class,
-        TaskLabelController.class, TaskLabelService.class, ProjectWorkService.class, StatisticsService.class, StatisticsReadService.class, FinancialStatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, JwtConfiguration.class, SecurityConfig.class})
+        TaskLabelController.class, TaskLabelService.class, ProjectWorkService.class, ProjectActivityService.class, StatisticsService.class, StatisticsReadService.class, FinancialStatisticsService.class, TaskReminderService.class, NotificationServiceImpl.class, JwtConfiguration.class, SecurityConfig.class})
     static class App {
         @Bean org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder() {
             return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
@@ -107,6 +107,83 @@ class WorkApiPostgresTest {
     }
     JsonNode project(long id) throws Exception {
         return body(mvc.perform(get("/project/"+id).header("Authorization",token)).andExpect(status().isOk()).andReturn());
+    }
+    private JsonNode projectActivity(long id, int page, int size) throws Exception {
+        return body(mvc.perform(get("/project/"+id+"/activity").header("Authorization", token)
+            .param("page", String.valueOf(page)).param("size", String.valueOf(size)))
+            .andExpect(status().isOk()).andReturn());
+    }
+
+    @Test void projectDescriptionPersistsRichContentAndLogsOnlyCommittedChanges() throws Exception {
+        String key = UUID.randomUUID().toString();
+        String create = json.createObjectNode().put("title", "Panorama").put("mode", "DEVELOPMENT")
+            .put("description", "Texto anterior.\n\nSegundo parágrafo.").toString();
+        JsonNode created = body(send("POST", "/project/user/"+owner, create, key, token, 201));
+        send("POST", "/project/user/"+owner, create, key, token, 201);
+        long id = created.path("id").asLong(), version = created.path("version").asLong();
+        assertThat(created.path("description").asString()).contains("Segundo parágrafo.");
+        assertThat(created.has("descriptionDoc")).isFalse();
+
+        String document = """
+            {"schemaVersion":1,"content":{"type":"doc","content":[
+              {"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Escopo"}]},
+              {"type":"paragraph","content":[{"type":"text","text":"Manter o conteúdo em blocos"}]}
+            ]}}
+            """;
+        String patch = "{\"version\":"+version+",\"descriptionDoc\":"+document+"}";
+        send("PATCH", "/project/"+id, patch, null, other, 404);
+        JsonNode saved = body(send("PATCH", "/project/"+id, patch, null, token, 200));
+        long nextVersion = saved.path("version").asLong();
+        assertThat(nextVersion).isGreaterThan(version);
+        assertThat(saved.path("description").asString()).contains("## Escopo");
+        assertThat(project(id).path("descriptionDoc").path("content").path("content").get(0).path("type").asString())
+            .isEqualTo("heading");
+        send("PATCH", "/project/"+id, patch, null, token, 409);
+        send("PATCH", "/project/"+id, "{\"version\":"+nextVersion+",\"descriptionDoc\":"+document+"}", null, token, 200);
+        send("PATCH", "/project/"+id, "{\"version\":"+nextVersion+",\"title\":\"Panorama atualizado\"}", null, token, 200);
+        assertThat(project(id).has("descriptionDoc")).isTrue();
+
+        mvc.perform(get("/project/"+id+"/activity").header("Authorization", other)).andExpect(status().isNotFound());
+        mvc.perform(get("/project/"+id+"/activity").header("Authorization", token).param("size", "0"))
+            .andExpect(status().isBadRequest());
+        JsonNode first = projectActivity(id, 0, 2);
+        assertThat(first.path("actor").asString()).isEqualTo("Pessoa");
+        assertThat(first.path("hasNext").asBoolean()).isTrue();
+        assertThat(first.path("items").values()).extracting(row -> row.path("kind").asString())
+            .containsExactly("PROJECT_UPDATED", "DESCRIPTION_UPDATED");
+        JsonNode last = projectActivity(id, 1, 2);
+        assertThat(last.path("hasNext").asBoolean()).isFalse();
+        assertThat(last.path("items").values()).extracting(row -> row.path("kind").asString())
+            .containsExactly("PROJECT_CREATED");
+
+        var statistics = em.getEntityManagerFactory().unwrap(org.hibernate.SessionFactory.class).getStatistics();
+        statistics.setStatisticsEnabled(true);
+        try {
+            long before = statistics.getPrepareStatementCount();
+            projectActivity(id, 0, 1);
+            long one = statistics.getPrepareStatementCount() - before;
+            before = statistics.getPrepareStatementCount();
+            projectActivity(id, 0, 20);
+            assertThat(statistics.getPrepareStatementCount() - before).isEqualTo(one);
+        } finally {
+            statistics.setStatisticsEnabled(false);
+        }
+
+        db.update("update project set description=? where id=?", "Texto escrito pela API anterior", id);
+        assertThat(project(id).has("descriptionDoc")).isFalse();
+        assertThat(project(id).path("description").asString()).isEqualTo("Texto escrito pela API anterior");
+    }
+
+    @Test void objectiveAndTaskChangesAppearInTheProjectFeed() throws Exception {
+        JsonNode project = project("DEVELOPMENT");
+        long id = project.path("id").asLong();
+        send("POST", "/project/"+id+"/objectives", "{\"title\":\"Publicar\",\"projectVersion\":"+project.path("version")+"}",
+            UUID.randomUUID().toString(), token, 201);
+        JsonNode task = task(project);
+        send("PATCH", "/task/"+task.path("id"), "{\"version\":"+task.path("version")+
+            ",\"projectVersion\":"+project(id).path("version")+",\"columnId\":"+project.path("defaultCompletedColumnId")+"}", null, token, 200);
+        assertThat(projectActivity(id, 0, 20).path("items").values()).extracting(row -> row.path("kind").asString())
+            .containsExactly("TASK_COMPLETED", "TASK_CREATED", "OBJECTIVE_CREATED", "PROJECT_CREATED");
     }
     JsonNode task(JsonNode p) throws Exception {
         String value = "{\"title\":\"Montar formulário\",\"plannedDate\":\"2026-11-13\",\"dueDate\":\"2026-11-20\"";

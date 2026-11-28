@@ -43,12 +43,14 @@ it('não acrescenta leitura não solicitada e remove escritas quando a leitura �
   expect(toggleScope({ scopes: ['mcp:context','projects:read','tasks:read'], allowedProjectIds: [9], allowStandaloneTasks: true }, 'projects:read', false, []).allowedProjectIds).toEqual([]);
 });
 
-it('consentimento começa negado, conserva seleção em erro e cancela sem exigir nome válido', async () => {
+it('consentimento do OpenBot começa negado, conserva seleção em erro e permite cancelar', async () => {
   const user = userEvent.setup();
-  vi.mocked(mcpService.authorization).mockResolvedValue({ id, version: 4, clientId: 'oriens-codex', clientName: 'Codex', requestedScopes: ['mcp:context','finance:read','finance:create'], expiresAt: new Date(Date.now()+600000).toISOString() });
+  vi.mocked(mcpService.authorization).mockResolvedValue({ id, version: 4, clientId: 'oriens-openbot', clientName: 'OpenBot', requestedScopes: ['mcp:context','finance:read','finance:create'], expiresAt: new Date(Date.now()+600000).toISOString() });
   vi.mocked(mcpService.decide).mockRejectedValue({ isAxiosError: true, message: 'offline' });
   renderWork(<McpConsent flowId={id} />, `/config?mcpFlow=${id}`);
   const read = await screen.findByRole('checkbox', { name: 'Consultar finanças' });
+  expect(screen.getByText('OpenBot')).toBeInTheDocument();
+  expect(screen.getByLabelText('Nome da conexão')).toHaveValue('OpenBot');
   expect(read).not.toBeChecked(); expect(screen.getByRole('checkbox', { name: 'Excluir lançamentos' })).toBeDisabled();
   await user.click(screen.getByRole('checkbox', { name: 'Criar lançamentos' }));
   expect(read).toBeChecked();
@@ -75,17 +77,20 @@ it('solicitação expirada bloqueia decisão e mantém retorno local', async () 
 });
 
 it('conflito preserva rascunho e versão até recarga explícita; salvar não amplia escopos', async () => {
-  const user = userEvent.setup(); vi.mocked(mcpService.connection).mockResolvedValue(connection);
+  const user = userEvent.setup();
+  const openbotConnection = { ...connection, clientId: 'oriens-openbot' };
+  vi.mocked(mcpService.connection).mockResolvedValue(openbotConnection);
   vi.mocked(mcpService.patch).mockRejectedValueOnce({ isAxiosError: true, response: { status: 409, data: { code: 'VERSION_CONFLICT' } } });
   renderWork(<McpConnectionDialog id={id} onClose={vi.fn()} onExpand={vi.fn()} />);
   const name = await screen.findByLabelText('Nome da conexão');
+  expect(screen.getByText(/Revisão semanal · OpenBot/)).toBeInTheDocument();
   await user.clear(name); await user.type(name, 'Rascunho preservado');
   expect(screen.getByRole('checkbox', { name: 'Excluir lançamentos' })).toBeDisabled();
   await user.click(screen.getByRole('button', { name: 'Salvar permissões' }));
   await screen.findByRole('button', { name: 'Descartar rascunho e recarregar' });
   expect(name).toHaveValue('Rascunho preservado'); expect(screen.getByRole('button', { name: 'Salvar permissões' })).toBeDisabled();
   expect(mcpService.patch).toHaveBeenCalledWith(id, expect.objectContaining({ name: 'Rascunho preservado', version: 3, scopes: connection.scopes }));
-  vi.mocked(mcpService.connection).mockResolvedValue({ ...connection, name: 'Alterado pela outra sessão', version: 4 });
+  vi.mocked(mcpService.connection).mockResolvedValue({ ...openbotConnection, name: 'Alterado pela outra sessão', version: 4 });
   await user.click(screen.getByRole('button', { name: 'Descartar rascunho e recarregar' }));
   await waitFor(() => expect(screen.getByLabelText('Nome da conexão')).toHaveValue('Alterado pela outra sessão'));
 });

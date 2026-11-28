@@ -4,6 +4,8 @@ import com.oriens.oriens_api.entity.enums.ProjectMode;
 import com.oriens.oriens_api.entity.enums.ObjectiveStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -27,6 +29,10 @@ public class Project {
 
     @Column(name = "description", length = 10000)
     private String description;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "description_doc")
+    private String descriptionDoc;
 
     @Column(name = "image_url")
     private String imageUrl;
