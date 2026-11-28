@@ -7,6 +7,8 @@ import com.oriens.oriens_api.entity.dto.work.WorkCommands.*;
 import com.oriens.oriens_api.entity.enums.*;
 import com.oriens.oriens_api.exception.WorkDomainException;
 import com.oriens.oriens_api.repository.*;
+import com.oriens.oriens_api.entity.ProjectActivity.Kind;
+import com.oriens.oriens_api.service.ProjectActivityService.TaskPlacement;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ public class ProjectWorkService {
     private final EntityManager em;
     private final Clock clock;
     private final TaskLabelService taskLabels;
+    private final ProjectActivityService activity;
 
     public Project createProject(Long ownerId, CreateProject command) {
         require(command.mode(), "mode");
@@ -49,31 +52,38 @@ public class ProjectWorkService {
         }
         if (command.mode() == ProjectMode.DEVELOPMENT) initializeBoard(project);
         em.flush();
+        activity.record(project, Kind.PROJECT_CREATED);
         return project;
     }
 
     public Project patchProject(Long ownerId, Long id, PatchProject command) {
         Project project = project(ownerId, id);
-        version(project.getVersion(), command.getVersion());
+        long previousVersion = project.getVersion();
+        version(previousVersion, command.getVersion());
         if (command.has("title")) project.setTitle(title(command.getTitle(), 200, "title"));
-        if (command.has("description")) project.setDescription(description(command.getDescription()));
+        boolean descriptionUpdated = applyProjectDescription(project, command);
         if (command.has("color")) project.setColor(command.getColor());
         if (command.has("favorite")) project.setFavorite(require(command.getFavorite(), "favorite"));
-        em.flush();
-        return project;
+        return finishProjectChange(project, previousVersion, descriptionUpdated ? Kind.DESCRIPTION_UPDATED : Kind.PROJECT_UPDATED);
     }
 
     public Project setFavorite(Long ownerId, Long id, Long expected, Boolean value) {
-        Project p = project(ownerId, id); version(p.getVersion(), expected);
-        p.setFavorite(require(value, "favorite")); em.flush(); return p;
+        Project project = project(ownerId, id);
+        version(project.getVersion(), expected);
+        project.setFavorite(require(value, "favorite"));
+        return finishProjectChange(project, expected, Kind.PROJECT_UPDATED);
     }
     public Project setArchived(Long ownerId, Long id, Long expected, Boolean value) {
-        Project p = project(ownerId, id); version(p.getVersion(), expected);
-        p.setArchived(require(value, "archived")); em.flush(); return p;
+        Project project = project(ownerId, id);
+        version(project.getVersion(), expected);
+        project.setArchived(require(value, "archived"));
+        return finishProjectChange(project, expected, Kind.PROJECT_UPDATED);
     }
     public Project setImage(Long ownerId, Long id, Long expected, String url) {
-        Project p = project(ownerId, id); version(p.getVersion(), expected);
-        p.setImageUrl(url); em.flush(); return p;
+        Project project = project(ownerId, id);
+        version(project.getVersion(), expected);
+        project.setImageUrl(url);
+        return finishProjectChange(project, expected, Kind.COVER_UPDATED);
     }
 
     public Project convertProject(Long ownerId, Long id, Long expectedVersion, ProjectMode mode) {
@@ -81,7 +91,12 @@ public class ProjectWorkService {
         version(project.getVersion(), expectedVersion);
         if (mode != ProjectMode.DEVELOPMENT) invalid("mode", "A conversão permite apenas Desenvolvimento.");
         if (project.getMode() == ProjectMode.SIMPLE) initializeBoard(project);
+        return finishProjectChange(project, expectedVersion, Kind.PROJECT_UPDATED);
+    }
+
+    private Project finishProjectChange(Project project, long previousVersion, Kind kind) {
         em.flush();
+        if (project.getVersion() != previousVersion) activity.record(project, kind);
         return project;
     }
 
@@ -106,6 +121,7 @@ public class ProjectWorkService {
         if (command.status() != null) objective.setStatus(command.status());
         validateObjectivePeriod(objective);
         structuralChange(project);
+        activity.record(project, Kind.OBJECTIVE_CREATED, objective.getId(), objective.getTitle());
         return objective;
     }
 
@@ -119,9 +135,10 @@ public class ProjectWorkService {
     }
 
     public Objective patchObjective(Long ownerId, Long projectId, Long id, PatchObjective command) {
-        project(ownerId, projectId);
+        Project project = project(ownerId, projectId);
         Objective objective = objective(projectId, id);
-        version(objective.getVersion(), command.getVersion());
+        long previousVersion = objective.getVersion();
+        version(previousVersion, command.getVersion());
         if (command.has("title")) objective.setTitle(title(command.getTitle(), 200, "title"));
         if (command.has("description")) objective.setDescription(description(command.getDescription()));
         if (command.has("startDate")) objective.setStartDate(command.getStartDate());
@@ -130,6 +147,7 @@ public class ProjectWorkService {
         if (command.has("favorite")) objective.setFavorite(require(command.getFavorite(), "favorite"));
         validateObjectivePeriod(objective);
         em.flush();
+        if (objective.getVersion() != previousVersion) activity.record(project, Kind.OBJECTIVE_UPDATED, id, objective.getTitle());
         return objective;
     }
 
@@ -150,6 +168,7 @@ public class ProjectWorkService {
         project.getObjectives().remove(objective);
         objectives.delete(objective);
         structuralChange(project);
+        activity.record(project, Kind.OBJECTIVE_REMOVED, id, objective.getTitle());
     }
 
     public ProjectColumn createColumn(Long ownerId, Long projectId, CreateColumn command) {
@@ -245,6 +264,8 @@ public class ProjectWorkService {
             positions(destination);
         }
         em.flush(); // FK status + column is changed in one task UPDATE
+        TaskPlacement previous = new TaskPlacement(id, null, source.getKind());
+        for (Task task : affected) activity.recordTaskPlacement(project, project, previous, task);
         columns.delete(source);
         em.flush();
         List<ProjectColumn> remaining = board(project);
@@ -277,7 +298,10 @@ public class ProjectWorkService {
         }
         tasks.saveAndFlush(task);
         taskLabels.replace(task, command.labelIds(), null);
-        if (project != null) structuralChange(project);
+        if (project != null) {
+            structuralChange(project);
+            activity.record(project, Kind.TASK_CREATED, task.getId(), task.getTitle());
+        }
         return task;
     }
 
@@ -292,6 +316,7 @@ public class ProjectWorkService {
         em.refresh(task, LockModeType.PESSIMISTIC_WRITE);
         if (!Objects.equals(task.getProjectId(), originalProjectId)) conflict("projectId");
         version(task.getVersion(), command.getVersion());
+        TaskPlacement previousPlacement = TaskPlacement.of(task);
         boolean transfer = !Objects.equals(originalProjectId, targetProjectId);
         Long oldColumnId = task.getColumnId();
         Project target = targetProjectId == null ? null : locked.get(targetProjectId);
@@ -361,6 +386,7 @@ public class ProjectWorkService {
         if (command.has("labelIds")) taskLabels.replace(task, command.getLabelIds(), command.getVersion());
         em.flush();
         if (structural) for (Project project : locked.values()) structuralChange(project);
+        activity.recordTaskPlacement(locked.get(originalProjectId), target, previousPlacement, task);
         return task;
     }
 
@@ -380,6 +406,7 @@ public class ProjectWorkService {
         if (project != null) {
             positions(columnTasks(project, columnId));
             structuralChange(project);
+            activity.record(project, Kind.TASK_REMOVED, id, task.getTitle());
         }
     }
 
@@ -501,6 +528,25 @@ public class ProjectWorkService {
             attachments.reconcile(owner, task.getId(), encoded.attachments());
         task.setDescription(hasLegacy ? description(legacy) : encoded.markdown());
         task.setDescriptionDoc(encoded.document());
+    }
+
+    private boolean applyProjectDescription(Project project, PatchProject command) {
+        if (command.has("descriptionDoc")) {
+            if (command.has("description")) throw TaskDescriptionCodec.invalid("Envie apenas um campo de descrição.");
+            var encoded = descriptions.encode(command.getDescriptionDoc());
+            if (!encoded.attachments().isEmpty()) throw TaskDescriptionCodec.invalid("Anexos de tarefas não podem ser vinculados ao projeto.");
+            if (Objects.equals(descriptions.read(project.getDescriptionDoc()), descriptions.read(encoded.document()))
+                && Objects.equals(project.getDescription(), encoded.markdown())) return false;
+            project.setDescriptionDoc(encoded.document());
+            project.setDescription(encoded.markdown());
+            return true;
+        }
+        if (!command.has("description")) return false;
+        String text = description(command.getDescription());
+        if (Objects.equals(project.getDescription(), text)) return false;
+        project.setDescription(text);
+        project.setDescriptionDoc(null);
+        return true;
     }
 
     private static String description(String value) {

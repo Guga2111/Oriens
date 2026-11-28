@@ -5,6 +5,7 @@ import { emptyDescription, taskDescription } from './description/descriptionCont
 import { Clock, X } from 'lucide-react';
 import { WorkDatePicker } from '@/components/common/WorkDatePicker';
 import { WorkCombobox } from '@/components/common/WorkCombobox';
+import { ProjectCoverThumbnail } from '@/components/projects/ProjectCoverThumbnail';
 import { toast } from 'sonner';
 import { taskService } from '@/services/taskService';
 import { Button } from '@/components/ui/button';
@@ -83,8 +84,15 @@ function TaskEditorForm({ open, onOpenChange, onSaved, task, ...defaults }: Task
   const destination = board.data?.columns.find(c => c.id === draft.columnId);
   const activeProject = project.data;
   const selectedChoices = choices.data?.content.filter(p => p.mode === 'DEVELOPMENT') ?? [];
-  const projectOptions = [{ value: 'none', label: 'Tarefa avulsa' }, ...selectedChoices.map(p => ({ value: String(p.id), label: p.title + (p.archived ? ' · Arquivado' : '') }))];
-  if (draft.projectId && !projectOptions.some(o => o.value === String(draft.projectId))) projectOptions.push({ value: String(draft.projectId), label: activeProject?.title ?? task?.project?.title ?? 'Projeto selecionado' });
+  const projectOptions = [{ value: 'none', label: 'Tarefa avulsa', leading: null }, ...selectedChoices.map(p => ({
+    value: String(p.id), label: p.title + (p.archived ? ' · Arquivado' : ''), leading: <ProjectCoverThumbnail imageUrl={p.imageUrl} />,
+  }))];
+  if (draft.projectId && !projectOptions.some(option => option.value === String(draft.projectId))) {
+    const selected = activeProject ?? task?.project;
+    projectOptions.push({
+      value: String(draft.projectId), label: selected?.title ?? 'Projeto selecionado', leading: <ProjectCoverThumbnail imageUrl={selected?.imageUrl} />,
+    });
+  }
   // eslint-disable-next-line complexity -- existing score 36; owner: client maintainers.
   async function save(event: React.FormEvent) {
     event.preventDefault();

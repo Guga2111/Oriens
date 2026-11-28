@@ -8,6 +8,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
+import { ProjectCoverThumbnail } from "@/components/projects/ProjectCoverThumbnail";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useProjectBoard, useWorkProject } from "@/hooks/useWork";
@@ -59,7 +60,10 @@ function ProjectBreadcrumb({ id }: { id: number }) {
           {/* On a phone only the open section fits beside the page actions. */}
           <BreadcrumbItem className="min-w-0 max-sm:hidden">
             <BreadcrumbLink asChild>
-              <Link to={`/tasks/project/${id}?tab=overview`} className={`${crumbLink} min-w-0`}><span className="truncate" title={title}>{title}</span></Link>
+              <Link to={`/tasks/project/${id}?tab=overview`} className={`${crumbLink} min-w-0 gap-1.5`}>
+                <ProjectCoverThumbnail imageUrl={project?.imageUrl} />
+                <span className="truncate" title={title}>{title}</span>
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="shrink-0 max-sm:hidden" />
@@ -73,7 +77,10 @@ function ProjectBreadcrumb({ id }: { id: number }) {
         </>
       ) : (
         <BreadcrumbItem className="min-w-0">
-          <BreadcrumbPage className="truncate" title={title}>{title}</BreadcrumbPage>
+          <BreadcrumbPage className="truncate" title={title}>
+            <ProjectCoverThumbnail imageUrl={project?.imageUrl} className="mr-1 inline-block align-text-bottom" />
+            {title}
+          </BreadcrumbPage>
         </BreadcrumbItem>
       )}
     </>

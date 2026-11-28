@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ProjectCoverThumbnail } from '@/components/projects/ProjectCoverThumbnail';
 import { Button } from '@/components/ui/button';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -10,11 +11,12 @@ import { dependencies, permissionGroups, scopeLabel, toggleScope } from '@/lib/m
 import type { McpPermissions as Permissions, McpProject } from '@/types/mcp';
 import { McpFeedback } from './McpFeedback';
 
-function Choice({ label, note, checked, disabled, onChange }: { label: string; note?: string; checked: boolean; disabled?: boolean; onChange: (checked: boolean) => void }) {
+function Choice({ label, note, checked, disabled, onChange, imageUrl }: { label: string; note?: string; checked: boolean; disabled?: boolean; onChange: (checked: boolean) => void; imageUrl?: string | null }) {
   const id = useId();
   return <div className="flex min-h-11 items-start gap-3">
     <Checkbox id={id} aria-label={label} checked={checked} disabled={disabled} onCheckedChange={v => onChange(v === true)} className="mt-3" aria-describedby={note ? id+'-note' : undefined} />
     <Label htmlFor={id} className="min-h-11 min-w-0 flex-1 cursor-pointer py-2 font-normal leading-6">
+      <ProjectCoverThumbnail imageUrl={imageUrl} className="mr-2 inline-block align-text-bottom" />
       {label}{note && <span id={id+'-note'} className="block text-xs leading-5 text-muted-foreground">{note}</span>}
     </Label>
   </div>;
@@ -30,7 +32,7 @@ function ProjectPicker({ value, onChange, onProject }: { value: Permissions; onC
       ? <McpFeedback error={projects.error} retry={() => void projects.refetch()} />
       : <>
         {!projects.data.content.length && <p className="text-sm text-muted-foreground">Nenhum projeto encontrado.</p>}
-        {projects.data.content.map(p => <Choice key={p.id} label={p.title + (p.archived ? ' · Arquivado' : '')} checked={value.allowedProjectIds.includes(p.id)} onChange={checked => { onProject?.(p); onChange({ ...value,
+        {projects.data.content.map(p => <Choice key={p.id} imageUrl={p.imageUrl} label={p.title + (p.archived ? ' · Arquivado' : '')} checked={value.allowedProjectIds.includes(p.id)} onChange={checked => { onProject?.(p); onChange({ ...value,
           allowedProjectIds: checked ? [...value.allowedProjectIds, p.id] : value.allowedProjectIds.filter(id => id !== p.id),
         }); }} />)}
         {(page > 0 || !projects.data.last) && <div className="flex flex-wrap items-center gap-2">
@@ -64,7 +66,7 @@ export function McpPermissionsEditor({ value, onChange, available, projects, onP
           <legend className="text-sm font-medium">Projetos autorizados</legend>
           {projects ? <>
             {!projects.length && <p className="text-sm text-muted-foreground">Nenhum projeto autorizado nesta conexão.</p>}
-            {projects.map(p => <Choice key={p.id} label={p.title + (p.archived ? ' · Arquivado' : '')} checked={value.allowedProjectIds.includes(p.id)}
+            {projects.map(p => <Choice key={p.id} imageUrl={p.imageUrl} label={p.title + (p.archived ? ' · Arquivado' : '')} checked={value.allowedProjectIds.includes(p.id)}
               onChange={checked => onChange({ ...value, allowedProjectIds: checked ? [...value.allowedProjectIds, p.id] : value.allowedProjectIds.filter(id => id !== p.id) })} />)}
           </> : <ProjectPicker value={value} onChange={onChange} onProject={onProject} />}
         </fieldset>}

@@ -6,6 +6,7 @@ import tools.jackson.databind.cfg.EnumFeature;
 import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.exc.InvalidFormatException;
 import tools.jackson.core.JsonParser;
+import com.oriens.oriens_api.entity.dto.work.PatchProject;
 import tools.jackson.core.JsonToken;
 import tools.jackson.databind.*;
 import org.springframework.core.MethodParameter;
@@ -48,7 +49,8 @@ public class WorkRequestBodyAdvice extends RequestBodyAdviceAdapter {
     @Override public HttpInputMessage beforeBodyRead(HttpInputMessage input, MethodParameter parameter, Type type,
             Class<? extends HttpMessageConverter<?>> converter) throws IOException {
         boolean bounded = parameter.getDeclaringClass() == com.oriens.oriens_api.mcp.McpController.class
-            || parameter.getDeclaringClass() == TaskController.class;
+            || parameter.getDeclaringClass() == TaskController.class
+            || parameter.getParameterType() == PatchProject.class;
         byte[] bytes = bounded ? input.getBody().readNBytes(262145) : input.getBody().readAllBytes();
         if (bounded && bytes.length > 262144)
             throw new com.oriens.oriens_api.exception.WorkDomainException("PAYLOAD_TOO_LARGE", null, "A solicitação excede 256 KiB.");

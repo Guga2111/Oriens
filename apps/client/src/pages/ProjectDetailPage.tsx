@@ -1,7 +1,7 @@
 import { useRecordVisit } from '@/hooks/useHome';
-import { useRef, useState, type RefObject } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ImagePlus, MoreHorizontal, Pencil, Plus, Trash2, Settings2, Star, Archive } from 'lucide-react';
+import { ImagePlus, MoreHorizontal, Pencil, Pin, PinOff, Plus, Trash2, Settings2, Archive } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/common/PageHeader';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
@@ -32,6 +32,8 @@ import type { TaskFilters } from '@/lib/task-filters';
 import { objectiveLayoutFrom, projectSectionOf, projectTabFrom, WORK_VIEWS, workViewOf } from '@/lib/project-tabs';
 import type { WorkTask } from '@/types/work';
 
+const MAX_PROJECT_COVER_BYTES = 2 * 1024 * 1024;
+
 export default function ProjectDetailPage() {
   const { id } = useParams();
   if (!Number.isSafeInteger(Number(id)) || Number(id) <= 0) return <div className="min-w-0 w-full"><PageHeader title="Projeto indisponível" /><Button asChild variant="link"><Link to="/projects">Voltar a Projetos</Link></Button></div>;
@@ -52,7 +54,7 @@ function ProjectLoadState({ isPending, error, onRetry }: { isPending: boolean; e
   );
 }
 
-// eslint-disable-next-line complexity -- existing score 59; owner: client maintainers.
+// eslint-disable-next-line complexity -- existing score 58; owner: client maintainers.
 function ProjectDetail({ id }: { id: number }) {
   const query = useWorkProject(id); const project = query.data;
   useRecordVisit('PROJECT', query.isSuccess ? id : undefined);
@@ -65,12 +67,11 @@ function ProjectDetail({ id }: { id: number }) {
   if (searchDraft.applied !== appliedSearch) setSearchDraft({ applied: appliedSearch, text: appliedSearch });
   const searchText = searchDraft.applied === appliedSearch ? searchDraft.text : appliedSearch;
   const isSearchOpen = searchOpen || Boolean(appliedSearch);
-  const board = useProjectBoard(project?.mode === 'DEVELOPMENT' ? id : 0, filters);
+  const board = useProjectBoard(project?.mode === 'DEVELOPMENT' ? id : 0, tab === 'overview' ? {} : filters);
   const allBoard = useProjectBoard(project?.mode === 'DEVELOPMENT' && tab === 'objectives' ? id : 0);
   const timeline = useTimelineBoard(project?.mode === 'DEVELOPMENT' && tab === 'timeline' ? id : 0).board;
   const flags = useProjectFlags(); const write = useProjectWrites(); const file = useRef<HTMLInputElement>(null);
-  const descriptionTrigger = useRef<HTMLButtonElement>(null);
-  const [edit, setEdit] = useState<{ open: boolean; descriptionTrigger?: RefObject<HTMLButtonElement> }>({ open: false });
+  const [edit, setEdit] = useState(false);
   const [deleting, setDeleting] = useState(false); const [converting, setConverting] = useState(false); const [settings, setSettings] = useState(false);
   const [editor, setEditor] = useState<{ task?: WorkTask; columnId?: number; objectiveId?: number } | null>(null);
   const [uploadError, setUploadError] = useState('');
@@ -110,9 +111,10 @@ function ProjectDetail({ id }: { id: number }) {
   const section = projectSectionOf(tab); const view = workViewOf(tab);
   const isOverview = development && section === 'overview';
   const newTask = () => setEditor({ columnId: project.defaultPendingColumnId! });
+  const chooseCover = () => file.current?.click();
   const notices = <>
     {project.archived && <p className="mb-4 text-sm text-muted-foreground">Projeto arquivado. As tarefas continuam disponíveis na agenda.</p>}
-    <div className="mb-4 flex flex-col gap-3 empty:hidden"><WorkFeedback error={query.error || flags.error || write.error} retry={() => void query.refetch()} />{flags.data?.refreshFailed && <WorkFeedback message="Salvo. Recarregue as listas para atualizar os dados." />}</div>
+    <div className="mb-4 flex flex-col gap-3 empty:hidden"><WorkFeedback error={query.error || flags.error || write.error} retry={() => void query.refetch()} />{flags.data?.refreshFailed && <WorkFeedback message="Salvo. Recarregue as listas para atualizar os dados." />}<WorkFeedback message={uploadError} /></div>
   </>;
   return <div className="min-w-0 w-full tabular-nums">
     <HeaderActions>
@@ -126,19 +128,21 @@ function ProjectDetail({ id }: { id: number }) {
       {development && section !== 'objectives' && <Button size="sm" onClick={newTask}><Plus aria-hidden /><span className="max-md:sr-only">Nova tarefa</span></Button>}
       {/* Project actions belong to Panorama and the work items; the Objectives page keeps only its own actions. */}
       {!(development && section === 'objectives') && <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Ações do projeto"><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="max-sm:[&_[role=menuitem]]:min-h-11"><DropdownMenuGroup>
-        <DropdownMenuItem disabled={write.isPending} onSelect={() => file.current?.click()}><ImagePlus aria-hidden />{project.imageUrl ? 'Trocar capa' : 'Adicionar capa'}</DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => setEdit({ open: true })}><Pencil aria-hidden />Editar projeto</DropdownMenuItem>
-        <DropdownMenuItem disabled={flags.isPending} onSelect={() => flags.mutate({ project, field: 'favorite', value: !project.favorite })}><Star aria-hidden />{project.favorite ? 'Desfavoritar' : 'Favoritar'}</DropdownMenuItem>
+        <DropdownMenuItem disabled={write.isPending} onSelect={chooseCover}><ImagePlus aria-hidden />{project.imageUrl ? 'Trocar capa' : 'Adicionar capa'}</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setEdit(true)}><Pencil aria-hidden />Editar projeto</DropdownMenuItem>
+        <DropdownMenuItem disabled={flags.isPending} onSelect={() => flags.mutate({ project, field: 'favorite', value: !project.favorite })}>
+          {project.favorite ? <PinOff aria-hidden /> : <Pin aria-hidden />}{project.favorite ? 'Desafixar' : 'Fixar'}
+        </DropdownMenuItem>
         <DropdownMenuItem disabled={flags.isPending} onSelect={() => flags.mutate({ project, field: 'archive', value: !project.archived })}><Archive aria-hidden />{project.archived ? 'Desarquivar' : 'Arquivar'}</DropdownMenuItem>
         {development && <DropdownMenuItem onSelect={() => setSettings(true)}><Settings2 aria-hidden />Configurar quadro</DropdownMenuItem>}
         <DropdownMenuItem onSelect={() => setDeleting(true)}><Trash2 aria-hidden />Excluir projeto</DropdownMenuItem>
       </DropdownMenuGroup></DropdownMenuContent></DropdownMenu>}
     </HeaderActions>
     {isOverview ? (
-      <ProjectOverview project={project} descriptionTrigger={descriptionTrigger} notices={notices}
-        onEditDescription={() => setEdit({ open: true, descriptionTrigger })} />
+      <ProjectOverview project={project} board={board} notices={notices} coverPending={write.isPending}
+        onChooseCover={chooseCover} onReload={() => void query.refetch()} />
     ) : <>
-      {project.imageUrl && <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="mb-6 aspect-project-cover w-full rounded-lg object-cover" />}
+      {!development && project.imageUrl && <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="mb-6 aspect-project-cover w-full rounded-lg object-cover" />}
       <h1 className="sr-only">{project.title}</h1>
       {notices}
     </>}
@@ -157,14 +161,19 @@ function ProjectDetail({ id }: { id: number }) {
       <ProjectObjectives project={project} onAddTask={() => {}} onEditTask={() => {}} />
       <ProjectSummaryCard project={project}><Button variant="outline" onClick={() => setConverting(true)}>Usar quadro de tarefas</Button></ProjectSummaryCard>
     </div>}
-    <div className={uploadError ? "mt-4" : undefined}><WorkFeedback message={uploadError} />
-      <Input ref={file} className="hidden" type="file" accept="image/png,image/jpeg,image/webp" onChange={async e => { const picture = e.target.files?.[0]; if (!picture) return;
-        setUploadError(''); if (!['image/png', 'image/jpeg', 'image/webp'].includes(picture.type) || picture.size > 5 * 1024 * 1024) { setUploadError('Use uma imagem PNG, JPEG ou WebP de até 5 MB.'); return; }
-        try { await write.mutateAsync({ action: 'picture', id, version: project.version, file: picture }); toast.success('Capa salva.'); } catch { /* Error is shown near project actions. */ } finally { if (file.current) file.current.value = ''; }
-      }} />
-    </div>
-    <CreateProjectDialog open={edit.open} onOpenChange={open => setEdit(previous => ({ ...previous, open }))}
-      projectToEdit={project} descriptionTrigger={edit.descriptionTrigger} onSuccess={() => {}} />
+    <Input ref={file} className="hidden" type="file" accept="image/png,image/jpeg,image/webp" onChange={async event => {
+      const picture = event.target.files?.[0];
+      event.target.value = '';
+      if (!picture) return;
+      setUploadError('');
+      if (!['image/png', 'image/jpeg', 'image/webp'].includes(picture.type) || picture.size > MAX_PROJECT_COVER_BYTES) {
+        setUploadError('Use uma imagem PNG, JPEG ou WebP de até 2 MB.');
+        return;
+      }
+      try { await write.mutateAsync({ action: 'picture', id, version: project.version, file: picture }); toast.success('Capa salva.'); }
+      catch { /* WorkFeedback shows the mutation error. */ }
+    }} />
+    <CreateProjectDialog open={edit} onOpenChange={setEdit} projectToEdit={project} onSuccess={() => {}} />
     {deleting && <DeleteProjectDialog project={project} onClose={() => setDeleting(false)} onDeleted={() => navigate('/projects')} />}
     <ConfirmDialog error={write.error} open={converting} onOpenChange={setConverting} title="Usar quadro de tarefas?" objectName={project.title} confirmLabel="Converter para desenvolvimento" description="Seus objetivos serão preservados. O quadro começa com A fazer, Fazendo e Concluídas, sem criar tarefas. A conversão não pode ser desfeita."
       onConfirm={async () => { try { await write.mutateAsync({ action: 'convert', id, version: project.version }); return true; } catch { return false; } }} />

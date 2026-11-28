@@ -18,7 +18,10 @@ export const emptyDescription = descriptionDocument({ type: 'doc', content: [{ t
 
 export function taskDescription(task: WorkTask) {
   if (task.descriptionDoc) return task.descriptionDoc;
-  const text = task.descriptionText ?? task.description ?? '';
+  return descriptionFromText(task.descriptionText ?? task.description);
+}
+
+export function descriptionFromText(text: string | null) {
   if (!text) return emptyDescription;
   const content = text.split(/\r\n|\r|\n/).flatMap<JSONContent>((line, index) => [
     ...(index > 0 ? [{ type: 'hardBreak' }] : []),

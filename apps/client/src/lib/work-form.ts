@@ -3,6 +3,10 @@ import { isAxiosError } from 'axios';
 import { TASK_STATUS } from '@/lib/labels';
 import type { TaskStatus } from '@/types/task';
 
+export function isWorkVersionConflict(error: unknown) {
+  return isAxiosError(error) && error.response?.status === 409;
+}
+
 export function validCalendarDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = parse(value, 'yyyy-MM-dd', new Date(2000, 0, 1));

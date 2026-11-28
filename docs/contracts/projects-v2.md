@@ -54,6 +54,7 @@ Listas agregadas não usam ETag de um recurso arbitrário.
 | GET `/project/user/{userId}` e `/all` | paginação/filtros existentes preservados | 200 Page<Project> |
 | GET `/project/user/{userId}/sidebar` | escopo do principal | 200 SidebarProject[] |
 | GET `/project/{id}` | ID | 200 ProjectDetail |
+| GET `/project/{id}/activity` | page e size, ordenação fixa | 200 ProjectActivityPage |
 | PATCH `/project/{id}` | PatchProject | 200 ProjectDetail |
 | PATCH `/project/{id}/mode` | ConvertProject | 200 ProjectDetail |
 | PATCH `/project/{id}/favorite` | FavoriteProject | 200 ProjectDetail |
@@ -225,3 +226,24 @@ descarta o documento então desatualizado e marca seus anexos para limpeza.
 | GET `/task/attachments/content/{id}/{attachmentId}` | Assinatura, ID do dono e expiração emitidos pelo Oriens | 200 conteúdo ou 206 para Range |
 
 Consulte as [convenções Markdown do MCP](../mcp.md#descrição-de-tarefas-em-markdown).
+
+## Descrição e atividade de projeto
+
+O PATCH de projeto aceita `descriptionDoc` no mesmo envelope de blocos
+versionado da descrição de tarefa. A API valida o documento e deriva
+`description` em Markdown com até 10.000 caracteres. O detalhe e as mutações
+incluem `descriptionDoc` quando presente. Listas conservam a string de
+descrição. O PATCH aceita um campo de descrição por vez. A ausência preserva,
+e `null` limpa. Uma alteração via texto legado substitui o documento por
+texto simples. Referências a anexos privados vinculados a tarefas são inválidas.
+
+`imageUrl` é incluído nas referências compactas de projeto usadas pela UI.
+O upload de capa continua em `PUT /project/{id}/picture` com controle de
+versão. Cards, navegação e tarefas associadas exibem a imagem cadastrada.
+
+`GET /project/{id}/activity` devolve `{ page, hasNext, actor, items }` para
+o dono autenticado. Cada evento inclui `id`, `kind`, `occurredAt` e, quando
+aplicável, `subjectId` e `subjectTitle`. As páginas começam em zero e têm
+20 entradas por padrão, com máximo de 100. A ordem é decrescente por
+instante e ID. A API grava atividade com a mutação confirmada a partir da
+implantação da migração `V16`.

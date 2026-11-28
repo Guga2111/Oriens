@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { workError } from '@/lib/work-form';
+import { cn } from '@/lib/utils';
 import { taskService, type TaskMediaKind } from '@/services/taskService';
 import type { TaskDescriptionDocument } from '@/types/work';
 import { DescriptionContext, descriptionExtensions } from './descriptionBlocks';
@@ -19,15 +20,16 @@ import { DescriptionDragHandle, InsertBlockButton, MoveCurrentBlock, slashComman
 import './task-description.css';
 
 interface Props {
-  taskId: number;
+  taskId?: number;
   document: TaskDescriptionDocument;
   editable?: boolean;
   autoFocus?: boolean;
+  className?: string;
   onChange?: (document: TaskDescriptionDocument | null) => void;
   onExit?: () => void;
 }
 
-export function TaskDescriptionEditor({ taskId, document, editable = false, autoFocus = false, onChange, onExit }: Props) {
+export function TaskDescriptionEditor({ taskId = 0, document, editable = false, autoFocus = false, className, onChange, onExit }: Props) {
   const [media, setMedia] = useState<TaskMediaKind | null>(null);
   const callbacks = useRef({ onChange, onExit });
   callbacks.current = { onChange, onExit };
@@ -73,7 +75,7 @@ export function TaskDescriptionEditor({ taskId, document, editable = false, auto
   }, [autoFocus, editor]);
 
   return <DescriptionContext.Provider value={{ taskId, editable }}>
-    <div className="task-description min-w-0" data-description-editing={editable ? '' : undefined}
+    <div className={cn('task-description min-w-0', className)} data-description-editing={editable ? '' : undefined}
       onKeyDown={event => {
         if (event.key !== 'Escape' || !editable) return;
         if (media) { event.preventDefault(); setMedia(null); editor?.commands.focus(); return; }

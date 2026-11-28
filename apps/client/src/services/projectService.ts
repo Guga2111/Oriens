@@ -1,7 +1,7 @@
 import api from './api';
 import type { TaskFilterQuery } from '@/lib/task-filters';
 import type { Page } from '@/types/financial';
-import type { WorkProject, BoardResponse, SidebarProject, ProjectWrite, DeletionPreview } from '@/types/work';
+import type { WorkProject, BoardResponse, SidebarProject, ProjectWrite, DeletionPreview, ProjectActivityPage } from '@/types/work';
 
 /** Without dateField, startDate and endDate together request a timeline overlap window. */
 export interface BoardFilters extends Omit<TaskFilterQuery, 'projectId'> {
@@ -30,7 +30,8 @@ export const projectService = {
       { headers: { 'Idempotency-Key': command.key } })).data;
     const url = `/project/${command.id}`;
     switch (command.action) {
-      case 'metadata': return (await api.patch<WorkProject>(url, command.body)).data;
+      case 'metadata':
+      case 'description': return (await api.patch<WorkProject>(url, command.body)).data;
       case 'convert': return (await api.patch<WorkProject>(url + '/mode', { mode: 'DEVELOPMENT', version: command.version })).data;
       case 'delete': await api.delete(url, { headers: { 'If-Match': `"${command.version}"` } }); return;
       case 'picture': {
@@ -53,6 +54,8 @@ export const projectService = {
   projects: async (user: number, params: ProjectFilters, signal?: AbortSignal) =>
     (await api.get<Page<WorkProject>>(`/project/user/${user}`, { params, signal })).data,
   project: async (id: number, signal?: AbortSignal) => (await api.get<WorkProject>(`/project/${id}`, { signal })).data,
+  activity: async (id: number, page: number, signal?: AbortSignal) =>
+    (await api.get<ProjectActivityPage>(`/project/${id}/activity`, { params: { page, size: 5 }, signal })).data,
   board: async (id: number, params: BoardFilters, signal?: AbortSignal) =>
     (await api.get<BoardResponse>(`/project/${id}/board`, { params, signal })).data,
   projectFlag: async (project: WorkProject | SidebarProject, field: 'favorite' | 'archive', value: boolean) =>

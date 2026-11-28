@@ -16,7 +16,7 @@ public interface WorkRecentVisitRepository extends JpaRepository<WorkRecentVisit
     @Query("""
         select new com.oriens.oriens_api.entity.dto.work.WorkHome$RecentView(
             case when t.id is not null then 'TASK' else 'PROJECT' end,
-            coalesce(t.id, p.id), coalesce(t.title, p.title), v.visitedAt)
+            coalesce(t.id, p.id), coalesce(t.title, p.title), v.visitedAt, p.imageUrl)
         from WorkRecentVisit v
         left join Task t on t.id = v.taskId and t.user.id = :owner
         left join Project tp on tp.id = t.projectId and tp.user.id = :owner

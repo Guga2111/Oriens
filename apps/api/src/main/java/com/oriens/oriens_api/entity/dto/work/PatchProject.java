@@ -1,9 +1,5 @@
 package com.oriens.oriens_api.entity.dto.work;
 
-import com.oriens.oriens_api.entity.enums.*;
-import com.oriens.oriens_api.entity.embeddable.Location;
-import java.time.*;
-
 public class PatchProject extends PatchFields {
     private Boolean favorite;
     public Boolean getFavorite() { return favorite; }
@@ -17,6 +13,9 @@ public class PatchProject extends PatchFields {
     private String description;
     public String getDescription() { return description; }
     public void setDescription(String value) { supplied("description"); description = value; }
+    private TaskDescriptionDocument descriptionDoc;
+    public TaskDescriptionDocument getDescriptionDoc() { return descriptionDoc; }
+    public void setDescriptionDoc(TaskDescriptionDocument value) { supplied("descriptionDoc"); descriptionDoc = value; }
     private String color;
     public String getColor() { return color; }
     public void setColor(String value) { supplied("color"); color = value; }

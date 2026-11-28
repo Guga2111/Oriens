@@ -26,5 +26,5 @@ public final class WorkHome {
             return new LinkView(link.getId(), link.getName(), link.getUrl(), link.getCreatedAt(), link.getVersion());
         }
     }
-    public record RecentView(String type, Long resourceId, String title, Instant visitedAt) {}
+    public record RecentView(String type, Long resourceId, String title, Instant visitedAt, String imageUrl) {}
 }
