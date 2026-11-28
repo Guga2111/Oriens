@@ -4,7 +4,6 @@ import { ptBR } from 'date-fns/locale';
 import { CalendarDays, CirclePause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { WorkDatePicker } from '@/components/common/WorkDatePicker';
@@ -12,8 +11,9 @@ import { StatusIcon } from '@/components/tasks/StatusIcon';
 import { useProductToday } from '@/hooks/useProductToday';
 import { parseLocalDate } from '@/lib/date';
 import { productDate } from '@/lib/product-time';
-import { OBJECTIVE_STATUSES, objectiveStatusLabel, type ObjectiveStatus } from '@/lib/objectives';
+import { OBJECTIVE_STATUSES, type ObjectiveStatus } from '@/lib/objectives';
 import type { WorkObjective } from '@/types/work';
+import { PropertyButton, PropertySelect } from './PropertyControl';
 
 export function ObjectiveStatusIcon({ status }: { status: ObjectiveStatus }) {
   return status === 'PAUSED' ? <CirclePause aria-hidden className="size-4 shrink-0 text-muted-foreground" /> : <StatusIcon status={status} className="size-4" />;
@@ -22,17 +22,8 @@ export function ObjectiveStatusIcon({ status }: { status: ObjectiveStatus }) {
 export function ObjectiveStatusPicker({ value, onChange, disabled, label = 'Status do objetivo' }: {
   value: ObjectiveStatus; onChange: (value: ObjectiveStatus) => void; disabled?: boolean; label?: string;
 }) {
-  return <DropdownMenu><DropdownMenuTrigger asChild>
-    <Button type="button" variant="outline" size="sm" disabled={disabled} aria-label={`${label}: ${objectiveStatusLabel(value)}`}>
-      <ObjectiveStatusIcon status={value} />{objectiveStatusLabel(value)}
-    </Button>
-  </DropdownMenuTrigger><DropdownMenuContent align="end" className="max-sm:[&_[role=menuitemradio]]:min-h-11">
-    <DropdownMenuRadioGroup value={value} onValueChange={next => onChange(next as ObjectiveStatus)}>
-      {OBJECTIVE_STATUSES.map(status => <DropdownMenuRadioItem key={status.value} value={status.value} disabled={disabled}>
-        <ObjectiveStatusIcon status={status.value} />{status.label}
-      </DropdownMenuRadioItem>)}
-    </DropdownMenuRadioGroup>
-  </DropdownMenuContent></DropdownMenu>;
+  return <PropertySelect label={label} value={value} disabled={disabled} onChange={onChange}
+    options={OBJECTIVE_STATUSES.map(status => ({ ...status, icon: <ObjectiveStatusIcon status={status.value} /> }))} />;
 }
 
 function objectivePeriodLabel(start?: string | null, end?: string | null, compact = false) {
@@ -69,9 +60,9 @@ export function ObjectivePeriodPicker({ objective, disabled, onSave }: {
     if (next) { setStart(objective.startDate ?? ''); setEnd(objective.dueDate ?? ''); }
     setOpen(next);
   }}><PopoverTrigger asChild>
-    <Button type="button" variant="outline" size="sm" disabled={disabled} aria-label={`Período de ${objective.title}: ${objectivePeriodLabel(objective.startDate, objective.dueDate)}`}>
+    <PropertyButton disabled={disabled} aria-label={`Período de ${objective.title}: ${objectivePeriodLabel(objective.startDate, objective.dueDate)}`}>
       <CalendarDays aria-hidden data-icon="inline-start" /><span className="hidden sm:inline">{objectivePeriodLabel(objective.startDate, objective.dueDate)}</span><span className="sm:hidden">{objectivePeriodLabel(objective.startDate, objective.dueDate, true)}</span>
-    </Button>
+    </PropertyButton>
   </PopoverTrigger><PopoverContent align="end" aria-label="Período do objetivo" className="w-auto max-w-full p-3">
     <Calendar mode="range" locale={ptBR} today={today} disabled={disabled} classNames={{ day_today: "font-semibold underline underline-offset-4" }} initialFocus defaultMonth={parseLocalDate(start || end) ?? today}
       selected={{ from: parseLocalDate(start), to: parseLocalDate(end) }}

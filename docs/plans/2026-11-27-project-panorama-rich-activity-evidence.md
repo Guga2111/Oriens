@@ -65,3 +65,18 @@ O Panorama de desenvolvimento mostra dois gráficos de rosca com totais e legend
 | 390 × 844 | Escuro | [Antes](../screenshots/project-panorama-properties/after-390-dark.png) · [Depois](../screenshots/project-panorama-charts/summary-390-dark.png) |
 
 O Chromium com API local confirmou seis objetivos em cinco estágios e quatro tarefas em quatro colunas, incluindo **Em revisão**. Conferiu legendas, segmentos, foco visível, estados vazios e ausência de rolagem horizontal de 320 a 1440 px nos dois temas. Os testes do cliente cobrem contagens com filtro na URL, tarefas sem coluna, carregamento e nova tentativa após falha.
+
+## Ordem móvel, propriedades editáveis e capa
+
+No celular, o Resumo vem logo após a descrição, seguido de Propriedades e Atividade. No desktop, a descrição e a atividade ficam na coluna principal, com Propriedades e Resumo na lateral.
+
+| Janela | Tema | Capturas |
+| --- | --- | --- |
+| 1440 × 900 | Claro | [Depois](../screenshots/project-panorama-final/after-1440-light.png) |
+| 1440 × 900 | Escuro | [Depois](../screenshots/project-panorama-final/after-1440-dark.png) |
+| 390 × 844 | Claro | [Depois](../screenshots/project-panorama-final/after-390-light.png) |
+| 390 × 844 | Escuro | [Antes](../screenshots/project-panorama-final/before-390-dark.png) · [Depois](../screenshots/project-panorama-final/after-390-dark.png) · [Editor de cor](../screenshots/project-panorama-final/color-390-dark.png) |
+
+O roteiro em Chromium com API local verificou a ordem dos blocos e ausência de rolagem horizontal a 320, 390 e 1440 px nos dois temas. Alterou situação, fixação e cor num projeto sintético e conferiu a persistência após recarregar. A cor foi salva com a versão do projeto, preservando título e descrição.
+
+Os quatro cenários do Playwright verificam edição, capa e atividade, além de Enter, Tab e Escape nos controles de propriedades e da ausência do banner nas abas Itens de trabalho e Objetivos. Os testes do cliente cobrem a remoção da cor, a recuperação após conflito com o rascunho preservado e a capa no projeto simples.

@@ -1,7 +1,7 @@
 import { useRecordVisit } from '@/hooks/useHome';
 import { useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ImagePlus, MoreHorizontal, Pencil, Plus, Trash2, Settings2, Star, Archive } from 'lucide-react';
+import { ImagePlus, MoreHorizontal, Pencil, Pin, PinOff, Plus, Trash2, Settings2, Archive } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/common/PageHeader';
 import { WorkFeedback } from '@/components/common/WorkFeedback';
@@ -130,7 +130,9 @@ function ProjectDetail({ id }: { id: number }) {
       {!(development && section === 'objectives') && <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Ações do projeto"><MoreHorizontal aria-hidden /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="max-sm:[&_[role=menuitem]]:min-h-11"><DropdownMenuGroup>
         <DropdownMenuItem disabled={write.isPending} onSelect={chooseCover}><ImagePlus aria-hidden />{project.imageUrl ? 'Trocar capa' : 'Adicionar capa'}</DropdownMenuItem>
         <DropdownMenuItem onSelect={() => setEdit(true)}><Pencil aria-hidden />Editar projeto</DropdownMenuItem>
-        <DropdownMenuItem disabled={flags.isPending} onSelect={() => flags.mutate({ project, field: 'favorite', value: !project.favorite })}><Star aria-hidden />{project.favorite ? 'Desfavoritar' : 'Favoritar'}</DropdownMenuItem>
+        <DropdownMenuItem disabled={flags.isPending} onSelect={() => flags.mutate({ project, field: 'favorite', value: !project.favorite })}>
+          {project.favorite ? <PinOff aria-hidden /> : <Pin aria-hidden />}{project.favorite ? 'Desafixar' : 'Fixar'}
+        </DropdownMenuItem>
         <DropdownMenuItem disabled={flags.isPending} onSelect={() => flags.mutate({ project, field: 'archive', value: !project.archived })}><Archive aria-hidden />{project.archived ? 'Desarquivar' : 'Arquivar'}</DropdownMenuItem>
         {development && <DropdownMenuItem onSelect={() => setSettings(true)}><Settings2 aria-hidden />Configurar quadro</DropdownMenuItem>}
         <DropdownMenuItem onSelect={() => setDeleting(true)}><Trash2 aria-hidden />Excluir projeto</DropdownMenuItem>
@@ -140,7 +142,7 @@ function ProjectDetail({ id }: { id: number }) {
       <ProjectOverview project={project} board={board} notices={notices} coverPending={write.isPending}
         onChooseCover={chooseCover} onReload={() => void query.refetch()} />
     ) : <>
-      {project.imageUrl && <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="mb-6 aspect-project-cover w-full rounded-lg object-cover" />}
+      {!development && project.imageUrl && <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="mb-6 aspect-project-cover w-full rounded-lg object-cover" />}
       <h1 className="sr-only">{project.title}</h1>
       {notices}
     </>}

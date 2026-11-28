@@ -87,7 +87,7 @@ export interface ProjectCreation {
 export interface DeletionPreview { projectVersion: number; objectiveCount: number; columnCount: number; taskCount: number }
 export type ProjectWrite =
   | { action: 'create'; body: ProjectCreation; key: string }
-  | { action: 'metadata'; id: number; body: { version: number; title: string; description?: string | null; color: string | null } }
+  | { action: 'metadata'; id: number; body: { version: number; title?: string; description?: string | null; color: string | null } }
   | { action: 'description'; id: number; body: { version: number; descriptionDoc: TaskDescriptionDocument | null } }
   | { action: 'convert'; id: number; version: number }
   | { action: 'delete'; id: number; version: number }

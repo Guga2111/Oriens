@@ -9,9 +9,11 @@ O [Panorama](../../apps/client/src/components/projects/ProjectOverview.tsx) entr
 ## Escopo
 
 - Mostrar a descrição rica em largura de leitura no Panorama e editar no próprio conteúdo com o editor de blocos do Oriens. Incluir títulos, formatação, links, listas e tabelas. Preservar descrições de texto já salvas.
-- Expor **Adicionar capa** ou **Trocar capa** no Panorama. Usar a mesma capa nos cards e uma miniatura nas representações compactas do projeto, como navegação, recentes, seletores e tarefas vinculadas. Para projetos sem imagem, manter a identificação atual por cor ou ícone.
+- Expor **Adicionar capa** ou **Trocar capa** no Panorama. Usar a mesma capa nos cards e uma miniatura nas representações compactas do projeto, como navegação, recentes, seletores e tarefas vinculadas. Em projetos de desenvolvimento, o banner aparece apenas no Panorama. Para projetos sem imagem, manter a identificação atual por cor ou ícone.
 - Mostrar atividade em ordem cronológica decrescente no Panorama, com autor ou origem, horário, ação e um ícone correspondente. Incluir criação e alteração de projeto, troca de capa, alterações de objetivos e criação, movimentação, conclusão e remoção de tarefas do projeto.
 - No resumo do Panorama, mostrar a distribuição de objetivos por estágio e de tarefas por coluna do quadro, com totais e legendas. Exibir o aviso quando houver objetivos atrasados. O calendário de prazos pertence ao resumo de projetos simples.
+- Em **Propriedades**, permitir alterar situação, cor e fixação diretamente pelo valor exibido. Mostrar o tipo do projeto como informação.
+- Em telas estreitas, colocar o Resumo logo após a descrição, seguido de Propriedades e Atividade. Em telas largas, manter Propriedades e Resumo na lateral.
 - Anexos privados na descrição do projeto e publicações manuais de status ficam para entregas próprias. Anexos das tarefas têm posse e ciclo de vida vinculados à tarefa.
 
 ## Alternativas e decisão

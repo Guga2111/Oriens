@@ -112,8 +112,83 @@ it.each([
   showProject();
 
   const properties = within(await screen.findByRole('region', { name: 'Propriedades' }));
-  expect(properties.getAllByRole('term').map(term => term.textContent)).toEqual(['Situação', 'Tipo', 'Cor', 'Favorito']);
+  expect(properties.getAllByRole('term').map(term => term.textContent)).toEqual(['Situação', 'Tipo', 'Cor', 'Fixado']);
   expect(properties.getAllByRole('definition').map(definition => definition.textContent)).toEqual([state, 'Desenvolvimento', colorLabel, favoriteLabel]);
+});
+
+it('altera situação e fixação pelos menus nas propriedades', async () => {
+  let current = project;
+  serve(() => current);
+  vi.mocked(api.patch).mockImplementation(async (_url, body) => {
+    current = { ...current, ...body, version: current.version + 1 };
+    return { data: current };
+  });
+  const user = userEvent.setup();
+  showProject();
+  const properties = within(await screen.findByRole('region', { name: 'Propriedades' }));
+
+  const status = properties.getByRole('button', { name: 'Situação: Ativo' });
+  status.focus();
+  await user.keyboard('{Enter}');
+  expect(await screen.findByRole('menuitemradio', { name: 'Ativo' })).toHaveAttribute('aria-checked', 'true');
+  await user.keyboard('{Escape}');
+  expect(status).toHaveFocus();
+  await user.keyboard('{Enter}');
+  await user.click(await screen.findByRole('menuitemradio', { name: 'Arquivado' }));
+  expect(await properties.findByRole('button', { name: 'Situação: Arquivado' })).toBeEnabled();
+  expect(api.patch).toHaveBeenNthCalledWith(1, '/project/9/archive', { archived: true, version: project.version });
+
+  await user.click(properties.getByRole('button', { name: 'Fixado: Não' }));
+  await user.click(await screen.findByRole('menuitemradio', { name: 'Sim' }));
+  expect(await properties.findByRole('button', { name: 'Fixado: Sim' })).toBeEnabled();
+  expect(api.patch).toHaveBeenNthCalledWith(2, '/project/9/favorite', { favorite: true, version: project.version + 1 });
+});
+
+it('mantém a cor escolhida após conflito e permite salvar com a versão recarregada', async () => {
+  let current = { ...project, color: '#d95721' };
+  serve(() => current);
+  vi.mocked(api.patch).mockImplementationOnce(async () => {
+    current = { ...current, version: current.version + 1, color: '#446677' };
+    throw { isAxiosError: true, response: { status: 409, data: {} } };
+  }).mockImplementation(async (_url, body) => {
+    current = { ...current, color: body.color, version: current.version + 1 };
+    return { data: current };
+  });
+  const user = userEvent.setup();
+  showProject();
+  await user.click(await screen.findByRole('button', { name: 'Cor: #D95721' }));
+  const picker = within(await screen.findByRole('dialog', { name: 'Editar cor do projeto' }));
+  const input = picker.getByLabelText('Cor do projeto');
+  fireEvent.change(input, { target: { value: '#123456' } });
+  await user.click(picker.getByRole('button', { name: 'Salvar cor' }));
+  expect(await picker.findByRole('alert')).toHaveTextContent(/mudaram em outra sessão/i);
+  expect(input).toHaveValue('#123456');
+  await user.click(picker.getByRole('button', { name: 'Recarregar dados' }));
+  expect(input).toHaveValue('#123456');
+  await user.click(picker.getByRole('button', { name: 'Salvar cor' }));
+  expect(await screen.findByRole('button', { name: 'Cor: #123456' })).toBeEnabled();
+  expect(api.patch).toHaveBeenNthCalledWith(1, '/project/9', { color: '#123456', version: project.version });
+  expect(api.patch).toHaveBeenNthCalledWith(2, '/project/9', { color: '#123456', version: project.version + 1 });
+});
+
+it('mostra a remoção da cor como rascunho e aplica ao salvar', async () => {
+  let current: WorkProject = { ...project, color: '#123456' };
+  serve(() => current);
+  vi.mocked(api.patch).mockImplementation(async (_url, body) => {
+    current = { ...current, color: body.color, version: current.version + 1 };
+    return { data: current };
+  });
+  const user = userEvent.setup();
+  showProject();
+  await user.click(await screen.findByRole('button', { name: 'Cor: #123456' }));
+  const picker = within(await screen.findByRole('dialog', { name: 'Editar cor do projeto' }));
+  expect(picker.getByText('#123456')).toBeVisible();
+  await user.click(picker.getByRole('button', { name: 'Remover cor' }));
+  expect(picker.getByText('Sem cor')).toBeVisible();
+  expect(api.patch).not.toHaveBeenCalled();
+  await user.click(picker.getByRole('button', { name: 'Salvar cor' }));
+  expect(await screen.findByRole('button', { name: 'Cor: Sem cor' })).toBeEnabled();
+  expect(api.patch).toHaveBeenCalledWith('/project/9', { color: null, version: project.version });
 });
 
 it.each([null, '  \n  '])('oferece adicionar descrição e omite a capa ausente (%j)', async emptyDescription => {
@@ -227,10 +302,12 @@ it('permite recuperar a descrição após uma falha de carregamento', async () =
 });
 
 it('mantém o resumo e a ação de conversão na rota do projeto simples', async () => {
-  serve(() => ({ ...project, mode: 'SIMPLE', description }));
+  const imageUrl = '/projects-pictures/simples.png';
+  serve(() => ({ ...project, mode: 'SIMPLE', description, imageUrl }));
   showProject('/tasks/project/9');
 
   const summary = await screen.findByRole('complementary', { name: 'Informações do projeto' });
+  expect(screen.getByRole('img', { name: `Capa de ${project.title}` })).toHaveAttribute('src', imageUrl);
   expect(within(summary).getByRole('progressbar', { name: '0% dos objetivos concluídos' })).toBeVisible();
   expect(within(summary).getByRole('button', { name: 'Próximo mês' })).toBeEnabled();
   expect(within(summary).getByRole('button', { name: 'Usar quadro de tarefas' })).toBeEnabled();

@@ -24,9 +24,9 @@ export function ProjectOverview({ project, board, notices, coverPending, onChoos
   </Button>;
 
   return (
-    <div className="grid min-w-0 items-start gap-8 desktop:grid-cols-project-detail">
-      <article className="flex min-w-0 flex-col gap-6">
-        <header className="flex min-w-0 flex-col gap-4">
+    <div className="grid min-w-0 items-start gap-6 desktop:grid-cols-project-detail desktop:grid-rows-[auto_1fr] desktop:gap-x-8">
+      <article className="flex min-w-0 flex-col gap-6 desktop:col-start-1 desktop:row-start-1">
+        <header className="flex min-w-0 flex-col gap-6">
           {project.imageUrl && (
             <div className="relative aspect-project-cover max-h-48 overflow-hidden rounded-lg">
               <img src={project.imageUrl} alt={`Capa de ${project.title}`} className="absolute inset-0 size-full object-cover" />
@@ -34,17 +34,19 @@ export function ProjectOverview({ project, board, notices, coverPending, onChoos
             </div>
           )}
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="min-w-0 break-words text-page-title font-semibold tracking-tight">{project.title}</h1>
+            <h1 className="min-w-0 break-words text-xl font-semibold tracking-tight md:text-2xl">{project.title}</h1>
             {!project.imageUrl && coverAction}
           </div>
         </header>
         {notices}
         <ProjectDescriptionSection project={project} onReload={onReload} />
-        <ProjectActivityFeed projectId={project.id} />
       </article>
-      <div className="flex min-w-0 flex-col gap-4">
-        <ProjectPropertiesCard project={project} />
+      <div className="flex min-w-0 flex-col gap-4 desktop:col-start-2 desktop:row-span-2 desktop:row-start-1 desktop:flex-col-reverse">
         <ProjectProgressSummary project={project} board={board} />
+        <ProjectPropertiesCard project={project} />
+      </div>
+      <div className="min-w-0 desktop:col-start-1 desktop:row-start-2">
+        <ProjectActivityFeed projectId={project.id} />
       </div>
     </div>
   );

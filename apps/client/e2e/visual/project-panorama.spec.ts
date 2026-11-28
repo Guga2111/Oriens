@@ -14,10 +14,15 @@ const project: WorkProject = {
   },
 };
 const counts = { totalTasks: 0, nonCancelledTasks: 0, completedTasks: 0, cancelledTasks: 0 };
-const board: BoardResponse = { projectId: 9, projectVersion: 4, filtered: false, columns: [], tasks: [], total: counts, visible: counts };
+const board: BoardResponse = {
+  projectId: 9, projectVersion: 4, filtered: false, tasks: [], total: counts, visible: counts,
+  columns: [
+    { id: 11, projectId: 9, name: 'A fazer', kind: 'PENDING', position: 0, version: 0, totalCount: 0, visibleCount: 0 },
+  ],
+};
 const cover = fileURLToPath(new URL('../../public/icon-192.png', import.meta.url));
 
-test('Panorama edita blocos, troca a capa e mostra a atividade do projeto', async ({ page, colorScheme }) => {
+test('Panorama edita blocos, troca a capa e mostra a atividade do projeto', async ({ page, colorScheme }, testInfo) => {
   const unexpected = await prepareVisualPage(page, colorScheme === 'dark' ? 'dark' : 'light', true);
   const activity: ProjectActivityPage = { page: 0, hasNext: false, actor: 'Conta visual', items: [] };
   let current = project;
@@ -94,5 +99,46 @@ test('Panorama edita blocos, troca a capa e mostra a atividade do projeto', asyn
   await expect(summary.getByRole('region', { name: 'Tarefas por coluna' })).toContainText('Nenhuma tarefa no projeto.');
   await expect(summary.getByRole('heading', { name: 'Calendário' })).toHaveCount(0);
   await expect.poll(() => page.locator('[data-page-content]').evaluate(element => element.scrollWidth - element.clientWidth)).toBe(0);
+  await page.screenshot({ path: testInfo.outputPath('panorama.png') });
+
+  const properties = page.getByRole('region', { name: 'Propriedades' });
+  const [descriptionBox, summaryBox, propertiesBox, feedBox] =
+    await Promise.all([description, summary, properties, feed].map(region => region.boundingBox()));
+  if (!descriptionBox || !summaryBox || !propertiesBox || !feedBox) throw new Error('Blocos do Panorama indisponíveis.');
+  if (testInfo.project.name.startsWith('mobile')) {
+    expect(summaryBox.y).toBeGreaterThan(descriptionBox.y + descriptionBox.height);
+    expect(propertiesBox.y).toBeGreaterThan(summaryBox.y + summaryBox.height);
+    expect(feedBox.y).toBeGreaterThan(propertiesBox.y + propertiesBox.height);
+  } else {
+    expect(propertiesBox.x).toBeGreaterThan(descriptionBox.x + descriptionBox.width);
+    expect(summaryBox.y).toBeGreaterThan(propertiesBox.y + propertiesBox.height);
+    expect(feedBox.x).toBe(descriptionBox.x);
+    expect(feedBox.y - (descriptionBox.y + descriptionBox.height)).toBeLessThanOrEqual(32);
+  }
+
+  const status = properties.getByRole('button', { name: 'Situação: Ativo' });
+  await status.press('Enter');
+  await expect(page.getByRole('menuitemradio', { name: 'Ativo' })).toHaveAttribute('aria-checked', 'true');
+  await page.screenshot({ path: testInfo.outputPath('project-status.png') });
+  await page.keyboard.press('Escape');
+  await expect(status).toBeFocused();
+  const color = properties.getByRole('button', { name: 'Cor: Sem cor' });
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await color.press('Enter');
+  const colorPicker = page.getByRole('dialog', { name: 'Editar cor do projeto' });
+  await expect(colorPicker).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(colorPicker.getByLabel('Cor do projeto')).toBeFocused();
+  await page.screenshot({ path: testInfo.outputPath('project-color.png') });
+  await page.keyboard.press('Escape');
+  await expect(color).toBeFocused();
+
+  for (const [tab, content] of [['board', 'Quadro do projeto'], ['objectives', 'Objetivos']]) {
+    await page.goto(`/tasks/project/9?tab=${tab}`);
+    await expect(page.getByRole('region', { name: content, exact: true })).toBeVisible();
+    if (tab === 'board') await expect(page.getByText('Nenhuma tarefa nesta coluna.')).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath(`${tab}.png`) });
+    await expect.soft(banner).toHaveCount(0, { timeout: 1000 });
+  }
   expect(unexpected).toEqual([]);
 });
