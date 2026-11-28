@@ -6,7 +6,7 @@ import java.util.*;
 
 @ConfigurationProperties("oriens.mcp")
 public record McpProperties(boolean enabled, URI issuer, URI frontend, String encryptionPassword,
-        String encryptionSalt, List<String> codexRedirects, List<String> claudeRedirects) {
+        String encryptionSalt, List<String> codexRedirects, List<String> claudeRedirects, boolean openbotEnabled) {
     public McpProperties {
         if (enabled) {
             checkUrl(issuer); checkUrl(frontend);

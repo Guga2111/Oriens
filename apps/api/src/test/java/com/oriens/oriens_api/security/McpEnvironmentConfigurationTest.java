@@ -35,6 +35,7 @@ class McpEnvironmentConfigurationTest {
             assertThat(c).hasNotFailed();
             var p=c.getBean(McpProperties.class);
             assertThat(p.enabled()).isTrue();
+            assertThat(p.openbotEnabled()).isFalse();
             assertThat(p.resource()).isEqualTo("http://127.0.0.1:8080/mcp");
             assertThat(p.frontend().toString()).isEqualTo("http://127.0.0.1:5173");
             assertThat(p.encryptionPassword()).isEqualTo("synthetic-local-configuration-secret-1234567890");
@@ -47,6 +48,7 @@ class McpEnvironmentConfigurationTest {
     @Test void productionEnvironmentBindsHttpsSiteRootAsIssuerAndFrontend() {
         context(Map.of(
             "ORIENS_MCP_ENABLED","true",
+            "ORIENS_MCP_OPENBOTENABLED","true",
             "ORIENS_MCP_ISSUER","https://oriens.luisgosampaio.com",
             "ORIENS_MCP_FRONTEND","https://oriens.luisgosampaio.com",
             "ORIENS_MCP_ENCRYPTIONPASSWORD","c3ludGhldGljK3Byb2R1Y3Rpb24vY29uZmlndXJhdGlvbi1zZWNyZXQ9PT0rLzEy",
@@ -56,6 +58,7 @@ class McpEnvironmentConfigurationTest {
         )).run(c -> {
             assertThat(c).hasNotFailed();
             var p=c.getBean(McpProperties.class);
+            assertThat(p.openbotEnabled()).isTrue();
             assertThat(p.base()).isEqualTo("https://oriens.luisgosampaio.com");
             assertThat(p.resource()).isEqualTo("https://oriens.luisgosampaio.com/mcp");
         });

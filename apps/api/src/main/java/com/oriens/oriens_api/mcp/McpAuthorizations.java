@@ -80,11 +80,13 @@ public class McpAuthorizations implements OAuth2AuthorizationService {
         if(rows.isEmpty())return null;
         try {
             Data d=json.readValue(reveal(rows.get(0)),Data.class);
+            var client = clients.findById(d.client);
+            if (client == null) return null;
             var c=grants.find(UUID.fromString(d.principal),true);
             if(c.revokedAt()!=null||!clock.instant().isBefore(c.expiresAt())) return null;
             // A refreshed token can retain or reduce permissions, never restore a reduced scope.
             Set<String> scopes=new HashSet<>(d.scopes);scopes.retainAll(c.scopes());
-            var builder=OAuth2Authorization.withRegisteredClient(clients.findById(d.client)).id(d.id).principalName(d.principal)
+            var builder=OAuth2Authorization.withRegisteredClient(client).id(d.id).principalName(d.principal)
                 .authorizationGrantType(new AuthorizationGrantType(d.grant)).authorizedScopes(scopes).attributes(map->map.putAll(read(d.attributes)));
             for(Token t:d.tokens) {
                 OAuth2Token value=switch(t.type) {
@@ -107,6 +109,7 @@ public class McpAuthorizations implements OAuth2AuthorizationService {
         var row=rows.get(0);String type=(String)row.get("token_type");
         if(tokenType!=null&&!type.equals(tokenType.getValue()))return null;
         var c=grants.find((UUID)row.get("connection_id"),true);
+        if (clients.findByClientId(c.clientId()) == null) return null;
         if(c.revokedAt()!=null||!clock.instant().isBefore(c.expiresAt()))return null;
         // Re-read under the grant lock: a parallel rotation may have consumed this token while we waited.
         boolean consumed=Boolean.TRUE.equals(db.queryForObject("select consumed from mcp_oauth_token_lookup where token_hash=?",Boolean.class,hash(token)));

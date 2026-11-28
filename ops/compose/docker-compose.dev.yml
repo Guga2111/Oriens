@@ -13,6 +13,7 @@ services:
       FILE_UPLOADDIR: /opt/oriens-uploads/profile-pictures
       FILE_UPLOADPROJECTDIR: /opt/oriens-uploads/projects-pictures
       ORIENS_MCP_ENABLED: ${ORIENS_MCP_ENABLED:-false}
+      ORIENS_MCP_OPENBOTENABLED: ${ORIENS_MCP_OPENBOT_ENABLED:-false}
       ORIENS_MCP_ISSUER: ${ORIENS_MCP_ISSUER:-http://127.0.0.1:8080}
       ORIENS_MCP_FRONTEND: ${ORIENS_MCP_FRONTEND:-http://127.0.0.1:5173}
       # Spring removes property-name hyphens when binding environment variables.

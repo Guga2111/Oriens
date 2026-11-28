@@ -188,6 +188,7 @@ class DeployTest(unittest.TestCase):
 
     def test_publish_transfers_compose_and_only_publishes_frontend_after_probe(self):
         result, commands = self.deploy("publish", ORIENS_MCP_ENABLED="true",
+                                       ORIENS_MCP_OPENBOT_ENABLED="true",
                                        ORIENS_MCP_ISSUER="https://test.invalid",
                                        ORIENS_MCP_FRONTEND="https://test.invalid",
                                        ORIENS_MCP_ENCRYPTION_PASSWORD="synthetic",
@@ -197,6 +198,7 @@ class DeployTest(unittest.TestCase):
         self.assertEqual((remote_dir / self.compose.name).read_bytes(), self.compose.read_bytes())
         env_file = remote_dir / ".env"
         self.assertIn("ORIENS_MCP_ENABLED='true'\n", env_file.read_text(encoding="utf-8"))
+        self.assertIn("ORIENS_MCP_OPENBOT_ENABLED='true'\n", env_file.read_text(encoding="utf-8"))
         self.assertIn("ORIENS_MCP_ISSUER='https://test.invalid'\n", env_file.read_text(encoding="utf-8"))
         self.assertEqual(stat.S_IMODE(env_file.stat().st_mode), 0o600)
         self.assertEqual((self.web / "index.html").read_text(encoding="utf-8"), "build output")

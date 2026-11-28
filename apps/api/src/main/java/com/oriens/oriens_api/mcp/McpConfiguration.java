@@ -23,11 +23,18 @@ import java.util.*;
 @EnableConfigurationProperties(McpProperties.class)
 @ConditionalOnProperty(name="oriens.mcp.enabled",havingValue="true")
 public class McpConfiguration {
+    private static final String OPENBOT_CLIENT_ID = "oriens-openbot";
+    private static final String OPENBOT_CALLBACK = "http://127.0.0.1:28417/mcp-auth";
+
     @Bean McpStore mcpStore(JdbcTemplate db,Clock clock) {return new McpStore(db,clock);}
     @Bean McpRateLimiter mcpRateLimiter(JdbcTemplate db) {return new McpRateLimiter(db);}
     @Bean TextEncryptor mcpEncryptor(McpProperties p) {return Encryptors.delux(p.encryptionPassword(),p.encryptionSalt());}
     @Bean RegisteredClientRepository mcpClients(McpProperties p) {
-        return new InMemoryRegisteredClientRepository(client("oriens-codex","Codex",p.codexRedirects()),client("oriens-claude-code","Claude Code",p.claudeRedirects()));
+        var clients = new ArrayList<>(List.of(
+            client("oriens-codex", "Codex", p.codexRedirects()),
+            client("oriens-claude-code", "Claude Code", p.claudeRedirects())));
+        if (p.openbotEnabled()) clients.add(client(OPENBOT_CLIENT_ID, "OpenBot", List.of(OPENBOT_CALLBACK)));
+        return new InMemoryRegisteredClientRepository(clients);
     }
     private RegisteredClient client(String id,String name,List<String> redirects) {
         return RegisteredClient.withId(id).clientId(id).clientName(name).clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
@@ -59,9 +66,13 @@ public class McpConfiguration {
         return provider;
     }
     static void validateCodeRequest(OAuth2AuthorizationCodeRequestAuthenticationContext context, McpProperties properties) {
+        OAuth2AuthorizationCodeRequestAuthenticationToken request=context.getAuthentication();
+        var client = context.getRegisteredClient();
+        // OpenBot listens on a fixed port. Spring otherwise permits any port for an IP loopback URI.
+        if (OPENBOT_CLIENT_ID.equals(client.getClientId()) && !OPENBOT_CALLBACK.equals(request.getRedirectUri()))
+            throw new OAuth2AuthorizationCodeRequestAuthenticationException(new OAuth2Error("invalid_request"), null);
         OAuth2AuthorizationCodeRequestAuthenticationValidator.DEFAULT_REDIRECT_URI_VALIDATOR.accept(context);
         OAuth2AuthorizationCodeRequestAuthenticationValidator.DEFAULT_SCOPE_VALIDATOR.accept(context);
-        OAuth2AuthorizationCodeRequestAuthenticationToken request=context.getAuthentication();
         if(request.getRedirectUri()==null || !request.getScopes().contains("mcp:context")
                 || !"S256".equals(request.getAdditionalParameters().get("code_challenge_method"))
                 || !properties.resource().equals(request.getAdditionalParameters().get("resource")))

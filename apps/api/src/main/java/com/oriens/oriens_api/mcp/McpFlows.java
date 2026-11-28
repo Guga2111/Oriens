@@ -6,6 +6,8 @@ import jakarta.servlet.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.authentication.*;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.sql.Timestamp;
@@ -19,10 +21,11 @@ public class McpFlows {
     private final JdbcTemplate db;private final McpProperties props;private final McpAuthorizations auth;
     private final McpStore grants;private final McpRateLimiter limits;private final Clock clock;
     private final OAuth2AuthorizationCodeRequestAuthenticationProvider provider;
+    private final RegisteredClientRepository clients;
     private final ObjectMapper json=JsonMapper.builder().build();
     public McpFlows(JdbcTemplate db,McpProperties props,McpAuthorizations auth,McpStore grants,McpRateLimiter limits,Clock clock,
-            OAuth2AuthorizationCodeRequestAuthenticationProvider provider) {
-        this.db=db;this.props=props;this.auth=auth;this.grants=grants;this.limits=limits;this.clock=clock;this.provider=provider;
+            OAuth2AuthorizationCodeRequestAuthenticationProvider provider,RegisteredClientRepository clients) {
+        this.db=db;this.props=props;this.auth=auth;this.grants=grants;this.limits=limits;this.clock=clock;this.provider=provider;this.clients=clients;
     }
     record Request(String client,String redirect,String state,Set<String> scopes,Map<String,Object> additional) {}
     public record Decision(Long version,Boolean approve,String name,Set<String> scopes,Set<Long> allowedProjectIds,Boolean allowStandaloneTasks) {}
@@ -63,16 +66,22 @@ public class McpFlows {
         try{return json.readValue(auth.reveal((String)row.get("encrypted_request")),Request.class);}
         catch(Exception e){throw new IllegalStateException("Cannot load OAuth flow",e);}
     }
+    private RegisteredClient registeredClient(Request request) {
+        var client = clients.findByClientId(request.client);
+        if (client == null) throw McpStore.missing();
+        return client;
+    }
     @Transactional(timeout=10)
     public Summary summary(long owner,UUID id,HttpServletRequest request) {
         var row=locked(owner,id,request);var r=data(row);
-        return new Summary(id,((Number)row.get("version")).longValue(),r.client,r.client.equals("oriens-codex")?"Codex":"Claude Code",r.scopes,((Timestamp)row.get("expires_at")).toInstant());
+        return new Summary(id,((Number)row.get("version")).longValue(),r.client,registeredClient(r).getClientName(),r.scopes,((Timestamp)row.get("expires_at")).toInstant());
     }
     @Transactional(timeout=10)
     public Map<String,String> decide(long owner,UUID id,Decision decision,HttpServletRequest request) {
         // Authorization is a header, not a cookie. Require the known frontend Origin as an additional CSRF boundary.
         if(!props.frontend().toString().replaceAll("/$", "").equals(request.getHeader("Origin")))throw McpStore.denied();
         var row=locked(owner,id,request);var r=data(row);
+        registeredClient(r);
         if(decision.version==null)throw new com.oriens.oriens_api.exception.WorkDomainException("PRECONDITION_REQUIRED","version","Informe a versão do fluxo.");
         if(decision.version<0||decision.version!=((Number)row.get("version")).longValue())throw new com.oriens.oriens_api.exception.WorkDomainException("VERSION_CONFLICT","version","A solicitação mudou.");
         if(decision.approve==null)throw McpStore.invalid("Informe sua decisão.");

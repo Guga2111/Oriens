@@ -77,12 +77,23 @@ e callbacks dos dois clientes são obrigatórios. Consulte `.env.example`.
 - `ORIENS_MCP_ENCRYPTION_SALT`: salt hexadecimal externo, mínimo 16 bytes.
 - `ORIENS_MCP_CODEX_REDIRECTS`: callbacks exatos do registro `oriens-codex`.
 - `ORIENS_MCP_CLAUDE_REDIRECTS`: callbacks exatos do registro `oriens-claude-code`.
+- `ORIENS_MCP_OPENBOT_ENABLED`: opcional, falso por padrão. Com MCP habilitado,
+  `true` registra o cliente público `oriens-openbot` com o callback exato
+  `http://127.0.0.1:28417/mcp-auth`, incluindo porta e caminho. Para configuração
+  do Spring sem Compose, use `ORIENS_MCP_OPENBOTENABLED`.
 
 Os registros públicos são configuração determinística, com IDs estáveis entre
 instâncias, sem DCR, secrets ou autoaprovação. Novos clientes exigem registro e
-callbacks próprios; setup desta fase aceita somente `codex` e `claude-code`.
-Somente a porta de um callback IP loopback pode variar, pela validação nativa do
-Spring. Host e caminho precisam corresponder ao registro; `localhost` usa URL exata.
+callbacks próprios. O Codex mantém a porta variável em IP loopback pela validação
+nativa do Spring. O Claude Code mantém o callback `localhost` exato. Configure
+o OpenBot pela seção de login do próprio cliente. [Conectar o OpenBot](../mcp.md#conectar-o-openbot)
+
+Ative a opção do OpenBot no `.env` do Compose ou na variável
+`ORIENS_MCP_OPENBOT_ENABLED` do ambiente de publicação do GitHub Actions.
+Use o mesmo valor em todas as instâncias da API. Com a opção desligada, novas
+autorizações e o uso de tokens do OpenBot ficam indisponíveis. Conexões e
+histórico são preservados. Revogue as conexões em **Integrações** para que
+continuem encerradas após uma eventual reativação.
 
 O issuer/recurso não dependem de `Host` ou forwarded headers. No proxy real,
 conferir os metadados por HTTPS e não registrar Authorization, corpos OAuth,
